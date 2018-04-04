@@ -66,7 +66,7 @@
 #define STEEM_OWNER_UPDATE_LIMIT                          fc::minutes(60)
 #define STEEM_OWNER_AUTH_HISTORY_TRACKING_START_BLOCK_NUM 3186477
 
-#define STEEM_INIT_SUPPLY                     int64_t(0)
+#define STEEM_INIT_SUPPLY                     (int64_t( 50 ) * int64_t( 1000000 ) * int64_t( 1000 ))
 
 #endif
 
@@ -126,8 +126,11 @@
 #define STEEM_INFLATION_RATE_START_PERCENT    (978) // Fixes block 7,000,000 to 9.5%
 #define STEEM_INFLATION_RATE_STOP_PERCENT     (95) // 0.95%
 #define STEEM_INFLATION_NARROWING_PERIOD      (250000) // Narrow 0.01% every 250k blocks
-#define STEEM_CONTENT_REWARD_PERCENT          (75*STEEM_1_PERCENT) //75% of inflation, 7.125% inflation
-#define STEEM_VESTING_FUND_PERCENT            (15*STEEM_1_PERCENT) //15% of inflation, 1.425% inflation
+#define STEEM_FIXED_INFLATION                 (1000) //10%
+#define STEEM_CONTENT_REWARD_PERCENT          (30*STEEM_1_PERCENT) //30% of inflation
+#define STEEM_REWARD_FUND_CURATOR_PERCENT     (5*100/30*STEEM_1_PERCENT) //5% of inflation from reward fund
+#define STEEM_VESTING_FUND_PERCENT            (40*STEEM_1_PERCENT) //40% of inflation
+#define STEEM_COMMITTEE_FUND_PERCENT          (15*STEEM_1_PERCENT) //15% of inflation
 
 #define STEEM_MINER_PAY_PERCENT               (STEEM_1_PERCENT) // 1%
 #define STEEM_MAX_RATION_DECAY_RATE           (1000000)

@@ -49,6 +49,7 @@ namespace steem { namespace chain {
           */
          uint32_t num_pow_witnesses = 0;
 
+         asset       committee_supply           = asset( 0, STEEM_SYMBOL );
          asset       virtual_supply             = asset( 0, STEEM_SYMBOL );
          asset       current_supply             = asset( 0, STEEM_SYMBOL );
          asset       confidential_supply        = asset( 0, STEEM_SYMBOL ); ///< total asset held in confidential balances
@@ -137,6 +138,7 @@ FC_REFLECT( steem::chain::dynamic_global_property_object,
              (current_witness)
              (total_pow)
              (num_pow_witnesses)
+             (committee_supply)
              (virtual_supply)
              (current_supply)
              (confidential_supply)

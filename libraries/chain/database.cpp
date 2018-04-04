@@ -1828,23 +1828,15 @@ void database::process_funds()
 
    if( has_hardfork( STEEM_HARDFORK_0_16__551) )
    {
-      /**
-       * At block 7,000,000 have a 9.5% instantaneous inflation rate, decreasing to 0.95% at a rate of 0.01%
-       * every 250k blocks. This narrowing will take approximately 20.5 years and will complete on block 220,750,000
-       */
-      int64_t start_inflation_rate = int64_t( STEEM_INFLATION_RATE_START_PERCENT );
-      int64_t inflation_rate_adjustment = int64_t( head_block_num() / STEEM_INFLATION_NARROWING_PERIOD );
-      int64_t inflation_rate_floor = int64_t( STEEM_INFLATION_RATE_STOP_PERCENT );
-
-      // below subtraction cannot underflow int64_t because inflation_rate_adjustment is <2^32
-      int64_t current_inflation_rate = std::max( start_inflation_rate - inflation_rate_adjustment, inflation_rate_floor );
+      int64_t current_inflation_rate = int64_t( STEEM_FIXED_INFLATION );
 
       auto new_steem = ( props.virtual_supply.amount * current_inflation_rate ) / ( int64_t( STEEM_100_PERCENT ) * int64_t( STEEM_BLOCKS_PER_YEAR ) );
       auto content_reward = ( new_steem * STEEM_CONTENT_REWARD_PERCENT ) / STEEM_100_PERCENT;
       if( has_hardfork( STEEM_HARDFORK_0_17__774 ) )
          content_reward = pay_reward_funds( content_reward ); /// 75% to content creator
       auto vesting_reward = ( new_steem * STEEM_VESTING_FUND_PERCENT ) / STEEM_100_PERCENT; /// 15% to vesting fund
-      auto witness_reward = new_steem - content_reward - vesting_reward; /// Remaining 10% to witness pay
+      auto committee_reward = ( new_steem * STEEM_COMMITTEE_FUND_PERCENT ) / STEEMIT_100_PERCENT;
+      auto witness_reward = new_steem - content_reward - vesting_reward - committee_reward; /// Remaining 10% to witness pay
 
       const auto& cwit = get_witness( props.current_witness );
       witness_reward *= STEEM_MAX_WITNESSES;
@@ -1860,11 +1852,12 @@ void database::process_funds()
 
       witness_reward /= wso.witness_pay_normalization_factor;
 
-      new_steem = content_reward + vesting_reward + witness_reward;
+      new_steem = content_reward + vesting_reward + committee_reward + witness_reward;
 
       modify( props, [&]( dynamic_global_property_object& p )
       {
          p.total_vesting_fund_steem += asset( vesting_reward, STEEM_SYMBOL );
+         p.committee_supply += asset( committee_reward, STEEM_SYMBOL );
          if( !has_hardfork( STEEM_HARDFORK_0_17__774 ) )
             p.total_reward_fund_steem  += asset( content_reward, STEEM_SYMBOL );
          p.current_supply           += asset( new_steem, STEEM_SYMBOL );
@@ -2483,6 +2476,7 @@ void database::init_genesis( uint64_t init_supply )
          p.time = STEEM_GENESIS_TIME;
          p.recent_slots_filled = fc::uint128::max_value();
          p.participation_count = 128;
+         p.committee_supply = asset( 0, STEEM_SYMBOL );
          p.current_supply = asset( init_supply, STEEM_SYMBOL );
          p.virtual_supply = p.current_supply;
          p.maximum_block_size = STEEM_MAX_BLOCK_SIZE;
@@ -4117,7 +4111,7 @@ void database::apply_hardfork( uint32_t hardfork )
                rfo.name = STEEM_POST_REWARD_FUND_NAME;
                rfo.last_update = head_block_time();
                rfo.content_constant = STEEM_CONTENT_CONSTANT_HF0;
-               rfo.percent_curation_rewards = STEEM_1_PERCENT * 25;
+               rfo.percent_curation_rewards = STEEM_REWARD_FUND_CURATOR_PERCENT;
                rfo.percent_content_rewards = STEEM_100_PERCENT;
                rfo.reward_balance = gpo.total_reward_fund_steem;
 #ifndef IS_TEST_NET
