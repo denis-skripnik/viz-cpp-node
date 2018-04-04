@@ -4120,7 +4120,7 @@ void database::apply_hardfork( uint32_t hardfork )
                rfo.name = STEEM_POST_REWARD_FUND_NAME;
                rfo.last_update = head_block_time();
                rfo.content_constant = STEEM_CONTENT_CONSTANT_HF0;
-               rfo.percent_curation_rewards = STEEM_1_PERCENT * 25;
+               rfo.percent_curation_rewards = STEEM_REWARD_FUND_CURATOR_PERCENT;
                rfo.percent_content_rewards = STEEM_100_PERCENT;
                rfo.reward_balance = gpo.total_reward_fund_steem;
 #ifndef IS_TEST_NET
