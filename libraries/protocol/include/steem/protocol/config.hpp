@@ -260,8 +260,7 @@
 #define STEEM_VIRTUAL_SCHEDULE_LAP_LENGTH  ( fc::uint128(uint64_t(-1)) )
 #define STEEM_VIRTUAL_SCHEDULE_LAP_LENGTH2 ( fc::uint128::max_value() )
 
-#define STEEM_INITIAL_VOTE_POWER_RATE (40)
-#define STEEM_REDUCED_VOTE_POWER_RATE (10)
+#define STEEM_VOTE_POWER_RATE (100)
 
 /**
  *  Reserved Account IDs with special meaning

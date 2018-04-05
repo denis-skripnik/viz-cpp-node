@@ -4181,11 +4181,6 @@ void database::apply_hardfork( uint32_t hardfork )
          break;
       case STEEM_HARDFORK_0_19:
          {
-            modify( get_dynamic_global_properties(), [&]( dynamic_global_property_object& gpo )
-            {
-               gpo.vote_power_reserve_rate = STEEM_REDUCED_VOTE_POWER_RATE;
-            });
-
             modify( get< reward_fund_object, by_name >( STEEM_POST_REWARD_FUND_NAME ), [&]( reward_fund_object &rfo )
             {
 #ifndef IS_TEST_NET
