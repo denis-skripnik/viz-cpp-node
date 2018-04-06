@@ -1835,7 +1835,7 @@ void database::process_funds()
       if( has_hardfork( STEEM_HARDFORK_0_17__774 ) )
          content_reward = pay_reward_funds( content_reward ); /// 75% to content creator
       auto vesting_reward = ( new_steem * STEEM_VESTING_FUND_PERCENT ) / STEEM_100_PERCENT; /// 15% to vesting fund
-      auto committee_reward = ( new_steem * STEEM_COMMITTEE_FUND_PERCENT ) / STEEMIT_100_PERCENT;
+      auto committee_reward = ( new_steem * STEEM_COMMITTEE_FUND_PERCENT ) / STEEM_100_PERCENT;
       auto witness_reward = new_steem - content_reward - vesting_reward - committee_reward; /// Remaining 10% to witness pay
 
       const auto& cwit = get_witness( props.current_witness );
