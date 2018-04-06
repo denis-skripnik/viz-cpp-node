@@ -312,7 +312,7 @@ struct extended_dynamic_global_properties
 
    uint32_t          last_irreversible_block_num = 0;
 
-   uint32_t          vote_power_reserve_rate = STEEM_INITIAL_VOTE_POWER_RATE;
+   uint32_t          vote_power_reserve_rate = STEEM_VOTE_POWER_RATE;
 
    int32_t           average_block_size = 0;
    int64_t           current_reserve_ratio = 1;

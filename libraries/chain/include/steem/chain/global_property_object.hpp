@@ -113,7 +113,7 @@ namespace steem { namespace chain {
           * "wasting" voting power through spillover; any user voting faster than this rate will have
           * their votes reduced.
           */
-         uint32_t vote_power_reserve_rate = STEEM_INITIAL_VOTE_POWER_RATE;
+         uint32_t vote_power_reserve_rate = STEEM_VOTE_POWER_RATE;
 #ifdef STEEM_ENABLE_SMT
          asset smt_creation_fee = asset( 1000000, SBD_SYMBOL );
 #endif
