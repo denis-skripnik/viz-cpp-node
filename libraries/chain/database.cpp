@@ -3130,12 +3130,7 @@ void database::update_virtual_supply()
          auto percent_sbd = uint16_t( ( ( fc::uint128_t( ( dgp.current_sbd_supply * get_feed_history().current_median_history ).amount.value ) * STEEM_100_PERCENT )
             / dgp.virtual_supply.amount.value ).to_uint64() );
 
-         if( percent_sbd <= STEEM_SBD_START_PERCENT )
-            dgp.sbd_print_rate = STEEM_100_PERCENT;
-         else if( percent_sbd >= STEEM_SBD_STOP_PERCENT )
             dgp.sbd_print_rate = 0;
-         else
-            dgp.sbd_print_rate = ( ( STEEM_SBD_STOP_PERCENT - percent_sbd ) * STEEM_100_PERCENT ) / ( STEEM_SBD_STOP_PERCENT - STEEM_SBD_START_PERCENT );
       }
    });
 } FC_CAPTURE_AND_RETHROW() }

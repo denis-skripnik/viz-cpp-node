@@ -121,7 +121,7 @@
 
 #define STEEM_100_PERCENT                     10000
 #define STEEM_1_PERCENT                       (STEEM_100_PERCENT/100)
-#define STEEM_DEFAULT_SBD_INTEREST_RATE       (10*STEEM_1_PERCENT) ///< 10% APR
+#define STEEM_DEFAULT_SBD_INTEREST_RATE       0
 
 #define STEEM_FIXED_INFLATION                 (1000) //10%
 #define STEEM_CONTENT_REWARD_PERCENT          (30*STEEM_1_PERCENT) //30% of inflation
@@ -205,10 +205,10 @@
 #define STEEM_PRODUCER_APR_PERCENT             750
 #define STEEM_POW_APR_PERCENT                  750
 
-#define STEEM_MIN_PAYOUT_SBD                  (asset(20,SBD_SYMBOL))
+#define STEEM_MIN_PAYOUT_SBD                  (asset(0,SBD_SYMBOL))
 
-#define STEEM_SBD_STOP_PERCENT                (5*STEEM_1_PERCENT ) // Stop printing SBD at 5% Market Cap
-#define STEEM_SBD_START_PERCENT               (2*STEEM_1_PERCENT) // Start reducing printing of SBD at 2% Market Cap
+#define STEEM_SBD_STOP_PERCENT                (0*STEEM_1_PERCENT ) // Stop printing SBD at 5% Market Cap
+#define STEEM_SBD_START_PERCENT               (0*STEEM_1_PERCENT) // Start reducing printing of SBD at 2% Market Cap
 
 #define STEEM_MIN_ACCOUNT_NAME_LENGTH          3
 #define STEEM_MAX_ACCOUNT_NAME_LENGTH         24
