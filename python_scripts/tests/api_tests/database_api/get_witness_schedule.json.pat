@@ -37,7 +37,7 @@
     "miner_weight": 1,
     "next_shuffle_block_num": 1,
     "num_scheduled_witnesses": 1,
-    "timeshare_weight": 5,
-    "top19_weight": 1,
-    "witness_pay_normalization_factor": 25
+    "timeshare_weight": 1,
+    "top_weight": 1,
+    "witness_pay_normalization_factor": 21
 }
