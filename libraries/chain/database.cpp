@@ -3122,16 +3122,7 @@ void database::update_virtual_supply()
    {
       dgp.virtual_supply = dgp.current_supply
          + ( get_feed_history().current_median_history.is_null() ? asset( 0, STEEM_SYMBOL ) : dgp.current_sbd_supply * get_feed_history().current_median_history );
-
-      auto median_price = get_feed_history().current_median_history;
-
-      if( !median_price.is_null() && has_hardfork( STEEM_HARDFORK_0_14__230 ) )
-      {
-         auto percent_sbd = uint16_t( ( ( fc::uint128_t( ( dgp.current_sbd_supply * get_feed_history().current_median_history ).amount.value ) * STEEM_100_PERCENT )
-            / dgp.virtual_supply.amount.value ).to_uint64() );
-
-            dgp.sbd_print_rate = 0;
-      }
+      dgp.sbd_print_rate = 0;
    });
 } FC_CAPTURE_AND_RETHROW() }
 
