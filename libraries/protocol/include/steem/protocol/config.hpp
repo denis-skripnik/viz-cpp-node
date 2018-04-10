@@ -82,7 +82,7 @@
 #define STEEM_START_VESTING_BLOCK             (STEEM_BLOCKS_PER_DAY * 7)
 #define STEEM_START_MINER_VOTING_BLOCK        (STEEM_BLOCKS_PER_DAY * 30)
 
-#define STEEM_INIT_MINER_NAME                 "initminer"
+#define STEEM_INIT_MINER_NAME                 "viz"
 #define STEEM_NUM_INIT_MINERS                 1
 #define STEEM_INIT_TIME                       (fc::time_point_sec());
 
