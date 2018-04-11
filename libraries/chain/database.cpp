@@ -1828,15 +1828,29 @@ void database::process_funds()
 
    if( has_hardfork( STEEM_HARDFORK_0_16__551) )
    {
-      int64_t current_inflation_rate = int64_t( STEEM_FIXED_INFLATION );
-
-      auto new_steem = ( props.virtual_supply.amount * current_inflation_rate ) / ( int64_t( STEEM_100_PERCENT ) * int64_t( STEEM_BLOCKS_PER_YEAR ) );
-      auto content_reward = ( new_steem * STEEM_CONTENT_REWARD_PERCENT ) / STEEM_100_PERCENT;
+      share_type inflation_rate = int64_t( STEEM_FIXED_INFLATION );
+      share_type new_supply = int64_t( STEEM_INIT_SUPPLY );
+      share_type inflation_per_year = inflation_rate * int64_t( STEEM_INIT_SUPPLY ) / int64_t( STEEM_100_PERCENT );
+      new_supply += inflation_per_year;
+      int circles = props.head_block_number / STEEM_BLOCKS_PER_YEAR; /* STEEM_BLOCKS_PER_YEAR */
+      if(circles > 0)
+      {
+         for( int itr = 0; itr < circles; ++itr )
+         {
+            inflation_per_year = ( new_supply * inflation_rate ) / int64_t( STEEM_100_PERCENT );
+            new_supply += inflation_per_year;
+         }
+      }
+      share_type inflation_per_block = inflation_per_year / int64_t( STEEM_BLOCKS_PER_YEAR );
+      elog( "Inflation status: props.head_block_number=${h1}, inflation_per_year=${h2}, new_supply=${h3}, inflation_per_block=${h4}",
+         ("h1",props.head_block_number)("h2", inflation_per_year)("h3",new_supply)("h4",inflation_per_block)
+      );
+      auto content_reward = ( inflation_per_block * STEEM_CONTENT_REWARD_PERCENT ) / STEEM_100_PERCENT;
       if( has_hardfork( STEEM_HARDFORK_0_17__774 ) )
          content_reward = pay_reward_funds( content_reward ); /// 75% to content creator
-      auto vesting_reward = ( new_steem * STEEM_VESTING_FUND_PERCENT ) / STEEM_100_PERCENT; /// 15% to vesting fund
-      auto committee_reward = ( new_steem * STEEM_COMMITTEE_FUND_PERCENT ) / STEEM_100_PERCENT;
-      auto witness_reward = new_steem - content_reward - vesting_reward - committee_reward; /// Remaining 10% to witness pay
+      auto vesting_reward = ( inflation_per_block * STEEM_VESTING_FUND_PERCENT ) / STEEM_100_PERCENT; /// 15% to vesting fund
+      auto committee_reward = ( inflation_per_block * STEEM_COMMITTEE_FUND_PERCENT ) / STEEM_100_PERCENT;
+      auto witness_reward = inflation_per_block - content_reward - vesting_reward - committee_reward; /// Remaining 10% to witness pay
 
       const auto& cwit = get_witness( props.current_witness );
       witness_reward *= STEEM_MAX_WITNESSES;
@@ -1852,16 +1866,20 @@ void database::process_funds()
 
       witness_reward /= wso.witness_pay_normalization_factor;
 
-      new_steem = content_reward + vesting_reward + committee_reward + witness_reward;
-
+      inflation_per_block = content_reward + vesting_reward + committee_reward + witness_reward;
+      /*
+      elog( "Final inflation_per_block=${h1}, content_reward=${h2}, committee_reward=${h3}, witness_reward=${h4}, vesting_reward=${h5}",
+         ("h1",inflation_per_block)("h2", content_reward)("h3",committee_reward)("h4",witness_reward)("h5",vesting_reward)
+      );
+      */
       modify( props, [&]( dynamic_global_property_object& p )
       {
          p.total_vesting_fund_steem += asset( vesting_reward, STEEM_SYMBOL );
          p.committee_supply += asset( committee_reward, STEEM_SYMBOL );
          if( !has_hardfork( STEEM_HARDFORK_0_17__774 ) )
             p.total_reward_fund_steem  += asset( content_reward, STEEM_SYMBOL );
-         p.current_supply           += asset( new_steem, STEEM_SYMBOL );
-         p.virtual_supply           += asset( new_steem, STEEM_SYMBOL );
+         p.current_supply           += asset( inflation_per_block, STEEM_SYMBOL );
+         p.virtual_supply           += asset( inflation_per_block, STEEM_SYMBOL );
       });
 
       const auto& producer_reward = create_vesting( get_account( cwit.owner ), asset( witness_reward, STEEM_SYMBOL ) );
