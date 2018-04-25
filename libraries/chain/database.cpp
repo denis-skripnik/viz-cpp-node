@@ -1824,7 +1824,6 @@ void database::process_comment_cashout()
 void database::process_funds()
 {
    const auto& props = get_dynamic_global_properties();
-   const auto& wso = get_witness_schedule_object();
 
    if( has_hardfork( STEEM_HARDFORK_0_16__551) )
    {
@@ -1842,9 +1841,11 @@ void database::process_funds()
          }
       }
       share_type inflation_per_block = inflation_per_year / int64_t( STEEM_BLOCKS_PER_YEAR );
-      elog( "Inflation status: props.head_block_number=${h1}, inflation_per_year=${h2}, new_supply=${h3}, inflation_per_block=${h4}",
+      /*
+      ilog( "Inflation status: props.head_block_number=${h1}, inflation_per_year=${h2}, new_supply=${h3}, inflation_per_block=${h4}",
          ("h1",props.head_block_number)("h2", inflation_per_year)("h3",new_supply)("h4",inflation_per_block)
       );
+      */
       auto content_reward = ( inflation_per_block * STEEM_CONTENT_REWARD_PERCENT ) / STEEM_100_PERCENT;
       if( has_hardfork( STEEM_HARDFORK_0_17__774 ) )
          content_reward = pay_reward_funds( content_reward ); /// 75% to content creator
@@ -1853,19 +1854,16 @@ void database::process_funds()
       auto witness_reward = inflation_per_block - content_reward - vesting_reward - committee_reward; /// Remaining 10% to witness pay
 
       const auto& cwit = get_witness( props.current_witness );
-      witness_reward *= STEEM_MAX_WITNESSES;
-
+      /*
       if( cwit.schedule == witness_object::timeshare )
-         witness_reward *= wso.timeshare_weight;
+         ilog( "Current witness: ${w}, support", ("w", cwit.owner) );
       else if( cwit.schedule == witness_object::miner )
-         witness_reward *= wso.miner_weight;
+         ilog( "Current witness: ${w}, miner", ("w", cwit.owner) );
       else if( cwit.schedule == witness_object::top )
-         witness_reward *= wso.top_weight;
+         ilog( "Current witness: ${w}, top", ("w", cwit.owner) );
       else
          wlog( "Encountered unknown witness type for witness: ${w}", ("w", cwit.owner) );
-
-      witness_reward /= wso.witness_pay_normalization_factor;
-
+      */
       inflation_per_block = content_reward + vesting_reward + committee_reward + witness_reward;
       /*
       elog( "Final inflation_per_block=${h1}, content_reward=${h2}, committee_reward=${h3}, witness_reward=${h4}, vesting_reward=${h5}",

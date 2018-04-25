@@ -87,6 +87,9 @@ void update_witness_schedule4( database& db )
    vector< account_name_type > active_witnesses;
    active_witnesses.reserve( STEEM_MAX_WITNESSES );
 
+   vector< account_name_type > support_witnesses;
+   support_witnesses.reserve( STEEM_MAX_WITNESSES );
+
    /// Add the highest voted witnesses
    flat_set< witness_id_type > selected_voted;
    selected_voted.reserve( wso.max_voted_witnesses );
@@ -102,8 +105,6 @@ void update_witness_schedule4( database& db )
       active_witnesses.push_back( itr->owner) ;
       db.modify( *itr, [&]( witness_object& wo ) { wo.schedule = witness_object::top; } );
    }
-
-   auto num_elected = active_witnesses.size();
 
    /// Add miners from the top of the mining queue
    flat_set< witness_id_type > selected_miners;
@@ -137,8 +138,6 @@ void update_witness_schedule4( database& db )
       } );
    }
 
-   auto num_miners = selected_miners.size();
-
    /// Add the running witnesses in the lead
    fc::uint128 new_virtual_time = wso.current_virtual_time;
    const auto& schedule_idx = db.get_index<witness_index>().indices().get<by_schedule_time>();
@@ -157,13 +156,11 @@ void update_witness_schedule4( database& db )
       if( selected_miners.find(sitr->id) == selected_miners.end()
           && selected_voted.find(sitr->id) == selected_voted.end() )
       {
-         active_witnesses.push_back(sitr->owner);
+         support_witnesses.push_back(sitr->owner);
          db.modify( *sitr, [&]( witness_object& wo ) { wo.schedule = witness_object::timeshare; } );
          ++witness_count;
       }
    }
-
-   auto num_timeshare = active_witnesses.size() - num_miners - num_elected;
 
    /// Update virtual schedule of processed witnesses
    bool reset_virtual_time = false;
@@ -189,7 +186,7 @@ void update_witness_schedule4( database& db )
    }
 
    size_t expected_active_witnesses = std::min( size_t(STEEM_MAX_WITNESSES), widx.size() );
-   FC_ASSERT( active_witnesses.size() == expected_active_witnesses, "number of active witnesses does not equal expected_active_witnesses=${expected_active_witnesses}",
+   FC_ASSERT( ( active_witnesses.size() + support_witnesses.size() ) == expected_active_witnesses, "number of active witnesses does not equal expected_active_witnesses=${expected_active_witnesses}",
                                        ("active_witnesses.size()",active_witnesses.size()) ("STEEM_MAX_WITNESSES",STEEM_MAX_WITNESSES) ("expected_active_witnesses", expected_active_witnesses) );
 
    auto majority_version = wso.majority_version;
@@ -263,26 +260,33 @@ void update_witness_schedule4( database& db )
       }
    }
 
-   assert( num_elected + num_miners + num_timeshare == active_witnesses.size() );
-
    db.modify( wso, [&]( witness_schedule_object& _wso )
    {
-      for( size_t i = 0; i < active_witnesses.size(); i++ )
+      size_t j = 0;
+      size_t support_witnesses_count = support_witnesses.size();
+      size_t active_witnesses_count = active_witnesses.size();
+      size_t sum_witnesses_count = support_witnesses_count+active_witnesses_count;
+      for( size_t i = 0; i < sum_witnesses_count; i++ )
       {
-         _wso.current_shuffled_witnesses[i] = active_witnesses[i];
+         if(active_witnesses_count > 0){
+             _wso.current_shuffled_witnesses[j] = active_witnesses[i];
+             --active_witnesses_count;
+             ++j;
+         }
+         if(support_witnesses_count > 0){
+             _wso.current_shuffled_witnesses[j] = support_witnesses[i];
+             --support_witnesses_count;
+             ++j;
+         }
       }
 
-      for( size_t i = active_witnesses.size(); i < STEEM_MAX_WITNESSES; i++ )
+      for( size_t i = sum_witnesses_count; i < STEEM_MAX_WITNESSES; i++ )
       {
          _wso.current_shuffled_witnesses[i] = account_name_type();
       }
 
-      _wso.num_scheduled_witnesses = std::max< uint8_t >( active_witnesses.size(), 1 );
-      _wso.witness_pay_normalization_factor =
-           _wso.top_weight * num_elected
-         + _wso.miner_weight * num_miners
-         + _wso.timeshare_weight * num_timeshare;
-
+      _wso.num_scheduled_witnesses = std::max< uint8_t >( sum_witnesses_count , 1 );
+      /*
       /// shuffle current shuffled witnesses
       auto now_hi = uint64_t(db.head_block_time().sec_since_epoch()) << 32;
       for( uint32_t i = 0; i < _wso.num_scheduled_witnesses; ++i )
@@ -300,7 +304,7 @@ void update_witness_schedule4( database& db )
          std::swap( _wso.current_shuffled_witnesses[i],
                     _wso.current_shuffled_witnesses[j] );
       }
-
+      */
       _wso.current_virtual_time = new_virtual_time;
       _wso.next_shuffle_block_num = db.head_block_num() + _wso.num_scheduled_witnesses;
       _wso.majority_version = majority_version;
