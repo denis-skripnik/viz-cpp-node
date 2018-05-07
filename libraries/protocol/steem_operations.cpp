@@ -13,6 +13,7 @@ namespace steem { namespace protocol {
       validate_create_account_name( new_account_name );
       validate_account_name( new_account_name );
       validate_account_name( creator );
+      validate_domain_name( new_account_name, creator );
       FC_ASSERT( is_asset_type( fee, STEEM_SYMBOL ), "Account creation fee must be STEEM" );
       owner.validate();
       active.validate();
@@ -30,6 +31,7 @@ namespace steem { namespace protocol {
       validate_create_account_name( new_account_name );
       validate_account_name( new_account_name );
       validate_account_name( creator );
+      validate_domain_name( new_account_name, creator );
       FC_ASSERT( is_asset_type( fee, STEEM_SYMBOL ), "Account creation fee must be STEEM" );
       FC_ASSERT( is_asset_type( delegation, VESTS_SYMBOL ), "Delegation must be VESTS" );
 

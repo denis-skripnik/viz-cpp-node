@@ -115,6 +115,22 @@ bool is_valid_account_name( const string& name )
    return true;
 }
 
+bool is_valid_domain_name( const string& name , const string& creator )
+{
+   size_t begin = name.find_first_of( '.', 0 );
+   if( begin == std::string::npos ){
+      return true;
+   }
+   else{
+      if( creator == name.substr( begin + 1 ) ){
+         return true;
+      }
+      else{
+         return false;
+      }
+   }
+}
+
 bool operator == ( const authority& a, const authority& b )
 {
    return ( a.weight_threshold == b.weight_threshold ) &&

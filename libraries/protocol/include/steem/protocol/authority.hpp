@@ -98,6 +98,8 @@ bool is_valid_create_account_name( const string& name );
 
 bool is_valid_account_name( const string& name );
 
+bool is_valid_domain_name( const string& name , const string& creator );
+
 bool operator == ( const authority& a, const authority& b );
 
 } } // namespace steem::protocol
