@@ -210,7 +210,8 @@
 #define STEEM_SBD_STOP_PERCENT                (0*STEEM_1_PERCENT ) // Stop printing SBD at 5% Market Cap
 #define STEEM_SBD_START_PERCENT               (0*STEEM_1_PERCENT) // Start reducing printing of SBD at 2% Market Cap
 
-#define STEEM_MIN_ACCOUNT_NAME_LENGTH          3
+#define STEEM_MIN_ACCOUNT_NAME_LENGTH          2
+#define STEEM_CREATE_MIN_ACCOUNT_NAME_LENGTH   3
 #define STEEM_MAX_ACCOUNT_NAME_LENGTH         24
 
 #define STEEM_MIN_PERMLINK_LENGTH             0
