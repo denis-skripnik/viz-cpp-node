@@ -29,6 +29,7 @@
 #include <fc/container/deque.hpp>
 
 #include <fc/io/fstream.hpp>
+#include <fc/io/json.hpp>
 
 #include <boost/scope_exit.hpp>
 
@@ -59,11 +60,25 @@ struct db_schema
    std::vector< operation_schema_repr > custom_operation_types;
 };
 
+struct snapshot_account
+{
+   std::string login;
+   std::string public_key;//authority
+   uint64_t shares_ammount;
+};
+
+struct snapshot_items
+{
+   vector <snapshot_account> accounts;
+};
+
 } }
 
 FC_REFLECT( steem::chain::object_schema_repr, (space_type)(type) )
 FC_REFLECT( steem::chain::operation_schema_repr, (id)(type) )
 FC_REFLECT( steem::chain::db_schema, (types)(object_types)(operation_type)(custom_operation_types) )
+FC_REFLECT( steem::chain::snapshot_account, (login)(public_key)(shares_ammount) )
+FC_REFLECT( steem::chain::snapshot_items, (accounts) )
 
 namespace steem { namespace chain {
 
@@ -2486,6 +2501,7 @@ void database::init_genesis( uint64_t init_supply )
          } );
       }
 
+
       create< dynamic_global_property_object >( [&]( dynamic_global_property_object& p )
       {
          p.current_witness = STEEM_INIT_MINER_NAME;
@@ -2497,6 +2513,49 @@ void database::init_genesis( uint64_t init_supply )
          p.virtual_supply = p.current_supply;
          p.maximum_block_size = STEEM_MAX_BLOCK_SIZE;
       } );
+
+      /* VIZ Snapshot */
+      auto snapshot_json = fc::path(string("./snapshot.json"));
+
+      if(fc::exists(snapshot_json))
+      {
+         ilog("Import snapshot.json");
+         snapshot_items snapshot=fc::json::from_file(snapshot_json).as<snapshot_items>();;
+         for(snapshot_account &account : snapshot.accounts)
+         {
+            public_key_type account_public_key(account.public_key);
+            create< account_object >( [&]( account_object& a )
+            {
+               a.name = account.login;
+               a.memo_key = account_public_key;
+               a.recovery_account = STEEM_INIT_MINER_NAME;
+               a.mined = false;
+               a.created = STEEM_GENESIS_TIME;
+               a.last_vote_time = STEEM_GENESIS_TIME;
+            } );
+
+            create< account_authority_object >( [&]( account_authority_object& auth )
+            {
+               auth.account = account.login;
+               auth.owner.add_authority( account_public_key, 1 );
+               auth.owner.weight_threshold = 1;
+               auth.active  = auth.owner;
+               auth.posting = auth.active;
+               auth.last_owner_update = fc::time_point_sec::min();
+            });
+
+            create_vesting( get_account( account.login ), asset( account.shares_ammount, STEEM_SYMBOL ) );
+            init_supply-=account.shares_ammount;
+
+            ilog( "Import account ${a} with public key ${k}, shares: ${s} (remaining init supply: ${i})", ("a", account.login)("k", account.public_key)("s", account.shares_ammount)("i", init_supply) );
+         }
+         const auto& init_miner = get_account( STEEM_INIT_MINER_NAME );
+         modify( init_miner, [&]( account_object& a )
+         {
+            a.balance  = asset( init_supply, STEEM_SYMBOL );
+         } );
+         ilog( "Modify init miner account ${a}, remaining balance: ${i}", ("a", STEEM_INIT_MINER_NAME)("i", init_supply) );
+      }
 
       // Nothing to do
       create< feed_history_object >( [&]( feed_history_object& o ) {});
@@ -3968,7 +4027,7 @@ void database::apply_hardfork( uint32_t hardfork )
    switch( hardfork )
    {
       case STEEM_HARDFORK_0_1:
-         perform_vesting_share_split( 1000000 );
+         perform_vesting_share_split( 1 );
 #ifdef IS_TEST_NET
          {
             custom_operation test_op;
