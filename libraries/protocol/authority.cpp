@@ -42,13 +42,19 @@ void authority::validate()const
    }
 }
 
+bool is_valid_create_account_name( const string& name )
+{
+   const size_t len = name.size();
+   if( len < STEEM_CREATE_MIN_ACCOUNT_NAME_LENGTH )
+      return false;
+
+   if( len > STEEM_MAX_ACCOUNT_NAME_LENGTH )
+      return false;
+  return true;
+}
 
 bool is_valid_account_name( const string& name )
 {
-#if STEEM_MIN_ACCOUNT_NAME_LENGTH < 3
-#error This is_valid_account_name implementation implicitly enforces minimum name length of 3.
-#endif
-
    const size_t len = name.size();
    if( len < STEEM_MIN_ACCOUNT_NAME_LENGTH )
       return false;
@@ -107,6 +113,22 @@ bool is_valid_account_name( const string& name )
       begin = end+1;
    }
    return true;
+}
+
+bool is_valid_domain_name( const string& name , const string& creator )
+{
+   size_t begin = name.find_first_of( '.', 0 );
+   if( begin == std::string::npos ){
+      return true;
+   }
+   else{
+      if( creator == name.substr( begin + 1 ) ){
+         return true;
+      }
+      else{
+         return false;
+      }
+   }
 }
 
 bool operator == ( const authority& a, const authority& b )

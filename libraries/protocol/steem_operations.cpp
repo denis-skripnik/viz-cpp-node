@@ -10,7 +10,10 @@ namespace steem { namespace protocol {
 
    void account_create_operation::validate() const
    {
+      validate_create_account_name( new_account_name );
       validate_account_name( new_account_name );
+      validate_account_name( creator );
+      validate_domain_name( new_account_name, creator );
       FC_ASSERT( is_asset_type( fee, STEEM_SYMBOL ), "Account creation fee must be STEEM" );
       owner.validate();
       active.validate();
@@ -25,8 +28,10 @@ namespace steem { namespace protocol {
 
    void account_create_with_delegation_operation::validate() const
    {
+      validate_create_account_name( new_account_name );
       validate_account_name( new_account_name );
       validate_account_name( creator );
+      validate_domain_name( new_account_name, creator );
       FC_ASSERT( is_asset_type( fee, STEEM_SYMBOL ), "Account creation fee must be STEEM" );
       FC_ASSERT( is_asset_type( delegation, VESTS_SYMBOL ), "Delegation must be VESTS" );
 
@@ -640,9 +645,9 @@ namespace steem { namespace protocol {
       bool is_substantial_reward = reward_tokens.begin()->amount > 0;
       for( auto itl = reward_tokens.begin(), itr = itl+1; itr != reward_tokens.end(); ++itl, ++itr )
       {
-         FC_ASSERT( itl->symbol.to_nai() <= itr->symbol.to_nai(), 
+         FC_ASSERT( itl->symbol.to_nai() <= itr->symbol.to_nai(),
                     "Reward tokens have not been inserted in ascending order." );
-         FC_ASSERT( itl->symbol.to_nai() != itr->symbol.to_nai(), 
+         FC_ASSERT( itl->symbol.to_nai() != itr->symbol.to_nai(),
                     "Duplicate symbol ${s} inserted into claim reward operation container.", ("s", itl->symbol) );
          FC_ASSERT( itr->amount >= 0, "Cannot claim a negative amount" );
          is_substantial_reward |= itr->amount > 0;

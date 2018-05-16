@@ -19,6 +19,16 @@ inline void validate_account_name( const string& name )
    FC_ASSERT( is_valid_account_name( name ), "Account name ${n} is invalid", ("n", name) );
 }
 
+inline void validate_create_account_name( const string& name )
+{
+   FC_ASSERT( is_valid_create_account_name( name ), "Account name ${n} is invalid", ("n", name) );
+}
+
+inline void validate_domain_name( const string& name, const string& creator )
+{
+   FC_ASSERT( is_valid_domain_name( name, creator ), "Domain name ${n} is invalid, creator name ${c}", ("n", name)("c", creator) );
+}
+
 inline void validate_permlink( const string& permlink )
 {
    FC_ASSERT( permlink.size() < STEEM_MAX_PERMLINK_LENGTH, "permlink is too long" );

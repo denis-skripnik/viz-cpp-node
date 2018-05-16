@@ -29,6 +29,7 @@
 #include <fc/container/deque.hpp>
 
 #include <fc/io/fstream.hpp>
+#include <fc/io/json.hpp>
 
 #include <boost/scope_exit.hpp>
 
@@ -59,11 +60,25 @@ struct db_schema
    std::vector< operation_schema_repr > custom_operation_types;
 };
 
+struct snapshot_account
+{
+   std::string login;
+   std::string public_key;//authority
+   uint64_t shares_ammount;
+};
+
+struct snapshot_items
+{
+   vector <snapshot_account> accounts;
+};
+
 } }
 
 FC_REFLECT( steem::chain::object_schema_repr, (space_type)(type) )
 FC_REFLECT( steem::chain::operation_schema_repr, (id)(type) )
 FC_REFLECT( steem::chain::db_schema, (types)(object_types)(operation_type)(custom_operation_types) )
+FC_REFLECT( steem::chain::snapshot_account, (login)(public_key)(shares_ammount) )
+FC_REFLECT( steem::chain::snapshot_items, (accounts) )
 
 namespace steem { namespace chain {
 
@@ -1824,44 +1839,60 @@ void database::process_comment_cashout()
 void database::process_funds()
 {
    const auto& props = get_dynamic_global_properties();
-   const auto& wso = get_witness_schedule_object();
 
    if( has_hardfork( STEEM_HARDFORK_0_16__551) )
    {
-      int64_t current_inflation_rate = int64_t( STEEM_FIXED_INFLATION );
-
-      auto new_steem = ( props.virtual_supply.amount * current_inflation_rate ) / ( int64_t( STEEM_100_PERCENT ) * int64_t( STEEM_BLOCKS_PER_YEAR ) );
-      auto content_reward = ( new_steem * STEEM_CONTENT_REWARD_PERCENT ) / STEEM_100_PERCENT;
+      share_type inflation_rate = int64_t( STEEM_FIXED_INFLATION );
+      share_type new_supply = int64_t( STEEM_INIT_SUPPLY );
+      share_type inflation_per_year = inflation_rate * int64_t( STEEM_INIT_SUPPLY ) / int64_t( STEEM_100_PERCENT );
+      new_supply += inflation_per_year;
+      int circles = props.head_block_number / STEEM_BLOCKS_PER_YEAR; /* STEEM_BLOCKS_PER_YEAR */
+      if(circles > 0)
+      {
+         for( int itr = 0; itr < circles; ++itr )
+         {
+            inflation_per_year = ( new_supply * inflation_rate ) / int64_t( STEEM_100_PERCENT );
+            new_supply += inflation_per_year;
+         }
+      }
+      share_type inflation_per_block = inflation_per_year / int64_t( STEEM_BLOCKS_PER_YEAR );
+      /*
+      ilog( "Inflation status: props.head_block_number=${h1}, inflation_per_year=${h2}, new_supply=${h3}, inflation_per_block=${h4}",
+         ("h1",props.head_block_number)("h2", inflation_per_year)("h3",new_supply)("h4",inflation_per_block)
+      );
+      */
+      auto content_reward = ( inflation_per_block * STEEM_CONTENT_REWARD_PERCENT ) / STEEM_100_PERCENT;
       if( has_hardfork( STEEM_HARDFORK_0_17__774 ) )
          content_reward = pay_reward_funds( content_reward ); /// 75% to content creator
-      auto vesting_reward = ( new_steem * STEEM_VESTING_FUND_PERCENT ) / STEEM_100_PERCENT; /// 15% to vesting fund
-      auto committee_reward = ( new_steem * STEEM_COMMITTEE_FUND_PERCENT ) / STEEMIT_100_PERCENT;
-      auto witness_reward = new_steem - content_reward - vesting_reward - committee_reward; /// Remaining 10% to witness pay
+      auto vesting_reward = ( inflation_per_block * STEEM_VESTING_FUND_PERCENT ) / STEEM_100_PERCENT; /// 15% to vesting fund
+      auto committee_reward = ( inflation_per_block * STEEM_COMMITTEE_FUND_PERCENT ) / STEEM_100_PERCENT;
+      auto witness_reward = inflation_per_block - content_reward - vesting_reward - committee_reward; /// Remaining 10% to witness pay
 
       const auto& cwit = get_witness( props.current_witness );
-      witness_reward *= STEEM_MAX_WITNESSES;
-
+      /*
       if( cwit.schedule == witness_object::timeshare )
-         witness_reward *= wso.timeshare_weight;
+         ilog( "Current witness: ${w}, support", ("w", cwit.owner) );
       else if( cwit.schedule == witness_object::miner )
-         witness_reward *= wso.miner_weight;
-      else if( cwit.schedule == witness_object::top19 )
-         witness_reward *= wso.top19_weight;
+         ilog( "Current witness: ${w}, miner", ("w", cwit.owner) );
+      else if( cwit.schedule == witness_object::top )
+         ilog( "Current witness: ${w}, top", ("w", cwit.owner) );
       else
          wlog( "Encountered unknown witness type for witness: ${w}", ("w", cwit.owner) );
-
-      witness_reward /= wso.witness_pay_normalization_factor;
-
-      new_steem = content_reward + vesting_reward + committee_reward + witness_reward;
-
+      */
+      inflation_per_block = content_reward + vesting_reward + committee_reward + witness_reward;
+      /*
+      elog( "Final inflation_per_block=${h1}, content_reward=${h2}, committee_reward=${h3}, witness_reward=${h4}, vesting_reward=${h5}",
+         ("h1",inflation_per_block)("h2", content_reward)("h3",committee_reward)("h4",witness_reward)("h5",vesting_reward)
+      );
+      */
       modify( props, [&]( dynamic_global_property_object& p )
       {
          p.total_vesting_fund_steem += asset( vesting_reward, STEEM_SYMBOL );
          p.committee_supply += asset( committee_reward, STEEM_SYMBOL );
          if( !has_hardfork( STEEM_HARDFORK_0_17__774 ) )
             p.total_reward_fund_steem  += asset( content_reward, STEEM_SYMBOL );
-         p.current_supply           += asset( new_steem, STEEM_SYMBOL );
-         p.virtual_supply           += asset( new_steem, STEEM_SYMBOL );
+         p.current_supply           += asset( inflation_per_block, STEEM_SYMBOL );
+         p.virtual_supply           += asset( inflation_per_block, STEEM_SYMBOL );
       });
 
       const auto& producer_reward = create_vesting( get_account( cwit.owner ), asset( witness_reward, STEEM_SYMBOL ) );
@@ -2470,6 +2501,7 @@ void database::init_genesis( uint64_t init_supply )
          } );
       }
 
+
       create< dynamic_global_property_object >( [&]( dynamic_global_property_object& p )
       {
          p.current_witness = STEEM_INIT_MINER_NAME;
@@ -2481,6 +2513,49 @@ void database::init_genesis( uint64_t init_supply )
          p.virtual_supply = p.current_supply;
          p.maximum_block_size = STEEM_MAX_BLOCK_SIZE;
       } );
+
+      /* VIZ Snapshot */
+      auto snapshot_json = fc::path(string("./snapshot.json"));
+
+      if(fc::exists(snapshot_json))
+      {
+         ilog("Import snapshot.json");
+         snapshot_items snapshot=fc::json::from_file(snapshot_json).as<snapshot_items>();;
+         for(snapshot_account &account : snapshot.accounts)
+         {
+            public_key_type account_public_key(account.public_key);
+            create< account_object >( [&]( account_object& a )
+            {
+               a.name = account.login;
+               a.memo_key = account_public_key;
+               a.recovery_account = STEEM_INIT_MINER_NAME;
+               a.mined = false;
+               a.created = STEEM_GENESIS_TIME;
+               a.last_vote_time = STEEM_GENESIS_TIME;
+            } );
+
+            create< account_authority_object >( [&]( account_authority_object& auth )
+            {
+               auth.account = account.login;
+               auth.owner.add_authority( account_public_key, 1 );
+               auth.owner.weight_threshold = 1;
+               auth.active  = auth.owner;
+               auth.posting = auth.active;
+               auth.last_owner_update = fc::time_point_sec::min();
+            });
+
+            create_vesting( get_account( account.login ), asset( account.shares_ammount, STEEM_SYMBOL ) );
+            init_supply-=account.shares_ammount;
+
+            ilog( "Import account ${a} with public key ${k}, shares: ${s} (remaining init supply: ${i})", ("a", account.login)("k", account.public_key)("s", account.shares_ammount)("i", init_supply) );
+         }
+         const auto& init_miner = get_account( STEEM_INIT_MINER_NAME );
+         modify( init_miner, [&]( account_object& a )
+         {
+            a.balance  = asset( init_supply, STEEM_SYMBOL );
+         } );
+         ilog( "Modify init miner account ${a}, remaining balance: ${i}", ("a", STEEM_INIT_MINER_NAME)("i", init_supply) );
+      }
 
       // Nothing to do
       create< feed_history_object >( [&]( feed_history_object& o ) {});
@@ -3122,21 +3197,7 @@ void database::update_virtual_supply()
    {
       dgp.virtual_supply = dgp.current_supply
          + ( get_feed_history().current_median_history.is_null() ? asset( 0, STEEM_SYMBOL ) : dgp.current_sbd_supply * get_feed_history().current_median_history );
-
-      auto median_price = get_feed_history().current_median_history;
-
-      if( !median_price.is_null() && has_hardfork( STEEM_HARDFORK_0_14__230 ) )
-      {
-         auto percent_sbd = uint16_t( ( ( fc::uint128_t( ( dgp.current_sbd_supply * get_feed_history().current_median_history ).amount.value ) * STEEM_100_PERCENT )
-            / dgp.virtual_supply.amount.value ).to_uint64() );
-
-         if( percent_sbd <= STEEM_SBD_START_PERCENT )
-            dgp.sbd_print_rate = STEEM_100_PERCENT;
-         else if( percent_sbd >= STEEM_SBD_STOP_PERCENT )
-            dgp.sbd_print_rate = 0;
-         else
-            dgp.sbd_print_rate = ( ( STEEM_SBD_STOP_PERCENT - percent_sbd ) * STEEM_100_PERCENT ) / ( STEEM_SBD_STOP_PERCENT - STEEM_SBD_START_PERCENT );
-      }
+      dgp.sbd_print_rate = 0;
    });
 } FC_CAPTURE_AND_RETHROW() }
 
@@ -3966,7 +4027,7 @@ void database::apply_hardfork( uint32_t hardfork )
    switch( hardfork )
    {
       case STEEM_HARDFORK_0_1:
-         perform_vesting_share_split( 1000000 );
+         perform_vesting_share_split( 1 );
 #ifdef IS_TEST_NET
          {
             custom_operation test_op;

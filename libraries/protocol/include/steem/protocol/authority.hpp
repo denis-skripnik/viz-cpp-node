@@ -94,7 +94,11 @@ void add_authority_accounts(
  * - All letters are lowercase
  * - Length is between (inclusive) STEEM_MIN_ACCOUNT_NAME_LENGTH and STEEM_MAX_ACCOUNT_NAME_LENGTH
  */
+bool is_valid_create_account_name( const string& name );
+
 bool is_valid_account_name( const string& name );
+
+bool is_valid_domain_name( const string& name , const string& creator );
 
 bool operator == ( const authority& a, const authority& b );
 

@@ -9,31 +9,6 @@
 
 #include <fc/macros.hpp>
 
-#ifndef IS_LOW_MEM
-FC_TODO( "After we vendor fc, also vendor diff_match_patch and fix these warnings" )
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wsign-compare"
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
-#include <diff_match_patch.h>
-#pragma GCC diagnostic pop
-#pragma GCC diagnostic pop
-#include <boost/locale/encoding_utf.hpp>
-
-using boost::locale::conv::utf_to_utf;
-
-std::wstring utf8_to_wstring(const std::string& str)
-{
-    return utf_to_utf<wchar_t>(str.c_str(), str.c_str() + str.size());
-}
-
-std::string wstring_to_utf8(const std::wstring& str)
-{
-    return utf_to_utf<char>(str.c_str(), str.c_str() + str.size());
-}
-
-#endif
-
 #include <fc/uint128.hpp>
 #include <fc/utf8.hpp>
 
@@ -745,34 +720,14 @@ void comment_evaluator::do_apply( const comment_operation& o )
    #ifndef IS_LOW_MEM
       _db.modify( _db.get< comment_content_object, by_comment >( comment.id ), [&]( comment_content_object& con )
       {
-         if( o.title.size() )         from_string( con.title, o.title );
+         if( o.title.size() )
+            from_string( con.title, o.title );
          if( o.json_metadata.size() )
             from_string( con.json_metadata, o.json_metadata );
-
-         if( o.body.size() ) {
-            try {
-            diff_match_patch<std::wstring> dmp;
-            auto patch = dmp.patch_fromText( utf8_to_wstring(o.body) );
-            if( patch.size() ) {
-               auto result = dmp.patch_apply( patch, utf8_to_wstring( to_string( con.body ) ) );
-               auto patched_body = wstring_to_utf8(result.first);
-               if( !fc::is_utf8( patched_body ) ) {
-                  idump(("invalid utf8")(patched_body));
-                  from_string( con.body, fc::prune_invalid_utf8(patched_body) );
-               } else { from_string( con.body, patched_body ); }
-            }
-            else { // replace
-               from_string( con.body, o.body );
-            }
-            } catch ( ... ) {
-               from_string( con.body, o.body );
-            }
-         }
+         if( o.body.size() )
+            from_string( con.body, o.body );
       });
    #endif
-
-
-
    } // end EDIT case
 
 } FC_CAPTURE_AND_RETHROW( (o) ) }
@@ -2207,7 +2162,7 @@ void claim_reward_balance2_evaluator::do_apply( const claim_reward_balance2_oper
    {
       if( token.amount == 0 )
          continue;
-         
+
       if( token.symbol.space() == asset_symbol_type::smt_nai_space )
       {
          _db.adjust_reward_balance( op.account, -token );
@@ -2225,7 +2180,7 @@ void claim_reward_balance2_evaluator::do_apply( const claim_reward_balance2_oper
          if( token.symbol == VESTS_SYMBOL)
          {
             FC_ASSERT( token <= a->reward_vesting_balance, "Cannot claim that much VESTS. Claim: ${c} Actual: ${a}",
-               ("c", token)("a", a->reward_vesting_balance) );   
+               ("c", token)("a", a->reward_vesting_balance) );
 
             asset reward_vesting_steem_to_move = asset( 0, STEEM_SYMBOL );
             if( token == a->reward_vesting_balance )

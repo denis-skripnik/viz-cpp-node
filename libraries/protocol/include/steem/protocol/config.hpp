@@ -44,10 +44,10 @@
 
 #define STEEM_BLOCKCHAIN_VERSION              ( version(0, 19, 4) )
 
-#define STEEM_INIT_PUBLIC_KEY_STR             "STM8GC13uCZbP44HzMLV6zPZGwVQ8Nt4Kji8PapsPiNq1BK153XTX"
-#define STEEM_CHAIN_ID_NAME ""
-#define STEEM_CHAIN_ID fc::sha256()
-#define STEEM_ADDRESS_PREFIX                  "STM"
+#define STEEM_INIT_PUBLIC_KEY_STR             "VIZ6MyX5QiXAXRZk7SYCiqpi6Mtm8UbHWDFSV8HPpt7FJyahCnc2T"
+#define STEEM_CHAIN_ID_NAME "VIZ"
+#define STEEM_CHAIN_ID (fc::sha256::hash(STEEM_CHAIN_ID_NAME))
+#define STEEM_ADDRESS_PREFIX                  "VIZ"
 
 #define STEEM_GENESIS_TIME                    (fc::time_point_sec(1458835200))
 #define STEEM_MINING_TIME                     (fc::time_point_sec(1458838800))
@@ -82,7 +82,7 @@
 #define STEEM_START_VESTING_BLOCK             (STEEM_BLOCKS_PER_DAY * 7)
 #define STEEM_START_MINER_VOTING_BLOCK        (STEEM_BLOCKS_PER_DAY * 30)
 
-#define STEEM_INIT_MINER_NAME                 "initminer"
+#define STEEM_INIT_MINER_NAME                 "viz"
 #define STEEM_NUM_INIT_MINERS                 1
 #define STEEM_INIT_TIME                       (fc::time_point_sec());
 
@@ -92,16 +92,16 @@
 #define STEEM_MAX_MINER_WITNESSES_HF0         1
 #define STEEM_MAX_RUNNER_WITNESSES_HF0        1
 
-#define STEEM_MAX_VOTED_WITNESSES_HF17        20
+#define STEEM_MAX_VOTED_WITNESSES_HF17        10
 #define STEEM_MAX_MINER_WITNESSES_HF17        0
-#define STEEM_MAX_RUNNER_WITNESSES_HF17       1
+#define STEEM_MAX_RUNNER_WITNESSES_HF17       11
 
 #define STEEM_HARDFORK_REQUIRED_WITNESSES     17 // 17 of the 21 dpos witnesses (20 elected and 1 virtual time) required for hardfork. This guarantees 75% participation on all subsequent rounds.
 #define STEEM_MAX_TIME_UNTIL_EXPIRATION       (60*60) // seconds,  aka: 1 hour
 #define STEEM_MAX_MEMO_SIZE                   2048
 #define STEEM_MAX_PROXY_RECURSION_DEPTH       4
 #define STEEM_VESTING_WITHDRAW_INTERVALS_PRE_HF_16 104
-#define STEEM_VESTING_WITHDRAW_INTERVALS      13
+#define STEEM_VESTING_WITHDRAW_INTERVALS      4
 #define STEEM_VESTING_WITHDRAW_INTERVAL_SECONDS (60*60*24*7) /// 1 week per interval
 #define STEEM_MAX_WITHDRAW_ROUTES             10
 #define STEEM_SAVINGS_WITHDRAW_TIME        	(fc::days(3))
@@ -109,7 +109,7 @@
 #define STEEM_VOTE_REGENERATION_SECONDS       (5*60*60*24) // 5 day
 #define STEEM_MAX_VOTE_CHANGES                5
 #define STEEM_REVERSE_AUCTION_WINDOW_SECONDS  (60*30) /// 30 minutes
-#define STEEM_MIN_VOTE_INTERVAL_SEC           3
+#define STEEM_MIN_VOTE_INTERVAL_SEC           1
 #define STEEM_VOTE_DUST_THRESHOLD             (50000000)
 
 #define STEEM_MIN_ROOT_COMMENT_INTERVAL       (fc::seconds(60*5)) // 5 minutes
@@ -121,7 +121,7 @@
 
 #define STEEM_100_PERCENT                     10000
 #define STEEM_1_PERCENT                       (STEEM_100_PERCENT/100)
-#define STEEM_DEFAULT_SBD_INTEREST_RATE       (10*STEEM_1_PERCENT) ///< 10% APR
+#define STEEM_DEFAULT_SBD_INTEREST_RATE       0
 
 #define STEEM_FIXED_INFLATION                 (1000) //10%
 #define STEEM_CONTENT_REWARD_PERCENT          (30*STEEM_1_PERCENT) //30% of inflation
@@ -205,13 +205,14 @@
 #define STEEM_PRODUCER_APR_PERCENT             750
 #define STEEM_POW_APR_PERCENT                  750
 
-#define STEEM_MIN_PAYOUT_SBD                  (asset(20,SBD_SYMBOL))
+#define STEEM_MIN_PAYOUT_SBD                  (asset(0,SBD_SYMBOL))
 
-#define STEEM_SBD_STOP_PERCENT                (5*STEEM_1_PERCENT ) // Stop printing SBD at 5% Market Cap
-#define STEEM_SBD_START_PERCENT               (2*STEEM_1_PERCENT) // Start reducing printing of SBD at 2% Market Cap
+#define STEEM_SBD_STOP_PERCENT                (0*STEEM_1_PERCENT ) // Stop printing SBD at 5% Market Cap
+#define STEEM_SBD_START_PERCENT               (0*STEEM_1_PERCENT) // Start reducing printing of SBD at 2% Market Cap
 
-#define STEEM_MIN_ACCOUNT_NAME_LENGTH          3
-#define STEEM_MAX_ACCOUNT_NAME_LENGTH         16
+#define STEEM_MIN_ACCOUNT_NAME_LENGTH          2
+#define STEEM_CREATE_MIN_ACCOUNT_NAME_LENGTH   3
+#define STEEM_MAX_ACCOUNT_NAME_LENGTH         24
 
 #define STEEM_MIN_PERMLINK_LENGTH             0
 #define STEEM_MAX_PERMLINK_LENGTH             256

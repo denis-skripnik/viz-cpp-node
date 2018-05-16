@@ -46,6 +46,13 @@ void new_chain_banner( const chain::database& db )
    return;
 }
 
+void consolelog()
+{
+	std::cerr << "\n"
+	"";
+	return;
+}
+
 namespace detail {
 
    class witness_plugin_impl {
@@ -309,7 +316,7 @@ namespace detail {
 
                if( old_reserve_ratio != r.current_reserve_ratio )
                {
-                  ilog( "Reserve ratio updated from ${old} to ${new}. Block: ${blocknum}",
+                  elog( "Reserve ratio updated from ${old} to ${new}. Block: ${blocknum}",
                      ("old", old_reserve_ratio)
                      ("new", r.current_reserve_ratio)
                      ("blocknum", _db.head_block_num()) );
@@ -426,7 +433,7 @@ namespace detail {
       switch(result)
       {
          case block_production_condition::produced:
-            ilog("Generated block #${n} with timestamp ${t} at time ${c}", (capture));
+            elog("Generated block #${n} with timestamp ${t} at time ${c}", (capture));
             break;
          case block_production_condition::not_synced:
    //         ilog("Not producing block because production is disabled until we receive a recent block (see: --enable-stale-production)");
@@ -438,7 +445,7 @@ namespace detail {
    //         ilog("Not producing block because slot has not yet arrived");
             break;
          case block_production_condition::no_private_key:
-            ilog("Not producing block because I don't have the private key for ${scheduled_key}", (capture) );
+            elog("Not producing block because I don't have the private key for ${scheduled_key}", (capture) );
             break;
          case block_production_condition::low_participation:
             elog("Not producing block because node appears to be on a minority fork with only ${pct}% witness participation", (capture) );
@@ -593,12 +600,12 @@ void witness_plugin::plugin_initialize(const boost::program_options::variables_m
 
 void witness_plugin::plugin_startup()
 { try {
-   ilog("witness plugin:  plugin_startup() begin");
+   elog("witness plugin:  plugin_startup() begin");
    chain::database& d = appbase::app().get_plugin< steem::plugins::chain::chain_plugin >().db();
 
    if( !my->_witnesses.empty() )
    {
-      ilog( "Launching block production for ${n} witnesses.", ("n", my->_witnesses.size()) );
+      elog( "Launching block production for ${n} witnesses.", ("n", my->_witnesses.size()) );
       if( my->_production_enabled )
       {
          if( d.head_block_num() == 0 )
@@ -608,7 +615,7 @@ void witness_plugin::plugin_startup()
       my->schedule_production_loop();
    } else
       elog("No witnesses configured! Please add witness IDs and private keys to configuration.");
-   ilog("witness plugin:  plugin_startup() end");
+   elog("witness plugin:  plugin_startup() end");
    } FC_CAPTURE_AND_RETHROW() }
 
 void witness_plugin::plugin_shutdown()
