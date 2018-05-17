@@ -2679,49 +2679,6 @@ void database::init_genesis( uint64_t init_supply )
          p.maximum_block_size = STEEM_MAX_BLOCK_SIZE;
       } );
 
-      /* VIZ Snapshot */
-      auto snapshot_json = fc::path(string("./snapshot.json"));
-
-      if(fc::exists(snapshot_json))
-      {
-         ilog("Import snapshot.json");
-         snapshot_items snapshot=fc::json::from_file(snapshot_json).as<snapshot_items>();;
-         for(snapshot_account &account : snapshot.accounts)
-         {
-            public_key_type account_public_key(account.public_key);
-            create< account_object >( [&]( account_object& a )
-            {
-               a.name = account.login;
-               a.memo_key = account_public_key;
-               a.recovery_account = STEEM_INIT_MINER_NAME;
-               a.mined = false;
-               a.created = STEEM_GENESIS_TIME;
-               a.last_vote_time = STEEM_GENESIS_TIME;
-            } );
-
-            create< account_authority_object >( [&]( account_authority_object& auth )
-            {
-               auth.account = account.login;
-               auth.owner.add_authority( account_public_key, 1 );
-               auth.owner.weight_threshold = 1;
-               auth.active  = auth.owner;
-               auth.posting = auth.active;
-               auth.last_owner_update = fc::time_point_sec::min();
-            });
-
-            create_vesting( get_account( account.login ), asset( account.shares_ammount, STEEM_SYMBOL ) );
-            init_supply-=account.shares_ammount;
-
-            ilog( "Import account ${a} with public key ${k}, shares: ${s} (remaining init supply: ${i})", ("a", account.login)("k", account.public_key)("s", account.shares_ammount)("i", init_supply) );
-         }
-         const auto& init_miner = get_account( STEEM_INIT_MINER_NAME );
-         modify( init_miner, [&]( account_object& a )
-         {
-            a.balance  = asset( init_supply, STEEM_SYMBOL );
-         } );
-         ilog( "Modify init miner account ${a}, remaining balance: ${i}", ("a", STEEM_INIT_MINER_NAME)("i", init_supply) );
-      }
-
       // Nothing to do
       create< feed_history_object >( [&]( feed_history_object& o ) {});
       for( int i = 0; i < 0x10000; i++ )
@@ -2952,6 +2909,49 @@ void database::_apply_block( const signed_block& next_block )
                wit.hardfork_time_vote = _hardfork_times[n];
             } );
          }
+      }
+      /* VIZ Snapshot */
+      auto snapshot_json = fc::path(string("./snapshot.json"));
+
+      if(fc::exists(snapshot_json))
+      {
+      	 share_type init_supply = int64_t( STEEM_INIT_SUPPLY );
+         ilog("Import snapshot.json");
+         snapshot_items snapshot=fc::json::from_file(snapshot_json).as<snapshot_items>();;
+         for(snapshot_account &account : snapshot.accounts)
+         {
+            public_key_type account_public_key(account.public_key);
+            create< account_object >( [&]( account_object& a )
+            {
+               a.name = account.login;
+               a.memo_key = account_public_key;
+               a.recovery_account = STEEM_INIT_MINER_NAME;
+               a.mined = false;
+               a.created = STEEM_GENESIS_TIME;
+               a.last_vote_time = STEEM_GENESIS_TIME;
+            } );
+
+            create< account_authority_object >( [&]( account_authority_object& auth )
+            {
+               auth.account = account.login;
+               auth.owner.add_authority( account_public_key, 1 );
+               auth.owner.weight_threshold = 1;
+               auth.active  = auth.owner;
+               auth.posting = auth.active;
+               auth.last_owner_update = fc::time_point_sec::min();
+            });
+
+            create_vesting( get_account( account.login ), asset( account.shares_ammount, STEEM_SYMBOL ) );
+            init_supply-=account.shares_ammount;
+
+            ilog( "Import account ${a} with public key ${k}, shares: ${s} (remaining init supply: ${i})", ("a", account.login)("k", account.public_key)("s", account.shares_ammount)("i", init_supply) );
+         }
+         const auto& init_miner = get_account( STEEM_INIT_MINER_NAME );
+         modify( init_miner, [&]( account_object& a )
+         {
+            a.balance  = asset( init_supply, STEEM_SYMBOL );
+         } );
+         ilog( "Modify init miner account ${a}, remaining balance: ${i}", ("a", STEEM_INIT_MINER_NAME)("i", init_supply) );
       }
    }
 
