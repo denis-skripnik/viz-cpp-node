@@ -23,8 +23,8 @@ RUN \
         libreadline-dev \
         libssl-dev \
         libtool \
+        liblz4-tool \
         ncurses-dev \
-        pbzip2 \
         pkg-config \
         python3 \
         python3-dev \
@@ -36,6 +36,13 @@ RUN \
         jq \
         wget \
         virtualenv \
+        gdb \
+        libgflags-dev \
+        libsnappy-dev \
+        zlib1g-dev \
+        libbz2-dev \
+        liblz4-dev \
+        libzstd-dev \
     && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* && \
@@ -61,7 +68,8 @@ RUN \
     ./programs/util/test_fixed_string && \
     cd /usr/local/src/steem && \
     doxygen && \
-    programs/build_helpers/check_reflect.py && \
+    PYTHONPATH=programs/build_helpers \
+    python3 -m steem_build_helpers.check_reflect && \
     programs/build_helpers/get_config_check.sh && \
     rm -rf /usr/local/src/steem/build
 
@@ -87,7 +95,8 @@ RUN \
     ./programs/util/test_fixed_string && \
     cd /usr/local/src/steem && \
     doxygen && \
-    programs/build_helpers/check_reflect.py && \
+    PYTHONPATH=programs/build_helpers \
+    python3 -m steem_build_helpers.check_reflect && \
     programs/build_helpers/get_config_check.sh && \
     rm -rf /usr/local/src/steem/build
 
