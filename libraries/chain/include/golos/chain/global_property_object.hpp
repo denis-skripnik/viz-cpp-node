@@ -136,7 +136,7 @@ namespace golos {
              * "wasting" voting power through spillover; any user voting faster than this rate will have
              * their votes reduced.
              */
-            uint32_t vote_regeneration_per_day = 40;
+            uint32_t vote_regeneration_per_day = STEEMIT_VOTE_POWER_RATE;
         };
 
         typedef multi_index_container <
