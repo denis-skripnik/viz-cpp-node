@@ -7,19 +7,19 @@
 #define STEEMIT_BLOCKCHAIN_HARDFORK_VERSION     (hardfork_version(STEEMIT_BLOCKCHAIN_VERSION))
 
 #ifdef STEEMIT_BUILD_TESTNET
-#define BLOCKCHAIN_NAME "GOLOSTEST"
+#define BLOCKCHAIN_NAME "VIZTEST"
 
-#define STEEMIT_SYMBOL                          "GOLOS"
-#define STEEMIT_ADDRESS_PREFIX                  "GLS"
+#define STEEMIT_SYMBOL                          "VIZ"
+#define STEEMIT_ADDRESS_PREFIX                  "VIZ"
 
 #define STEEMIT_INIT_PRIVATE_KEY                (fc::ecc::private_key::regenerate(fc::sha256::hash(BLOCKCHAIN_NAME)))
 #define STEEMIT_INIT_PUBLIC_KEY_STR             (std::string(golos::protocol::public_key_type(STEEMIT_INIT_PRIVATE_KEY.get_public_key())))
 #define STEEMIT_CHAIN_ID                        (fc::sha256::hash(BLOCKCHAIN_NAME))
 
-#define VESTS_SYMBOL  (uint64_t(6) | (uint64_t('G') << 8) | (uint64_t('E') << 16) | (uint64_t('S') << 24) | (uint64_t('T') << 32) | (uint64_t('S') << 40)) ///< GESTS with 6 digits of precision
-#define STEEM_SYMBOL  (uint64_t(3) | (uint64_t('G') << 8) | (uint64_t('O') << 16) | (uint64_t('L') << 24) | (uint64_t('O') << 32) | (uint64_t('S') << 40)) ///< GOLOS with 3 digits of precision
-#define SBD_SYMBOL    (uint64_t(3) | (uint64_t('G') << 8) | (uint64_t('B') << 16) | (uint64_t('G') << 24) ) ///< Test Backed Dollars with 3 digits of precision
-#define STMD_SYMBOL   (uint64_t(3) | (uint64_t('S') << 8) | (uint64_t('T') << 16) | (uint64_t('M') << 24) | (uint64_t('D') << 32) ) ///< Test Dollars with 3 digits of precision
+#define VESTS_SYMBOL  (uint64_t(6) | (uint64_t('S') << 8) | (uint64_t('H') << 16) | (uint64_t('A') << 24) | (uint64_t('R') << 32) | (uint64_t('E') << 40) | (uint64_t('S') << 48)) ///< GESTS with 6 digits of precision
+#define STEEM_SYMBOL  (uint64_t(3) | (uint64_t('V') << 8) | (uint64_t('I') << 16) | (uint64_t('Z') << 24)) ///< GOLOS with 3 digits of precision
+#define SBD_SYMBOL    (uint64_t(3) | (uint64_t('G') << 8) | (uint64_t('B') << 16) | (uint64_t('G') << 24)) ///< STEEM Backed Dollars with 3 digits of precision
+#define STMD_SYMBOL   (uint64_t(3) | (uint64_t('S') << 8) | (uint64_t('T') << 16) | (uint64_t('M') << 24) | (uint64_t('D') << 32) ) ///< STEEM Dollars with 3 digits of precision
 
 #define STEEMIT_GENESIS_TIME                    (fc::time_point_sec(1476788400))
 #define STEEMIT_MINING_TIME                     (fc::time_point_sec(1451606400))
@@ -48,13 +48,13 @@
 #define STEEMIT_START_MINER_VOTING_BLOCK        (60*10/STEEMIT_BLOCK_INTERVAL)
 #define STEEMIT_FIRST_CASHOUT_TIME              (fc::time_point_sec(1476788400 + STEEMIT_BLOCK_INTERVAL))
 
-#define STEEMIT_INIT_MINER_NAME                 "cyberfounder"
+#define STEEMIT_INIT_MINER_NAME                 "viz"
 #define STEEMIT_NUM_INIT_MINERS                 1
 #define STEEMIT_INIT_TIME                       (fc::time_point_sec());
 #ifndef STEEMIT_MAX_VOTED_WITNESSES
 #  define STEEMIT_MAX_VOTED_WITNESSES           1
 #endif
-#define STEEMIT_MAX_MINER_WITNESSES             1
+#define STEEMIT_MAX_MINER_WITNESSES             0
 #define STEEMIT_MAX_RUNNER_WITNESSES            1
 #define STEEMIT_MAX_WITNESSES                   (STEEMIT_MAX_VOTED_WITNESSES+STEEMIT_MAX_MINER_WITNESSES+STEEMIT_MAX_RUNNER_WITNESSES) /// 21 is more than enough
 #define STEEMIT_HARDFORK_REQUIRED_WITNESSES     1 // 17 of the 20 dpos witnesses (19 elected and 1 virtual time) required for hardfork. This guarantees 75% participation on all subsequent rounds.
@@ -62,8 +62,8 @@
 #define STEEMIT_MAX_MEMO_SIZE                   2048
 #define STEEMIT_MAX_PROXY_RECURSION_DEPTH       4
 #define STEEMIT_VESTING_WITHDRAW_INTERVALS_PRE_HF_16 104
-#define STEEMIT_VESTING_WITHDRAW_INTERVALS      13
-#define STEEMIT_VESTING_WITHDRAW_INTERVAL_SECONDS (60*60*1) // 1 hour per interval
+#define STEEMIT_VESTING_WITHDRAW_INTERVALS      4
+#define STEEMIT_VESTING_WITHDRAW_INTERVAL_SECONDS (60*60*24*7) // 1 week per interval
 #define STEEMIT_MAX_WITHDRAW_ROUTES             10
 #define STEEMIT_SAVINGS_WITHDRAW_TIME           (fc::days(3))
 #define STEEMIT_SAVINGS_WITHDRAW_REQUEST_LIMIT  100
@@ -71,16 +71,17 @@
 #define STEEMIT_MAX_VOTE_CHANGES                5
 #define STEEMIT_UPVOTE_LOCKOUT                  (fc::minutes(1))
 #define STEEMIT_REVERSE_AUCTION_WINDOW_SECONDS  (60*30) /// 30 minutes
-#define STEEMIT_MIN_VOTE_INTERVAL_SEC           3
+#define STEEMIT_MIN_VOTE_INTERVAL_SEC           1
 #define STEEMIT_MAX_COMMENT_BENEFICIARIES       8
+#define STEEMIT_VOTE_POWER_RATE					100
 
-#define STEEMIT_MIN_ROOT_COMMENT_INTERVAL       (fc::seconds(60*5)) // 5 minutes
-#define STEEMIT_MIN_REPLY_INTERVAL              (fc::seconds(20)) // 20 seconds
+#define STEEMIT_MIN_ROOT_COMMENT_INTERVAL       (fc::seconds(1))
+#define STEEMIT_MIN_REPLY_INTERVAL              (fc::seconds(1))
 #define STEEMIT_POST_AVERAGE_WINDOW             (60*60*24u) // 1 day
 #define STEEMIT_POST_MAX_BANDWIDTH              (4*STEEMIT_100_PERCENT) // 2 posts per 1 days, average 1 every 12 hours
 #define STEEMIT_POST_WEIGHT_CONSTANT            (uint64_t(STEEMIT_POST_MAX_BANDWIDTH) * STEEMIT_POST_MAX_BANDWIDTH)
 
-#define STEEMIT_MAX_ACCOUNT_WITNESS_VOTES       30
+#define STEEMIT_MAX_ACCOUNT_WITNESS_VOTES       2
 
 #define STEEMIT_100_PERCENT                     10000
 #define STEEMIT_1_PERCENT                       (STEEMIT_100_PERCENT/100)
@@ -220,16 +221,16 @@
 
 #else // IS LIVE STEEM NETWORK
 
-#define STEEMIT_INIT_PUBLIC_KEY_STR             "GLS7KVuKX87DK44xmhAD92hqJeR8Acd1TBKCtVnGLC5VDpER5CtWE"
-#define BLOCKCHAIN_NAME                         "GOLOS"
+#define STEEMIT_INIT_PUBLIC_KEY_STR             "VIZ6MyX5QiXAXRZk7SYCiqpi6Mtm8UbHWDFSV8HPpt7FJyahCnc2T"
+#define BLOCKCHAIN_NAME                         "VIZ"
 #define STEEMIT_CHAIN_ID                        (fc::sha256::hash(BLOCKCHAIN_NAME))
 
-#define VESTS_SYMBOL  (uint64_t(6) | (uint64_t('G') << 8) | (uint64_t('E') << 16) | (uint64_t('S') << 24) | (uint64_t('T') << 32) | (uint64_t('S') << 40)) ///< GESTS with 6 digits of precision
-#define STEEM_SYMBOL  (uint64_t(3) | (uint64_t('G') << 8) | (uint64_t('O') << 16) | (uint64_t('L') << 24) | (uint64_t('O') << 32) | (uint64_t('S') << 40)) ///< GOLOS with 3 digits of precision
-#define SBD_SYMBOL    (uint64_t(3) | (uint64_t('G') << 8) | (uint64_t('B') << 16) | (uint64_t('G') << 24) ) ///< STEEM Backed Dollars with 3 digits of precision
+#define VESTS_SYMBOL  (uint64_t(6) | (uint64_t('S') << 8) | (uint64_t('H') << 16) | (uint64_t('A') << 24) | (uint64_t('R') << 32) | (uint64_t('E') << 40) | (uint64_t('S') << 48)) ///< GESTS with 6 digits of precision
+#define STEEM_SYMBOL  (uint64_t(3) | (uint64_t('V') << 8) | (uint64_t('I') << 16) | (uint64_t('Z') << 24)) ///< GOLOS with 3 digits of precision
+#define SBD_SYMBOL    (uint64_t(3) | (uint64_t('G') << 8) | (uint64_t('B') << 16) | (uint64_t('G') << 24)) ///< STEEM Backed Dollars with 3 digits of precision
 #define STMD_SYMBOL   (uint64_t(3) | (uint64_t('S') << 8) | (uint64_t('T') << 16) | (uint64_t('M') << 24) | (uint64_t('D') << 32) ) ///< STEEM Dollars with 3 digits of precision
-#define STEEMIT_SYMBOL                          "GOLOS"
-#define STEEMIT_ADDRESS_PREFIX                  "GLS"
+#define STEEMIT_SYMBOL                          "VIZ"
+#define STEEMIT_ADDRESS_PREFIX                  "VIZ"
 
 #define STEEMIT_GENESIS_TIME                    (fc::time_point_sec(1476788400))
 #define STEEMIT_MINING_TIME                     (fc::time_point_sec(1458838800))
@@ -258,19 +259,19 @@
 #define STEEMIT_START_MINER_VOTING_BLOCK        (60*10/STEEMIT_BLOCK_INTERVAL)
 #define STEEMIT_FIRST_CASHOUT_TIME              (fc::time_point_sec(1484478000))
 
-#define STEEMIT_INIT_MINER_NAME                 "cyberfounder"
+#define STEEMIT_INIT_MINER_NAME                 "viz"
 #define STEEMIT_NUM_INIT_MINERS                 1
 #define STEEMIT_INIT_TIME                       (fc::time_point_sec());
-#define STEEMIT_MAX_VOTED_WITNESSES             19
-#define STEEMIT_MAX_MINER_WITNESSES             1
-#define STEEMIT_MAX_RUNNER_WITNESSES            1
+#define STEEMIT_MAX_VOTED_WITNESSES             10
+#define STEEMIT_MAX_MINER_WITNESSES             0
+#define STEEMIT_MAX_RUNNER_WITNESSES            11
 #define STEEMIT_MAX_WITNESSES                   (STEEMIT_MAX_VOTED_WITNESSES+STEEMIT_MAX_MINER_WITNESSES+STEEMIT_MAX_RUNNER_WITNESSES) /// 21 is more than enough
 #define STEEMIT_HARDFORK_REQUIRED_WITNESSES     17 // 17 of the 20 dpos witnesses (19 elected and 1 virtual time) required for hardfork. This guarantees 75% participation on all subsequent rounds.
 #define STEEMIT_MAX_TIME_UNTIL_EXPIRATION       (60*60) // seconds,  aka: 1 hour
 #define STEEMIT_MAX_MEMO_SIZE                   2048
 #define STEEMIT_MAX_PROXY_RECURSION_DEPTH       4
 #define STEEMIT_VESTING_WITHDRAW_INTERVALS_PRE_HF_16 104
-#define STEEMIT_VESTING_WITHDRAW_INTERVALS      13
+#define STEEMIT_VESTING_WITHDRAW_INTERVALS      4
 #define STEEMIT_VESTING_WITHDRAW_INTERVAL_SECONDS (60*60*24*7) // 1 week per interval
 #define STEEMIT_MAX_WITHDRAW_ROUTES             10
 #define STEEMIT_SAVINGS_WITHDRAW_TIME           (fc::days(3))
@@ -279,16 +280,17 @@
 #define STEEMIT_MAX_VOTE_CHANGES                5
 #define STEEMIT_UPVOTE_LOCKOUT                  (fc::minutes(1))
 #define STEEMIT_REVERSE_AUCTION_WINDOW_SECONDS  (60*30) /// 30 minutes
-#define STEEMIT_MIN_VOTE_INTERVAL_SEC           3
+#define STEEMIT_MIN_VOTE_INTERVAL_SEC           1
 #define STEEMIT_MAX_COMMENT_BENEFICIARIES       64
+#define STEEMIT_VOTE_POWER_RATE					100
 
-#define STEEMIT_MIN_ROOT_COMMENT_INTERVAL       (fc::seconds(60*5)) // 5 minutes
-#define STEEMIT_MIN_REPLY_INTERVAL              (fc::seconds(20)) // 20 seconds
+#define STEEMIT_MIN_ROOT_COMMENT_INTERVAL       (fc::seconds(1))
+#define STEEMIT_MIN_REPLY_INTERVAL              (fc::seconds(1))
 #define STEEMIT_POST_AVERAGE_WINDOW             (60*60*24u) // 1 day
 #define STEEMIT_POST_MAX_BANDWIDTH              (4*STEEMIT_100_PERCENT) // 2 posts per 1 days, average 1 every 12 hours
 #define STEEMIT_POST_WEIGHT_CONSTANT            (uint64_t(STEEMIT_POST_MAX_BANDWIDTH) * STEEMIT_POST_MAX_BANDWIDTH)
 
-#define STEEMIT_MAX_ACCOUNT_WITNESS_VOTES       30
+#define STEEMIT_MAX_ACCOUNT_WITNESS_VOTES       2
 
 #define STEEMIT_100_PERCENT                     10000
 #define STEEMIT_1_PERCENT                       (STEEMIT_100_PERCENT/100)
