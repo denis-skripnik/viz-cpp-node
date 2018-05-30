@@ -2080,7 +2080,7 @@ namespace golos { namespace chain {
                     asset total_payout;
                     if (reward_tokens > 0) {
                         share_type curation_tokens = ((reward_tokens *
-                                                       get_curation_rewards_percent()) /
+                                                       STEEMIT_REWARD_FUND_CURATOR_PERCENT) /
                                                       STEEMIT_100_PERCENT).to_uint64();
 
                         share_type author_tokens = reward_tokens.to_uint64() - curation_tokens;
@@ -2252,7 +2252,7 @@ namespace golos { namespace chain {
             share_type new_supply = int64_t( STEEMIT_INIT_SUPPLY );
             share_type inflation_per_year = inflation_rate * int64_t( STEEMIT_INIT_SUPPLY ) / int64_t( STEEMIT_100_PERCENT );
             new_supply += inflation_per_year;
-            int circles = props.head_block_number / STEEMIT_BLOCKS_PER_YEAR; /* STEEM_BLOCKS_PER_YEAR */
+            int circles = props.head_block_number / STEEMIT_BLOCKS_PER_YEAR;
             if(circles > 0)
             {
                for( int itr = 0; itr < circles; ++itr )
@@ -2261,7 +2261,7 @@ namespace golos { namespace chain {
                   new_supply += inflation_per_year;
                }
             }
-            share_type inflation_per_block = inflation_per_year / int64_t( STEEM_BLOCKS_PER_YEAR );
+            share_type inflation_per_block = inflation_per_year / int64_t( STEEMIT_BLOCKS_PER_YEAR );
             elog( "Inflation status: props.head_block_number=${h1}, inflation_per_year=${h2}, new_supply=${h3}, inflation_per_block=${h4}",
                ("h1",props.head_block_number)("h2", inflation_per_year)("h3",new_supply)("h4",inflation_per_block)
             );
@@ -2444,14 +2444,6 @@ namespace golos { namespace chain {
 
                     push_virtual_operation(liquidity_reward_operation(get(itr->owner).name, reward));
                 }
-            }
-        }
-
-        uint16_t database::get_curation_rewards_percent() const {
-            if (has_hardfork(STEEMIT_HARDFORK_0_8__116)) {
-                return STEEMIT_1_PERCENT * 25;
-            } else {
-                return STEEMIT_1_PERCENT * 50;
             }
         }
 

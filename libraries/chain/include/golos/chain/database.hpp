@@ -428,8 +428,6 @@ namespace golos { namespace chain {
 
             asset get_pow_reward() const;
 
-            uint16_t get_curation_rewards_percent() const;
-
             uint128_t get_content_constant_s() const;
 
             uint128_t calculate_vshares(uint128_t rshares) const;

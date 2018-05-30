@@ -89,9 +89,9 @@
 #define STEEMIT_DEFAULT_SBD_INTEREST_RATE       0
 
 #define STEEMIT_FIXED_INFLATION					(1000) //10%
-#define STEEMIT_CONTENT_REWARD_PERCENT          (30*STEEMIT_1_PERCENT) //75% of inflation
-#define STEEMIT_REWARD_FUND_CURATOR_PERCENT     (5*100/30*STEEM_1_PERCENT) //5% of inflation from reward fund
-#define STEEMIT_VESTING_FUND_PERCENT            (40*STEEMIT_1_PERCENT) //15% of inflation
+#define STEEMIT_CONTENT_REWARD_PERCENT          (30*STEEMIT_1_PERCENT) //30% of inflation
+#define STEEMIT_REWARD_FUND_CURATOR_PERCENT     (5*100/30*STEEMIT_1_PERCENT) //5% of inflation from reward fund
+#define STEEMIT_VESTING_FUND_PERCENT            (40*STEEMIT_1_PERCENT) //40% of inflation
 #define STEEMIT_COMMITTEE_FUND_PERCENT          (15*STEEMIT_1_PERCENT) //15% of inflation
 
 #define STEEMIT_MINER_PAY_PERCENT               (STEEMIT_1_PERCENT) // 1%
@@ -296,9 +296,9 @@
 #define STEEMIT_DEFAULT_SBD_INTEREST_RATE       0
 
 #define STEEMIT_FIXED_INFLATION					(1000) //10%
-#define STEEMIT_CONTENT_REWARD_PERCENT          (30*STEEMIT_1_PERCENT) //75% of inflation
-#define STEEMIT_REWARD_FUND_CURATOR_PERCENT     (5*100/30*STEEM_1_PERCENT) //5% of inflation from reward fund
-#define STEEMIT_VESTING_FUND_PERCENT            (40*STEEMIT_1_PERCENT) //15% of inflation
+#define STEEMIT_CONTENT_REWARD_PERCENT          (30*STEEMIT_1_PERCENT) //30% of inflation
+#define STEEMIT_REWARD_FUND_CURATOR_PERCENT     (5*100/30*STEEMIT_1_PERCENT) //5% of inflation from reward fund
+#define STEEMIT_VESTING_FUND_PERCENT            (40*STEEMIT_1_PERCENT) //40% of inflation
 #define STEEMIT_COMMITTEE_FUND_PERCENT          (15*STEEMIT_1_PERCENT) //15% of inflation
 
 #define STEEMIT_MINER_PAY_PERCENT               (STEEMIT_1_PERCENT) // 1%
