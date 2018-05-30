@@ -107,6 +107,26 @@ namespace golos { namespace chain {
         ///@}
 
         digest_type last_work;
+        class witness_schedule_object
+                : public object<witness_schedule_object_type, witness_schedule_object> {
+        public:
+            template<typename Constructor, typename Allocator>
+            witness_schedule_object(Constructor &&c, allocator <Allocator> a) {
+                c(*this);
+            }
+
+            witness_schedule_object() {
+            }
+
+            id_type id;
+
+            fc::uint128_t current_virtual_time;
+            uint32_t next_shuffle_block_num = 1;
+            fc::array<account_name_type, STEEMIT_MAX_WITNESSES> current_shuffled_witnesses;
+            uint8_t num_scheduled_witnesses = 1;
+            chain_properties median_props;
+            version majority_version;
+        };
 
         /**
          * This field represents the Golos blockchain version the witness is running.
@@ -251,12 +271,9 @@ FC_REFLECT(
 
 CHAINBASE_SET_INDEX_TYPE(golos::chain::witness_object, golos::chain::witness_index)
 
-FC_REFLECT(
-    (golos::chain::witness_schedule_object),
-    (id)(current_virtual_time)(next_shuffle_block_num)(current_shuffled_witnesses)(num_scheduled_witnesses)
-    (top19_weight)(timeshare_weight)(miner_weight)(witness_pay_normalization_factor)
-    (median_props)(majority_version))
-
 CHAINBASE_SET_INDEX_TYPE(golos::chain::witness_vote_object, golos::chain::witness_vote_index)
-
+FC_REFLECT((golos::chain::witness_schedule_object),
+        (id)(current_virtual_time)(next_shuffle_block_num)(current_shuffled_witnesses)(num_scheduled_witnesses)
+                (median_props)(majority_version)
+)
 CHAINBASE_SET_INDEX_TYPE(golos::chain::witness_schedule_object, golos::chain::witness_schedule_index)

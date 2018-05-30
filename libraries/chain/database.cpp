@@ -1454,10 +1454,6 @@ namespace golos { namespace chain {
                 }
 
                 _wso.num_scheduled_witnesses = std::max<uint8_t>(active_witnesses.size(), 1);
-                _wso.witness_pay_normalization_factor =
-                        _wso.top19_weight * num_elected
-                        + _wso.miner_weight * num_miners
-                        + _wso.timeshare_weight * num_timeshare;
 
                 /// shuffle current shuffled witnesses
                 auto now_hi =
@@ -2250,81 +2246,48 @@ namespace golos { namespace chain {
         *  This method pays out vesting, reward shares and witnesses every block.
         */
         void database::process_funds() {
-            const auto &props = get_dynamic_global_properties();
-            const auto &wso = get_witness_schedule_object();
-
-            if (has_hardfork(STEEMIT_HARDFORK_0_16__551)) {
-                /**
-                 * Inflation rate starts from 15,15% and reduced to 0.95% at a rate of 0.01% every 250k blocks.
-                 * At block 178,704,000 (16 years) have a 8.00% instantaneous inflation rate. This narrowing will take
-                 * approximately 33 years and will complete on block 357,408,000.
-                 */
-                int64_t start_inflation_rate = int64_t(STEEMIT_INFLATION_RATE_START_PERCENT);
-                int64_t inflation_rate_adjustment = int64_t(head_block_num() / STEEMIT_INFLATION_NARROWING_PERIOD);
-                int64_t inflation_rate_floor = int64_t(STEEMIT_INFLATION_RATE_STOP_PERCENT);
-
-                // below subtraction cannot underflow int64_t because inflation_rate_adjustment is <2^32
-                int64_t current_inflation_rate =
-                    std::max(start_inflation_rate - inflation_rate_adjustment,
-                             inflation_rate_floor);
-
-                auto new_steem =
-                        (props.virtual_supply.amount * current_inflation_rate) /
-                        (int64_t(STEEMIT_100_PERCENT) * int64_t(STEEMIT_BLOCKS_PER_YEAR));
-                auto content_reward =
-                        (new_steem * STEEMIT_CONTENT_REWARD_PERCENT) /
-                        STEEMIT_100_PERCENT; /// 66.67% to content creator
-                auto vesting_reward =
-                        (new_steem * STEEMIT_VESTING_FUND_PERCENT) /
-                        STEEMIT_100_PERCENT; /// 26.67% to vesting fund
-                auto witness_reward = new_steem - content_reward - vesting_reward; /// Remaining 6.66% to witness pay
-
-                const auto &cwit = get_witness(props.current_witness);
-                witness_reward *= STEEMIT_MAX_WITNESSES;
-
-                if (cwit.schedule == witness_object::timeshare) {
-                    witness_reward *= wso.timeshare_weight;
-                } else if (cwit.schedule == witness_object::miner) {
-                    witness_reward *= wso.miner_weight;
-                } else if (cwit.schedule == witness_object::top19) {
-                    witness_reward *= wso.top19_weight;
-                } else {
-                    wlog("Encountered unknown witness type for witness: ${w}", ("w", cwit.owner));
-                }
-
-                witness_reward /= wso.witness_pay_normalization_factor;
-
-                new_steem = content_reward + vesting_reward + witness_reward;
-
-                modify(props, [&](dynamic_global_property_object &p) {
-                    p.total_vesting_fund_steem += asset(vesting_reward, STEEM_SYMBOL);
-                    p.total_reward_fund_steem += asset(content_reward, STEEM_SYMBOL);
-                    p.current_supply += asset(new_steem, STEEM_SYMBOL);
-                    p.virtual_supply += asset(new_steem, STEEM_SYMBOL);
-                });
-
-                create_vesting(get_account(cwit.owner), asset(witness_reward, STEEM_SYMBOL));
-            } else {
-                auto content_reward = get_content_reward();
-                auto curate_reward = get_curation_reward();
-                auto witness_pay = get_producer_reward();
-                auto vesting_reward = content_reward + curate_reward + witness_pay;
-
-                content_reward = content_reward + curate_reward;
-
-                if (props.head_block_number < STEEMIT_START_VESTING_BLOCK) {
-                    vesting_reward.amount = 0;
-                } else {
-                    vesting_reward.amount.value *= 9;
-                }
-
-                modify(props, [&](dynamic_global_property_object &p) {
-                    p.total_vesting_fund_steem += vesting_reward;
-                    p.total_reward_fund_steem += content_reward;
-                    p.current_supply += content_reward + witness_pay + vesting_reward;
-                    p.virtual_supply += content_reward + witness_pay + vesting_reward;
-                });
+        const auto &props = get_dynamic_global_properties();
+        const auto &wso = get_witness_schedule_object();
+            share_type inflation_rate = int64_t( STEEMIT_FIXED_INFLATION );
+            share_type new_supply = int64_t( STEEMIT_INIT_SUPPLY );
+            share_type inflation_per_year = inflation_rate * int64_t( STEEMIT_INIT_SUPPLY ) / int64_t( STEEMIT_100_PERCENT );
+            new_supply += inflation_per_year;
+            int circles = props.head_block_number / STEEMIT_BLOCKS_PER_YEAR; /* STEEM_BLOCKS_PER_YEAR */
+            if(circles > 0)
+            {
+               for( int itr = 0; itr < circles; ++itr )
+               {
+                  inflation_per_year = ( new_supply * inflation_rate ) / int64_t( STEEMIT_100_PERCENT );
+                  new_supply += inflation_per_year;
+               }
             }
+            share_type inflation_per_block = inflation_per_year / int64_t( STEEM_BLOCKS_PER_YEAR );
+            elog( "Inflation status: props.head_block_number=${h1}, inflation_per_year=${h2}, new_supply=${h3}, inflation_per_block=${h4}",
+               ("h1",props.head_block_number)("h2", inflation_per_year)("h3",new_supply)("h4",inflation_per_block)
+            );
+            auto content_reward = ( inflation_per_block * STEEMIT_CONTENT_REWARD_PERCENT ) / STEEMIT_100_PERCENT;
+            auto vesting_reward = ( inflation_per_block * STEEMIT_VESTING_FUND_PERCENT ) / STEEMIT_100_PERCENT; /// 15% to vesting fund
+            auto committee_reward = ( inflation_per_block * STEEMIT_COMMITTEE_FUND_PERCENT ) / STEEMIT_100_PERCENT;
+            auto witness_reward = inflation_per_block - content_reward - vesting_reward - committee_reward; /// Remaining 10% to witness pay
+
+            const auto& cwit = get_witness( props.current_witness );
+
+            inflation_per_block = content_reward + vesting_reward + committee_reward + witness_reward;
+            /*
+            elog( "Final inflation_per_block=${h1}, content_reward=${h2}, committee_reward=${h3}, witness_reward=${h4}, vesting_reward=${h5}",
+               ("h1",inflation_per_block)("h2", content_reward)("h3",committee_reward)("h4",witness_reward)("h5",vesting_reward)
+            );
+            */
+            modify( props, [&]( dynamic_global_property_object& p )
+            {
+               p.total_vesting_fund_steem += asset( vesting_reward, STEEM_SYMBOL );
+               p.committee_supply += asset( committee_reward, STEEM_SYMBOL );
+               p.total_reward_fund_steem  += asset( content_reward, STEEM_SYMBOL );
+               p.current_supply           += asset( inflation_per_block, STEEM_SYMBOL );
+               p.virtual_supply           += asset( inflation_per_block, STEEM_SYMBOL );
+            });
+
+            create_vesting(get_account(cwit.owner), asset(witness_reward, STEEM_SYMBOL));
         }
 
         void database::process_savings_withdraws() {
@@ -2955,6 +2918,7 @@ namespace golos { namespace chain {
                     p.time = STEEMIT_GENESIS_TIME;
                     p.recent_slots_filled = fc::uint128_t::max_value();
                     p.participation_count = 128;
+                    p.committee_supply = asset(0, STEEM_SYMBOL);
                     p.current_supply = asset(init_supply, STEEM_SYMBOL);
                     p.virtual_supply = p.current_supply;
                     p.maximum_block_size = STEEMIT_MAX_BLOCK_SIZE;

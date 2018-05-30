@@ -86,15 +86,13 @@
 #define STEEMIT_100_PERCENT                     10000
 #define STEEMIT_1_PERCENT                       (STEEMIT_100_PERCENT/100)
 #define STEEMIT_1_TENTH_PERCENT                 (STEEMIT_100_PERCENT/1000)
-#define STEEMIT_DEFAULT_SBD_INTEREST_RATE       (10*STEEMIT_1_PERCENT) ///< 10% APR
+#define STEEMIT_DEFAULT_SBD_INTEREST_RATE       0
 
-#define STEEMIT_INFLATION_RATE_START_PERCENT    (1500) // Fixes block 0 to 15%
-#define STEEMIT_INFLATION_RATE_STOP_PERCENT     (95) // 0.95%
-#define STEEMIT_INFLATION_NARROWING_PERIOD      (250000) // Narrow 0.01% every 250k blocks
-#define STEEMIT_CONTENT_REWARD_PERCENT          (66.67*STEEMIT_1_PERCENT) //66% of inflation,
-//7.125% inflation
-#define STEEMIT_VESTING_FUND_PERCENT            (26.67*STEEMIT_1_PERCENT) //26% of inflation,
-//1.425% inflation
+#define STEEMIT_FIXED_INFLATION					(1000) //10%
+#define STEEMIT_CONTENT_REWARD_PERCENT          (30*STEEMIT_1_PERCENT) //75% of inflation
+#define STEEMIT_REWARD_FUND_CURATOR_PERCENT     (5*100/30*STEEM_1_PERCENT) //5% of inflation from reward fund
+#define STEEMIT_VESTING_FUND_PERCENT            (40*STEEMIT_1_PERCENT) //15% of inflation
+#define STEEMIT_COMMITTEE_FUND_PERCENT          (15*STEEMIT_1_PERCENT) //15% of inflation
 
 #define STEEMIT_MINER_PAY_PERCENT               (STEEMIT_1_PERCENT) // 1%
 #define STEEMIT_MIN_RATION                      100000
@@ -182,7 +180,7 @@
 #define STEEMIT_MAX_PERMLINK_LENGTH             256
 #define STEEMIT_MAX_WITNESS_URL_LENGTH          2048
 
-#define STEEMIT_INIT_SUPPLY                     int64_t(43306176000)
+#define STEEMIT_INIT_SUPPLY                     int64_t(50000000000)
 #define STEEMIT_MAX_SHARE_SUPPLY                int64_t(1000000000000000ll)
 #define STEEMIT_MAX_SIG_CHECK_DEPTH             2
 
@@ -295,15 +293,13 @@
 #define STEEMIT_100_PERCENT                     10000
 #define STEEMIT_1_PERCENT                       (STEEMIT_100_PERCENT/100)
 #define STEEMIT_1_TENTH_PERCENT                 (STEEMIT_100_PERCENT/1000)
-#define STEEMIT_DEFAULT_SBD_INTEREST_RATE       (10*STEEMIT_1_PERCENT) ///< 10% APR
+#define STEEMIT_DEFAULT_SBD_INTEREST_RATE       0
 
-#define STEEMIT_INFLATION_RATE_START_PERCENT    (1515) // Fixes block 3860400 to 15%
-#define STEEMIT_INFLATION_RATE_STOP_PERCENT     (95) // 0.95%
-#define STEEMIT_INFLATION_NARROWING_PERIOD      (250000) // Narrow 0.01% every 250k blocks
-#define STEEMIT_CONTENT_REWARD_PERCENT          (66.67*STEEMIT_1_PERCENT) //66% of inflation,
-//7.125% inflation
-#define STEEMIT_VESTING_FUND_PERCENT            (26.67*STEEMIT_1_PERCENT) //26% of inflation,
-//1.425% inflation
+#define STEEMIT_FIXED_INFLATION					(1000) //10%
+#define STEEMIT_CONTENT_REWARD_PERCENT          (30*STEEMIT_1_PERCENT) //75% of inflation
+#define STEEMIT_REWARD_FUND_CURATOR_PERCENT     (5*100/30*STEEM_1_PERCENT) //5% of inflation from reward fund
+#define STEEMIT_VESTING_FUND_PERCENT            (40*STEEMIT_1_PERCENT) //15% of inflation
+#define STEEMIT_COMMITTEE_FUND_PERCENT          (15*STEEMIT_1_PERCENT) //15% of inflation
 
 #define STEEMIT_MINER_PAY_PERCENT               (STEEMIT_1_PERCENT) // 1%
 #define STEEMIT_MIN_RATION                      100000
@@ -392,7 +388,7 @@
 #define STEEMIT_MAX_PERMLINK_LENGTH             256
 #define STEEMIT_MAX_WITNESS_URL_LENGTH          2048
 
-#define STEEMIT_INIT_SUPPLY                     int64_t(43306176000)
+#define STEEMIT_INIT_SUPPLY                     int64_t(50000000000)
 #define STEEMIT_MAX_SHARE_SUPPLY                int64_t(1000000000000000ll)
 #define STEEMIT_MAX_SIG_CHECK_DEPTH             2
 
