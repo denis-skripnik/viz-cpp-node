@@ -12,6 +12,10 @@ namespace golos { namespace protocol {
             FC_ASSERT(fc::is_utf8(permlink), "permlink not formatted in UTF8");
         }
 
+        inline void validate_create_account_name(const string &name) {
+            FC_ASSERT(is_valid_create_account_name(name), "Account name ${n} is invalid", ("n", name));
+        }
+
         inline void validate_account_name(const string &name) {
             FC_ASSERT(is_valid_account_name(name), "Account name ${n} is invalid", ("n", name));
         }
@@ -28,7 +32,9 @@ namespace golos { namespace protocol {
         }
 
         void account_create_operation::validate() const {
+        	validate_create_account_name(new_account_name);
             validate_account_name(new_account_name);
+            validate_account_name(creator);
             FC_ASSERT(is_asset_type(fee, STEEM_SYMBOL), "Account creation fee must be GOLOS");
             owner.validate();
             active.validate();
@@ -37,6 +43,7 @@ namespace golos { namespace protocol {
         }
 
         void account_create_with_delegation_operation::validate() const {
+            validate_create_account_name(new_account_name);
             validate_account_name(new_account_name);
             validate_account_name(creator);
             FC_ASSERT(is_asset_type(fee, STEEM_SYMBOL), "Account creation fee must be GOLOS");
