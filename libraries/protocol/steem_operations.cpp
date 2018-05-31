@@ -12,6 +12,11 @@ namespace golos { namespace protocol {
             FC_ASSERT(fc::is_utf8(permlink), "permlink not formatted in UTF8");
         }
 
+        inline void validate_domain_name( const string& name, const string& creator )
+        {
+           FC_ASSERT( is_valid_domain_name( name, creator ), "Domain name ${n} is invalid, creator name ${c}", ("n", name)("c", creator) );
+        }
+
         inline void validate_create_account_name(const string &name) {
             FC_ASSERT(is_valid_create_account_name(name), "Account name ${n} is invalid", ("n", name));
         }
@@ -35,6 +40,7 @@ namespace golos { namespace protocol {
         	validate_create_account_name(new_account_name);
             validate_account_name(new_account_name);
             validate_account_name(creator);
+            validate_domain_name(new_account_name, creator);
             FC_ASSERT(is_asset_type(fee, STEEM_SYMBOL), "Account creation fee must be GOLOS");
             owner.validate();
             active.validate();
@@ -46,6 +52,7 @@ namespace golos { namespace protocol {
             validate_create_account_name(new_account_name);
             validate_account_name(new_account_name);
             validate_account_name(creator);
+            validate_domain_name(new_account_name, creator);
             FC_ASSERT(is_asset_type(fee, STEEM_SYMBOL), "Account creation fee must be GOLOS");
             FC_ASSERT(is_asset_type(delegation, VESTS_SYMBOL), "Delegation must be GESTS");
             FC_ASSERT(fee.amount >= 0, "Account creation fee cannot be negative");

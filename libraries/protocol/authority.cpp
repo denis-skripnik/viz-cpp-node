@@ -47,6 +47,22 @@ namespace golos {
             }
         }
 
+        bool is_valid_domain_name( const string& name , const string& creator )
+        {
+           size_t begin = name.find_first_of( '.', 0 );
+           if( begin == std::string::npos ){
+              return true;
+           }
+           else{
+              if( creator == name.substr( begin + 1 ) ){
+                 return true;
+              }
+              else{
+                 return false;
+              }
+           }
+        }
+
         bool is_valid_create_account_name( const string& name )
         {
            const size_t len = name.size();
