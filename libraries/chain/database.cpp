@@ -3203,7 +3203,7 @@ namespace golos { namespace chain {
 
                    if(fc::exists(snapshot_json))
                    {
-                   	 share_type init_supply = int64_t( STEEMIT_INIT_SUPPLY );
+                   	  share_type init_supply = int64_t( STEEMIT_INIT_SUPPLY );
                       ilog("Import snapshot.json");
                       snapshot_items snapshot=fc::json::from_file(snapshot_json).as<snapshot_items>();;
                       for(snapshot_account &account : snapshot.accounts)
@@ -3228,7 +3228,11 @@ namespace golos { namespace chain {
                             auth.posting = auth.active;
                             auth.last_owner_update = fc::time_point_sec::min();
                          });
-
+                         #ifndef IS_LOW_MEM
+                         create< account_metadata_object >([&](account_metadata_object& m) {
+                            m.account = account.login;
+                         });
+                         #endif
                          create_vesting( get_account( account.login ), asset( account.shares_ammount, STEEM_SYMBOL ) );
                          init_supply-=account.shares_ammount;
 
