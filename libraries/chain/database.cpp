@@ -12,7 +12,6 @@
 #include <golos/chain/db_with.hpp>
 #include <golos/chain/evaluator_registry.hpp>
 #include <golos/chain/index.hpp>
-#include <golos/chain/snapshot_state.hpp>
 #include <golos/chain/steem_evaluator.hpp>
 #include <golos/chain/steem_objects.hpp>
 #include <golos/chain/transaction_object.hpp>
@@ -49,11 +48,26 @@ struct db_schema {
     std::vector<operation_schema_repr> custom_operation_types;
 };
 
+struct snapshot_account
+{
+    std::string login;
+    std::string public_key;//authority
+    uint64_t shares_ammount;
+};
+
+struct snapshot_items
+{
+    vector <snapshot_account> accounts;
+};
+
 } } // golos::chain
 
 FC_REFLECT((golos::chain::object_schema_repr), (space_type)(type))
 FC_REFLECT((golos::chain::operation_schema_repr), (id)(type))
 FC_REFLECT((golos::chain::db_schema), (types)(object_types)(operation_type)(custom_operation_types))
+FC_REFLECT((golos::chain::snapshot_account), (login)(public_key)(shares_ammount))
+FC_REFLECT((golos::chain::snapshot_items), (accounts))
+
 
 
 namespace golos { namespace chain {
@@ -1339,8 +1353,7 @@ namespace golos { namespace chain {
                 }
             }
 
-            auto num_timeshare =
-                    active_witnesses.size() - num_miners - num_elected;
+            auto num_timeshare = active_witnesses.size() - num_miners - num_elected;
 
             /// Update virtual schedule of processed witnesses
             bool reset_virtual_time = false;
@@ -1439,8 +1452,7 @@ namespace golos { namespace chain {
                 }
             }
 
-            assert(num_elected + num_miners + num_timeshare ==
-                   active_witnesses.size());
+            assert(num_elected + num_miners + num_timeshare == active_witnesses.size());
 
             modify(wso, [&](witness_schedule_object &_wso) {
                 // active witnesses has exactly STEEMIT_MAX_WITNESSES elements, asserted above
@@ -2247,7 +2259,6 @@ namespace golos { namespace chain {
         */
         void database::process_funds() {
         const auto &props = get_dynamic_global_properties();
-        const auto &wso = get_witness_schedule_object();
             share_type inflation_rate = int64_t( STEEMIT_FIXED_INFLATION );
             share_type new_supply = int64_t( STEEMIT_INIT_SUPPLY );
             share_type inflation_per_year = inflation_rate * int64_t( STEEMIT_INIT_SUPPLY ) / int64_t( STEEMIT_100_PERCENT );
@@ -2916,63 +2927,6 @@ namespace golos { namespace chain {
                     p.maximum_block_size = STEEMIT_MAX_BLOCK_SIZE;
                 });
 
-                auto snapshot_path = string("./snapshot5392323.json");
-                auto snapshot_file = fc::path(snapshot_path);
-                auto snapshot_exists = fc::exists(snapshot_file);
-
-#ifdef STEEMIT_BUILD_TESTNET
-                // Note: snapshot is not exist (not copied) in default TESTNET config
-                if (snapshot_exists) {
-#else
-                FC_ASSERT(snapshot_exists, "Snapshot file '${file}' was not found.", ("file", snapshot_file));
-#endif
-
-                std::cout << "Initializing state from snapshot file: "
-                          << snapshot_file.generic_string() << "\n";
-
-#ifndef STEEMIT_BUILD_TESTNET
-                unsigned char digest[MD5_DIGEST_LENGTH];
-                char snapshot_checksum[] = "081b0149f0b2a570ae76b663090cfb0c";
-                char md5hash[33];
-                boost::iostreams::mapped_file_source src(snapshot_path);
-                MD5((unsigned char *)src.data(), src.size(), (unsigned char *)&digest);
-                for (int i = 0; i < 16; i++) {
-                    sprintf(&md5hash[i * 2], "%02x", (unsigned int)digest[i]);
-                }
-                FC_ASSERT(memcmp(md5hash, snapshot_checksum, 32) ==
-                          0, "Checksum of snapshot [${h}] is not equal [${s}]", ("h", md5hash)("s", snapshot_checksum));
-#endif
-
-                snapshot_state snapshot = fc::json::from_file(snapshot_file).as<snapshot_state>();
-                for (account_summary &account : snapshot.accounts) {
-                    create<account_object>([&](account_object& a) {
-                        a.name = account.name;
-                        a.memo_key = account.keys.memo_key;
-                        a.recovery_account = STEEMIT_INIT_MINER_NAME;
-                    });
-#ifndef IS_LOW_MEM
-                    create<account_metadata_object>([&](account_metadata_object& m) {
-                        m.account = account.name;
-                        m.json_metadata = "{created_at: 'GENESIS'}";
-                    });
-#endif
-                    create<account_authority_object>([&](account_authority_object& auth) {
-                        auth.account = account.name;
-                        auth.owner.weight_threshold = 1;
-                        auth.owner = account.keys.owner_key;
-                        auth.active = account.keys.active_key;
-                        auth.posting = account.keys.posting_key;
-                    });
-                }
-                std::cout << "Imported " << snapshot.accounts.size()
-                          << " accounts from " << snapshot_file.generic_string()
-                          << ".\n";
-
-#ifdef STEEMIT_BUILD_TESTNET
-                }
-#endif
-
-                // Nothing to do
                 create<feed_history_object>([&](feed_history_object &o) {});
                 for (int i = 0; i < 0x10000; i++) {
                     create<block_summary_object>([&](block_summary_object &) {});
@@ -3209,6 +3163,85 @@ namespace golos { namespace chain {
                 modify(gprops, [&](dynamic_global_property_object &dgp) {
                     dgp.current_witness = next_block.witness;
                 });
+
+                if( BOOST_UNLIKELY( next_block_num == 1 ) )//added from Steem
+                {
+                   // For every existing before the head_block_time (genesis time), apply the hardfork
+                   // This allows the test net to launch with past hardforks and apply the next harfork when running
+                   uint32_t n;
+                   for( n=0; n<STEEMIT_NUM_HARDFORKS; n++ )
+                   {
+                      if( _hardfork_times[n+1] > next_block.timestamp )
+                         break;
+                   }
+
+                   if( n > 0 )
+                   {
+                      ilog( "Processing ${n} genesis hardforks", ("n", n) );
+                      set_hardfork( n, true );
+
+                      const hardfork_property_object& hardfork_state = get_hardfork_property_object();
+                      FC_ASSERT( hardfork_state.current_hardfork_version == _hardfork_versions[n], "Unexpected genesis hardfork state" );
+
+                      const auto& witness_idx = get_index<witness_index>().indices().get<by_id>();
+                      vector<witness_id_type> wit_ids_to_update;
+                      for( auto it=witness_idx.begin(); it!=witness_idx.end(); ++it )
+                         wit_ids_to_update.push_back(it->id);
+
+                      for( witness_id_type wit_id : wit_ids_to_update )
+                      {
+                         modify( get( wit_id ), [&]( witness_object& wit )
+                         {
+                            wit.running_version = _hardfork_versions[n];
+                            wit.hardfork_version_vote = _hardfork_versions[n];
+                            wit.hardfork_time_vote = _hardfork_times[n];
+                         } );
+                      }
+                   }
+                   /* VIZ Snapshot */
+                   auto snapshot_json = fc::path(string("./snapshot.json"));
+
+                   if(fc::exists(snapshot_json))
+                   {
+                   	 share_type init_supply = int64_t( STEEMIT_INIT_SUPPLY );
+                      ilog("Import snapshot.json");
+                      snapshot_items snapshot=fc::json::from_file(snapshot_json).as<snapshot_items>();;
+                      for(snapshot_account &account : snapshot.accounts)
+                      {
+                         public_key_type account_public_key(account.public_key);
+                         create< account_object >( [&]( account_object& a )
+                         {
+                            a.name = account.login;
+                            a.memo_key = account_public_key;
+                            a.recovery_account = STEEMIT_INIT_MINER_NAME;
+                            a.mined = false;
+                            a.created = STEEMIT_GENESIS_TIME;
+                            a.last_vote_time = STEEMIT_GENESIS_TIME;
+                         } );
+
+                         create< account_authority_object >( [&]( account_authority_object& auth )
+                         {
+                            auth.account = account.login;
+                            auth.owner.add_authority( account_public_key, 1 );
+                            auth.owner.weight_threshold = 1;
+                            auth.active  = auth.owner;
+                            auth.posting = auth.active;
+                            auth.last_owner_update = fc::time_point_sec::min();
+                         });
+
+                         create_vesting( get_account( account.login ), asset( account.shares_ammount, STEEM_SYMBOL ) );
+                         init_supply-=account.shares_ammount;
+
+                         ilog( "Import account ${a} with public key ${k}, shares: ${s} (remaining init supply: ${i})", ("a", account.login)("k", account.public_key)("s", account.shares_ammount)("i", init_supply) );
+                      }
+                      const auto& init_miner = get_account( STEEMIT_INIT_MINER_NAME );
+                      modify( init_miner, [&]( account_object& a )
+                      {
+                         a.balance  = asset( init_supply, STEEM_SYMBOL );
+                      } );
+                      ilog( "Modify init miner account ${a}, remaining balance: ${i}", ("a", STEEMIT_INIT_MINER_NAME)("i", init_supply) );
+                   }
+                }
 
                 /// parse witness version reporting
                 process_header_extensions(next_block);
@@ -4213,7 +4246,7 @@ namespace golos { namespace chain {
 
             switch (hardfork) {
                 case STEEMIT_HARDFORK_0_1:
-                    perform_vesting_share_split(10000);
+                    perform_vesting_share_split(1);
 #ifdef STEEMIT_BUILD_TESTNET
                 {
                     custom_operation test_op;
