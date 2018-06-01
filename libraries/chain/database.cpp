@@ -1274,6 +1274,9 @@ namespace golos { namespace chain {
             vector<account_name_type> active_witnesses;
             active_witnesses.reserve(STEEMIT_MAX_WITNESSES);
 
+            vector<account_name_type> support_witnesses;
+            support_witnesses.reserve(STEEMIT_MAX_WITNESSES);
+
             /// Add the highest voted witnesses
             flat_set<witness_id_type> selected_voted;
             selected_voted.reserve(STEEMIT_MAX_VOTED_WITNESSES);
@@ -1291,8 +1294,6 @@ namespace golos { namespace chain {
                 active_witnesses.push_back(itr->owner);
                 modify(*itr, [&](witness_object &wo) { wo.schedule = witness_object::top19; });
             }
-
-            auto num_elected = active_witnesses.size();
 
             /// Add miners from the top of the mining queue
             flat_set<witness_id_type> selected_miners;
@@ -1324,8 +1325,6 @@ namespace golos { namespace chain {
                 });
             }
 
-            auto num_miners = selected_miners.size();
-
             /// Add the running witnesses in the lead
             const witness_schedule_object &wso = get_witness_schedule_object();
             fc::uint128_t new_virtual_time = wso.current_virtual_time;
@@ -1347,13 +1346,11 @@ namespace golos { namespace chain {
 
                 if (selected_miners.find(sitr->id) == selected_miners.end()
                     && selected_voted.find(sitr->id) == selected_voted.end()) {
-                    active_witnesses.push_back(sitr->owner);
+                    support_witnesses.push_back(sitr->owner);
                     modify(*sitr, [&](witness_object &wo) { wo.schedule = witness_object::timeshare; });
                     ++witness_count;
                 }
             }
-
-            auto num_timeshare = active_witnesses.size() - num_miners - num_elected;
 
             /// Update virtual schedule of processed witnesses
             bool reset_virtual_time = false;
@@ -1378,11 +1375,9 @@ namespace golos { namespace chain {
             }
 
             size_t expected_active_witnesses = std::min(size_t(STEEMIT_MAX_WITNESSES), widx.size());
-            if (head_block_num() > 14400) {
-                FC_ASSERT(active_witnesses.size() ==
-                          expected_active_witnesses, "number of active witnesses does not equal expected_active_witnesses=${expected_active_witnesses}",
-                        ("active_witnesses.size()", active_witnesses.size())("STEEMIT_MAX_WITNESSES", STEEMIT_MAX_WITNESSES)("expected_active_witnesses", expected_active_witnesses));
-            }
+            FC_ASSERT( ( active_witnesses.size() + support_witnesses.size() ) ==
+                      expected_active_witnesses, "number of active witnesses does not equal expected_active_witnesses=${expected_active_witnesses}",
+                    ("active_witnesses.size()", active_witnesses.size())("STEEMIT_MAX_WITNESSES", STEEMIT_MAX_WITNESSES)("expected_active_witnesses", expected_active_witnesses));
 
             auto majority_version = wso.majority_version;
 
@@ -1452,21 +1447,34 @@ namespace golos { namespace chain {
                 }
             }
 
-            assert(num_elected + num_miners + num_timeshare == active_witnesses.size());
-
             modify(wso, [&](witness_schedule_object &_wso) {
                 // active witnesses has exactly STEEMIT_MAX_WITNESSES elements, asserted above
-                for (size_t i = 0; i < active_witnesses.size(); i++) {
-                    _wso.current_shuffled_witnesses[i] = active_witnesses[i];
+                size_t j = 0;
+                size_t support_witnesses_count = support_witnesses.size();
+                size_t active_witnesses_count = active_witnesses.size();
+                size_t sum_witnesses_count = support_witnesses_count+active_witnesses_count;
+                for( size_t i = 0; i < sum_witnesses_count; i++ )
+                {
+                    if(active_witnesses_count > 0){
+                        _wso.current_shuffled_witnesses[j] = active_witnesses[i];
+                        --active_witnesses_count;
+                        ++j;
+                    }
+                    if(support_witnesses_count > 0){
+                        _wso.current_shuffled_witnesses[j] = support_witnesses[i];
+                        --support_witnesses_count;
+                        ++j;
+                    }
                 }
 
-                for (size_t i = active_witnesses.size();
+                for (size_t i = sum_witnesses_count;
                      i < STEEMIT_MAX_WITNESSES; i++) {
                     _wso.current_shuffled_witnesses[i] = account_name_type();
                 }
 
-                _wso.num_scheduled_witnesses = std::max<uint8_t>(active_witnesses.size(), 1);
+                _wso.num_scheduled_witnesses = std::max<uint8_t>(sum_witnesses_count , 1);
 
+                /* // VIZ remove randomization
                 /// shuffle current shuffled witnesses
                 auto now_hi =
                         uint64_t(head_block_time().sec_since_epoch()) << 32;
@@ -1484,6 +1492,7 @@ namespace golos { namespace chain {
                     std::swap(_wso.current_shuffled_witnesses[i],
                             _wso.current_shuffled_witnesses[j]);
                 }
+                */
 
                 _wso.current_virtual_time = new_virtual_time;
                 _wso.next_shuffle_block_num =
