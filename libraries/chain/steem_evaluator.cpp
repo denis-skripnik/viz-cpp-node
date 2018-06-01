@@ -4,24 +4,6 @@
 #include <golos/chain/steem_objects.hpp>
 #include <golos/chain/block_summary_object.hpp>
 
-#ifndef IS_LOW_MEM
-
-#include <diff_match_patch.h>
-#include <boost/locale/encoding_utf.hpp>
-
-using boost::locale::conv::utf_to_utf;
-
-std::wstring utf8_to_wstring(const std::string &str) {
-    return utf_to_utf<wchar_t>(str.c_str(), str.c_str() + str.size());
-}
-
-std::string wstring_to_utf8(const std::wstring &str) {
-    return utf_to_utf<char>(str.c_str(), str.c_str() + str.size());
-}
-
-#endif
-
-
 namespace golos { namespace chain {
         using fc::uint128_t;
 
@@ -668,34 +650,10 @@ namespace golos { namespace chain {
                     _db.modify(_db.get< comment_content_object, by_comment >( comment.id ), [&]( comment_content_object& con ) {
                         if (o.title.size())
                             from_string(con.title, o.title);
-                        if (o.json_metadata.size()) {
-                            if (fc::is_utf8(o.json_metadata))
-                                from_string(con.json_metadata, o.json_metadata );
-                            else
-                                wlog("Comment ${a}/${p} contains invalid UTF-8 metadata", ("a", o.author)("p", o.permlink));
-                        }
-                        if (o.body.size()) {
-                            try {
-                                diff_match_patch<std::wstring> dmp;
-                                auto patch = dmp.patch_fromText(utf8_to_wstring(o.body));
-                                if (patch.size()) {
-                                    auto result = dmp.patch_apply(patch, utf8_to_wstring(to_string(con.body)));
-                                    auto patched_body = wstring_to_utf8(result.first);
-                                    if(!fc::is_utf8(patched_body)) {
-                                        idump(("invalid utf8")(patched_body));
-                                        from_string(con.body, fc::prune_invalid_utf8(patched_body));
-                                    }
-                                    else {
-                                        from_string(con.body, patched_body);
-                                    }
-                                }
-                                else { // replace
-                                    from_string(con.body, o.body);
-                                }
-                            } catch ( ... ) {
-                                from_string(con.body, o.body);
-                            }
-                        }
+                        if (o.json_metadata.size())
+                            from_string(con.json_metadata, o.json_metadata );
+                        if (o.body.size())
+                            from_string(con.body, o.body);
                     });
 #endif
 
