@@ -1865,6 +1865,45 @@ namespace golos { namespace chain {
             }
         }
 
+        void database::claim_committee_account_balance() {
+            const auto &gpo = get_dynamic_global_properties();
+            const auto &committee_account = get_account(STEEMIT_COMMITTEE_ACCOUNT);
+            asset total_steem(0, STEEM_SYMBOL);
+
+            if (committee_account.balance.amount > 0) {
+                total_steem += committee_account.balance;
+                adjust_balance(committee_account, -committee_account.balance);
+            }
+
+            if (committee_account.savings_balance.amount > 0) {
+                total_steem += committee_account.savings_balance;
+                adjust_savings_balance(committee_account, -committee_account.savings_balance);
+            }
+
+            if (committee_account.vesting_shares.amount > 0) {
+                auto converted_steem = committee_account.vesting_shares *
+                                       gpo.get_vesting_share_price();
+
+                modify(gpo, [&](dynamic_global_property_object &g) {
+                    g.total_vesting_shares -= committee_account.vesting_shares;
+                    g.total_vesting_fund_steem -= converted_steem;
+                });
+
+                modify(committee_account, [&](account_object &a) {
+                    a.vesting_shares.amount = 0;
+                });
+
+                total_steem += converted_steem;
+            }
+
+            if (total_steem.amount > 0) {
+                adjust_supply(-total_steem);
+                modify(gpo, [&](dynamic_global_property_object &g) {
+                    g.committee_supply += total_steem;
+                });
+            }
+        }
+
 /**
  * This method recursively tallies children_rshares2 for this post plus all of its parents,
  * TODO: this method can be skipped for validation-only nodes
@@ -2886,6 +2925,20 @@ namespace golos { namespace chain {
                 });
 
                 create<account_object>([&](account_object &a) {
+                    a.name = STEEMIT_COMMITTEE_ACCOUNT;
+                });
+#ifndef IS_LOW_MEM
+                create<account_metadata_object>([&](account_metadata_object& m) {
+                    m.account = STEEMIT_COMMITTEE_ACCOUNT;
+                });
+#endif
+                create<account_authority_object>([&](account_authority_object &auth) {
+                    auth.account = STEEMIT_COMMITTEE_ACCOUNT;
+                    auth.owner.weight_threshold = 1;
+                    auth.active.weight_threshold = 1;
+                });
+
+                create<account_object>([&](account_object &a) {
                     a.name = STEEMIT_TEMP_ACCOUNT;
                 });
 #ifndef IS_LOW_MEM
@@ -3301,6 +3354,7 @@ namespace golos { namespace chain {
                 update_virtual_supply();
 
                 clear_null_account_balance();
+                claim_committee_account_balance();
                 process_funds();
                 process_conversions();
                 process_comment_cashout();

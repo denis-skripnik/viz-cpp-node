@@ -554,6 +554,8 @@ namespace golos { namespace chain {
 
             void clear_null_account_balance();
 
+            void claim_committee_account_balance();
+
             void update_global_dynamic_data(const signed_block &b, uint32_t skip);
 
             void update_signing_witness(const witness_object &signing_witness, const signed_block &new_block);

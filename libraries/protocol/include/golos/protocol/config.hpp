@@ -437,6 +437,8 @@
 #define STEEMIT_MINER_ACCOUNT                   "miners"
 /// Represents the canonical account with NO authority (nobody can access funds in null account)
 #define STEEMIT_NULL_ACCOUNT                    "null"
+/// Represents the canonical account with NO authority (nobody can access funds in committee account, all income transfers going to committee fund)
+#define STEEMIT_COMMITTEE_ACCOUNT               "committee"
 /// Represents the canonical account with WILDCARD authority (anybody can access funds in temp account)
 #define STEEMIT_TEMP_ACCOUNT                    "temp"
 /// Represents the canonical account for specifying you will vote for directly (as opposed to a proxy)
