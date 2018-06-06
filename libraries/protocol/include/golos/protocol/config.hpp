@@ -46,7 +46,6 @@
 #define STEEMIT_BLOCKS_PER_DAY                  (24*60*60/STEEMIT_BLOCK_INTERVAL)
 #define STEEMIT_START_VESTING_BLOCK             (STEEMIT_BLOCKS_PER_DAY / 512)
 #define STEEMIT_START_MINER_VOTING_BLOCK        (60*10/STEEMIT_BLOCK_INTERVAL)
-#define STEEMIT_FIRST_CASHOUT_TIME              (fc::time_point_sec(1476788400 + STEEMIT_BLOCK_INTERVAL))
 
 #define STEEMIT_INIT_MINER_NAME                 "viz"
 #define STEEMIT_NUM_INIT_MINERS                 1
@@ -161,9 +160,6 @@
 #define STEEMIT_PRODUCER_APR_PERCENT             750
 #define STEEMIT_POW_APR_PERCENT                  750
 
-#define STEEMIT_SBD_STOP_PERCENT                (5*STEEMIT_1_PERCENT ) // Stop printing SBD at 5% Market Cap
-#define STEEMIT_SBD_START_PERCENT               (2*STEEMIT_1_PERCENT) // Start reducing printing of SBD at 2% Market Cap
-
 #define STEEMIT_MIN_ACCOUNT_NAME_LENGTH          2
 #define STEEMIT_CREATE_MIN_ACCOUNT_NAME_LENGTH   3
 #define STEEMIT_MAX_ACCOUNT_NAME_LENGTH         25
@@ -246,7 +242,6 @@
 #define STEEMIT_BLOCKS_PER_DAY                  (24*60*60/STEEMIT_BLOCK_INTERVAL)
 #define STEEMIT_START_VESTING_BLOCK             (STEEMIT_BLOCKS_PER_DAY * 49)
 #define STEEMIT_START_MINER_VOTING_BLOCK        (60*10/STEEMIT_BLOCK_INTERVAL)
-#define STEEMIT_FIRST_CASHOUT_TIME              (fc::time_point_sec(1484478000))
 
 #define STEEMIT_INIT_MINER_NAME                 "viz"
 #define STEEMIT_NUM_INIT_MINERS                 1
@@ -359,9 +354,6 @@
 #define STEEMIT_CONTENT_APR_PERCENT             5813
 #define STEEMIT_PRODUCER_APR_PERCENT             750
 #define STEEMIT_POW_APR_PERCENT                  750
-
-#define STEEMIT_SBD_STOP_PERCENT                (5*STEEMIT_1_PERCENT ) // Stop printing SBD at 5% Market Cap
-#define STEEMIT_SBD_START_PERCENT               (2*STEEMIT_1_PERCENT) // Start reducing printing of SBD at 2% Market Cap
 
 #define STEEMIT_MIN_ACCOUNT_NAME_LENGTH          2
 #define STEEMIT_CREATE_MIN_ACCOUNT_NAME_LENGTH   3

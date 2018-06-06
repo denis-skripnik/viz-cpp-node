@@ -2214,17 +2214,6 @@ namespace golos { namespace chain {
         }
 
         void database::process_comment_cashout() {
-            /// don't allow any content to get paid out until the website is ready to launch
-            /// and people have had a week to start posting. The first cashout will be the biggest because it
-            /// will represent 2+ months of rewards.
-//            if (!has_hardfork(STEEMIT_FIRST_CASHOUT_TIME)) {
-//                return;
-//            }
-
-            if (head_block_time() <= STEEMIT_FIRST_CASHOUT_TIME) {
-                return;
-            }
-
             int count = 0;
             const auto &cidx = get_index<comment_index>().indices().get<by_cashout_time>();
             const auto &com_by_root = get_index<comment_index>().indices().get<by_root>();
