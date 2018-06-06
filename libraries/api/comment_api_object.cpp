@@ -32,7 +32,6 @@ namespace golos { namespace api {
           mode(o.mode),
           root_comment(o.root_comment),
           max_accepted_payout(o.max_accepted_payout),
-          percent_steem_dollars(o.percent_steem_dollars),
           allow_replies(o.allow_replies),
           allow_votes(o.allow_votes),
           allow_curation_rewards(o.allow_curation_rewards) {

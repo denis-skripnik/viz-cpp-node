@@ -132,7 +132,6 @@ namespace golos { namespace protocol {
          *  operation allows authors to update properties associated with their post.
          *
          *  The max_accepted_payout may be decreased, but never increased.
-         *  The percent_steem_dollars may be decreased, but never increased
          *
          */
         struct comment_options_operation : public base_operation {
@@ -140,7 +139,6 @@ namespace golos { namespace protocol {
             string permlink;
 
             asset max_accepted_payout = asset(1000000000, STEEM_SYMBOL); /// VIZ value of the maximum payout this post will receive
-            uint16_t percent_steem_dollars = STEEMIT_100_PERCENT; /// the percent of Golos Dollars to key, unkept amounts will be received as Golos Power
             bool allow_votes = true;      /// allows a post to receive votes;
             bool allow_curation_rewards = true; /// allows voters to recieve curation rewards. Rewards return to reward fund.
             comment_options_extensions_type extensions;
@@ -1206,7 +1204,7 @@ FC_REFLECT((golos::protocol::delete_comment_operation), (author)(permlink));
 FC_REFLECT((golos::protocol::beneficiary_route_type), (account)(weight))
 FC_REFLECT((golos::protocol::comment_payout_beneficiaries), (beneficiaries));
 FC_REFLECT_TYPENAME((golos::protocol::comment_options_extension));
-FC_REFLECT((golos::protocol::comment_options_operation), (author)(permlink)(max_accepted_payout)(percent_steem_dollars)(allow_votes)(allow_curation_rewards)(extensions))
+FC_REFLECT((golos::protocol::comment_options_operation), (author)(permlink)(max_accepted_payout)(allow_votes)(allow_curation_rewards)(extensions))
 
 FC_REFLECT((golos::protocol::escrow_transfer_operation), (from)(to)(sbd_amount)(steem_amount)(escrow_id)(agent)(fee)(json_meta)(ratification_deadline)(escrow_expiration));
 FC_REFLECT((golos::protocol::escrow_approve_operation), (from)(to)(agent)(who)(escrow_id)(approve));

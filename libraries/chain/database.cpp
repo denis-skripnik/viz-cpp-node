@@ -2160,9 +2160,7 @@ namespace golos { namespace chain {
 
                         author_tokens -= total_beneficiary;
 
-                        auto sbd_steem = (author_tokens *
-                                          comment.percent_steem_dollars) /
-                                         (2 * STEEMIT_100_PERCENT);
+                        auto sbd_steem = author_tokens / 2;
                         auto vesting_steem = author_tokens - sbd_steem;
 
                         const auto &author = get_account(comment.author);

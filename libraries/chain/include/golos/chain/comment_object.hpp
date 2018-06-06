@@ -119,7 +119,6 @@ namespace golos {
             comment_mode mode = first_payout;
 
             asset max_accepted_payout = asset(1000000000, STEEM_SYMBOL); /// VIZ value of the maximum payout this post will receive
-            uint16_t percent_steem_dollars = STEEMIT_100_PERCENT; /// the percent of Golos Dollars to key, unkept amounts will be received as Golos Power
             bool allow_replies = true;      /// allows a post to disable replies.
             bool allow_votes = true;      /// allows a post to receive votes;
             bool allow_curation_rewards = true;

@@ -428,12 +428,9 @@ namespace golos { namespace chain {
                       "Voting cannot be re-enabled.");
             FC_ASSERT(comment.max_accepted_payout >= o.max_accepted_payout,
                       "A comment cannot accept a greater payout.");
-            FC_ASSERT(comment.percent_steem_dollars >= o.percent_steem_dollars,
-                      "A comment cannot accept a greater percent SBD.");
 
             _db.modify(comment, [&](comment_object &c) {
                 c.max_accepted_payout = o.max_accepted_payout;
-                c.percent_steem_dollars = o.percent_steem_dollars;
                 c.allow_votes = o.allow_votes;
                 c.allow_curation_rewards = o.allow_curation_rewards;
             });

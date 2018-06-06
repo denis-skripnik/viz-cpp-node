@@ -138,7 +138,6 @@ namespace golos { namespace protocol {
 
         void comment_options_operation::validate() const {
             validate_account_name(author);
-            FC_ASSERT(percent_steem_dollars <= STEEMIT_100_PERCENT, "Percent cannot exceed 100%");
             FC_ASSERT(max_accepted_payout.symbol == STEEM_SYMBOL, "Max accepted payout must be in VIZ");
             FC_ASSERT(max_accepted_payout.amount.value >= 0, "Cannot accept less than 0 payout");
             validate_permlink(permlink);
