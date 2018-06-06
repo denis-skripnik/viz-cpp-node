@@ -2135,7 +2135,7 @@ namespace golos { namespace chain {
                          claim_rshare_reward(
                              comment.net_rshares,
                              comment.reward_weight,
-                             to_steem(comment.max_accepted_payout)));
+                             comment.max_accepted_payout));
 
                     asset total_payout;
                     if (reward_tokens > 0) {
