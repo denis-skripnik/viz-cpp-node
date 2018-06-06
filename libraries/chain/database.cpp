@@ -2369,18 +2369,6 @@ namespace golos { namespace chain {
             }
         }
 
-        asset database::get_liquidity_reward() const {
-            if (has_hardfork(STEEMIT_HARDFORK_0_12__178)) {
-                return asset(0, STEEM_SYMBOL);
-            }
-
-            const auto &props = get_dynamic_global_properties();
-            static_assert(STEEMIT_LIQUIDITY_REWARD_PERIOD_SEC ==
-                          60 * 60, "this code assumes a 1 hour time interval");
-            asset percent(protocol::calc_percent_reward_per_hour<STEEMIT_LIQUIDITY_APR_PERCENT>(props.virtual_supply.amount), STEEM_SYMBOL);
-            return std::max(percent, STEEMIT_MIN_LIQUIDITY_REWARD);
-        }
-
         asset database::get_content_reward() const {
             const auto &props = get_dynamic_global_properties();
             auto reward = asset(255, STEEM_SYMBOL);
@@ -2471,38 +2459,6 @@ namespace golos { namespace chain {
                 return std::max(percent, STEEMIT_MIN_POW_REWARD);
             } else {
                 return std::max(percent, STEEMIT_MIN_POW_REWARD_PRE_HF_16);
-            }
-        }
-
-
-        void database::pay_liquidity_reward() {
-#ifdef STEEMIT_BUILD_TESTNET
-            if (!liquidity_rewards_enabled) {
-                return;
-            }
-#endif
-
-            if ((head_block_num() % STEEMIT_LIQUIDITY_REWARD_BLOCKS) == 0) {
-                auto reward = get_liquidity_reward();
-
-                if (reward.amount == 0) {
-                    return;
-                }
-
-                const auto &ridx = get_index<liquidity_reward_balance_index>().indices().get<by_volume_weight>();
-                auto itr = ridx.begin();
-                if (itr != ridx.end() && itr->volume_weight() > 0) {
-                    adjust_supply(reward, true);
-                    adjust_balance(get(itr->owner), reward);
-                    modify(*itr, [&](liquidity_reward_balance_object &obj) {
-                        obj.steem_volume = 0;
-                        obj.sbd_volume = 0;
-                        obj.last_update = head_block_time();
-                        obj.weight = 0;
-                    });
-
-                    push_virtual_operation(liquidity_reward_operation(get(itr->owner).name, reward));
-                }
             }
         }
 
@@ -2809,7 +2765,6 @@ namespace golos { namespace chain {
             add_core_index<limit_order_index>(*this);
             add_core_index<feed_history_index>(*this);
             add_core_index<convert_request_index>(*this);
-            add_core_index<liquidity_reward_balance_index>(*this);
             add_core_index<hardfork_property_index>(*this);
             add_core_index<withdraw_vesting_route_index>(*this);
             add_core_index<owner_authority_history_index>(*this);
@@ -3360,7 +3315,6 @@ namespace golos { namespace chain {
                 process_comment_cashout();
                 process_vesting_withdrawals();
                 process_savings_withdraws();
-                pay_liquidity_reward();
                 update_virtual_supply();
 
                 account_recovery_processing();
@@ -3884,21 +3838,6 @@ namespace golos { namespace chain {
             assert(new_order_pays == new_order.amount_for_sale() ||
                    old_order_pays == old_order.amount_for_sale());
 
-            auto age = head_block_time() - old_order.created;
-            if (!has_hardfork(STEEMIT_HARDFORK_0_12__178) &&
-                ((age >= STEEMIT_MIN_LIQUIDITY_REWARD_PERIOD_SEC &&
-                  !has_hardfork(STEEMIT_HARDFORK_0_10__149)) ||
-                 (age >= STEEMIT_MIN_LIQUIDITY_REWARD_PERIOD_SEC_HF10 &&
-                  has_hardfork(STEEMIT_HARDFORK_0_10__149)))) {
-                if (old_order_receives.symbol == STEEM_SYMBOL) {
-                    adjust_liquidity_reward(get_account(old_order.seller), old_order_receives, false);
-                    adjust_liquidity_reward(get_account(new_order.seller), -old_order_receives, false);
-                } else {
-                    adjust_liquidity_reward(get_account(old_order.seller), new_order_receives, true);
-                    adjust_liquidity_reward(get_account(new_order.seller), -new_order_receives, true);
-                }
-            }
-
             push_virtual_operation(fill_order_operation(new_order.seller, new_order.orderid, new_order_pays, old_order.seller, old_order.orderid, old_order_pays));
 
             int result = 0;
@@ -3907,43 +3846,6 @@ namespace golos { namespace chain {
                     << 1;
             assert(result != 0);
             return result;
-        }
-
-
-        void database::adjust_liquidity_reward(const account_object &owner, const asset &volume, bool is_sdb) {
-            const auto &ridx = get_index<liquidity_reward_balance_index>().indices().get<by_owner>();
-            auto itr = ridx.find(owner.id);
-            if (itr != ridx.end()) {
-                modify<liquidity_reward_balance_object>(*itr, [&](liquidity_reward_balance_object &r) {
-                    if (head_block_time() - r.last_update >=
-                        STEEMIT_LIQUIDITY_TIMEOUT_SEC) {
-                        r.sbd_volume = 0;
-                        r.steem_volume = 0;
-                        r.weight = 0;
-                    }
-
-                    if (is_sdb) {
-                        r.sbd_volume += volume.amount.value;
-                    } else {
-                        r.steem_volume += volume.amount.value;
-                    }
-
-                    r.update_weight(has_hardfork(STEEMIT_HARDFORK_0_10__141));
-                    r.last_update = head_block_time();
-                });
-            } else {
-                create<liquidity_reward_balance_object>([&](liquidity_reward_balance_object &r) {
-                    r.owner = owner.id;
-                    if (is_sdb) {
-                        r.sbd_volume = volume.amount.value;
-                    } else {
-                        r.steem_volume = volume.amount.value;
-                    }
-
-                    r.update_weight(has_hardfork(STEEMIT_HARDFORK_0_9__141));
-                    r.last_update = head_block_time();
-                });
-            }
         }
 
 
@@ -4353,7 +4255,6 @@ namespace golos { namespace chain {
                 }
                     break;
                 case STEEMIT_HARDFORK_0_10:
-                    retally_liquidity_weight();
                     break;
                 case STEEMIT_HARDFORK_0_11:
                     break;
@@ -4492,15 +4393,6 @@ namespace golos { namespace chain {
             });
 
             push_virtual_operation(hardfork_operation(hardfork), true);
-        }
-
-        void database::retally_liquidity_weight() {
-            const auto &ridx = get_index<liquidity_reward_balance_index>().indices().get<by_owner>();
-            for (const auto &i : ridx) {
-                modify(i, [](liquidity_reward_balance_object &o) {
-                    o.update_weight(true/*HAS HARDFORK10 if this method is called*/);
-                });
-            }
         }
 
 /**

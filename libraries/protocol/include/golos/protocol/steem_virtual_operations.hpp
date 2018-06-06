@@ -55,16 +55,6 @@ namespace golos { namespace protocol {
         };
 
 
-        struct liquidity_reward_operation : public virtual_operation {
-            liquidity_reward_operation(string o = string(), asset p = asset())
-                    : owner(o), payout(p) {
-            }
-
-            account_name_type owner;
-            asset payout;
-        };
-
-
         struct interest_operation : public virtual_operation {
             interest_operation(const string &o = "", const asset &i = asset(0, SBD_SYMBOL))
                     : owner(o), interest(i) {
@@ -203,7 +193,6 @@ FC_REFLECT((golos::protocol::author_reward_operation), (author)(permlink)(sbd_pa
 FC_REFLECT((golos::protocol::curation_reward_operation), (curator)(reward)(comment_author)(comment_permlink))
 FC_REFLECT((golos::protocol::comment_reward_operation), (author)(permlink)(payout))
 FC_REFLECT((golos::protocol::fill_convert_request_operation), (owner)(requestid)(amount_in)(amount_out))
-FC_REFLECT((golos::protocol::liquidity_reward_operation), (owner)(payout))
 FC_REFLECT((golos::protocol::interest_operation), (owner)(interest))
 FC_REFLECT((golos::protocol::fill_vesting_withdraw_operation), (from_account)(to_account)(withdrawn)(deposited))
 FC_REFLECT((golos::protocol::shutdown_witness_operation), (owner))

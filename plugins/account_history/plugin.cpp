@@ -18,7 +18,7 @@ namespace golos { namespace plugins { namespace account_history {
 
 using namespace golos::protocol;
 using namespace golos::chain;
-// 
+//
 template<typename T>
 T dejsonify(const string &s) {
     return fc::json::from_string(s).as<T>();
@@ -30,7 +30,7 @@ if( options.count(name) ) { \
     const std::vector<std::string>& ops = options[name].as<std::vector<std::string>>(); \
     std::transform(ops.begin(), ops.end(), std::inserter(container, container.end()), &dejsonify<type>); \
 }
-// 
+//
 
     struct operation_visitor final {
         operation_visitor(
@@ -184,10 +184,6 @@ if( options.count(name) ) { \
 
         void operator()(const curation_reward_operation& op) {
             impacted.insert(op.curator);
-        }
-
-        void operator()(const liquidity_reward_operation& op) {
-            impacted.insert(op.owner);
         }
 
         void operator()(const interest_operation& op) {

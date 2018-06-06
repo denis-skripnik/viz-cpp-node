@@ -13,7 +13,6 @@
 #include <golos/plugins/test_api/test_api_plugin.hpp>
 #include <golos/plugins/social_network/social_network.hpp>
 #include <golos/plugins/account_history/plugin.hpp>
-#include <golos/plugins/statsd/plugin.hpp>
 #include <golos/plugins/account_by_key/account_by_key_plugin.hpp>
 #include <golos/plugins/private_message/private_message_plugin.hpp>
 #include <golos/plugins/auth_util/plugin.hpp>
@@ -70,7 +69,6 @@ namespace golos {
             appbase::app().register_plugin<golos::plugins::test_api::test_api_plugin>();
             appbase::app().register_plugin<golos::plugins::market_history::market_history_plugin>();
             appbase::app().register_plugin<golos::plugins::account_history::plugin>();
-            appbase::app().register_plugin<golos::plugins::statsd::plugin>();
             appbase::app().register_plugin<golos::plugins::account_by_key::account_by_key_plugin>();
             appbase::app().register_plugin<golos::plugins::private_message::private_message_plugin>();
             appbase::app().register_plugin<golos::plugins::auth_util::plugin>();
@@ -102,7 +100,7 @@ void logo(){
         std::cerr << "------------------------------------------------------\n";
 #else
     std::cerr << "------------------------------------------------------\n\n";
-    std::cerr << "            STARTING GOLOS NETWORK\n\n";
+    std::cerr << "            STARTING VIZ NETWORK\n\n";
     std::cerr << "------------------------------------------------------\n";
     std::cerr << "initminer public key: " << STEEMIT_INIT_PUBLIC_KEY_STR << "\n";
     std::cerr << "chain id: " << std::string( STEEMIT_CHAIN_ID ) << "\n";

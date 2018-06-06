@@ -29,7 +29,6 @@ target_link_libraries(
         golos::tags
         golos::market_history
         golos::operation_history
-        golos::statsd
         golos::account_by_key
         golos::account_history
         golos::private_message

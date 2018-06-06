@@ -353,8 +353,6 @@ namespace golos { namespace chain {
 
             void update_witness_schedule();
 
-            void adjust_liquidity_reward(const account_object &owner, const asset &volume, bool is_bid);
-
             void adjust_balance(const account_object &a, const asset &delta);
 
             void adjust_savings_balance(const account_object &a, const asset &delta);
@@ -418,8 +416,6 @@ namespace golos { namespace chain {
 
             share_type claim_rshare_reward(share_type rshares, uint16_t reward_weight, asset max_steem);
 
-            asset get_liquidity_reward() const;
-
             asset get_content_reward() const;
 
             asset get_producer_reward();
@@ -431,8 +427,6 @@ namespace golos { namespace chain {
             uint128_t get_content_constant_s() const;
 
             uint128_t calculate_vshares(uint128_t rshares) const;
-
-            void pay_liquidity_reward();
 
             /**
              * Helper method to return the current sbd value of a given amount of
@@ -492,8 +486,6 @@ namespace golos { namespace chain {
 
             void retally_witness_vote_counts(bool force = false);
 
-            void retally_liquidity_weight();
-
             void update_virtual_supply();
 
             bool has_hardfork(uint32_t hardfork) const;
@@ -513,7 +505,6 @@ namespace golos { namespace chain {
             void set_flush_interval(uint32_t flush_blocks);
 
 #ifdef STEEMIT_BUILD_TESTNET
-            bool liquidity_rewards_enabled = true;
             bool skip_price_feed_limit_check = true;
             bool skip_transaction_delta_check = true;
 #endif

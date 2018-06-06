@@ -10,7 +10,6 @@ namespace golos { namespace plugins { namespace database_api {
             typedef golos::chain::dynamic_global_property_object dynamic_global_property_api_object;
             typedef golos::chain::convert_request_object convert_request_api_object;
             typedef golos::chain::escrow_object escrow_api_object;
-            typedef golos::chain::liquidity_reward_balance_object liquidity_reward_balance_api_object;
             typedef golos::chain::limit_order_object limit_order_api_object;
             typedef golos::chain::withdraw_vesting_route_object withdraw_vesting_route_api_object;
             typedef golos::chain::decline_voting_rights_request_object decline_voting_rights_request_api_object;

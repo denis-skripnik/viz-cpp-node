@@ -116,11 +116,6 @@
 #define STEEMIT_EQUIHASH_N                      140
 #define STEEMIT_EQUIHASH_K                      6
 
-#define STEEMIT_LIQUIDITY_TIMEOUT_SEC           (fc::seconds(60*60*24*7)) // After one week volume is set to 0
-#define STEEMIT_MIN_LIQUIDITY_REWARD_PERIOD_SEC (fc::seconds(60)) // 1 minute required on books to receive volume
-#define STEEMIT_LIQUIDITY_REWARD_PERIOD_SEC     (60*60)
-#define STEEMIT_LIQUIDITY_REWARD_BLOCKS         (STEEMIT_LIQUIDITY_REWARD_PERIOD_SEC/STEEMIT_BLOCK_INTERVAL)
-#define STEEMIT_MIN_LIQUIDITY_REWARD            (asset( 1000*STEEMIT_LIQUIDITY_REWARD_BLOCKS, STEEM_SYMBOL )) // Minumum reward to be paid out to liquidity providers
 #define STEEMIT_MIN_CONTENT_REWARD              asset( 1500, STEEM_SYMBOL )
 #define STEEMIT_MIN_CURATE_REWARD               asset( 500, STEEM_SYMBOL )
 #define STEEMIT_MIN_PRODUCER_REWARD             STEEMIT_MINING_REWARD
@@ -164,7 +159,6 @@
 // *including the corresponding 9x vesting rewards*
 #define STEEMIT_CURATE_APR_PERCENT              1937
 #define STEEMIT_CONTENT_APR_PERCENT             5813
-#define STEEMIT_LIQUIDITY_APR_PERCENT            750
 #define STEEMIT_PRODUCER_APR_PERCENT             750
 #define STEEMIT_POW_APR_PERCENT                  750
 
@@ -325,11 +319,6 @@
 #define STEEMIT_EQUIHASH_N                      140
 #define STEEMIT_EQUIHASH_K                      6
 
-#define STEEMIT_LIQUIDITY_TIMEOUT_SEC           (fc::seconds(60*60*24*7)) // After one week volume is set to 0
-#define STEEMIT_MIN_LIQUIDITY_REWARD_PERIOD_SEC (fc::seconds(60)) // 1 minute required on books to receive volume
-#define STEEMIT_LIQUIDITY_REWARD_PERIOD_SEC     (60*60)
-#define STEEMIT_LIQUIDITY_REWARD_BLOCKS         (STEEMIT_LIQUIDITY_REWARD_PERIOD_SEC/STEEMIT_BLOCK_INTERVAL)
-#define STEEMIT_MIN_LIQUIDITY_REWARD            (asset( 1000*STEEMIT_LIQUIDITY_REWARD_BLOCKS, STEEM_SYMBOL )) // Minumum reward to be paid out to liquidity providers
 #define STEEMIT_MIN_CONTENT_REWARD              asset( 1500, STEEM_SYMBOL )
 #define STEEMIT_MIN_CURATE_REWARD               asset( 500, STEEM_SYMBOL )
 #define STEEMIT_MIN_PRODUCER_REWARD             STEEMIT_MINING_REWARD
@@ -373,7 +362,6 @@
 // *including the corresponding 9x vesting rewards*
 #define STEEMIT_CURATE_APR_PERCENT              1937
 #define STEEMIT_CONTENT_APR_PERCENT             5813
-#define STEEMIT_LIQUIDITY_APR_PERCENT            750
 #define STEEMIT_PRODUCER_APR_PERCENT             750
 #define STEEMIT_POW_APR_PERCENT                  750
 
