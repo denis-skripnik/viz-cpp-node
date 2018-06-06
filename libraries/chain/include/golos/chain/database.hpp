@@ -344,9 +344,6 @@ namespace golos { namespace chain {
              */
             uint32_t get_slot_at_time(fc::time_point_sec when) const;
 
-            /** @return the sbd created and deposited to_account, may return STEEM if there is no median feed */
-            std::pair<asset, asset> create_sbd(const account_object &to_account, asset steem);
-
             asset create_vesting(const account_object &to_account, asset steem);
 
             void adjust_total_payout(const comment_object &a, const asset &payout, const asset &curator_value, const asset& beneficiary_value);
@@ -485,8 +482,6 @@ namespace golos { namespace chain {
             void retally_witness_votes();
 
             void retally_witness_vote_counts(bool force = false);
-
-            void update_virtual_supply();
 
             bool has_hardfork(uint32_t hardfork) const;
 

@@ -72,13 +72,6 @@ namespace golos {
             }
 
             /**
-             *  This property defines the interest rate that SBD deposits receive.
-             */
-            uint16_t sbd_interest_rate = 0;
-
-            uint16_t sbd_print_rate = STEEMIT_100_PERCENT;
-
-            /**
              *  Average block size is updated every block to be:
              *
              *     average_block_size = (99 * average_block_size + new_block_size) / 100
@@ -171,8 +164,6 @@ FC_REFLECT((golos::chain::dynamic_global_property_object),
                 (total_vesting_shares)
                 (total_reward_fund_steem)
                 (total_reward_shares2)
-                (sbd_interest_rate)
-                (sbd_print_rate)
                 (average_block_size)
                 (maximum_block_size)
                 (current_aslot)

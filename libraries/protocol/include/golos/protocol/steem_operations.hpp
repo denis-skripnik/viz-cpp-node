@@ -438,13 +438,10 @@ namespace golos { namespace protocol {
              *  to tune rate limiting and capacity
              */
             uint32_t maximum_block_size = STEEMIT_MIN_BLOCK_SIZE_LIMIT * 2;
-            uint16_t sbd_interest_rate = STEEMIT_DEFAULT_SBD_INTEREST_RATE;
 
             void validate() const {
                 FC_ASSERT(account_creation_fee.amount >= STEEMIT_MIN_ACCOUNT_CREATION_FEE);
                 FC_ASSERT(maximum_block_size >= STEEMIT_MIN_BLOCK_SIZE_LIMIT);
-                FC_ASSERT(sbd_interest_rate >= 0);
-                FC_ASSERT(sbd_interest_rate <= STEEMIT_100_PERCENT);
             }
 
             chain_properties_17& operator=(const chain_properties_17&) = default;
@@ -1148,7 +1145,7 @@ FC_REFLECT((golos::protocol::equihash_pow), (input)(proof)(prev_block)(pow_summa
 
 FC_REFLECT(
     (golos::protocol::chain_properties_17),
-    (account_creation_fee)(maximum_block_size)(sbd_interest_rate))
+    (account_creation_fee)(maximum_block_size))
 FC_REFLECT_DERIVED(
     (golos::protocol::chain_properties_18),((golos::protocol::chain_properties_17)),
     (create_account_with_golos_modifier)(create_account_delegation_ratio)

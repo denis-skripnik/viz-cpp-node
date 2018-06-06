@@ -12,14 +12,13 @@ namespace golos { namespace protocol {
             author_reward_operation() {
             }
 
-            author_reward_operation(const account_name_type &a, const string &p, const asset &s, const asset &st, const asset &v)
-                    : author(a), permlink(p), sbd_payout(s), steem_payout(st),
+            author_reward_operation(const account_name_type &a, const string &p, const asset &st, const asset &v)
+                    : author(a), permlink(p), steem_payout(st),
                       vesting_payout(v) {
             }
 
             account_name_type author;
             string permlink;
-            asset sbd_payout;
             asset steem_payout;
             asset vesting_payout;
         };
@@ -52,16 +51,6 @@ namespace golos { namespace protocol {
             account_name_type author;
             string permlink;
             asset payout;
-        };
-
-
-        struct interest_operation : public virtual_operation {
-            interest_operation(const string &o = "", const asset &i = asset(0, SBD_SYMBOL))
-                    : owner(o), interest(i) {
-            }
-
-            account_name_type owner;
-            asset interest;
         };
 
 
@@ -189,11 +178,10 @@ namespace golos { namespace protocol {
         };
 } } //golos::protocol
 
-FC_REFLECT((golos::protocol::author_reward_operation), (author)(permlink)(sbd_payout)(steem_payout)(vesting_payout))
+FC_REFLECT((golos::protocol::author_reward_operation), (author)(permlink)(steem_payout)(vesting_payout))
 FC_REFLECT((golos::protocol::curation_reward_operation), (curator)(reward)(comment_author)(comment_permlink))
 FC_REFLECT((golos::protocol::comment_reward_operation), (author)(permlink)(payout))
 FC_REFLECT((golos::protocol::fill_convert_request_operation), (owner)(requestid)(amount_in)(amount_out))
-FC_REFLECT((golos::protocol::interest_operation), (owner)(interest))
 FC_REFLECT((golos::protocol::fill_vesting_withdraw_operation), (from_account)(to_account)(withdrawn)(deposited))
 FC_REFLECT((golos::protocol::shutdown_witness_operation), (owner))
 FC_REFLECT((golos::protocol::fill_order_operation), (current_owner)(current_orderid)(current_pays)(open_owner)(open_orderid)(open_pays))

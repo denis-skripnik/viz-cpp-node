@@ -54,14 +54,7 @@ struct account_api_object {
     asset savings_balance;
 
     asset sbd_balance;
-    uint128_t sbd_seconds;
-    time_point_sec sbd_seconds_last_update;
-    time_point_sec sbd_last_interest_payment;
-
     asset savings_sbd_balance;
-    uint128_t savings_sbd_seconds;
-    time_point_sec savings_sbd_seconds_last_update;
-    time_point_sec savings_sbd_last_interest_payment;
 
     uint8_t savings_withdraw_requests;
 
@@ -103,9 +96,8 @@ FC_REFLECT((golos::api::account_api_object),
     (id)(name)(owner)(active)(posting)(memo_key)(json_metadata)(proxy)(last_owner_update)(last_account_update)
     (created)(mined)(owner_challenged)(active_challenged)(last_owner_proved)(last_active_proved)
     (recovery_account)(last_account_recovery)(reset_account)(comment_count)(lifetime_vote_count)
-    (post_count)(can_vote)(voting_power)(last_vote_time)(balance)(savings_balance)(sbd_balance)
-    (sbd_seconds)(sbd_seconds_last_update)(sbd_last_interest_payment)(savings_sbd_balance)
-    (savings_sbd_seconds)(savings_sbd_seconds_last_update)(savings_sbd_last_interest_payment)
+    (post_count)(can_vote)(voting_power)(last_vote_time)(balance)(savings_balance)
+    (sbd_balance)(savings_sbd_balance)
     (savings_withdraw_requests)(vesting_shares)(delegated_vesting_shares)(received_vesting_shares)
     (vesting_withdraw_rate)(next_vesting_withdrawal)(withdrawn)(to_withdraw)(withdraw_routes)
     (curation_rewards)(posting_rewards)(proxied_vsf_votes)(witnesses_voted_for)

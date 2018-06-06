@@ -1170,44 +1170,6 @@ namespace golos { namespace chain {
         }
 
 /**
- *  Converts STEEM into sbd and adds it to to_account while reducing the STEEM supply
- *  by STEEM and increasing the sbd supply by the specified amount.
- */
-        std::pair<asset, asset> database::create_sbd(const account_object &to_account, asset steem) {
-            std::pair<asset, asset> assets(asset(0, SBD_SYMBOL), asset(0, STEEM_SYMBOL));
-
-            try {
-                if (steem.amount == 0) {
-                    return assets;
-                }
-
-                const auto &median_price = get_feed_history().current_median_history;
-                const auto &gpo = get_dynamic_global_properties();
-
-                if (!median_price.is_null()) {
-                    auto to_sbd = (gpo.sbd_print_rate * steem.amount) /
-                                  STEEMIT_100_PERCENT;
-                    auto to_steem = steem.amount - to_sbd;
-
-                    auto sbd = asset(to_sbd, STEEM_SYMBOL) * median_price;
-
-                    adjust_balance(to_account, sbd);
-                    adjust_balance(to_account, asset(to_steem, STEEM_SYMBOL));
-                    adjust_supply(asset(-to_sbd, STEEM_SYMBOL));
-                    adjust_supply(sbd);
-                    assets.first = sbd;
-                    assets.second = to_steem;
-                } else {
-                    adjust_balance(to_account, steem);
-                    assets.second = steem;
-                }
-            }
-            FC_CAPTURE_LOG_AND_RETHROW((to_account.name)(steem))
-
-            return assets;
-        }
-
-/**
  * @param to_account - the account to receive the new vesting shares
  * @param STEEM - STEEM to be converted to vesting shares
  */
@@ -1687,7 +1649,6 @@ namespace golos { namespace chain {
 
             calc_median(&chain_properties_17::account_creation_fee);
             calc_median(&chain_properties_17::maximum_block_size);
-            calc_median(&chain_properties_17::sbd_interest_rate);
             calc_median(&chain_properties_18::create_account_with_golos_modifier);
             calc_median(&chain_properties_18::create_account_delegation_ratio);
             calc_median(&chain_properties_18::create_account_delegation_time);
@@ -1699,7 +1660,6 @@ namespace golos { namespace chain {
 
             modify(get_dynamic_global_properties(), [&](dynamic_global_property_object &_dgpo) {
                 _dgpo.maximum_block_size = median_props.maximum_block_size;
-                _dgpo.sbd_interest_rate = median_props.sbd_interest_rate;
             });
         }
 
@@ -2165,19 +2125,19 @@ namespace golos { namespace chain {
 
                         const auto &author = get_account(comment.author);
                         auto vest_created = create_vesting(author, vesting_steem);
-                        auto sbd_payout = create_sbd(author, payout_steem);
+                        adjust_balance(author, payout_steem);
 
                         adjust_total_payout(
                                 comment,
-                                sbd_payout.first + to_sbd(sbd_payout.second + asset(vesting_steem, STEEM_SYMBOL)),
+                                asset(payout_steem, STEEM_SYMBOL),
                                 asset(curation_tokens, STEEM_SYMBOL),
                                 asset(total_beneficiary, STEEM_SYMBOL)
                         );
 
                         // stats only.. TODO: Move to plugin...
-                        total_payout = to_sbd(asset(reward_tokens.to_uint64(), STEEM_SYMBOL));
+                        total_payout = asset(reward_tokens.to_uint64(), STEEM_SYMBOL);
 
-                        push_virtual_operation(author_reward_operation(comment.author, to_string(comment.permlink), sbd_payout.first, sbd_payout.second, vest_created));
+                        push_virtual_operation(author_reward_operation(comment.author, to_string(comment.permlink), payout_steem, vest_created));
                         push_virtual_operation(comment_reward_operation(comment.author, to_string(comment.permlink), total_payout));
 
 #ifndef IS_LOW_MEM
@@ -2561,9 +2521,9 @@ namespace golos { namespace chain {
                           u256(uint64_t(std::numeric_limits<int64_t>::max())));
                 uint64_t payout = static_cast< uint64_t >( payout_u256 );
 
-                asset sbd_payout_value = to_sbd(asset(payout, STEEM_SYMBOL));
+                asset payout_value = to_sbd(asset(payout, STEEM_SYMBOL));
 
-                if (sbd_payout_value < STEEMIT_MIN_PAYOUT_SBD) {
+                if (payout_value < STEEMIT_MIN_PAYOUT_SBD) {
                     payout = 0;
                 }
 
@@ -3298,7 +3258,6 @@ namespace golos { namespace chain {
                 update_witness_schedule();
 
                 update_median_feed();
-                update_virtual_supply();
 
                 clear_null_account_balance();
                 claim_committee_account_balance();
@@ -3307,7 +3266,6 @@ namespace golos { namespace chain {
                 process_comment_cashout();
                 process_vesting_withdrawals();
                 process_savings_withdraws();
-                update_virtual_supply();
 
                 account_recovery_processing();
                 expire_escrow_ratification();
@@ -3644,42 +3602,6 @@ namespace golos { namespace chain {
             } FC_CAPTURE_AND_RETHROW()
         }
 
-        void database::update_virtual_supply() {
-            try {
-                modify(get_dynamic_global_properties(), [&](dynamic_global_property_object &dgp) {
-                    dgp.virtual_supply = dgp.current_supply
-                                         +
-                                         (get_feed_history().current_median_history.is_null()
-                                          ? asset(0, STEEM_SYMBOL) :
-                                          dgp.current_sbd_supply *
-                                          get_feed_history().current_median_history);
-
-                    auto median_price = get_feed_history().current_median_history;
-
-                    if (!median_price.is_null() &&
-                        has_hardfork(STEEMIT_HARDFORK_0_14__230)) {
-                        auto percent_sbd = uint16_t((
-                                (fc::uint128_t((dgp.current_sbd_supply *
-                                                get_feed_history().current_median_history).amount.value) *
-                                 STEEMIT_100_PERCENT)
-                                / dgp.virtual_supply.amount.value).to_uint64());
-
-                        if (percent_sbd <= STEEMIT_SBD_START_PERCENT) {
-                            dgp.sbd_print_rate = STEEMIT_100_PERCENT;
-                        } else if (percent_sbd >= STEEMIT_SBD_STOP_PERCENT) {
-                            dgp.sbd_print_rate = 0;
-                        } else {
-                            dgp.sbd_print_rate =
-                                    ((STEEMIT_SBD_STOP_PERCENT - percent_sbd) *
-                                     STEEMIT_100_PERCENT) /
-                                    (STEEMIT_SBD_STOP_PERCENT -
-                                     STEEMIT_SBD_START_PERCENT);
-                        }
-                    }
-                });
-            } FC_CAPTURE_AND_RETHROW()
-        }
-
         void database::update_signing_witness(const witness_object &signing_witness, const signed_block &new_block) {
             try {
                 const dynamic_global_property_object &dpo = get_dynamic_global_properties();
@@ -3921,35 +3843,6 @@ namespace golos { namespace chain {
                         acnt.balance += delta;
                         break;
                     case SBD_SYMBOL:
-                        if (a.sbd_seconds_last_update != head_block_time()) {
-                            acnt.sbd_seconds +=
-                                    fc::uint128_t(a.sbd_balance.amount.value) *
-                                    (head_block_time() -
-                                     a.sbd_seconds_last_update).to_seconds();
-                            acnt.sbd_seconds_last_update = head_block_time();
-
-                            if (acnt.sbd_seconds > 0 &&
-                                (acnt.sbd_seconds_last_update -
-                                 acnt.sbd_last_interest_payment).to_seconds() >
-                                STEEMIT_SBD_INTEREST_COMPOUND_INTERVAL_SEC) {
-                                auto interest = acnt.sbd_seconds /
-                                                STEEMIT_SECONDS_PER_YEAR;
-                                interest *= get_dynamic_global_properties().sbd_interest_rate;
-                                interest /= STEEMIT_100_PERCENT;
-                                asset interest_paid(interest.to_uint64(), SBD_SYMBOL);
-                                acnt.sbd_balance += interest_paid;
-                                acnt.sbd_seconds = 0;
-                                acnt.sbd_last_interest_payment = head_block_time();
-
-                                push_virtual_operation(interest_operation(a.name, interest_paid));
-
-                                modify(get_dynamic_global_properties(), [&](dynamic_global_property_object &props) {
-                                    props.current_sbd_supply += interest_paid;
-                                    props.virtual_supply += interest_paid *
-                                                            get_feed_history().current_median_history;
-                                });
-                            }
-                        }
                         acnt.sbd_balance += delta;
                         break;
                     default:
@@ -3966,36 +3859,6 @@ namespace golos { namespace chain {
                         acnt.savings_balance += delta;
                         break;
                     case SBD_SYMBOL:
-                        if (a.savings_sbd_seconds_last_update !=
-                            head_block_time()) {
-                            acnt.savings_sbd_seconds +=
-                                    fc::uint128_t(a.savings_sbd_balance.amount.value) *
-                                    (head_block_time() -
-                                     a.savings_sbd_seconds_last_update).to_seconds();
-                            acnt.savings_sbd_seconds_last_update = head_block_time();
-
-                            if (acnt.savings_sbd_seconds > 0 &&
-                                (acnt.savings_sbd_seconds_last_update -
-                                 acnt.savings_sbd_last_interest_payment).to_seconds() >
-                                STEEMIT_SBD_INTEREST_COMPOUND_INTERVAL_SEC) {
-                                auto interest = acnt.savings_sbd_seconds /
-                                                STEEMIT_SECONDS_PER_YEAR;
-                                interest *= get_dynamic_global_properties().sbd_interest_rate;
-                                interest /= STEEMIT_100_PERCENT;
-                                asset interest_paid(interest.to_uint64(), SBD_SYMBOL);
-                                acnt.savings_sbd_balance += interest_paid;
-                                acnt.savings_sbd_seconds = 0;
-                                acnt.savings_sbd_last_interest_payment = head_block_time();
-
-                                push_virtual_operation(interest_operation(a.name, interest_paid));
-
-                                modify(get_dynamic_global_properties(), [&](dynamic_global_property_object &props) {
-                                    props.current_sbd_supply += interest_paid;
-                                    props.virtual_supply += interest_paid *
-                                                            get_feed_history().current_median_history;
-                                });
-                            }
-                        }
                         acnt.savings_sbd_balance += delta;
                         break;
                     default:
