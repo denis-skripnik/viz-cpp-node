@@ -2465,8 +2465,6 @@ namespace golos { namespace chain {
                           u256(uint64_t(std::numeric_limits<int64_t>::max())));
                 uint64_t payout = static_cast< uint64_t >( payout_u256 );
 
-                asset payout_value = asset(payout, STEEM_SYMBOL);
-
                 payout = std::min(payout, uint64_t(max_steem.amount.value));
 
                 modify(props, [&](dynamic_global_property_object &p) {
