@@ -905,9 +905,9 @@ namespace golos { namespace plugins { namespace tags {
         const auto& cidx = db.get_index<tags::tag_index>().indices().get<tags::by_comment>();
         auto itr = cidx.lower_bound(d.id);
         if (itr != cidx.end() && itr->comment == d.id) {
-            d.promoted = asset(itr->promoted_balance, SBD_SYMBOL);
+            d.promoted = asset(itr->promoted_balance, STEEM_SYMBOL);
         } else {
-            d.promoted = asset(0, SBD_SYMBOL);
+            d.promoted = asset(0, STEEM_SYMBOL);
         }
     }
 
