@@ -161,8 +161,6 @@
 #define STEEMIT_PRODUCER_APR_PERCENT             750
 #define STEEMIT_POW_APR_PERCENT                  750
 
-#define STEEMIT_MIN_PAYOUT_SBD                  (asset(20,SBD_SYMBOL))
-
 #define STEEMIT_SBD_STOP_PERCENT                (5*STEEMIT_1_PERCENT ) // Stop printing SBD at 5% Market Cap
 #define STEEMIT_SBD_START_PERCENT               (2*STEEMIT_1_PERCENT) // Start reducing printing of SBD at 2% Market Cap
 
@@ -361,8 +359,6 @@
 #define STEEMIT_CONTENT_APR_PERCENT             5813
 #define STEEMIT_PRODUCER_APR_PERCENT             750
 #define STEEMIT_POW_APR_PERCENT                  750
-
-#define STEEMIT_MIN_PAYOUT_SBD                  (asset(20,SBD_SYMBOL))
 
 #define STEEMIT_SBD_STOP_PERCENT                (5*STEEMIT_1_PERCENT ) // Stop printing SBD at 5% Market Cap
 #define STEEMIT_SBD_START_PERCENT               (2*STEEMIT_1_PERCENT) // Start reducing printing of SBD at 2% Market Cap
