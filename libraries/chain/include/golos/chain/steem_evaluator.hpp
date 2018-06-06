@@ -31,7 +31,6 @@ namespace golos { namespace chain {
         DEFINE_EVALUATOR(pow)
         DEFINE_EVALUATOR(pow2)
         DEFINE_EVALUATOR(feed_publish)
-        DEFINE_EVALUATOR(convert)
         DEFINE_EVALUATOR(limit_order_create)
         DEFINE_EVALUATOR(limit_order_cancel)
         DEFINE_EVALUATOR(report_over_production)
