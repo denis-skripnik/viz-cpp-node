@@ -54,21 +54,6 @@ namespace golos { namespace protocol {
         };
 
 
-        struct fill_convert_request_operation : public virtual_operation {
-            fill_convert_request_operation() {
-            }
-
-            fill_convert_request_operation(const string &o, const uint32_t id, const asset &in, const asset &out)
-                    : owner(o), requestid(id), amount_in(in), amount_out(out) {
-            }
-
-            account_name_type owner;
-            uint32_t requestid = 0;
-            asset amount_in;
-            asset amount_out;
-        };
-
-
         struct fill_vesting_withdraw_operation : public virtual_operation {
             fill_vesting_withdraw_operation() {
             }
@@ -181,7 +166,6 @@ namespace golos { namespace protocol {
 FC_REFLECT((golos::protocol::author_reward_operation), (author)(permlink)(steem_payout)(vesting_payout))
 FC_REFLECT((golos::protocol::curation_reward_operation), (curator)(reward)(comment_author)(comment_permlink))
 FC_REFLECT((golos::protocol::comment_reward_operation), (author)(permlink)(payout))
-FC_REFLECT((golos::protocol::fill_convert_request_operation), (owner)(requestid)(amount_in)(amount_out))
 FC_REFLECT((golos::protocol::fill_vesting_withdraw_operation), (from_account)(to_account)(withdrawn)(deposited))
 FC_REFLECT((golos::protocol::shutdown_witness_operation), (owner))
 FC_REFLECT((golos::protocol::fill_order_operation), (current_owner)(current_orderid)(current_pays)(open_owner)(open_orderid)(open_pays))

@@ -2244,21 +2244,6 @@ fc::ecc::private_key wallet_api::derive_private_key(const std::string& prefix_st
             return my->sign_transaction( tx, broadcast );
         }
 
-        annotated_signed_transaction wallet_api::convert_sbd(string from, asset amount, bool broadcast )
-        {
-            FC_ASSERT( !is_locked() );
-            convert_operation op;
-            op.owner = from;
-            op.requestid = fc::time_point::now().sec_since_epoch();
-            op.amount = amount;
-
-            signed_transaction tx;
-            tx.operations.push_back( op );
-            tx.validate();
-
-            return my->sign_transaction( tx, broadcast );
-        }
-
         annotated_signed_transaction wallet_api::publish_feed(string witness, price exchange_rate, bool broadcast )
         {
             FC_ASSERT( !is_locked() );
@@ -2271,10 +2256,6 @@ fc::ecc::private_key wallet_api::derive_private_key(const std::string& prefix_st
             tx.validate();
 
             return my->sign_transaction( tx, broadcast );
-        }
-
-        vector< database_api::convert_request_api_object > wallet_api::get_conversion_requests( string owner_account ) {
-            return my->_remote_database_api->get_conversion_requests( owner_account );
         }
 
         string wallet_api::decrypt_memo( string encrypted_memo ) {

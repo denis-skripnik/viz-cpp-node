@@ -2423,51 +2423,6 @@ namespace golos { namespace chain {
             }
         }
 
-/**
- *  Iterates over all conversion requests with a conversion date before
- *  the head block time and then converts them to/from steem/sbd at the
- *  current median price feed history price times the premium
- */
-        void database::process_conversions() {
-            auto now = head_block_time();
-            const auto &request_by_date = get_index<convert_request_index>().indices().get<by_conversion_date>();
-            auto itr = request_by_date.begin();
-
-            const auto &fhistory = get_feed_history();
-            if (fhistory.current_median_history.is_null()) {
-                return;
-            }
-
-            asset net_sbd(0, SBD_SYMBOL);
-            asset net_steem(0, STEEM_SYMBOL);
-
-            while (itr != request_by_date.end() &&
-                   itr->conversion_date <= now) {
-                const auto &user = get_account(itr->owner);
-                auto amount_to_issue =
-                        itr->amount * fhistory.current_median_history;
-
-                adjust_balance(user, amount_to_issue);
-
-                net_sbd += itr->amount;
-                net_steem += amount_to_issue;
-
-                push_virtual_operation(fill_convert_request_operation(user.name, itr->requestid, itr->amount, amount_to_issue));
-
-                remove(*itr);
-                itr = request_by_date.begin();
-            }
-
-            const auto &props = get_dynamic_global_properties();
-            modify(props, [&](dynamic_global_property_object &p) {
-                p.current_supply += net_steem;
-                p.current_sbd_supply -= net_sbd;
-                p.virtual_supply += net_steem;
-                p.virtual_supply -=
-                        net_sbd * get_feed_history().current_median_history;
-            });
-        }
-
         asset database::to_sbd(const asset &steem) const {
             FC_ASSERT(steem.symbol == STEEM_SYMBOL);
             const auto &feed_history = get_feed_history();
@@ -2645,7 +2600,6 @@ namespace golos { namespace chain {
             _my->_evaluator_registry.register_evaluator<pow2_evaluator>();
             _my->_evaluator_registry.register_evaluator<report_over_production_evaluator>();
             _my->_evaluator_registry.register_evaluator<feed_publish_evaluator>();
-            _my->_evaluator_registry.register_evaluator<convert_evaluator>();
             _my->_evaluator_registry.register_evaluator<limit_order_create_evaluator>();
             _my->_evaluator_registry.register_evaluator<limit_order_create2_evaluator>();
             _my->_evaluator_registry.register_evaluator<limit_order_cancel_evaluator>();
@@ -2701,7 +2655,6 @@ namespace golos { namespace chain {
             add_core_index<witness_vote_index>(*this);
             add_core_index<limit_order_index>(*this);
             add_core_index<feed_history_index>(*this);
-            add_core_index<convert_request_index>(*this);
             add_core_index<hardfork_property_index>(*this);
             add_core_index<withdraw_vesting_route_index>(*this);
             add_core_index<owner_authority_history_index>(*this);
@@ -3247,7 +3200,6 @@ namespace golos { namespace chain {
                 clear_null_account_balance();
                 claim_committee_account_balance();
                 process_funds();
-                process_conversions();
                 process_comment_cashout();
                 process_vesting_withdrawals();
                 process_savings_withdraws();
@@ -4270,18 +4222,6 @@ namespace golos { namespace chain {
                                                  STEEMIT_MAX_PROXY_RECURSION_DEPTH -
                                                  1] :
                                          itr->vesting_shares.amount));
-                }
-
-                const auto &convert_request_idx = get_index<convert_request_index>().indices();
-
-                for (auto itr = convert_request_idx.begin();
-                     itr != convert_request_idx.end(); ++itr) {
-                    if (itr->amount.symbol == STEEM_SYMBOL) {
-                        total_supply += itr->amount;
-                    } else if (itr->amount.symbol == SBD_SYMBOL) {
-                        total_sbd += itr->amount;
-                    } else
-                        FC_ASSERT(false, "Encountered illegal symbol in convert_request_object");
                 }
 
                 const auto &limit_order_idx = get_index<limit_order_index>().indices();

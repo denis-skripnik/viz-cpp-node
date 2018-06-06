@@ -673,22 +673,6 @@ bool plugin::api_impl::verify_account_authority(
     return verify_authority(trx);
 }
 
-DEFINE_API(plugin, get_conversion_requests) {
-    CHECK_ARG_SIZE(1)
-    auto account = args.args->at(0).as<std::string>();
-    return my->database().with_weak_read_lock([&]() {
-        const auto &idx = my->database().get_index<convert_request_index>().indices().get<by_owner>();
-        std::vector<convert_request_api_object> result;
-        auto itr = idx.lower_bound(account);
-        while (itr != idx.end() && itr->owner == account) {
-            result.emplace_back(*itr);
-            ++itr;
-        }
-        return result;
-    });
-}
-
-
 DEFINE_API(plugin, get_savings_withdraw_from) {
     CHECK_ARG_SIZE(1)
     auto account = args.args->at(0).as<string>();

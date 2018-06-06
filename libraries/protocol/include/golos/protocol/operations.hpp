@@ -22,7 +22,6 @@ namespace golos { namespace protocol {
                 limit_order_cancel_operation,
 
                 feed_publish_operation,
-                convert_operation,
 
                 account_create_operation,
                 account_update_operation,
@@ -68,7 +67,6 @@ namespace golos { namespace protocol {
                 chain_properties_update_operation,
 
                 /// virtual operations below this point
-                fill_convert_request_operation,
                 author_reward_operation,
                 curation_reward_operation,
                 comment_reward_operation,

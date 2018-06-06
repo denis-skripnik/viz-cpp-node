@@ -16,29 +16,6 @@ namespace golos {
         using golos::protocol::price;
         using golos::protocol::asset_symbol_type;
 
-        /**
-         *  This object is used to track pending requests to convert sbd to steem
-         */
-        class convert_request_object
-                : public object<convert_request_object_type, convert_request_object> {
-        public:
-            template<typename Constructor, typename Allocator>
-            convert_request_object(Constructor &&c, allocator <Allocator> a) {
-                c(*this);
-            }
-
-            convert_request_object() {
-            }
-
-            id_type id;
-
-            account_name_type owner;
-            uint32_t requestid = 0; ///< id set by owner, the owner,requestid pair must be unique
-            asset amount;
-            time_point_sec conversion_date; ///< at this time the feed_history_median_price * amount
-        };
-
-
         class escrow_object : public object<escrow_object_type, escrow_object> {
         public:
             template<typename Constructor, typename Allocator>
@@ -227,32 +204,6 @@ namespace golos {
         >
         limit_order_index;
 
-        struct by_owner;
-        struct by_conversion_date;
-        typedef multi_index_container <
-        convert_request_object,
-        indexed_by<
-                ordered_unique < tag <
-                by_id>, member<convert_request_object, convert_request_id_type, &convert_request_object::id>>,
-        ordered_unique <tag<by_conversion_date>,
-        composite_key<convert_request_object,
-                member <
-                convert_request_object, time_point_sec, &convert_request_object::conversion_date>,
-        member<convert_request_object, convert_request_id_type, &convert_request_object::id>
-        >
-        >,
-        ordered_unique <tag<by_owner>,
-        composite_key<convert_request_object,
-                member <
-                convert_request_object, account_name_type, &convert_request_object::owner>,
-        member<convert_request_object, uint32_t, &convert_request_object::requestid>
-        >
-        >
-        >,
-        allocator <convert_request_object>
-        >
-        convert_request_index;
-
         typedef multi_index_container <
         feed_history_object,
         indexed_by<
@@ -414,10 +365,6 @@ CHAINBASE_SET_INDEX_TYPE(golos::chain::limit_order_object, golos::chain::limit_o
 FC_REFLECT((golos::chain::feed_history_object),
         (id)(current_median_history)(price_history))
 CHAINBASE_SET_INDEX_TYPE(golos::chain::feed_history_object, golos::chain::feed_history_index)
-
-FC_REFLECT((golos::chain::convert_request_object),
-        (id)(owner)(requestid)(amount)(conversion_date))
-CHAINBASE_SET_INDEX_TYPE(golos::chain::convert_request_object, golos::chain::convert_request_index)
 
 FC_REFLECT((golos::chain::withdraw_vesting_route_object),
         (id)(from_account)(to_account)(percent)(auto_vest))

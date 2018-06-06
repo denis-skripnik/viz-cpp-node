@@ -120,7 +120,6 @@ DEFINE_API_ARGS(get_savings_withdraw_to,          msg_pack, std::vector<savings_
 DEFINE_API_ARGS(get_vesting_delegations,          msg_pack, vector<vesting_delegation_api_object>)
 DEFINE_API_ARGS(get_expiring_vesting_delegations, msg_pack, vector<vesting_delegation_expiration_api_object>)
 
-DEFINE_API_ARGS(get_conversion_requests,          msg_pack, std::vector<convert_request_api_object>)
 DEFINE_API_ARGS(get_open_orders,                  msg_pack, std::vector<extended_limit_order>)
 DEFINE_API_ARGS(get_transaction_hex,              msg_pack, std::string)
 DEFINE_API_ARGS(get_required_signatures,          msg_pack, std::set<public_key_type>)
@@ -297,9 +296,6 @@ public:
         // (find_vesting_delegations)
         // (list_vesting_delegation_expirations)
         // (find_vesting_delegation_expirations)
-
-
-        (get_conversion_requests)
 
         ////////////
         // Assets //

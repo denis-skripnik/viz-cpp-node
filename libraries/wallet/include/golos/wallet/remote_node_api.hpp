@@ -62,7 +62,6 @@ struct remote_database_api {
     optional< account_bandwidth_api_object > get_account_bandwidth( account_name_type, bandwidth_type);
     vector< database_api::savings_withdraw_api_object > get_savings_withdraw_from( account_name_type );
     vector< database_api::savings_withdraw_api_object > get_savings_withdraw_to( account_name_type );
-    vector< database_api::convert_request_api_object > get_conversion_requests( account_name_type );
     vector< database_api::extended_limit_order > get_open_orders( account_name_type );
     string get_transaction_hex( signed_transaction );
     set< public_key_type > get_required_signatures( signed_transaction, flat_set< public_key_type > );
@@ -227,7 +226,6 @@ FC_API( golos::wallet::remote_database_api,
         (get_account_bandwidth)
         (get_savings_withdraw_from)
         (get_savings_withdraw_to)
-        (get_conversion_requests)
         (get_open_orders)
         (get_transaction_hex)
         (get_required_signatures)

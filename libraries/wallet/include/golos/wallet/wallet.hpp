@@ -643,15 +643,6 @@ namespace golos { namespace wallet {
              */
             optional< witness_api::witness_api_object > get_witness(string owner_account);
 
-            /** Returns conversion requests by an account
-             *
-             * @param owner Account name of the account owning the requests
-             *
-             * @returns All pending conversion requests by account
-             */
-            vector< database_api::convert_request_api_object > get_conversion_requests( string owner );
-
-
             /**
              * Update a witness object owned by the given account.
              *
@@ -881,16 +872,6 @@ namespace golos { namespace wallet {
              * @param broadcast true if you wish to broadcast the transaction.
              */
             annotated_signed_transaction set_withdraw_vesting_route( string from, string to, uint16_t percent, bool auto_vest, bool broadcast = false );
-
-            /**
-             *  This method will convert SBD to STEEM at the current_median_history price one
-             *  week from the time it is executed. This method depends upon there being a valid price feed.
-             *
-             *  @param from The account requesting conversion of its SBD i.e. "1.000 SBD"
-             *  @param amount The amount of SBD to convert
-             *  @param broadcast true if you wish to broadcast the transaction
-             */
-            annotated_signed_transaction convert_sbd( string from, asset amount, bool broadcast = false );
 
             /**
              * A witness can public a price feed for the STEEM:SBD market. The median price feed is used
@@ -1132,7 +1113,6 @@ FC_API( golos::wallet::wallet_api,
                 (get_block)
                 (get_ops_in_block)
                 (get_feed_history)
-                (get_conversion_requests)
                 (get_account_history)
                 (get_withdraw_routes)
 
@@ -1161,7 +1141,6 @@ FC_API( golos::wallet::wallet_api,
                 (transfer_to_vesting)
                 (withdraw_vesting)
                 (set_withdraw_vesting_route)
-                (convert_sbd)
                 (publish_feed)
                 (get_order_book)
                 (get_open_orders)

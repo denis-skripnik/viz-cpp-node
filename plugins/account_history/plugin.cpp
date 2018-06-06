@@ -186,10 +186,6 @@ if( options.count(name) ) { \
             impacted.insert(op.curator);
         }
 
-        void operator()(const fill_convert_request_operation& op) {
-            impacted.insert(op.owner);
-        }
-
         void operator()(const transfer_operation& op) {
             impacted.insert(op.from);
             impacted.insert(op.to);

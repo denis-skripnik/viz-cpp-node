@@ -687,23 +687,6 @@ namespace golos { namespace protocol {
 
 
         /**
-         *  This operation instructs the blockchain to start a conversion between STEEM and SBD,
-         *  The funds are deposited after STEEMIT_CONVERSION_DELAY
-         */
-        struct convert_operation : public base_operation {
-            account_name_type owner;
-            uint32_t requestid = 0;
-            asset amount;
-
-            void validate() const;
-
-            void get_required_active_authorities(flat_set<account_name_type> &a) const {
-                a.insert(owner);
-            }
-        };
-
-
-        /**
          * This operation creates a limit order and matches it against existing open orders.
          */
         struct limit_order_create_operation : public base_operation {
@@ -1136,7 +1119,6 @@ FC_REFLECT((golos::protocol::set_reset_account_operation), (account)(current_res
 
 
 FC_REFLECT((golos::protocol::report_over_production_operation), (reporter)(first_block)(second_block))
-FC_REFLECT((golos::protocol::convert_operation), (owner)(requestid)(amount))
 FC_REFLECT((golos::protocol::feed_publish_operation), (publisher)(exchange_rate))
 FC_REFLECT((golos::protocol::pow), (worker)(input)(signature)(work))
 FC_REFLECT((golos::protocol::pow2), (input)(pow_summary))
