@@ -55,10 +55,6 @@ public:
     asset balance = asset(0, STEEM_SYMBOL);  ///< total liquid shares held by this account
     asset savings_balance = asset(0, STEEM_SYMBOL);  ///< total liquid shares held by this account
 
-    asset sbd_balance = asset(0, SBD_SYMBOL); /// total sbd balance
-
-    asset savings_sbd_balance = asset(0, SBD_SYMBOL); /// total sbd balance
-
     uint8_t savings_withdraw_requests = 0;
 
     share_type curation_rewards = 0;
@@ -479,8 +475,6 @@ FC_REFLECT((golos::chain::account_object),
                 (comment_count)(lifetime_vote_count)(post_count)(can_vote)(voting_power)(last_vote_time)
                 (balance)
                 (savings_balance)
-                (sbd_balance)
-                (savings_sbd_balance)
                 (savings_withdraw_requests)
                 (vesting_shares)(delegated_vesting_shares)(received_vesting_shares)
                 (vesting_withdraw_rate)(next_vesting_withdrawal)(withdrawn)(to_withdraw)(withdraw_routes)

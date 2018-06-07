@@ -673,20 +673,14 @@ namespace golos { namespace chain {
                           _db.head_block_time(), "The escrow expiration must be after head block time.");
 
                 asset steem_spent = o.steem_amount;
-                asset sbd_spent = o.sbd_amount;
                 if (o.fee.symbol == STEEM_SYMBOL) {
                     steem_spent += o.fee;
-                } else {
-                    sbd_spent += o.fee;
                 }
 
                 FC_ASSERT(from_account.balance >=
                           steem_spent, "Account cannot cover STEEM costs of escrow. Required: ${r} Available: ${a}", ("r", steem_spent)("a", from_account.balance));
-                FC_ASSERT(from_account.sbd_balance >=
-                          sbd_spent, "Account cannot cover SBD costs of escrow. Required: ${r} Available: ${a}", ("r", sbd_spent)("a", from_account.sbd_balance));
 
                 _db.adjust_balance(from_account, -steem_spent);
-                _db.adjust_balance(from_account, -sbd_spent);
 
                 _db.create<escrow_object>([&](escrow_object &esc) {
                     esc.escrow_id = o.escrow_id;
@@ -695,7 +689,6 @@ namespace golos { namespace chain {
                     esc.agent = o.agent;
                     esc.ratification_deadline = o.ratification_deadline;
                     esc.escrow_expiration = o.escrow_expiration;
-                    esc.sbd_balance = o.sbd_amount;
                     esc.steem_balance = o.steem_amount;
                     esc.pending_fee = o.fee;
                 });
@@ -739,7 +732,6 @@ namespace golos { namespace chain {
                 if (reject_escrow) {
                     const auto &from_account = _db.get_account(o.from);
                     _db.adjust_balance(from_account, escrow.steem_balance);
-                    _db.adjust_balance(from_account, escrow.sbd_balance);
                     _db.adjust_balance(from_account, escrow.pending_fee);
 
                     _db.remove(escrow);
@@ -787,8 +779,6 @@ namespace golos { namespace chain {
                 const auto &e = _db.get_escrow(o.from, o.escrow_id);
                 FC_ASSERT(e.steem_balance >=
                           o.steem_amount, "Release amount exceeds escrow balance. Amount: ${a}, Balance: ${b}", ("a", o.steem_amount)("b", e.steem_balance));
-                FC_ASSERT(e.sbd_balance >=
-                          o.sbd_amount, "Release amount exceeds escrow balance. Amount: ${a}, Balance: ${b}", ("a", o.sbd_amount)("b", e.sbd_balance));
                 FC_ASSERT(e.to ==
                           o.to, "Operation 'to' (${o}) does not match escrow 'to' (${e}).", ("o", o.to)("e", e.to));
                 FC_ASSERT(e.agent ==
@@ -820,14 +810,12 @@ namespace golos { namespace chain {
                 // If escrow expires and there is no dispute, either party can release funds to either party.
 
                 _db.adjust_balance(receiver_account, o.steem_amount);
-                _db.adjust_balance(receiver_account, o.sbd_amount);
 
                 _db.modify(e, [&](escrow_object &esc) {
                     esc.steem_balance -= o.steem_amount;
-                    esc.sbd_balance -= o.sbd_amount;
                 });
 
-                if (e.steem_balance.amount == 0 && e.sbd_balance.amount == 0) {
+                if (e.steem_balance.amount == 0) {
                     _db.remove(e);
                 }
             }
@@ -1756,15 +1744,6 @@ namespace golos { namespace chain {
                 const auto &inc_witness = db.get_account(dgp.current_witness);
                 db.create_vesting(inc_witness, inc_reward);
             }
-        }
-
-        void feed_publish_evaluator::do_apply(const feed_publish_operation &o) {
-            database &_db = db();
-            const auto &witness = _db.get_witness(o.publisher);
-            _db.modify(witness, [&](witness_object &w) {
-                w.sbd_exchange_rate = o.exchange_rate;
-                w.last_sbd_exchange_update = _db.head_block_time();
-            });
         }
 
         void report_over_production_evaluator::do_apply(const report_over_production_operation &o) {

@@ -217,10 +217,6 @@ if( options.count(name) ) { \
             impacted.insert(op.proxy);
         }
 
-        void operator()(const feed_publish_operation& op) {
-            impacted.insert(op.publisher);
-        }
-
         void operator()(const pow_operation& op) {
             impacted.insert(op.worker_account);
         }

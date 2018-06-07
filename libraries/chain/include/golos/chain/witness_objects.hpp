@@ -53,22 +53,11 @@ namespace golos { namespace chain {
         uint64_t last_confirmed_block_num = 0;
 
         /**
-         * Some witnesses have the job because they did a proof of work,
-         * this field indicates where they were in the POW order. After
-         * each round, the witness with the lowest pow_worker value greater
-         * than 0 is removed.
-         */
-        uint64_t pow_worker = 0;
-
-        /**
          *  This is the key used to sign blocks on behalf of this witness
          */
         public_key_type signing_key;
 
         chain_properties props;
-        price sbd_exchange_rate;
-        time_point_sec last_sbd_exchange_update;
-
 
         /**
          *  The total votes for this witness. This determines how the witness is ranked for
@@ -266,7 +255,7 @@ FC_REFLECT_ENUM(golos::chain::witness_object::witness_schedule_type, (top19)(tim
 FC_REFLECT(
     (golos::chain::witness_object),
     (id)(owner)(created)(url)(votes)(schedule)(virtual_last_update)(virtual_position)(virtual_scheduled_time)(total_missed)
-    (last_aslot)(last_confirmed_block_num)(pow_worker)(signing_key)(props)(sbd_exchange_rate)(last_sbd_exchange_update)
+    (last_aslot)(last_confirmed_block_num)(pow_worker)(signing_key)(props)
     (last_work)(running_version)(hardfork_version_vote)(hardfork_time_vote))
 
 CHAINBASE_SET_INDEX_TYPE(golos::chain::witness_object, golos::chain::witness_index)

@@ -173,8 +173,6 @@ namespace golos { namespace chain {
 
             const dynamic_global_property_object &get_dynamic_global_properties() const;
 
-            const feed_history_object &get_feed_history() const;
-
             const witness_schedule_object &get_witness_schedule_object() const;
 
             const hardfork_property_object &get_hardfork_property_object() const;
@@ -403,8 +401,6 @@ namespace golos { namespace chain {
 
             void process_decline_voting_rights();
 
-            void update_median_feed();
-
             share_type claim_rshare_reward(share_type rshares, uint16_t reward_weight, asset max_steem);
 
             asset get_content_reward() const;
@@ -418,14 +414,6 @@ namespace golos { namespace chain {
             uint128_t get_content_constant_s() const;
 
             uint128_t calculate_vshares(uint128_t rshares) const;
-
-            /**
-             * Helper method to return the current sbd value of a given amount of
-             * STEEM.  Return 0 SBD if there isn't a current_median_history
-             */
-            asset to_sbd(const asset &steem) const;
-
-            asset to_steem(const asset &sbd) const;
 
             time_point_sec head_block_time() const;
 
@@ -483,11 +471,6 @@ namespace golos { namespace chain {
             const std::string &get_json_schema() const;
 
             void set_flush_interval(uint32_t flush_blocks);
-
-#ifdef STEEMIT_BUILD_TESTNET
-            bool skip_price_feed_limit_check = true;
-            bool skip_transaction_delta_check = true;
-#endif
 
         protected:
             //Mark pop_undo() as protected -- we do not want outside calling pop_undo(); it should call pop_block() instead

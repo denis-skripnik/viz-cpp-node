@@ -30,7 +30,6 @@ namespace golos { namespace chain {
         DEFINE_EVALUATOR(custom_binary)
         DEFINE_EVALUATOR(pow)
         DEFINE_EVALUATOR(pow2)
-        DEFINE_EVALUATOR(feed_publish)
         DEFINE_EVALUATOR(report_over_production)
         DEFINE_EVALUATOR(escrow_transfer)
         DEFINE_EVALUATOR(escrow_approve)

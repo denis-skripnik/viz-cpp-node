@@ -34,7 +34,6 @@ namespace golos {
             account_name_type agent;
             time_point_sec ratification_deadline;
             time_point_sec escrow_expiration;
-            asset sbd_balance;
             asset steem_balance;
             asset pending_fee;
             bool to_approved = false;
@@ -66,27 +65,6 @@ namespace golos {
             uint32_t request_id = 0;
             asset amount;
             time_point_sec complete;
-        };
-
-
-        /**
-         *  This object gets updated once per hour, on the hour
-         */
-        class feed_history_object
-                : public object<feed_history_object_type, feed_history_object> {
-            feed_history_object() = delete;
-
-        public:
-            template<typename Constructor, typename Allocator>
-            feed_history_object(Constructor &&c, allocator <Allocator> a)
-                    :price_history(a.get_segment_manager()) {
-                c(*this);
-            }
-
-            id_type id;
-
-            price current_median_history; ///< the current median of the price history, used as the base for convert operations
-            boost::interprocess::deque <price, allocator<price>> price_history; ///< tracks this last week of median_feed one per hour
         };
 
 
@@ -130,16 +108,6 @@ namespace golos {
             time_point_sec effective_date;
         };
 
-        typedef multi_index_container <
-        feed_history_object,
-        indexed_by<
-                ordered_unique < tag <
-                by_id>, member<feed_history_object, feed_history_id_type, &feed_history_object::id>>
-        >,
-        allocator <feed_history_object>
-        >
-        feed_history_index;
-
         struct by_withdraw_route;
         struct by_destination;
         typedef multi_index_container <
@@ -171,7 +139,6 @@ namespace golos {
         struct by_to;
         struct by_agent;
         struct by_ratification_deadline;
-        struct by_sbd_balance;
         typedef multi_index_container <
         escrow_object,
         indexed_by<
@@ -205,13 +172,6 @@ namespace golos {
         member<escrow_object, escrow_id_type, &escrow_object::id>
         >,
         composite_key_compare <std::less<bool>, std::less<time_point_sec>, std::less<escrow_id_type>>
-        >,
-        ordered_unique <tag<by_sbd_balance>,
-        composite_key<escrow_object,
-                member < escrow_object, asset, &escrow_object::sbd_balance>,
-        member<escrow_object, escrow_id_type, &escrow_object::id>
-        >,
-        composite_key_compare <std::greater<asset>, std::less<escrow_id_type>>
         >
         >,
         allocator <escrow_object>
@@ -283,10 +243,6 @@ namespace golos {
 #include <golos/chain/comment_object.hpp>
 #include <golos/chain/account_object.hpp>
 
-FC_REFLECT((golos::chain::feed_history_object),
-        (id)(current_median_history)(price_history))
-CHAINBASE_SET_INDEX_TYPE(golos::chain::feed_history_object, golos::chain::feed_history_index)
-
 FC_REFLECT((golos::chain::withdraw_vesting_route_object),
         (id)(from_account)(to_account)(percent)(auto_vest))
 CHAINBASE_SET_INDEX_TYPE(golos::chain::withdraw_vesting_route_object, golos::chain::withdraw_vesting_route_index)
@@ -298,7 +254,7 @@ CHAINBASE_SET_INDEX_TYPE(golos::chain::savings_withdraw_object, golos::chain::sa
 FC_REFLECT((golos::chain::escrow_object),
         (id)(escrow_id)(from)(to)(agent)
                 (ratification_deadline)(escrow_expiration)
-                (sbd_balance)(steem_balance)(pending_fee)
+                (steem_balance)(pending_fee)
                 (to_approved)(agent_approved)(disputed))
 CHAINBASE_SET_INDEX_TYPE(golos::chain::escrow_object, golos::chain::escrow_index)
 

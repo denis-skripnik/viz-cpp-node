@@ -27,19 +27,6 @@ public:
     golos::chain::database& database;
 };
 
-
-DEFINE_API(plugin, get_current_median_history_price) {
-    return my->database.with_weak_read_lock([&]() {
-        return my->database.get_feed_history().current_median_history;
-    });
-}
-
-DEFINE_API(plugin, get_feed_history) {
-    return my->database.with_weak_read_lock([&]() {
-        return feed_history_api_object(my->database.get_feed_history());
-    });
-}
-
 std::vector<account_name_type> plugin::witness_plugin_impl::get_miner_queue() const {
     std::vector<account_name_type> result;
     const auto &pow_idx = database.get_index<witness_index>().indices().get<by_pow>();

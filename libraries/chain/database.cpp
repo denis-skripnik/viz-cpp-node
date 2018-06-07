@@ -539,12 +539,6 @@ namespace golos { namespace chain {
             } FC_CAPTURE_AND_RETHROW()
         }
 
-        const feed_history_object &database::get_feed_history() const {
-            try {
-                return get<feed_history_object>();
-            } FC_CAPTURE_AND_RETHROW()
-        }
-
         const witness_schedule_object &database::get_witness_schedule_object() const {
             try {
                 return get<witness_schedule_object>();
@@ -1759,7 +1753,6 @@ namespace golos { namespace chain {
 
             const auto &null_account = get_account(STEEMIT_NULL_ACCOUNT);
             asset total_steem(0, STEEM_SYMBOL);
-            asset total_sbd(0, SBD_SYMBOL);
 
             if (null_account.balance.amount > 0) {
                 total_steem += null_account.balance;
@@ -1769,16 +1762,6 @@ namespace golos { namespace chain {
             if (null_account.savings_balance.amount > 0) {
                 total_steem += null_account.savings_balance;
                 adjust_savings_balance(null_account, -null_account.savings_balance);
-            }
-
-            if (null_account.sbd_balance.amount > 0) {
-                total_sbd += null_account.sbd_balance;
-                adjust_balance(null_account, -null_account.sbd_balance);
-            }
-
-            if (null_account.savings_sbd_balance.amount > 0) {
-                total_sbd += null_account.savings_sbd_balance;
-                adjust_savings_balance(null_account, -null_account.savings_sbd_balance);
             }
 
             if (null_account.vesting_shares.amount > 0) {
@@ -1800,10 +1783,6 @@ namespace golos { namespace chain {
 
             if (total_steem.amount > 0) {
                 adjust_supply(-total_steem);
-            }
-
-            if (total_sbd.amount > 0) {
-                adjust_supply(-total_sbd);
             }
         }
 
@@ -2266,7 +2245,6 @@ namespace golos { namespace chain {
                p.committee_supply += asset( committee_reward, STEEM_SYMBOL );
                p.total_reward_fund_steem  += asset( content_reward, STEEM_SYMBOL );
                p.current_supply           += asset( inflation_per_block, STEEM_SYMBOL );
-               p.virtual_supply           += asset( inflation_per_block, STEEM_SYMBOL );
             });
 
             create_vesting(get_account(cwit.owner), asset(witness_reward, STEEM_SYMBOL));
@@ -2298,7 +2276,7 @@ namespace golos { namespace chain {
             static_assert(STEEMIT_BLOCK_INTERVAL ==
                           3, "this code assumes a 3-second time interval");
             if (props.head_block_number > STEEMIT_START_VESTING_BLOCK) {
-                asset percent(protocol::calc_percent_reward_per_block<STEEMIT_CONTENT_APR_PERCENT>(props.virtual_supply.amount), STEEM_SYMBOL);
+                asset percent(protocol::calc_percent_reward_per_block<STEEMIT_CONTENT_APR_PERCENT>(props.current_supply.amount), STEEM_SYMBOL);
                 reward = std::max(percent, STEEMIT_MIN_CONTENT_REWARD);
             }
 
@@ -2311,7 +2289,7 @@ namespace golos { namespace chain {
             static_assert(STEEMIT_BLOCK_INTERVAL ==
                           3, "this code assumes a 3-second time interval");
             if (props.head_block_number > STEEMIT_START_VESTING_BLOCK) {
-                asset percent(protocol::calc_percent_reward_per_block<STEEMIT_CURATE_APR_PERCENT>(props.virtual_supply.amount), STEEM_SYMBOL);
+                asset percent(protocol::calc_percent_reward_per_block<STEEMIT_CURATE_APR_PERCENT>(props.current_supply.amount), STEEM_SYMBOL);
                 reward = std::max(percent, STEEMIT_MIN_CURATE_REWARD);
             }
 
@@ -2322,7 +2300,7 @@ namespace golos { namespace chain {
             const auto &props = get_dynamic_global_properties();
             static_assert(STEEMIT_BLOCK_INTERVAL ==
                           3, "this code assumes a 3-second time interval");
-            asset percent(protocol::calc_percent_reward_per_block<STEEMIT_PRODUCER_APR_PERCENT>(props.virtual_supply.amount), STEEM_SYMBOL);
+            asset percent(protocol::calc_percent_reward_per_block<STEEMIT_PRODUCER_APR_PERCENT>(props.current_supply.amount), STEEM_SYMBOL);
 
             const auto &witness_account = get_account(props.current_witness);
 
@@ -2376,7 +2354,7 @@ namespace golos { namespace chain {
                           3, "this code assumes a 3-second time interval");
 //            static_assert(STEEMIT_MAX_WITNESSES ==
 //                          21, "this code assumes 21 per round");
-            asset percent(calc_percent_reward_per_round<STEEMIT_POW_APR_PERCENT>(props.virtual_supply.amount), STEEM_SYMBOL);
+            asset percent(calc_percent_reward_per_round<STEEMIT_POW_APR_PERCENT>(props.current_supply.amount), STEEM_SYMBOL);
 
             if (has_hardfork(STEEMIT_HARDFORK_0_16)) {
                 return std::max(percent, STEEMIT_MIN_POW_REWARD);
@@ -2403,26 +2381,6 @@ namespace golos { namespace chain {
             } else {
                 return calculate_vshares_quadratic(rshares, get_content_constant_s());
             }
-        }
-
-        asset database::to_sbd(const asset &steem) const {
-            FC_ASSERT(steem.symbol == STEEM_SYMBOL);
-            const auto &feed_history = get_feed_history();
-            if (feed_history.current_median_history.is_null()) {
-                return asset(0, SBD_SYMBOL);
-            }
-
-            return steem * feed_history.current_median_history;
-        }
-
-        asset database::to_steem(const asset &sbd) const {
-            FC_ASSERT(sbd.symbol == SBD_SYMBOL);
-            const auto &feed_history = get_feed_history();
-            if (feed_history.current_median_history.is_null()) {
-                return asset(0, STEEM_SYMBOL);
-            }
-
-            return sbd * feed_history.current_median_history;
         }
 
 /**
@@ -2506,7 +2464,6 @@ namespace golos { namespace chain {
 
                 const auto &from_account = get_account(old_escrow.from);
                 adjust_balance(from_account, old_escrow.steem_balance);
-                adjust_balance(from_account, old_escrow.sbd_balance);
                 adjust_balance(from_account, old_escrow.pending_fee);
 
                 remove(old_escrow);
@@ -2579,7 +2536,6 @@ namespace golos { namespace chain {
             _my->_evaluator_registry.register_evaluator<pow_evaluator>();
             _my->_evaluator_registry.register_evaluator<pow2_evaluator>();
             _my->_evaluator_registry.register_evaluator<report_over_production_evaluator>();
-            _my->_evaluator_registry.register_evaluator<feed_publish_evaluator>();
             _my->_evaluator_registry.register_evaluator<challenge_authority_evaluator>();
             _my->_evaluator_registry.register_evaluator<prove_authority_evaluator>();
             _my->_evaluator_registry.register_evaluator<request_account_recovery_evaluator>();
@@ -2630,7 +2586,6 @@ namespace golos { namespace chain {
             add_core_index<comment_content_index>(*this);
             add_core_index<comment_vote_index>(*this);
             add_core_index<witness_vote_index>(*this);
-            add_core_index<feed_history_index>(*this);
             add_core_index<hardfork_property_index>(*this);
             add_core_index<withdraw_vesting_route_index>(*this);
             add_core_index<owner_authority_history_index>(*this);
@@ -2806,11 +2761,9 @@ namespace golos { namespace chain {
                     p.participation_count = 128;
                     p.committee_supply = asset(0, STEEM_SYMBOL);
                     p.current_supply = asset(init_supply, STEEM_SYMBOL);
-                    p.virtual_supply = p.current_supply;
                     p.maximum_block_size = STEEMIT_MAX_BLOCK_SIZE;
                 });
 
-                create<feed_history_object>([&](feed_history_object &o) {});
                 for (int i = 0; i < 0x10000; i++) {
                     create<block_summary_object>([&](block_summary_object &) {});
                 }
@@ -3170,8 +3123,6 @@ namespace golos { namespace chain {
                 clear_expired_delegations();
                 update_witness_schedule();
 
-                update_median_feed();
-
                 clear_null_account_balance();
                 claim_committee_account_balance();
                 process_funds();
@@ -3236,78 +3187,6 @@ namespace golos { namespace chain {
 
                 ++itr;
             }
-        }
-
-
-        void database::update_median_feed() {
-            try {
-                if ((head_block_num() % STEEMIT_FEED_INTERVAL_BLOCKS) != 0) {
-                    return;
-                }
-
-                auto now = head_block_time();
-                const witness_schedule_object &wso = get_witness_schedule_object();
-                vector<price> feeds;
-                feeds.reserve(wso.num_scheduled_witnesses);
-                for (int i = 0; i < wso.num_scheduled_witnesses; i++) {
-                    const auto &wit = get_witness(wso.current_shuffled_witnesses[i]);
-
-                    if (has_hardfork(STEEMIT_HARDFORK_0_18__220)) {
-                        if ( now < wit.last_sbd_exchange_update + STEEMIT_MAX_FEED_AGE && !wit.sbd_exchange_rate.is_null() ) {
-                            feeds.push_back(wit.sbd_exchange_rate);
-                        }
-                    }
-                    else {
-                        if ( wit.last_sbd_exchange_update < now + STEEMIT_MAX_FEED_AGE && !wit.sbd_exchange_rate.is_null() ) {
-
-                            feeds.push_back(wit.sbd_exchange_rate);
-                        }
-                    }
-                }
-
-                if (feeds.size() >= STEEMIT_MIN_FEEDS) {
-                    std::sort(feeds.begin(), feeds.end());
-                    auto median_feed = feeds[feeds.size() / 2];
-
-                    modify(get_feed_history(), [&](feed_history_object &fho) {
-                        fho.price_history.push_back(median_feed);
-                        size_t steem_feed_history_window = STEEMIT_FEED_HISTORY_WINDOW_PRE_HF_16;
-                        if (has_hardfork(STEEMIT_HARDFORK_0_16__551)) {
-                            steem_feed_history_window = STEEMIT_FEED_HISTORY_WINDOW;
-                        }
-
-                        if (fho.price_history.size() >
-                            steem_feed_history_window) {
-                            fho.price_history.pop_front();
-                        }
-
-                        if (fho.price_history.size()) {
-                            std::deque<price> copy;
-                            for (auto i : fho.price_history) {
-                                copy.push_back(i);
-                            }
-
-                            std::sort(copy.begin(), copy.end()); /// TODO: use nth_item
-                            fho.current_median_history = copy[copy.size() / 2];
-
-#ifdef STEEMIT_BUILD_TESTNET
-                            if (skip_price_feed_limit_check) {
-                                return;
-                            }
-#endif
-                            if (has_hardfork(STEEMIT_HARDFORK_0_14__230)) {
-                                const auto &gpo = get_dynamic_global_properties();
-                                price min_price(asset(9 *
-                                                      gpo.current_sbd_supply.amount, SBD_SYMBOL), gpo.current_supply); // This price limits SBD to 10% market cap
-
-                                if (min_price > fho.current_median_history) {
-                                    fho.current_median_history = min_price;
-                                }
-                            }
-                        }
-                    });
-                }
-            } FC_CAPTURE_AND_RETHROW()
         }
 
         void database::apply_transaction(const signed_transaction &trx, uint32_t skip) {
@@ -3639,9 +3518,6 @@ namespace golos { namespace chain {
                     case STEEM_SYMBOL:
                         acnt.balance += delta;
                         break;
-                    case SBD_SYMBOL:
-                        acnt.sbd_balance += delta;
-                        break;
                     default:
                         FC_ASSERT(false, "invalid symbol");
                 }
@@ -3654,9 +3530,6 @@ namespace golos { namespace chain {
                 switch (delta.symbol) {
                     case STEEM_SYMBOL:
                         acnt.savings_balance += delta;
-                        break;
-                    case SBD_SYMBOL:
-                        acnt.savings_sbd_balance += delta;
                         break;
                     default:
                         FC_ASSERT(!"invalid symbol");
@@ -3678,18 +3551,10 @@ namespace golos { namespace chain {
                         asset new_vesting((adjust_vesting && delta.amount > 0) ?
                                           delta.amount * 9 : 0, STEEM_SYMBOL);
                         props.current_supply += delta + new_vesting;
-                        props.virtual_supply += delta + new_vesting;
                         props.total_vesting_fund_steem += new_vesting;
                         assert(props.current_supply.amount.value >= 0);
                         break;
                     }
-                    case SBD_SYMBOL:
-                        props.current_sbd_supply += delta;
-                        props.virtual_supply = props.current_sbd_supply *
-                                               get_feed_history().current_median_history +
-                                               props.current_supply;
-                        assert(props.current_sbd_supply.amount.value >= 0);
-                        break;
                     default:
                         FC_ASSERT(false, "invalid symbol");
                 }
@@ -3701,8 +3566,6 @@ namespace golos { namespace chain {
             switch (symbol) {
                 case STEEM_SYMBOL:
                     return a.balance;
-                case SBD_SYMBOL:
-                    return a.sbd_balance;
                 default:
                     FC_ASSERT(false, "invalid symbol");
             }
@@ -3712,8 +3575,6 @@ namespace golos { namespace chain {
             switch (symbol) {
                 case STEEM_SYMBOL:
                     return a.savings_balance;
-                case SBD_SYMBOL:
-                    return a.savings_sbd_balance;
                 default:
                     FC_ASSERT(!"invalid symbol");
             }
@@ -3961,13 +3822,6 @@ namespace golos { namespace chain {
                 case STEEMIT_HARDFORK_0_15:
                     break;
                 case STEEMIT_HARDFORK_0_16:
-                    modify(get_feed_history(), [&](feed_history_object &fho) {
-                        while (fho.price_history.size() >
-                               STEEMIT_FEED_HISTORY_WINDOW) {
-                            fho.price_history.pop_front();
-                        }
-                    });
-
                     for (const std::string &acc : hardfork16::get_compromised_accounts()) {
                         const account_object *account = find_account(acc);
                         if (account == nullptr) {
@@ -4054,7 +3908,6 @@ namespace golos { namespace chain {
             try {
                 const auto &account_idx = get_index<account_index>().indices().get<by_name>();
                 asset total_supply = asset(0, STEEM_SYMBOL);
-                asset total_sbd = asset(0, SBD_SYMBOL);
                 asset total_vesting = asset(0, VESTS_SYMBOL);
                 share_type total_vsf_votes = share_type(0);
 
@@ -4071,8 +3924,6 @@ namespace golos { namespace chain {
                      itr != account_idx.end(); ++itr) {
                     total_supply += itr->balance;
                     total_supply += itr->savings_balance;
-                    total_sbd += itr->sbd_balance;
-                    total_sbd += itr->savings_sbd_balance;
                     total_vesting += itr->vesting_shares;
                     total_vsf_votes += (itr->proxy ==
                                         STEEMIT_PROXY_TO_SELF_ACCOUNT ?
@@ -4088,14 +3939,11 @@ namespace golos { namespace chain {
                 for (auto itr = escrow_idx.begin();
                      itr != escrow_idx.end(); ++itr) {
                     total_supply += itr->steem_balance;
-                    total_sbd += itr->sbd_balance;
 
                     if (itr->pending_fee.symbol == STEEM_SYMBOL) {
                         total_supply += itr->pending_fee;
-                    } else if (itr->pending_fee.symbol == SBD_SYMBOL) {
-                        total_sbd += itr->pending_fee;
                     } else
-                        FC_ASSERT(false, "found escrow pending fee that is not SBD or STEEM");
+                        FC_ASSERT(false, "found escrow pending fee that is VIZ");
                 }
 
                 const auto &savings_withdraw_idx = get_index<savings_withdraw_index>().indices().get<by_id>();
@@ -4103,10 +3951,8 @@ namespace golos { namespace chain {
                      itr != savings_withdraw_idx.end(); ++itr) {
                     if (itr->amount.symbol == STEEM_SYMBOL) {
                         total_supply += itr->amount;
-                    } else if (itr->amount.symbol == SBD_SYMBOL) {
-                        total_sbd += itr->amount;
                     } else
-                        FC_ASSERT(false, "found savings withdraw that is not SBD or STEEM");
+                        FC_ASSERT(false, "found savings withdraw that is VIZ");
                 }
 
                 fc::uint128_t total_rshares2;
@@ -4129,8 +3975,6 @@ namespace golos { namespace chain {
 
                 FC_ASSERT(gpo.current_supply ==
                           total_supply, "", ("gpo.current_supply", gpo.current_supply)("total_supply", total_supply));
-                FC_ASSERT(gpo.current_sbd_supply ==
-                          total_sbd, "", ("gpo.current_sbd_supply", gpo.current_sbd_supply)("total_sbd", total_sbd));
                 FC_ASSERT(gpo.total_vesting_shares ==
                           total_vesting, "", ("gpo.total_vesting_shares", gpo.total_vesting_shares)("total_vesting", total_vesting));
                 FC_ASSERT(gpo.total_vesting_shares.amount ==
@@ -4140,15 +3984,6 @@ namespace golos { namespace chain {
                         gpo.total_reward_shares2 - total_rshares2));
                 FC_ASSERT(total_rshares2 ==
                           total_children_rshares2, "", ("total_rshares2", total_rshares2)("total_children_rshares2", total_children_rshares2));
-
-                FC_ASSERT(gpo.virtual_supply >= gpo.current_supply);
-                if (!get_feed_history().current_median_history.is_null()) {
-                    FC_ASSERT(gpo.current_sbd_supply *
-                              get_feed_history().current_median_history +
-                              gpo.current_supply
-                              ==
-                              gpo.virtual_supply, "", ("gpo.current_sbd_supply", gpo.current_sbd_supply)("get_feed_history().current_median_history", get_feed_history().current_median_history)("gpo.current_supply", gpo.current_supply)("gpo.virtual_supply", gpo.virtual_supply));
-                }
             }
             FC_CAPTURE_LOG_AND_RETHROW((head_block_num()));
         }

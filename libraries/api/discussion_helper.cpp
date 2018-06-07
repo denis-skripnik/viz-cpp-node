@@ -144,11 +144,7 @@ namespace golos { namespace api {
         fill_promoted_(db, d);
 
         const auto& props = db.get_dynamic_global_properties();
-        const auto& hist = db.get_feed_history();
         asset pot = props.total_reward_fund_steem;
-        if (!hist.current_median_history.is_null()) {
-            pot = pot * hist.current_median_history;
-        }
 
         u256 total_r2 = to256(props.total_reward_shares2);
 

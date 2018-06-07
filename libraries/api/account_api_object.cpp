@@ -19,8 +19,6 @@ account_api_object::account_api_object(const account_object& a, const golos::cha
         lifetime_vote_count(a.lifetime_vote_count), post_count(a.post_count), can_vote(a.can_vote),
         voting_power(a.voting_power), last_vote_time(a.last_vote_time),
         balance(a.balance), savings_balance(a.savings_balance),
-        sbd_balance(a.sbd_balance),
-        savings_sbd_balance(a.savings_sbd_balance),
         savings_withdraw_requests(a.savings_withdraw_requests),
         curation_rewards(a.curation_rewards), posting_rewards(a.posting_rewards),
         vesting_shares(a.vesting_shares),

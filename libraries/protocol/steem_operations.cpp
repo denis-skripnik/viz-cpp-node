@@ -386,16 +386,6 @@ namespace golos { namespace protocol {
                       fc::sha256::hash(proof.inputs).approx_log_32());
         }
 
-        void feed_publish_operation::validate() const {
-            validate_account_name(publisher);
-            FC_ASSERT((is_asset_type(exchange_rate.base, STEEM_SYMBOL) &&
-                       is_asset_type(exchange_rate.quote, SBD_SYMBOL))
-                      || (is_asset_type(exchange_rate.base, SBD_SYMBOL) &&
-                          is_asset_type(exchange_rate.quote, STEEM_SYMBOL)),
-                    "Price feed must be a GOLOS/GBG price");
-            exchange_rate.validate();
-        }
-
         void report_over_production_operation::validate() const {
             validate_account_name(reporter);
             validate_account_name(first_block.witness);
@@ -410,17 +400,11 @@ namespace golos { namespace protocol {
             validate_account_name(to);
             validate_account_name(agent);
             FC_ASSERT(fee.amount >= 0, "fee cannot be negative");
-            FC_ASSERT(sbd_amount.amount >= 0, "gbg amount cannot be negative");
             FC_ASSERT(steem_amount.amount >=
                       0, "steem amount cannot be negative");
-            FC_ASSERT(sbd_amount.amount > 0 || steem_amount.amount >
-                                               0, "escrow must transfer a non-zero amount");
             FC_ASSERT(from != agent &&
                       to != agent, "agent must be a third party");
-            FC_ASSERT((fee.symbol == STEEM_SYMBOL) ||
-                      (fee.symbol == SBD_SYMBOL), "fee must be GOLOS or GBG");
-            FC_ASSERT(sbd_amount.symbol ==
-                      SBD_SYMBOL, "sbd amount must contain GBG");
+            FC_ASSERT(fee.symbol == STEEM_SYMBOL, "fee must be GOLOS");
             FC_ASSERT(steem_amount.symbol ==
                       STEEM_SYMBOL, "golos amount must contain GOLOS");
             FC_ASSERT(ratification_deadline <
@@ -458,13 +442,9 @@ namespace golos { namespace protocol {
                       who == agent, "who must be from or to or agent");
             FC_ASSERT(receiver == from ||
                       receiver == to, "receiver must be from or to");
-            FC_ASSERT(sbd_amount.amount >= 0, "gbg amount cannot be negative");
             FC_ASSERT(steem_amount.amount >=
                       0, "golos amount cannot be negative");
-            FC_ASSERT(sbd_amount.amount > 0 || steem_amount.amount >
-                                               0, "escrow must release a non-zero amount");
-            FC_ASSERT(sbd_amount.symbol ==
-                      SBD_SYMBOL, "gbg amount must contain GBG");
+            FC_ASSERT(steem_amount.amount > 0, "escrow must release a non-zero amount");
             FC_ASSERT(steem_amount.symbol ==
                       STEEM_SYMBOL, "golos amount must contain GOLOS");
         }
@@ -495,8 +475,7 @@ namespace golos { namespace protocol {
             validate_account_name(from);
             validate_account_name(to);
             FC_ASSERT(amount.amount > 0);
-            FC_ASSERT(amount.symbol == STEEM_SYMBOL ||
-                      amount.symbol == SBD_SYMBOL);
+            FC_ASSERT(amount.symbol == STEEM_SYMBOL);
             FC_ASSERT(memo.size() < STEEMIT_MAX_MEMO_SIZE, "Memo is too large");
             FC_ASSERT(fc::is_utf8(memo), "Memo is not UTF8");
         }
@@ -505,8 +484,7 @@ namespace golos { namespace protocol {
             validate_account_name(from);
             validate_account_name(to);
             FC_ASSERT(amount.amount > 0);
-            FC_ASSERT(amount.symbol == STEEM_SYMBOL ||
-                      amount.symbol == SBD_SYMBOL);
+            FC_ASSERT(amount.symbol == STEEM_SYMBOL);
             FC_ASSERT(memo.size() < STEEMIT_MAX_MEMO_SIZE, "Memo is too large");
             FC_ASSERT(fc::is_utf8(memo), "Memo is not UTF8");
         }

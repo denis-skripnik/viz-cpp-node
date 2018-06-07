@@ -216,12 +216,6 @@ namespace golos { namespace wallet {
              */
             vector<golos::plugins::operation_history::applied_operation> get_ops_in_block( uint32_t block_num, bool only_virtual = true );
 
-            /** Return the current price feed history
-             *
-             * @returns Price feed history data on the blockchain
-             */
-            witness_api::feed_history_api_object get_feed_history()const;
-
             /**
              * Returns the list of witnesses producing blocks in the current round (21 Blocks)
              */
@@ -709,7 +703,7 @@ namespace golos { namespace wallet {
                                                           bool broadcast = false);
 
             /**
-             * Transfer funds from one account to another. STEEM and SBD can be transferred.
+             * Transfer funds from one account to another.
              *
              * @param from The account the funds are coming from
              * @param to The account the funds are going to
@@ -720,13 +714,12 @@ namespace golos { namespace wallet {
             annotated_signed_transaction transfer(string from, string to, asset amount, string memo, bool broadcast = false);
 
             /**
-             * Transfer funds from one account to another using escrow. STEEM and SBD can be transferred.
+             * Transfer funds from one account to another using escrow.
              *
              * @param from The account the funds are coming from
              * @param to The account the funds are going to
              * @param agent The account acting as the agent in case of dispute
              * @param escrow_id A unique id for the escrow transfer. (from, escrow_id) must be a unique pair
-             * @param sbd_amount The amount of SBD to transfer
              * @param steem_amount The amount of STEEM to transfer
              * @param fee The fee paid to the agent
              * @param ratification_deadline The deadline for 'to' and 'agent' to approve the escrow transfer
@@ -739,7 +732,6 @@ namespace golos { namespace wallet {
                     string to,
                     string agent,
                     uint32_t escrow_id,
-                    asset sbd_amount,
                     asset steem_amount,
                     asset fee,
                     time_point_sec ratification_deadline,
@@ -798,7 +790,6 @@ namespace golos { namespace wallet {
              * @param who The account authorizing the release
              * @param receiver The account that will receive funds being released
              * @param escrow_id A unique id for the escrow transfer
-             * @param sbd_amount The amount of SBD that will be released
              * @param steem_amount The amount of STEEM that will be released
              * @param broadcast true if you wish to broadcast the transaction
              */
@@ -809,7 +800,6 @@ namespace golos { namespace wallet {
                     string who,
                     string receiver,
                     uint32_t escrow_id,
-                    asset sbd_amount,
                     asset steem_amount,
                     bool broadcast = false
             );
@@ -872,16 +862,6 @@ namespace golos { namespace wallet {
              * @param broadcast true if you wish to broadcast the transaction.
              */
             annotated_signed_transaction set_withdraw_vesting_route( string from, string to, uint16_t percent, bool auto_vest, bool broadcast = false );
-
-            /**
-             * A witness can public a price feed for the STEEM:SBD market. The median price feed is used
-             * to process conversion requests from SBD to STEEM.
-             *
-             * @param witness The witness publishing the price feed
-             * @param exchange_rate The desired exchange rate
-             * @param broadcast true if you wish to broadcast the transaction
-             */
-            annotated_signed_transaction publish_feed(string witness, price exchange_rate, bool broadcast );
 
             /** Signs a transaction.
              *
@@ -1082,7 +1062,6 @@ FC_API( golos::wallet::wallet_api,
                 (get_account)
                 (get_block)
                 (get_ops_in_block)
-                (get_feed_history)
                 (get_account_history)
                 (get_withdraw_routes)
 
@@ -1111,7 +1090,6 @@ FC_API( golos::wallet::wallet_api,
                 (transfer_to_vesting)
                 (withdraw_vesting)
                 (set_withdraw_vesting_route)
-                (publish_feed)
                 (post_comment)
                 (vote)
                 (set_transaction_expiration)

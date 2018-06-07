@@ -43,8 +43,6 @@ using namespace golos::api;
 using plugins::json_rpc::msg_pack;
 
 
-DEFINE_API_ARGS(get_current_median_history_price, msg_pack, price)
-DEFINE_API_ARGS(get_feed_history,                 msg_pack, feed_history_api_object)
 DEFINE_API_ARGS(get_miner_queue,                  msg_pack, std::vector<account_name_type>)
 DEFINE_API_ARGS(get_active_witnesses,             msg_pack, std::vector<account_name_type>)
 DEFINE_API_ARGS(get_witness_schedule,             msg_pack, golos::chain::witness_schedule_object)
@@ -84,8 +82,6 @@ public:
     }
 
     DECLARE_API(
-        (get_current_median_history_price)
-        (get_feed_history)
         (get_miner_queue)
         (get_active_witnesses)
         (get_witness_schedule)
