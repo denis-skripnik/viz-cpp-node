@@ -109,7 +109,7 @@ RUN mkdir /var/cache/golosd && \
 ENV HOME /var/lib/golosd
 RUN chown golosd:golosd -R /var/lib/golosd
 
-ADD share/golosd/snapshot5392323.json /var/lib/golosd
+ADD share/golosd/snapshot.json /var/lib/golosd
 
 # rpc service:
 # http
