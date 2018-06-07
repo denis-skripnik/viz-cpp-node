@@ -52,7 +52,6 @@ if(BUILD_SHARED_LIBRARIES)
             include/golos/chain/operation_notification.hpp
             include/golos/chain/shared_authority.hpp
             include/golos/chain/shared_db_merkle.hpp
-            include/golos/chain/snapshot_state.hpp
             include/golos/chain/steem_evaluator.hpp
             include/golos/chain/steem_object_types.hpp
             include/golos/chain/steem_objects.hpp
@@ -101,7 +100,6 @@ else()
             include/golos/chain/operation_notification.hpp
             include/golos/chain/shared_authority.hpp
             include/golos/chain/shared_db_merkle.hpp
-            include/golos/chain/snapshot_state.hpp
             include/golos/chain/steem_evaluator.hpp
             include/golos/chain/steem_object_types.hpp
             include/golos/chain/steem_objects.hpp
