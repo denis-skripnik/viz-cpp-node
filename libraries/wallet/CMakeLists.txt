@@ -56,7 +56,6 @@ target_link_libraries(
         golos::database_api
         golos::account_history
         golos::operation_history
-        golos::market_history
         golos::social_network
         golos::tags
         golos::private_message

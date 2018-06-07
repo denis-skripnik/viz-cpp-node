@@ -396,36 +396,6 @@ namespace golos { namespace protocol {
             exchange_rate.validate();
         }
 
-        void limit_order_create_operation::validate() const {
-            validate_account_name(owner);
-            FC_ASSERT((is_asset_type(amount_to_sell, STEEM_SYMBOL) &&
-                       is_asset_type(min_to_receive, SBD_SYMBOL))
-                      || (is_asset_type(amount_to_sell, SBD_SYMBOL) &&
-                          is_asset_type(min_to_receive, STEEM_SYMBOL)),
-                    "Limit order must be for the GOLOS:GBG market");
-            (amount_to_sell / min_to_receive).validate();
-        }
-
-        void limit_order_create2_operation::validate() const {
-            validate_account_name(owner);
-            FC_ASSERT(amount_to_sell.symbol ==
-                      exchange_rate.base.symbol, "Sell asset must be the base of the price");
-            exchange_rate.validate();
-
-            FC_ASSERT((is_asset_type(amount_to_sell, STEEM_SYMBOL) &&
-                       is_asset_type(exchange_rate.quote, SBD_SYMBOL)) ||
-                      (is_asset_type(amount_to_sell, SBD_SYMBOL) &&
-                       is_asset_type(exchange_rate.quote, STEEM_SYMBOL)),
-                    "Limit order must be for the GOLOS:GBG market");
-
-            FC_ASSERT((amount_to_sell * exchange_rate).amount >
-                      0, "Amount to sell cannot round to 0 when traded");
-        }
-
-        void limit_order_cancel_operation::validate() const {
-            validate_account_name(owner);
-        }
-
         void report_over_production_operation::validate() const {
             validate_account_name(reporter);
             validate_account_name(first_block.witness);

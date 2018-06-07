@@ -13,14 +13,6 @@ namespace golos {
                 return false;
             }
 
-            bool operator()(const limit_order_create_operation &) const {
-                return true;
-            }
-
-            bool operator()(const limit_order_cancel_operation &) const {
-                return true;
-            }
-
             bool operator()(const transfer_operation &) const {
                 return true;
             }

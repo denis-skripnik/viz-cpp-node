@@ -1767,65 +1767,6 @@ namespace golos { namespace chain {
             });
         }
 
-        void limit_order_create_evaluator::do_apply(const limit_order_create_operation &o) {
-            database &_db = db();
-            FC_ASSERT(o.expiration >
-                      _db.head_block_time(), "Limit order has to expire after head block time.");
-
-            const auto &owner = _db.get_account(o.owner);
-
-            FC_ASSERT(_db.get_balance(owner, o.amount_to_sell.symbol) >=
-                      o.amount_to_sell, "Account does not have sufficient funds for limit order.");
-
-            _db.adjust_balance(owner, -o.amount_to_sell);
-
-            const auto &order = _db.create<limit_order_object>([&](limit_order_object &obj) {
-                obj.created = _db.head_block_time();
-                obj.seller = o.owner;
-                obj.orderid = o.orderid;
-                obj.for_sale = o.amount_to_sell.amount;
-                obj.sell_price = o.get_price();
-                obj.expiration = o.expiration;
-            });
-
-            bool filled = _db.apply_order(order);
-
-            if (o.fill_or_kill)
-                FC_ASSERT(filled, "Cancelling order because it was not filled.");
-        }
-
-        void limit_order_create2_evaluator::do_apply(const limit_order_create2_operation &o) {
-            database &_db = db();
-            FC_ASSERT(o.expiration >
-                      _db.head_block_time(), "Limit order has to expire after head block time.");
-
-            const auto &owner = _db.get_account(o.owner);
-
-            FC_ASSERT(_db.get_balance(owner, o.amount_to_sell.symbol) >=
-                      o.amount_to_sell, "Account does not have sufficient funds for limit order.");
-
-            _db.adjust_balance(owner, -o.amount_to_sell);
-
-            const auto &order = _db.create<limit_order_object>([&](limit_order_object &obj) {
-                obj.created = _db.head_block_time();
-                obj.seller = o.owner;
-                obj.orderid = o.orderid;
-                obj.for_sale = o.amount_to_sell.amount;
-                obj.sell_price = o.exchange_rate;
-                obj.expiration = o.expiration;
-            });
-
-            bool filled = _db.apply_order(order);
-
-            if (o.fill_or_kill)
-                FC_ASSERT(filled, "Cancelling order because it was not filled.");
-        }
-
-        void limit_order_cancel_evaluator::do_apply(const limit_order_cancel_operation &o) {
-            database &_db = db();
-            _db.cancel_order(_db.get_limit_order(o.owner, o.orderid));
-        }
-
         void report_over_production_evaluator::do_apply(const report_over_production_operation &o) {
             database &_db = db();
             FC_ASSERT(!_db.has_hardfork(STEEMIT_HARDFORK_0_4), "report_over_production_operation is disabled.");

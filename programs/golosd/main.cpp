@@ -9,7 +9,6 @@
 #include <golos/plugins/network_broadcast_api/network_broadcast_api_plugin.hpp>
 #include <golos/plugins/witness/witness.hpp>
 #include <golos/plugins/database_api/plugin.hpp>
-#include <golos/plugins/market_history/market_history_plugin.hpp>
 #include <golos/plugins/test_api/test_api_plugin.hpp>
 #include <golos/plugins/social_network/social_network.hpp>
 #include <golos/plugins/account_history/plugin.hpp>
@@ -67,7 +66,6 @@ namespace golos {
             golos::plugins::database_api::register_database_api();
             appbase::app().register_plugin<golos::plugins::social_network::social_network>();
             appbase::app().register_plugin<golos::plugins::test_api::test_api_plugin>();
-            appbase::app().register_plugin<golos::plugins::market_history::market_history_plugin>();
             appbase::app().register_plugin<golos::plugins::account_history::plugin>();
             appbase::app().register_plugin<golos::plugins::account_by_key::account_by_key_plugin>();
             appbase::app().register_plugin<golos::plugins::private_message::private_message_plugin>();

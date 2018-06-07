@@ -12,7 +12,6 @@
 #include <golos/api/account_vote.hpp>
 #include <golos/api/vote_state.hpp>
 
-#include <golos/plugins/market_history/market_history_objects.hpp>
 #include <golos/plugins/follow/plugin.hpp>
 #include <golos/plugins/follow/follow_api_object.hpp>
 #include <golos/plugins/private_message/private_message_objects.hpp>
@@ -33,7 +32,6 @@ using namespace plugins::database_api;
 using namespace plugins::follow;
 using namespace plugins::social_network;
 using namespace plugins::tags;
-using namespace plugins::market_history;
 using namespace plugins::network_broadcast_api;
 using namespace plugins::private_message;
 using namespace golos::api;
@@ -62,7 +60,6 @@ struct remote_database_api {
     optional< account_bandwidth_api_object > get_account_bandwidth( account_name_type, bandwidth_type);
     vector< database_api::savings_withdraw_api_object > get_savings_withdraw_from( account_name_type );
     vector< database_api::savings_withdraw_api_object > get_savings_withdraw_to( account_name_type );
-    vector< database_api::extended_limit_order > get_open_orders( account_name_type );
     string get_transaction_hex( signed_transaction );
     set< public_key_type > get_required_signatures( signed_transaction, flat_set< public_key_type > );
     set< public_key_type > get_potential_signatures( signed_transaction );
@@ -149,29 +146,9 @@ struct remote_follow {
     vector< reblog_count > get_blog_authors( account_name_type );
 };
 
-
 /**
  * This is a dummy class exists only to provide method signature information to fc::api, not to execute calls.
- * Class is used by wallet to send formatted API calls to market_history plugin on remote node.
- */
-struct remote_market_history {
-   //database_api::get_version_return get_version();
-    // TODO This method is from tolstoy_api
-   //database_api::reward_fund_apit_object get_reward_fund( string );
-   //vector< account_id_type > get_account_references( account_id_type account_id );
-
-   market_ticker get_ticker();
-   market_volume get_volume();
-   order_book get_order_book(uint32_t limit);
-   vector<market_trade> get_trade_history(time_point_sec start, time_point_sec end, uint32_t limit);
-   vector<market_trade> get_recent_trades(uint32_t limit);
-   vector<bucket_object> get_market_history(uint32_t bucket_seconds, time_point_sec start, time_point_sec end);
-   flat_set<uint32_t> get_market_history_buckets();
-};
-
-/**
- * This is a dummy class exists only to provide method signature information to fc::api, not to execute calls.
- * Class is used by wallet to send formatted API calls to market_history plugin on remote node.
+ * Class is used by wallet to send formatted API calls to private_message plugin on remote node.
  */
 struct remote_private_message {
     vector <message_api_obj> get_inbox(const std::string& to, time_point newest, uint16_t limit, std::uint64_t offset) const;
@@ -226,7 +203,6 @@ FC_API( golos::wallet::remote_database_api,
         (get_account_bandwidth)
         (get_savings_withdraw_from)
         (get_savings_withdraw_to)
-        (get_open_orders)
         (get_transaction_hex)
         (get_required_signatures)
         (get_potential_signatures)
@@ -301,19 +277,6 @@ FC_API( golos::wallet::remote_follow,
         (get_account_reputations)
         (get_reblogged_by)
         (get_blog_authors)
-)
-
-/**
- * Declaration of remote API formatter to follow plugin on remote node
- */
-FC_API( golos::wallet::remote_market_history,
-        (get_ticker)
-        (get_volume)
-        (get_order_book)
-        (get_trade_history)
-        (get_recent_trades)
-        (get_market_history)
-        (get_market_history_buckets)
 )
 
 /**

@@ -119,9 +119,6 @@ public:
         return _db;
     }
 
-
-    std::map<std::pair<asset_symbol_type, asset_symbol_type>, std::function<void(const variant &)>> _market_subscriptions;
-
     block_applied_callback_info::cont active_block_applied_callback;
     block_applied_callback_info::cont free_block_applied_callback;
 

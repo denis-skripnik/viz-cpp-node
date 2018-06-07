@@ -221,19 +221,6 @@ if( options.count(name) ) { \
             impacted.insert(op.publisher);
         }
 
-        void operator()(const limit_order_create_operation& op) {
-            impacted.insert(op.owner);
-        }
-
-        void operator()(const fill_order_operation& op) {
-            impacted.insert(op.current_owner);
-            impacted.insert(op.open_owner);
-        }
-
-        void operator()(const limit_order_cancel_operation& op) {
-            impacted.insert(op.owner);
-        }
-
         void operator()(const pow_operation& op) {
             impacted.insert(op.worker_account);
         }

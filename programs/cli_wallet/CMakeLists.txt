@@ -28,7 +28,6 @@ target_link_libraries(
         golos_wallet
         golos::database_api
         golos::account_history
-        golos::market_history
         golos::social_network
         golos::private_message
         golos::follow

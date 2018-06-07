@@ -27,7 +27,6 @@ target_link_libraries(
         golos::test_api_plugin
         golos::social_network
         golos::tags
-        golos::market_history
         golos::operation_history
         golos::account_by_key
         golos::account_history

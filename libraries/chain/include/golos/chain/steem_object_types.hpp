@@ -54,7 +54,6 @@ namespace golos { namespace chain {
             comment_content_object_type,
             comment_vote_object_type,
             witness_vote_object_type,
-            limit_order_object_type,
             feed_history_object_type,
             hardfork_property_object_type,
             withdraw_vesting_route_object_type,
@@ -86,7 +85,6 @@ namespace golos { namespace chain {
         class comment_content_object;
         class comment_vote_object;
         class witness_vote_object;
-        class limit_order_object;
         class feed_history_object;
         class hardfork_property_object;
         class withdraw_vesting_route_object;
@@ -114,7 +112,6 @@ namespace golos { namespace chain {
         typedef object_id<comment_content_object> comment_content_id_type;
         typedef object_id<comment_vote_object> comment_vote_id_type;
         typedef object_id<witness_vote_object> witness_vote_id_type;
-        typedef object_id<limit_order_object> limit_order_id_type;
         typedef object_id<feed_history_object> feed_history_id_type;
         typedef object_id<hardfork_property_object> hardfork_property_id_type;
         typedef object_id<withdraw_vesting_route_object> withdraw_vesting_route_id_type;
@@ -213,7 +210,6 @@ FC_REFLECT_ENUM(golos::chain::object_type,
                 (comment_content_object_type)
                 (comment_vote_object_type)
                 (witness_vote_object_type)
-                (limit_order_object_type)
                 (feed_history_object_type)
                 (hardfork_property_object_type)
                 (withdraw_vesting_route_object_type)

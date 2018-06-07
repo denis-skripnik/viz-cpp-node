@@ -214,7 +214,6 @@ namespace golos { namespace wallet {
                     _remote_social_network( con.get_remote_api< remote_social_network >( 0, "social_network" ) ),
                     _remote_network_broadcast_api( con.get_remote_api< remote_network_broadcast_api >( 0, "network_broadcast_api" ) ),
                     _remote_follow( con.get_remote_api< remote_follow >( 0, "follow" ) ),
-                    _remote_market_history( con.get_remote_api< remote_market_history >( 0, "market_history" ) ),
                     _remote_private_message( con.get_remote_api< remote_private_message>( 0, "private_message" ) ),
                     _remote_account_by_key( con.get_remote_api< remote_account_by_key>( 0, "account_by_key" ) ) ,
                     _remote_witness_api( con.get_remote_api< remote_witness_api >( 0, "witness_api" ) )
@@ -876,105 +875,6 @@ namespace golos { namespace wallet {
                         }
                         return ss.str();
                     };
-                    /*m["get_open_orders"] = []( variant result, const fc::variants& a ) {
-                        auto orders = result.as<vector<database_api::extended_limit_order>>();
-
-                        std::stringstream ss;
-
-                        ss << setiosflags( ios::fixed ) << setiosflags( ios::left ) ;
-                        ss << ' ' << setw( 10 ) << "Order #";
-                        ss << ' ' << setw( 10 ) << "Price";
-                        ss << ' ' << setw( 10 ) << "Quantity";
-                        ss << ' ' << setw( 10 ) << "Type";
-                        ss << "\n=====================================================================================================\n";
-                        for( const auto& o : orders ) {
-                            ss << ' ' << setw( 10 ) << o.orderid;
-                            ss << ' ' << setw( 10 ) << o.real_price;
-                            ss << ' ' << setw( 10 ) << fc::variant( asset( o.for_sale, o.sell_price.base.symbol ) ).as_string();
-                            ss << ' ' << setw( 10 ) << (o.sell_price.base.symbol == STEEM_SYMBOL ? "SELL" : "BUY");
-                            ss << "\n";
-                        }
-                        return ss.str();
-
-                    };
-
-                    m["get_order_book"] = []( variant result, const fc::variants& a ) {
-                        auto orders = result.as< market_history::get_order_book_return >();
-                        std::stringstream ss;
-                        asset bid_sum = asset( 0, SBD_SYMBOL );
-                        asset ask_sum = asset( 0, SBD_SYMBOL );
-                        int spacing = 24;
-
-                        ss << setiosflags( ios::fixed ) << setiosflags( ios::left ) ;
-
-                        ss << ' ' << setw( ( spacing * 4 ) + 6 ) << "Bids" << "Asks\n"
-                           << ' '
-                           << setw( spacing + 3 ) << "Sum(SBD)"
-                           << setw( spacing + 1) << "SBD"
-                           << setw( spacing + 1 ) << "STEEM"
-                           << setw( spacing + 1 ) << "Price"
-                           << setw( spacing + 1 ) << "Price"
-                           << setw( spacing + 1 ) << "STEEM "
-                           << setw( spacing + 1 ) << "SBD " << "Sum(SBD)"
-                           << "\n====================================================================================================="
-                           << "|=====================================================================================================\n";
-
-                        for( size_t i = 0; i < orders.bids.size() || i < orders.asks.size(); i++ ) {
-                            if ( i < orders.bids.size() ) {
-                                bid_sum += asset( orders.bids[i].sbd, SBD_SYMBOL );
-                                ss
-                                        << ' ' << setw( spacing ) << bid_sum.to_string()
-                                        << ' ' << setw( spacing ) << asset( orders.bids[i].sbd, SBD_SYMBOL ).to_string()
-                                        << ' ' << setw( spacing ) << asset( orders.bids[i].steem, STEEM_SYMBOL ).to_string()
-                                        << ' ' << setw( spacing ) << orders.bids[i].real_price;
-                            } else {
-                                ss << setw( (spacing * 4 ) + 5 ) << ' ';
-                            }
-
-                            ss << " |";
-
-                            if ( i < orders.asks.size() ) {
-                                ask_sum += asset( orders.asks[i].sbd, SBD_SYMBOL );
-                                ss << ' ' << setw( spacing ) << orders.asks[i].real_price
-                                   << ' ' << setw( spacing ) << asset( orders.asks[i].steem, STEEM_SYMBOL ).to_string()
-                                   << ' ' << setw( spacing ) << asset( orders.asks[i].sbd, SBD_SYMBOL ).to_string()
-                                   << ' ' << setw( spacing ) << ask_sum.to_string();
-                            }
-
-                            ss << endl;
-                        }
-
-                        ss << endl
-                           << "Bid Total: " << bid_sum.to_string() << endl
-                           << "Ask Total: " << ask_sum.to_string() << endl;
-
-                        return ss.str();
-                    };
-
-                    m["get_withdraw_routes"] = []( variant result, const fc::variants& a )
-                    {
-                        auto routes = result.as< vector< database_api::withdraw_vesting_route_api_object > >();
-                        std::stringstream ss;
-
-                        ss << ' ' << std::left << std::setw( 20 ) << "From";
-                        ss << ' ' << std::left << std::setw( 20 ) << "To";
-                        ss << ' ' << std::right << std::setw( 8 ) << "Percent";
-                        ss << ' ' << std::right << std::setw( 9 ) << "Auto-Vest";
-                        ss << "\n==============================================================\n";
-
-                        for( auto& r : routes )
-                        {
-                            ss << ' ' << std::left << std::setw( 20 ) << r.from_account;
-                            ss << ' ' << std::left << std::setw( 20 ) << r.to_account ;
-                            ss << ' ' << std::right << std::setw( 8 ) << std::setprecision( 2 ) << std::fixed << double( r.percent ) / 100;
-                            ss << ' ' << std::right << std::setw( 9 ) << ( r.auto_vest ? "true" : "false" ) << std::endl;
-                        }
-
-                        return ss.str();
-                    };
-
-
-                     */
                     return m;
                 }
 
@@ -997,7 +897,6 @@ namespace golos { namespace wallet {
                 fc::api< remote_social_network >        _remote_social_network;
                 fc::api< remote_network_broadcast_api>  _remote_network_broadcast_api;
                 fc::api< remote_follow >                _remote_follow;
-                fc::api< remote_market_history >        _remote_market_history;
                 fc::api< remote_private_message >       _remote_private_message;
                 fc::api< remote_account_by_key >        _remote_account_by_key;
                 fc::api< remote_witness_api >           _remote_witness_api;
@@ -2327,45 +2226,6 @@ fc::ecc::private_key wallet_api::derive_private_key(const std::string& prefix_st
 
         vector< database_api::withdraw_vesting_route_api_object > wallet_api::get_withdraw_routes( string account, database_api::withdraw_route_type type )const {
             return my->_remote_database_api->get_withdraw_routes( account, type );
-        }
-
-        market_history::order_book wallet_api::get_order_book( uint32_t limit ) {
-            FC_ASSERT( limit <= 1000 );
-            return my->_remote_market_history->get_order_book( limit );
-        }
-
-        vector< database_api::extended_limit_order > wallet_api::get_open_orders( string owner ) {
-            return my->_remote_database_api->get_open_orders( owner );
-        }
-
-        annotated_signed_transaction wallet_api::create_order(string owner, uint32_t order_id, asset amount_to_sell, asset min_to_receive, bool fill_or_kill, uint32_t expiration_sec, bool broadcast) {
-            FC_ASSERT( !is_locked() );
-            limit_order_create_operation op;
-            op.owner = owner;
-            op.orderid = order_id;
-            op.amount_to_sell = amount_to_sell;
-            op.min_to_receive = min_to_receive;
-            op.fill_or_kill = fill_or_kill;
-            op.expiration = expiration_sec ? (fc::time_point::now() + fc::seconds(expiration_sec)) : fc::time_point::maximum();
-
-            signed_transaction tx;
-            tx.operations.push_back( op );
-            tx.validate();
-
-            return my->sign_transaction( tx, broadcast );
-        }
-
-        annotated_signed_transaction wallet_api::cancel_order( string owner, uint32_t orderid, bool broadcast ) {
-            FC_ASSERT( !is_locked() );
-            limit_order_cancel_operation op;
-            op.owner = owner;
-            op.orderid = orderid;
-
-            signed_transaction tx;
-            tx.operations.push_back( op );
-            tx.validate();
-
-            return my->sign_transaction( tx, broadcast );
         }
 
         annotated_signed_transaction wallet_api::post_comment( string author, string permlink, string parent_author, string parent_permlink, string title, string body, string json, bool broadcast ) {
