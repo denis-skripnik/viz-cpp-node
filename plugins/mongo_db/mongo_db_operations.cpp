@@ -54,7 +54,6 @@ namespace mongo_db {
     void format_chain_properties_17(document& doc, const chain_properties_17& props) {
         format_value(doc, "account_creation_fee", props.account_creation_fee);
         format_value(doc, "maximum_block_size", props.maximum_block_size);
-        format_value(doc, "sbd_interest_rate", props.sbd_interest_rate);
     }
 
     void format_chain_properties_v(document& doc, const versioned_chain_properties& props) {
@@ -117,46 +116,6 @@ namespace mongo_db {
 
         format_value(body, "account", op.account);
         format_value(body, "vesting_shares", op.vesting_shares);
-
-        return body;
-    }
-
-    auto operation_writer::operator()(const limit_order_create_operation& op) -> result_type {
-        result_type body;
-
-        format_value(body, "owner", op.owner);
-        format_value(body, "orderid", op.orderid);
-        format_value(body, "amount_to_sell", op.amount_to_sell);
-        format_value(body, "min_to_receive", op.min_to_receive);
-        format_value(body, "expiration", op.expiration);
-
-        return body;
-    }
-
-    auto operation_writer::operator()(const limit_order_cancel_operation& op) -> result_type {
-        result_type body;
-
-        format_value(body, "owner", op.owner);
-        format_value(body, "orderid", op.orderid);
-
-        return body;
-    }
-
-    auto operation_writer::operator()(const feed_publish_operation& op) -> result_type {
-        result_type body;
-
-        format_value(body, "publisher", op.publisher);
-        format_value(body, "exchange_rate", op.exchange_rate.to_real());
-
-        return body;
-    }
-
-    auto operation_writer::operator()(const convert_operation& op) -> result_type {
-        result_type body;
-
-        format_value(body, "owner", op.owner);
-        format_value(body, "requestid", op.requestid);
-        format_value(body, "amount", op.amount);
 
         return body;
     }
@@ -326,19 +285,6 @@ namespace mongo_db {
         return body;
     }
 
-    auto operation_writer::operator()(const limit_order_create2_operation& op) -> result_type {
-        result_type body;
-
-        format_value(body, "owner", op.owner);
-        format_value(body, "orderid", op.orderid);
-        format_value(body, "amount_to_sell", op.amount_to_sell);
-        format_value(body, "fill_or_kill", op.fill_or_kill);
-        format_value(body, "exchange_rate", op.exchange_rate.to_real());
-        format_value(body, "expiration", op.expiration);
-
-        return body;
-    }
-
     auto operation_writer::operator()(const challenge_authority_operation& op) -> result_type {
         result_type body;
 
@@ -395,7 +341,6 @@ namespace mongo_db {
         format_value(body, "agent", op.agent);
         format_value(body, "escrow_id", op.escrow_id);
 
-        format_value(body, "sbd_amount", op.sbd_amount);
         format_value(body, "steem_amount ", op.steem_amount);
         format_value(body, "fee", op.fee);
         format_value(body, "json_meta", op.json_meta);
@@ -425,7 +370,6 @@ namespace mongo_db {
         format_value(body, "receiver", op.receiver);
         format_value(body, "escrow_id", op.escrow_id);
 
-        format_value(body, "sbd_amount", op.sbd_amount);
         format_value(body, "steem_amount", op.steem_amount);
 
         return body;
@@ -579,24 +523,12 @@ namespace mongo_db {
 
         return body;
     }
-//
-    auto operation_writer::operator()(const fill_convert_request_operation& op) -> result_type {
-        result_type body;
-
-        format_value(body, "owner", op.owner);
-        format_value(body, "requestid", op.requestid);
-        format_value(body, "amount_in", op.amount_in);
-        format_value(body, "amount_out", op.amount_out);
-
-        return body;
-    }
 
     auto operation_writer::operator()(const author_reward_operation& op) -> result_type {
         result_type body;
 
         format_value(body, "author", op.author);
         format_value(body, "permlink", op.permlink);
-        format_value(body, "sbd_payout", op.sbd_payout);
         format_value(body, "steem_payout", op.steem_payout);
         format_value(body, "vesting_payout", op.vesting_payout);
 
@@ -624,24 +556,6 @@ namespace mongo_db {
         return body;
     }
 
-    auto operation_writer::operator()(const liquidity_reward_operation& op) -> result_type {
-        result_type body;
-
-        format_value(body, "owner", op.owner);
-        format_value(body, "payout", op.payout);
-
-        return body;
-    }
-
-    auto operation_writer::operator()(const interest_operation& op) -> result_type {
-        result_type body;
-
-        format_value(body, "owner", op.owner);
-        format_value(body, "interest", op.interest);
-
-        return body;
-    }
-
     auto operation_writer::operator()(const fill_vesting_withdraw_operation& op) -> result_type {
         result_type body;
 
@@ -649,19 +563,6 @@ namespace mongo_db {
         format_value(body, "to_account", op.to_account);
         format_value(body, "withdrawn", op.withdrawn);
         format_value(body, "deposited", op.deposited);
-
-        return body;
-    }
-
-    auto operation_writer::operator()(const fill_order_operation& op) -> result_type {
-        result_type body;
-
-        format_value(body, "current_owner", op.current_owner);
-        format_value(body, "current_orderid", op.current_orderid);
-        format_value(body, "current_pays", op.current_pays);
-        format_value(body, "open_owner", op.open_owner);
-        format_value(body, "open_orderid", op.open_orderid);
-        format_value(body, "open_pays", op.open_pays);
 
         return body;
     }

@@ -14,7 +14,6 @@ namespace golos { namespace api {
 
         asset account_creation_fee;
         uint32_t maximum_block_size;
-        uint16_t sbd_interest_rate;
 
         fc::optional<uint32_t> create_account_with_golos_modifier;
         fc::optional<uint32_t> create_account_delegation_ratio;

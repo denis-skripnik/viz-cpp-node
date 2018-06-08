@@ -493,7 +493,6 @@ namespace golos { namespace protocol {
             chain_properties_18& operator=(const chain_properties_17& src) {
                 account_creation_fee = src.account_creation_fee;
                 maximum_block_size = src.maximum_block_size;
-                sbd_interest_rate = src.sbd_interest_rate;
                 return *this;
             }
 
@@ -503,7 +502,6 @@ namespace golos { namespace protocol {
         inline chain_properties_17& chain_properties_17::operator=(const chain_properties_18& src) {
             account_creation_fee = src.account_creation_fee;
             maximum_block_size = src.maximum_block_size;
-            sbd_interest_rate = src.sbd_interest_rate;
             return *this;
         }
 

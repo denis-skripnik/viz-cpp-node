@@ -28,9 +28,6 @@ namespace golos { namespace chain {
             if (o.props.account_creation_fee.amount.value != STEEMIT_MIN_ACCOUNT_CREATION_FEE) {
                 wlog("The chain_properties_update_operation should be used to update account_creation_fee");
             }
-            if (o.props.sbd_interest_rate != STEEMIT_DEFAULT_SBD_INTEREST_RATE) {
-                wlog("The chain_properties_update_operation should be used to update sbd_interest_rate");
-            }
             if (o.props.maximum_block_size != STEEMIT_MIN_BLOCK_SIZE_LIMIT * 2) {
                 wlog("The chain_properties_update_operation should be used to update maximum_block_size");
             }

@@ -53,6 +53,14 @@ namespace golos { namespace chain {
         uint64_t last_confirmed_block_num = 0;
 
         /**
+         * Some witnesses have the job because they did a proof of work,
+         * this field indicates where they were in the POW order. After
+         * each round, the witness with the lowest pow_worker value greater
+         * than 0 is removed.
+         */
+        uint64_t pow_worker = 0;
+
+        /**
          *  This is the key used to sign blocks on behalf of this witness
          */
         public_key_type signing_key;

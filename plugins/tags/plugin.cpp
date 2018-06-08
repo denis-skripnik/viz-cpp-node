@@ -403,7 +403,7 @@ namespace golos { namespace plugins { namespace tags {
             }
 
             discussion d = create_discussion(*comment);
-            d.promoted = asset(itr->promoted_balance, SBD_SYMBOL);
+            d.promoted = asset(itr->promoted_balance, STEEM_SYMBOL);
 
             if (!select(d) || !query.is_good_tags(d)) {
                 continue;

@@ -195,16 +195,6 @@ namespace mongo_db {
             format_value(body, "balance", account.balance);
             format_value(body, "savings_balance", account.savings_balance);
 
-            format_value(body, "sbd_balance", account.sbd_balance);
-            format_value(body, "sbd_seconds", account.sbd_seconds);
-            format_value(body, "sbd_seconds_last_update", account.sbd_seconds_last_update);
-            format_value(body, "sbd_last_interest_payment", account.sbd_last_interest_payment);
-
-            format_value(body, "savings_sbd_balance", account.savings_sbd_balance);
-            format_value(body, "savings_sbd_seconds", account.savings_sbd_seconds);
-            format_value(body, "savings_sbd_seconds_last_update", account.savings_sbd_seconds_last_update);
-            format_value(body, "savings_sbd_last_interest_payment", account.savings_sbd_last_interest_payment);
-
             format_value(body, "savings_withdraw_requests", account.savings_withdraw_requests);
 
             format_value(body, "curation_rewards", account.curation_rewards);
@@ -247,7 +237,7 @@ namespace mongo_db {
 
     auto state_writer::operator()(const vote_operation& op) -> result_type {
         format_comment(op.author, op.permlink);
-        
+
         try {
             auto& vote_idx = db_.get_index<comment_vote_index>().indices().get<by_comment_voter>();
             auto& comment = db_.get_comment(op.author, op.permlink);
@@ -299,7 +289,7 @@ namespace mongo_db {
     auto state_writer::operator()(const comment_options_operation& op) -> result_type {
         format_comment(op.author, op.permlink);
     }
-    
+
     auto state_writer::operator()(const delete_comment_operation& op) -> result_type {
 
 	std::string author = op.author;
@@ -327,7 +317,7 @@ namespace mongo_db {
 
         // Will be updated with removed = true. If no one - nothing to do.
 	auto comment_vote = create_removal_document("comment_vote_object", "comment", comment_oid_hash);
-        
+
         bmi_insert_or_replace(all_docs, std::move(comment_vote));
     }
 
@@ -362,27 +352,11 @@ namespace mongo_db {
     }
 
     auto state_writer::operator()(const transfer_to_vesting_operation& op) -> result_type {
-        
+
     }
 
     auto state_writer::operator()(const withdraw_vesting_operation& op) -> result_type {
-        
-    }
 
-    auto state_writer::operator()(const limit_order_create_operation& op) -> result_type {
-        
-    }
-
-    auto state_writer::operator()(const limit_order_cancel_operation& op) -> result_type {
-        
-    }
-
-    auto state_writer::operator()(const feed_publish_operation& op) -> result_type {
-        
-    }
-
-    auto state_writer::operator()(const convert_operation& op) -> result_type {
-        
     }
 
     auto state_writer::operator()(const account_create_operation& op) -> result_type {
@@ -402,155 +376,135 @@ namespace mongo_db {
     }
 
     auto state_writer::operator()(const witness_update_operation& op) -> result_type {
-        
+
     }
 
     auto state_writer::operator()(const account_witness_vote_operation& op) -> result_type {
-        
+
     }
 
     auto state_writer::operator()(const account_witness_proxy_operation& op) -> result_type {
-        
+
     }
 
     auto state_writer::operator()(const pow_operation& op) -> result_type {
-        
+
     }
 
     auto state_writer::operator()(const custom_operation& op) -> result_type {
-        
+
     }
 
     auto state_writer::operator()(const report_over_production_operation& op) -> result_type {
-        
+
     }
 
     auto state_writer::operator()(const custom_json_operation& op) -> result_type {
-        
+
     }
 
     auto state_writer::operator()(const set_withdraw_vesting_route_operation& op) -> result_type {
-        
-    }
 
-    auto state_writer::operator()(const limit_order_create2_operation& op) -> result_type {
-        
     }
 
     auto state_writer::operator()(const challenge_authority_operation& op) -> result_type {
-        
+
     }
 
     auto state_writer::operator()(const prove_authority_operation& op) -> result_type {
-        
+
     }
 
     auto state_writer::operator()(const request_account_recovery_operation& op) -> result_type {
-        
+
     }
 
     auto state_writer::operator()(const recover_account_operation& op) -> result_type {
-        
+
     }
 
     auto state_writer::operator()(const change_recovery_account_operation& op) -> result_type {
-        
+
     }
 
     auto state_writer::operator()(const escrow_transfer_operation& op) -> result_type {
-        
+
     }
 
     auto state_writer::operator()(const escrow_dispute_operation& op) -> result_type {
-        
+
     }
 
     auto state_writer::operator()(const escrow_release_operation& op) -> result_type {
-        
+
     }
 
     auto state_writer::operator()(const pow2_operation& op) -> result_type {
-        
+
     }
 
     auto state_writer::operator()(const escrow_approve_operation& op) -> result_type {
-        
+
     }
 
     auto state_writer::operator()(const transfer_to_savings_operation& op) -> result_type {
-        
+
     }
 
     auto state_writer::operator()(const transfer_from_savings_operation& op) -> result_type {
-        
+
     }
 
     auto state_writer::operator()(const cancel_transfer_from_savings_operation& op) -> result_type {
-        
+
     }
 
     auto state_writer::operator()(const custom_binary_operation& op) -> result_type {
-        
+
     }
 
     auto state_writer::operator()(const decline_voting_rights_operation& op) -> result_type {
-        
+
     }
 
     auto state_writer::operator()(const reset_account_operation& op) -> result_type {
-        
+
     }
 
     auto state_writer::operator()(const set_reset_account_operation& op) -> result_type {
-        
+
     }
 
     auto state_writer::operator()(const delegate_vesting_shares_operation& op) -> result_type {
-        
+
     }
 
     auto state_writer::operator()(const proposal_create_operation& op) -> result_type {
-        
+
     }
 
     auto state_writer::operator()(const proposal_update_operation& op) -> result_type {
-        
+
     }
 
     auto state_writer::operator()(const proposal_delete_operation& op) -> result_type {
-        
-    }
 
-    auto state_writer::operator()(const fill_convert_request_operation& op) -> result_type {
-        
-    }
-
-    auto state_writer::operator()(const liquidity_reward_operation& op) -> result_type {
-        
-    }
-
-    auto state_writer::operator()(const interest_operation& op) -> result_type {
-        
     }
 
     auto state_writer::operator()(const fill_vesting_withdraw_operation& op) -> result_type {
-        
-    }
 
-    auto state_writer::operator()(const fill_order_operation& op) -> result_type {
-        
     }
 
     auto state_writer::operator()(const shutdown_witness_operation& op) -> result_type {
-        
+
     }
 
     auto state_writer::operator()(const fill_transfer_from_savings_operation& op) -> result_type {
-        
+
     }
 
     auto state_writer::operator()(const hardfork_operation& op) -> result_type {
-        
+
     }
 
     auto state_writer::operator()(const comment_payout_update_operation& op) -> result_type {
@@ -573,7 +527,6 @@ namespace mongo_db {
             format_value(body, "author", op.author);
             format_value(body, "permlink", op.permlink);
             format_value(body, "timestamp", state_block.timestamp);
-            format_value(body, "sbd_payout", op.sbd_payout);
             format_value(body, "steem_payout", op.steem_payout);
             format_value(body, "vesting_payout", op.vesting_payout);
 
@@ -650,7 +603,7 @@ namespace mongo_db {
             auto benefactor_oid = comment_oid + "/" + op.benefactor;
             auto benefactor_oid_hash = hash_oid(benefactor_oid);
 
-            auto doc = create_document("benefactor_reward", "_id", benefactor_oid_hash);       
+            auto doc = create_document("benefactor_reward", "_id", benefactor_oid_hash);
             document comment_index;
             comment_index << "comment" << 1;
             doc.indexes_to_create.push_back(std::move(comment_index));
@@ -676,11 +629,11 @@ namespace mongo_db {
     }
 
     auto state_writer::operator()(const return_vesting_delegation_operation& op) -> result_type {
-        
+
     }
 
     auto state_writer::operator()(const chain_properties_update_operation& op) -> result_type {
-        
+
     }
 
 }}}

@@ -27,10 +27,6 @@ namespace mongo_db {
         result_type operator()(const transfer_operation& op);
         result_type operator()(const transfer_to_vesting_operation& op);
         result_type operator()(const withdraw_vesting_operation& op);
-        result_type operator()(const limit_order_create_operation& op);
-        result_type operator()(const limit_order_cancel_operation& op);
-        result_type operator()(const feed_publish_operation& op);
-        result_type operator()(const convert_operation& op);
         result_type operator()(const account_create_operation& op);
         result_type operator()(const account_update_operation& op);
         result_type operator()(const witness_update_operation& op);
@@ -43,7 +39,6 @@ namespace mongo_db {
         result_type operator()(const custom_json_operation& op);
         result_type operator()(const comment_options_operation& op);
         result_type operator()(const set_withdraw_vesting_route_operation& op);
-        result_type operator()(const limit_order_create2_operation& op);
         result_type operator()(const challenge_authority_operation& op);
         result_type operator()(const prove_authority_operation& op);
         result_type operator()(const request_account_recovery_operation& op);
@@ -67,14 +62,10 @@ namespace mongo_db {
         result_type operator()(const proposal_create_operation& op);
         result_type operator()(const proposal_update_operation& op);
         result_type operator()(const proposal_delete_operation& op);
-        result_type operator()(const fill_convert_request_operation& op);
         result_type operator()(const author_reward_operation& op);
         result_type operator()(const curation_reward_operation& op);
         result_type operator()(const comment_reward_operation& op);
-        result_type operator()(const liquidity_reward_operation& op);
-        result_type operator()(const interest_operation& op);
         result_type operator()(const fill_vesting_withdraw_operation& op);
-        result_type operator()(const fill_order_operation& op);
         result_type operator()(const shutdown_witness_operation& op);
         result_type operator()(const fill_transfer_from_savings_operation& op);
         result_type operator()(const hardfork_operation& op);

@@ -6,8 +6,7 @@ namespace golos { namespace api {
         const chain_properties& src,
         const database& db
     ) : account_creation_fee(src.account_creation_fee),
-        maximum_block_size(src.maximum_block_size),
-        sbd_interest_rate(src.sbd_interest_rate)
+        maximum_block_size(src.maximum_block_size)
     {
         if (db.has_hardfork(STEEMIT_HARDFORK_0_18__673)) {
             create_account_with_golos_modifier = src.create_account_with_golos_modifier;
