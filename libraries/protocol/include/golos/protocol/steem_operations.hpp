@@ -465,6 +465,7 @@ namespace golos { namespace protocol {
 
             void validate() const {
                 FC_ASSERT(account_creation_fee.amount >= STEEMIT_MIN_ACCOUNT_CREATION_FEE);
+                FC_ASSERT(account_creation_fee.symbol == STEEM_SYMBOL);
                 FC_ASSERT(maximum_block_size >= STEEMIT_MIN_BLOCK_SIZE_LIMIT);
                 FC_ASSERT(min_delegation_multiplier > 0);
                 FC_ASSERT(create_account_delegation_time.count() > GOLOS_CREATE_ACCOUNT_DELEGATION_TIME.count() / 2);

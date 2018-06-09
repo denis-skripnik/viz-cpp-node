@@ -33,11 +33,6 @@ namespace golos { namespace chain {
         ASSERT_REQ_HF(STEEMIT_HARDFORK_0_18__673, "Chain properties"); // remove after hf
         _db.get_account(o.owner); // verify owner exists
 
-        if (o.props.account_creation_fee.symbol != STEEM_SYMBOL) {
-            // after HF, above check can be moved to validate() if reindex doesn't show this warning
-            wlog("Wrong fee symbol in block ${b}", ("b", _db.head_block_num() + 1));
-        }
-
         const auto &idx = _db.get_index<witness_index>().indices().get<by_name>();
         auto itr = idx.find(o.owner);
         if (itr != idx.end()) {
