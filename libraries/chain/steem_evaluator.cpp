@@ -175,8 +175,6 @@ namespace golos { namespace chain {
             FC_ASSERT(current_delegation >= target_delegation,
                 "Inssufficient Delegation ${f} required, ${p} provided.",
                 ("f", target_delegation)("p", current_delegation)("o.fee", o.fee) ("o.delegation", o.delegation));
-            FC_ASSERT(o.fee >= median_props.account_creation_fee,
-                "Insufficient Fee: ${f} required, ${p} provided.", ("f", median_props.account_creation_fee)("p", o.fee));
 
             for (auto& a : o.owner.account_auths) {
                 _db.get_account(a.first);
