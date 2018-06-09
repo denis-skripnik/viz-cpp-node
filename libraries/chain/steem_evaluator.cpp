@@ -101,9 +101,6 @@ namespace golos { namespace chain {
 
             if (_db.has_hardfork(STEEMIT_HARDFORK_0_1)) {
                 auto min_fee = _db.get_witness_schedule_object().median_props.account_creation_fee;
-                if (_db.has_hardfork(STEEMIT_HARDFORK_0_18__535)) {
-                    min_fee *= median_props.create_account_with_golos_modifier;
-                }
                 FC_ASSERT(o.fee >= min_fee,
                     "Insufficient Fee: ${f} required, ${p} provided.", ("f", min_fee)("p", o.fee));
             }
@@ -171,7 +168,6 @@ namespace golos { namespace chain {
             const auto& median_props = _db.get_witness_schedule_object().median_props;
             auto target_delegation =
                 median_props.create_account_delegation_ratio *
-                median_props.create_account_with_golos_modifier *
                 median_props.account_creation_fee * v_share_price;
             auto current_delegation =
                 median_props.create_account_delegation_ratio * o.fee * v_share_price + o.delegation;

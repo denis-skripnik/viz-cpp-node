@@ -15,7 +15,6 @@ namespace golos { namespace api {
         asset account_creation_fee;
         uint32_t maximum_block_size;
 
-        fc::optional<uint32_t> create_account_with_golos_modifier;
         fc::optional<uint32_t> create_account_delegation_ratio;
         fc::optional<fc::microseconds> create_account_delegation_time;
         fc::optional<uint32_t> min_delegation_multiplier;
@@ -26,5 +25,4 @@ namespace golos { namespace api {
 FC_REFLECT(
     (golos::api::chain_api_properties),
     (account_creation_fee)(maximum_block_size)(maximum_block_size)
-    (create_account_with_golos_modifier)(create_account_delegation_ratio)
-    (create_account_delegation_time)(min_delegation_multiplier))
+    (create_account_delegation_ratio)(create_account_delegation_time)(min_delegation_multiplier))

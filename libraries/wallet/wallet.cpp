@@ -288,7 +288,6 @@ namespace golos { namespace wallet {
 
                     auto hf = _remote_database_api->get_hardfork_version();
                     if (hf >= hardfork_version(0, STEEMIT_HARDFORK_0_18)) {
-                        result["create_account_with_golos_modifier"] = median_props.create_account_with_golos_modifier;
                         result["create_account_delegation_ratio"] = median_props.create_account_delegation_ratio;
                         result["create_account_delegation_time"] = median_props.create_account_delegation_time;
                         result["min_delegation_multiplier"] = median_props.min_delegation_multiplier;

@@ -1625,7 +1625,6 @@ namespace golos { namespace chain {
 
             calc_median(&chain_properties::account_creation_fee);
             calc_median(&chain_properties::maximum_block_size);
-            calc_median(&chain_properties::create_account_with_golos_modifier);
             calc_median(&chain_properties::create_account_delegation_ratio);
             calc_median(&chain_properties::create_account_delegation_time);
             calc_median(&chain_properties::min_delegation_multiplier);

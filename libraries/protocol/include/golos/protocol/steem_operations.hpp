@@ -426,8 +426,7 @@ namespace golos { namespace protocol {
              *  fee requires all accounts to have some kind of commitment to the network that includes the
              *  ability to vote and make transactions.
              */
-            asset account_creation_fee =
-                    asset(STEEMIT_MIN_ACCOUNT_CREATION_FEE, STEEM_SYMBOL);
+            asset account_creation_fee = asset(STEEMIT_MIN_ACCOUNT_CREATION_FEE, STEEM_SYMBOL);
 
             /**
              *  This witnesses vote for the maximum_block_size which is used by the network
@@ -436,41 +435,31 @@ namespace golos { namespace protocol {
             uint32_t maximum_block_size = STEEMIT_MIN_BLOCK_SIZE_LIMIT * 2;
 
             /**
-             * Modifier for delegated GP on account creation
-             *
-             *  target_delegation =
-             *  create_account_delegation_ratio * create_account_with_golos_modifier * account_creation_fee
-             */
-            uint32_t create_account_with_golos_modifier = GOLOS_CREATE_ACCOUNT_WITH_GOLOS_MODIFIER;
-
-            /**
              *  Ratio for delegated GP on account creation
              *
-             *  target_delegation =
-             *  create_account_delegation_ratio * create_account_with_golos_modifier * account_creation_fee
+             *  target_delegation = create_account_delegation_ratio * account_creation_fee
              */
             uint32_t create_account_delegation_ratio = GOLOS_CREATE_ACCOUNT_DELEGATION_RATIO;
 
             /**
              * Minimum time of delegated GP on create account
              */
-            fc::microseconds create_account_delegation_time = GOLOS_CREATE_ACCOUNT_DELEGATION_TIME;
+            fc::seconds create_account_delegation_time = GOLOS_CREATE_ACCOUNT_DELEGATION_TIME;
 
             /**
              * Multiplier of minimum delegated GP
              *
-             * minimum delegated GP = delegation_multiplier * account_creation_fee
+             * minimum delegated GP = min_delegation_multiplier * account_creation_fee
              */
-            uint32_t min_delegation_multiplier = GOLOS_MIN_DELEGATION_MULTIPLIER;
+            uint32_t min_delegation_multiplier = GOLOS_MIN_DELEGATION;
 
             void validate() const {
                 FC_ASSERT(account_creation_fee.amount >= STEEMIT_MIN_ACCOUNT_CREATION_FEE);
                 FC_ASSERT(account_creation_fee.symbol == STEEM_SYMBOL);
                 FC_ASSERT(maximum_block_size >= STEEMIT_MIN_BLOCK_SIZE_LIMIT);
                 FC_ASSERT(min_delegation_multiplier > 0);
-                FC_ASSERT(create_account_delegation_time.count() > GOLOS_CREATE_ACCOUNT_DELEGATION_TIME.count() / 2);
+                FC_ASSERT(create_account_delegation_time > 0);
                 FC_ASSERT(create_account_delegation_ratio > 0);
-                FC_ASSERT(create_account_with_golos_modifier > 0);
             }
 
             chain_properties& operator=(const chain_properties&) = default;
@@ -988,7 +977,7 @@ FC_REFLECT((golos::protocol::equihash_pow), (input)(proof)(prev_block)(pow_summa
 FC_REFLECT(
     (golos::protocol::chain_properties),
     (account_creation_fee)(maximum_block_size)
-    (create_account_with_golos_modifier)(create_account_delegation_ratio)
+    (create_account_delegation_ratio)
     (create_account_delegation_time)(min_delegation_multiplier))
 
 FC_REFLECT_TYPENAME((golos::protocol::pow2_work))
