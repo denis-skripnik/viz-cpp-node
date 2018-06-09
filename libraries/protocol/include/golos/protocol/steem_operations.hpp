@@ -444,7 +444,7 @@ namespace golos { namespace protocol {
             /**
              * Minimum time of delegated GP on create account
              */
-            fc::seconds create_account_delegation_time = GOLOS_CREATE_ACCOUNT_DELEGATION_TIME;
+            fc::microseconds create_account_delegation_time = GOLOS_CREATE_ACCOUNT_DELEGATION_TIME;
 
             /**
              * Multiplier of minimum delegated GP

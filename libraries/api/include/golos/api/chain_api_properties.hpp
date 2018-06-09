@@ -16,7 +16,7 @@ namespace golos { namespace api {
         uint32_t maximum_block_size;
 
         fc::optional<uint32_t> create_account_delegation_ratio;
-        fc::optional<fc::seconds> create_account_delegation_time;
+        fc::optional<fc::microseconds> create_account_delegation_time;
         fc::optional<uint32_t> min_delegation_multiplier;
     };
 
