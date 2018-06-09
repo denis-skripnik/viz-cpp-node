@@ -56,10 +56,6 @@ namespace mongo_db {
         format_value(doc, "maximum_block_size", props.maximum_block_size);
     }
 
-    void format_chain_properties_v(document& doc, const chain_properties& props) {
-        //TODO
-    }
-
     /////////////////////////////////////////////////
 
     operation_writer::operation_writer() {
@@ -623,7 +619,7 @@ namespace mongo_db {
     auto operation_writer::operator()(const chain_properties_update_operation& op) -> result_type {
         result_type body;
         format_value(body, "owner", op.owner);
-        format_chain_properties_v(body, op.props);
+        format_chain_properties(body, op.props);
         return body;
     }
 
