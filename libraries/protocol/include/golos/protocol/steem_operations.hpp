@@ -476,14 +476,7 @@ namespace golos { namespace protocol {
         };
 
         /**
-         *  Users who wish to become a witness must pay a fee acceptable to
-         *  the current witnesses to apply for the position and allow voting
-         *  to begin.
-         *
-         *  If the owner isn't a witness they will become a witness. Witnesses
-         *  are charged a fee equal to 1 weeks worth of witness pay which in
-         *  turn is derived from the current share supply. The fee is
-         *  only applied if the owner is not already a witness.
+         *  If the owner isn't a witness they will become a witness.
          *
          *  If the block_signing_key is null then the witness is removed from
          *  contention. The network will pick the top 21 witnesses for
@@ -493,7 +486,6 @@ namespace golos { namespace protocol {
             account_name_type owner;
             string url;
             public_key_type block_signing_key;
-            asset fee; ///< the fee paid to register a new witness, should be 10x current block production pay
 
             void validate() const;
 
@@ -1029,7 +1021,7 @@ FC_REFLECT((golos::protocol::transfer_operation), (from)(to)(amount)(memo))
 FC_REFLECT((golos::protocol::transfer_to_vesting_operation), (from)(to)(amount))
 FC_REFLECT((golos::protocol::withdraw_vesting_operation), (account)(vesting_shares))
 FC_REFLECT((golos::protocol::set_withdraw_vesting_route_operation), (from_account)(to_account)(percent)(auto_vest))
-FC_REFLECT((golos::protocol::witness_update_operation), (owner)(url)(block_signing_key)(fee))
+FC_REFLECT((golos::protocol::witness_update_operation), (owner)(url)(block_signing_key))
 FC_REFLECT((golos::protocol::account_witness_vote_operation), (account)(witness)(approve))
 FC_REFLECT((golos::protocol::account_witness_proxy_operation), (account)(proxy))
 FC_REFLECT((golos::protocol::comment_operation), (parent_author)(parent_permlink)(author)(permlink)(title)(body)(json_metadata))
