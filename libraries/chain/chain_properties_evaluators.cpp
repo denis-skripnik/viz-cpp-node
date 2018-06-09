@@ -56,17 +56,6 @@ namespace golos { namespace chain {
         }
     }
 
-    struct chain_properties_convert {
-        using result_type = chain_properties_18;
-
-        template <typename Props>
-        result_type operator()(Props&& p) const {
-            result_type r;
-            r = p;
-            return r;
-        }
-    };
-
     void chain_properties_update_evaluator::do_apply(const chain_properties_update_operation& o) {
         ASSERT_REQ_HF(STEEMIT_HARDFORK_0_18__673, "Chain properties"); // remove after hf
         _db.get_account(o.owner); // verify owner exists
@@ -75,13 +64,13 @@ namespace golos { namespace chain {
         auto itr = idx.find(o.owner);
         if (itr != idx.end()) {
             _db.modify(*itr, [&](witness_object& w) {
-                w.props = o.props.visit(chain_properties_convert());
+                w.props = o.props;
             });
         } else {
             _db.create<witness_object>([&](witness_object& w) {
                 w.owner = o.owner;
                 w.created = _db.head_block_time();
-                w.props = o.props.visit(chain_properties_convert());
+                w.props = o.props;
             });
         }
     }

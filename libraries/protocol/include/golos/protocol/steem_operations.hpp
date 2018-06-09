@@ -414,14 +414,12 @@ namespace golos { namespace protocol {
             }
         };
 
-        struct chain_properties_18;
-
         /**
          * Witnesses must vote on how to set certain chain properties to ensure a smooth
          * and well functioning network. Any time @owner is in the active set of witnesses these
          * properties will be used to control the blockchain configuration.
          */
-        struct chain_properties_17 {
+        struct chain_properties {
             /**
              *  This fee, paid in STEEM, is converted into VESTING SHARES for the new account. Accounts
              *  without vesting shares cannot earn usage rations and therefore are powerless. This minimum
@@ -436,23 +434,6 @@ namespace golos { namespace protocol {
              *  to tune rate limiting and capacity
              */
             uint32_t maximum_block_size = STEEMIT_MIN_BLOCK_SIZE_LIMIT * 2;
-
-            void validate() const {
-                FC_ASSERT(account_creation_fee.amount >= STEEMIT_MIN_ACCOUNT_CREATION_FEE);
-                FC_ASSERT(maximum_block_size >= STEEMIT_MIN_BLOCK_SIZE_LIMIT);
-            }
-
-            chain_properties_17& operator=(const chain_properties_17&) = default;
-
-            chain_properties_17& operator=(const chain_properties_18& src);
-        };
-
-        /**
-         * Witnesses must vote on how to set certain chain properties to ensure a smooth
-         * and well functioning network. Any time @owner is in the active set of witnesses these
-         * properties will be used to control the blockchain configuration.
-         */
-        struct chain_properties_18: public chain_properties_17 {
 
             /**
              * Modifier for delegated GP on account creation
@@ -483,32 +464,16 @@ namespace golos { namespace protocol {
             uint32_t min_delegation_multiplier = GOLOS_MIN_DELEGATION_MULTIPLIER;
 
             void validate() const {
-                chain_properties_17::validate();
+                FC_ASSERT(account_creation_fee.amount >= STEEMIT_MIN_ACCOUNT_CREATION_FEE);
+                FC_ASSERT(maximum_block_size >= STEEMIT_MIN_BLOCK_SIZE_LIMIT);
                 FC_ASSERT(min_delegation_multiplier > 0);
                 FC_ASSERT(create_account_delegation_time.count() > GOLOS_CREATE_ACCOUNT_DELEGATION_TIME.count() / 2);
                 FC_ASSERT(create_account_delegation_ratio > 0);
                 FC_ASSERT(create_account_with_golos_modifier > 0);
             }
 
-            chain_properties_18& operator=(const chain_properties_17& src) {
-                account_creation_fee = src.account_creation_fee;
-                maximum_block_size = src.maximum_block_size;
-                return *this;
-            }
-
-            chain_properties_18& operator=(const chain_properties_18&) = default;
+            chain_properties& operator=(const chain_properties&) = default;
         };
-
-        inline chain_properties_17& chain_properties_17::operator=(const chain_properties_18& src) {
-            account_creation_fee = src.account_creation_fee;
-            maximum_block_size = src.maximum_block_size;
-            return *this;
-        }
-
-        using versioned_chain_properties = fc::static_variant<
-            chain_properties_17,
-            chain_properties_18
-        >;
 
         /**
          *  Users who wish to become a witness must pay a fee acceptable to
@@ -528,7 +493,7 @@ namespace golos { namespace protocol {
             account_name_type owner;
             string url;
             public_key_type block_signing_key;
-            chain_properties_17 props;
+            chain_properties props;
             asset fee; ///< the fee paid to register a new witness, should be 10x current block production pay
 
             void validate() const;
@@ -543,7 +508,7 @@ namespace golos { namespace protocol {
          */
         struct chain_properties_update_operation : public base_operation {
             account_name_type owner;
-            versioned_chain_properties props;
+            chain_properties props;
 
             void validate() const;
 
@@ -683,7 +648,7 @@ namespace golos { namespace protocol {
             block_id_type block_id;
             uint64_t nonce = 0;
             pow work;
-            chain_properties_17 props;
+            chain_properties props;
 
             void validate() const;
 
@@ -731,7 +696,7 @@ namespace golos { namespace protocol {
         struct pow2_operation : public base_operation {
             pow2_work work;
             optional<public_key_type> new_owner_key;
-            chain_properties_17 props;
+            chain_properties props;
 
             void validate() const;
 
@@ -1029,14 +994,10 @@ FC_REFLECT((golos::protocol::pow2_input), (worker_account)(prev_block)(nonce))
 FC_REFLECT((golos::protocol::equihash_pow), (input)(proof)(prev_block)(pow_summary))
 
 FC_REFLECT(
-    (golos::protocol::chain_properties_17),
-    (account_creation_fee)(maximum_block_size))
-FC_REFLECT_DERIVED(
-    (golos::protocol::chain_properties_18),((golos::protocol::chain_properties_17)),
+    (golos::protocol::chain_properties),
+    (account_creation_fee)(maximum_block_size)
     (create_account_with_golos_modifier)(create_account_delegation_ratio)
     (create_account_delegation_time)(min_delegation_multiplier))
-
-FC_REFLECT_TYPENAME((golos::protocol::versioned_chain_properties))
 
 FC_REFLECT_TYPENAME((golos::protocol::pow2_work))
 FC_REFLECT((golos::protocol::pow_operation), (worker_account)(block_id)(nonce)(work)(props))

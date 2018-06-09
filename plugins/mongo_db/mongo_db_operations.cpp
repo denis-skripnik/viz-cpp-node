@@ -51,12 +51,12 @@ namespace mongo_db {
         return retVal;
     }
 
-    void format_chain_properties_17(document& doc, const chain_properties_17& props) {
+    void format_chain_properties(document& doc, const chain_properties& props) {
         format_value(doc, "account_creation_fee", props.account_creation_fee);
         format_value(doc, "maximum_block_size", props.maximum_block_size);
     }
 
-    void format_chain_properties_v(document& doc, const versioned_chain_properties& props) {
+    void format_chain_properties_v(document& doc, const chain_properties& props) {
         //TODO
     }
 
@@ -165,7 +165,6 @@ namespace mongo_db {
         format_value(body, "fee", op.fee);
         format_value(body, "url", op.url);
         format_value(body, "block_signing_key", (std::string)op.block_signing_key);
-        format_chain_properties_17(body, op.props);
 
         return body;
     }
@@ -201,7 +200,7 @@ namespace mongo_db {
         format_value(body, "worker_account", op.worker_account);
         format_value(body, "nonce", op.nonce);
 
-        format_chain_properties_17(body, op.props);
+        format_chain_properties(body, op.props);
 
         return body;
     }
@@ -378,7 +377,7 @@ namespace mongo_db {
     auto operation_writer::operator()(const pow2_operation& op) -> result_type {
         result_type body;
 
-        format_chain_properties_17(body, op.props);
+        format_chain_properties(body, op.props);
         if (op.new_owner_key) {
             format_value(body, "new_owner_key", (std::string)(*op.new_owner_key));
         }
