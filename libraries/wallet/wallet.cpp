@@ -1744,9 +1744,6 @@ fc::ecc::private_key wallet_api::derive_private_key(const std::string& prefix_st
         ) {
             FC_ASSERT(!is_locked());
 
-            const auto hf = my->_remote_database_api->get_hardfork_version();
-            const auto has_hf18 = hf >= hardfork_version(0, STEEMIT_HARDFORK_0_18__673);
-
             signed_transaction tx;
             witness_update_operation op;
 
@@ -1760,8 +1757,6 @@ fc::ecc::private_key wallet_api::derive_private_key(const std::string& prefix_st
             op.url = url;
             op.owner = witness_account_name;
             op.block_signing_key = block_signing_key;
-
-
 
             tx.operations.push_back(op);
             tx.validate();

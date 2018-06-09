@@ -493,7 +493,6 @@ namespace golos { namespace protocol {
             account_name_type owner;
             string url;
             public_key_type block_signing_key;
-            chain_properties props;
             asset fee; ///< the fee paid to register a new witness, should be 10x current block production pay
 
             void validate() const;
@@ -1030,7 +1029,7 @@ FC_REFLECT((golos::protocol::transfer_operation), (from)(to)(amount)(memo))
 FC_REFLECT((golos::protocol::transfer_to_vesting_operation), (from)(to)(amount))
 FC_REFLECT((golos::protocol::withdraw_vesting_operation), (account)(vesting_shares))
 FC_REFLECT((golos::protocol::set_withdraw_vesting_route_operation), (from_account)(to_account)(percent)(auto_vest))
-FC_REFLECT((golos::protocol::witness_update_operation), (owner)(url)(block_signing_key)(props)(fee))
+FC_REFLECT((golos::protocol::witness_update_operation), (owner)(url)(block_signing_key)(fee))
 FC_REFLECT((golos::protocol::account_witness_vote_operation), (account)(witness)(approve))
 FC_REFLECT((golos::protocol::account_witness_proxy_operation), (account)(proxy))
 FC_REFLECT((golos::protocol::comment_operation), (parent_author)(parent_permlink)(author)(permlink)(title)(body)(json_metadata))
