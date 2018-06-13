@@ -22,7 +22,6 @@ namespace golos { namespace chain {
         DEFINE_EVALUATOR(withdraw_vesting)
         DEFINE_EVALUATOR(set_withdraw_vesting_route)
         DEFINE_EVALUATOR(comment)
-        DEFINE_EVALUATOR(comment_options)
         DEFINE_EVALUATOR(delete_comment)
         DEFINE_EVALUATOR(vote)
         DEFINE_EVALUATOR(custom)

@@ -82,6 +82,14 @@ namespace mongo_db {
         format_value(body, "title", op.title);
         format_value(body, "body", op.body);
         format_value(body, "json_metadata", op.json_metadata);
+        format_value(body, "options", op.options);
+        /*
+        format_value(body, "max_accepted_payout", op.max_accepted_payout);
+        format_value(body, "percent_steem_dollars", op.percent_steem_dollars);
+        format_value(body, "allow_votes", op.allow_votes);
+        format_value(body, "allow_curation_rewards", op.allow_curation_rewards);
+        // comment_options_extensions_type extensions;
+        */
 
         return body;
     }
@@ -251,20 +259,6 @@ namespace mongo_db {
 
         format_value(body, "id", op.id);
         format_value(body, "json", op.json);
-
-        return body;
-    }
-
-    auto operation_writer::operator()(const comment_options_operation& op) -> result_type {
-        result_type body;
-
-        format_value(body, "author", op.author);
-        format_value(body, "permlink", op.permlink);
-        format_value(body, "max_accepted_payout", op.max_accepted_payout);
-        format_value(body, "percent_steem_dollars", op.percent_steem_dollars);
-        format_value(body, "allow_votes", op.allow_votes);
-        format_value(body, "allow_curation_rewards", op.allow_curation_rewards);
-        // comment_options_extensions_type extensions;
 
         return body;
     }

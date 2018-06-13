@@ -396,44 +396,6 @@ namespace golos { namespace chain {
             }
         };
 
-        void comment_options_evaluator::do_apply(const comment_options_operation &o) {
-            database &_db = db();
-            if (_db.has_hardfork(STEEMIT_HARDFORK_0_10)) {
-                const auto &auth = _db.get_account(o.author);
-                FC_ASSERT(!(auth.owner_challenged || auth.active_challenged),
-                          "Operation cannot be processed because account is currently challenged.");
-            }
-
-
-            const auto &comment = _db.get_comment(o.author, o.permlink);
-            if (!o.allow_curation_rewards || !o.allow_votes || o.max_accepted_payout < comment.max_accepted_payout) {
-                FC_ASSERT(comment.abs_rshares == 0,
-                          "One of the included comment options requires the comment to have no rshares allocated to it.");
-            }
-
-            if (!_db.has_hardfork(STEEMIT_HARDFORK_0_17__432)) {// TODO: Remove after hardfork 17
-                FC_ASSERT(o.extensions.size() == 0,
-                          "Operation extensions for the comment_options_operation are not currently supported.");
-            }
-
-            FC_ASSERT(comment.allow_curation_rewards >= o.allow_curation_rewards,
-                      "Curation rewards cannot be re-enabled.");
-            FC_ASSERT(comment.allow_votes >= o.allow_votes,
-                      "Voting cannot be re-enabled.");
-            FC_ASSERT(comment.max_accepted_payout >= o.max_accepted_payout,
-                      "A comment cannot accept a greater payout.");
-
-            _db.modify(comment, [&](comment_object &c) {
-                c.max_accepted_payout = o.max_accepted_payout;
-                c.allow_votes = o.allow_votes;
-                c.allow_curation_rewards = o.allow_curation_rewards;
-            });
-
-            for (auto &e : o.extensions) {
-                e.visit(comment_options_extension_visitor(comment, _db));
-            }
-        }
-
         void comment_evaluator::do_apply(const comment_operation &o) {
             try {
                 database &_db = db();
@@ -574,7 +536,15 @@ namespace golos { namespace chain {
                             com.cashout_time = com.created + STEEMIT_CASHOUT_WINDOW_SECONDS;
                         }
 
+                        com.max_accepted_payout = o.options.max_accepted_payout;
+                        com.allow_votes = o.options.allow_votes;
+                        com.allow_curation_rewards = o.options.allow_curation_rewards;
                     });
+
+                    for (auto &e : o.options.extensions) {
+                        e.visit(comment_options_extension_visitor(new_comment, _db));
+                    }
+
                     id = new_comment.id;
 #ifndef IS_LOW_MEM
                     _db.create<comment_content_object>([&](comment_content_object& con) {
@@ -621,6 +591,11 @@ namespace golos { namespace chain {
                         }
                     }
 
+                    if (!o.options.allow_curation_rewards || !o.options.allow_votes || o.options.max_accepted_payout < comment.max_accepted_payout) {
+                        FC_ASSERT(comment.abs_rshares == 0,
+                                  "One of the included comment options requires the comment to have no rshares allocated to it.");
+                    }
+
                     _db.modify(comment, [&](comment_object &com) {
                         com.last_update = _db.head_block_time();
                         com.active = com.last_update;
@@ -635,8 +610,21 @@ namespace golos { namespace chain {
                                       o.parent_author, "The parent of a comment cannot change.");
                             FC_ASSERT(equal(com.parent_permlink, o.parent_permlink), "The permlink of a comment cannot change.");
                         }
-
+                        FC_ASSERT(comment.allow_curation_rewards >= o.options.allow_curation_rewards,
+                                  "Curation rewards cannot be re-enabled.");
+                        FC_ASSERT(comment.allow_votes >= o.options.allow_votes,
+                                  "Voting cannot be re-enabled.");
+                        FC_ASSERT(comment.max_accepted_payout >= o.options.max_accepted_payout,
+                                  "A comment cannot accept a greater payout.");
+                        com.max_accepted_payout = o.options.max_accepted_payout;
+                        com.allow_votes = o.options.allow_votes;
+                        com.allow_curation_rewards = o.options.allow_curation_rewards;
                     });
+
+                    for (auto &e : o.options.extensions) {
+                        e.visit(comment_options_extension_visitor(comment, _db));
+                    }
+
 #ifndef IS_LOW_MEM
                     _db.modify(_db.get< comment_content_object, by_comment >( comment.id ), [&]( comment_content_object& con ) {
                         if (o.title.size())

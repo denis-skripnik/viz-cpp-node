@@ -80,25 +80,6 @@ namespace golos { namespace protocol {
             validate_account_json_metadata(json_metadata);
         }
 
-        void comment_operation::validate() const {
-            FC_ASSERT(title.size() < 256, "Title larger than size limit");
-            FC_ASSERT(fc::is_utf8(title), "Title not formatted in UTF8");
-            FC_ASSERT(body.size() > 0, "Body is empty");
-            FC_ASSERT(fc::is_utf8(body), "Body not formatted in UTF8");
-
-
-            if (parent_author.size()) {
-                validate_account_name(parent_author);
-            }
-            validate_account_name(author);
-            validate_permlink(parent_permlink);
-            validate_permlink(permlink);
-
-            if (json_metadata.size() > 0) {
-                FC_ASSERT(fc::json::is_valid(json_metadata), "JSON Metadata not valid JSON");
-            }
-        }
-
         struct comment_options_extension_validate_visitor {
             comment_options_extension_validate_visitor() {
             }
@@ -136,12 +117,26 @@ namespace golos { namespace protocol {
             }
         }
 
-        void comment_options_operation::validate() const {
+        void comment_operation::validate() const {
+            FC_ASSERT(title.size() < 256, "Title larger than size limit");
+            FC_ASSERT(fc::is_utf8(title), "Title not formatted in UTF8");
+            FC_ASSERT(body.size() > 0, "Body is empty");
+            FC_ASSERT(fc::is_utf8(body), "Body not formatted in UTF8");
+
+            if (parent_author.size()) {
+                validate_account_name(parent_author);
+            }
             validate_account_name(author);
-            FC_ASSERT(max_accepted_payout.symbol == STEEM_SYMBOL, "Max accepted payout must be in VIZ");
-            FC_ASSERT(max_accepted_payout.amount.value >= 0, "Cannot accept less than 0 payout");
+            validate_permlink(parent_permlink);
             validate_permlink(permlink);
-            for (auto &e : extensions) {
+
+            if (json_metadata.size() > 0) {
+                FC_ASSERT(fc::json::is_valid(json_metadata), "JSON Metadata not valid JSON");
+            }
+
+            FC_ASSERT(options.max_accepted_payout.symbol == STEEM_SYMBOL, "Max accepted payout must be in VIZ");
+            FC_ASSERT(options.max_accepted_payout.amount.value >= 0, "Cannot accept less than 0 payout");
+            for (auto &e : options.extensions) {
                 e.visit(comment_options_extension_validate_visitor());
             }
         }

@@ -286,10 +286,6 @@ namespace mongo_db {
         format_comment(op.author, op.permlink);
     }
 
-    auto state_writer::operator()(const comment_options_operation& op) -> result_type {
-        format_comment(op.author, op.permlink);
-    }
-
     auto state_writer::operator()(const delete_comment_operation& op) -> result_type {
 
 	std::string author = op.author;
