@@ -94,13 +94,13 @@ namespace golos { namespace chain {
             const auto &creator = _db.get_account(o.creator);
 
             const auto &props = _db.get_dynamic_global_properties();
-            const auto& median_props = _db.get_witness_schedule_object().median_props;
+            const auto &median_props = _db.get_witness_schedule_object().median_props;
 
             FC_ASSERT(creator.balance >=
                       o.fee, "Insufficient balance to create account.", ("creator.balance", creator.balance)("required", o.fee));
 
             if (_db.has_hardfork(STEEMIT_HARDFORK_0_1)) {
-                auto min_fee = _db.get_witness_schedule_object().median_props.account_creation_fee;
+                auto min_fee = median_props.account_creation_fee;
                 FC_ASSERT(o.fee >= min_fee,
                     "Insufficient Fee: ${f} required, ${p} provided.", ("f", min_fee)("p", o.fee));
             }
@@ -215,7 +215,7 @@ namespace golos { namespace chain {
                     d.delegator = o.creator;
                     d.delegatee = o.new_account_name;
                     d.vesting_shares = o.delegation;
-                    d.min_delegation_time = now + median_props.create_account_delegation_time;
+                    d.min_delegation_time = now + fc::seconds(median_props.create_account_delegation_time);
                 });
             }
             if (o.fee.amount > 0) {
@@ -2043,21 +2043,13 @@ namespace golos { namespace chain {
 
             const auto& median_props = _db.get_witness_schedule_object().median_props;
             const auto v_share_price = _db.get_dynamic_global_properties().get_vesting_share_price();
-            auto min_delegation = median_props.account_creation_fee * median_props.min_delegation_multiplier * v_share_price;
-            auto min_update = median_props.account_creation_fee * v_share_price;
+            auto min_delegation = median_props.min_delegation * v_share_price;
 
             auto now = _db.head_block_time();
             auto delta = delegation ?
                 op.vesting_shares - delegation->vesting_shares :
                 op.vesting_shares;
             auto increasing = delta.amount > 0;
-
-            FC_ASSERT((increasing ? delta : -delta) >= min_update,
-                "Delegation difference is not enough. min_update: ${min}", ("min", min_update));
-#ifdef STEEMIT_BUILD_TESTNET
-            // min_update depends on account_creation_fee, which can be 0 on testnet
-            FC_ASSERT(delta.amount != 0, "Delegation difference can't be 0");
-#endif
 
             if (increasing) {
                 auto delegated = delegator.delegated_vesting_shares;

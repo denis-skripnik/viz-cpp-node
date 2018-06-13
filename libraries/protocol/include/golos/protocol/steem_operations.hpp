@@ -435,31 +435,30 @@ namespace golos { namespace protocol {
             uint32_t maximum_block_size = STEEMIT_MIN_BLOCK_SIZE_LIMIT * 2;
 
             /**
-             *  Ratio for delegated GP on account creation
+             *  Ratio for delegated VIZ on account creation
              *
              *  target_delegation = create_account_delegation_ratio * account_creation_fee
              */
             uint32_t create_account_delegation_ratio = GOLOS_CREATE_ACCOUNT_DELEGATION_RATIO;
 
             /**
-             * Minimum time of delegated GP on create account
+             * Minimum time of delegated SHARES on create account
              */
-            fc::microseconds create_account_delegation_time = GOLOS_CREATE_ACCOUNT_DELEGATION_TIME;
+            uint32_t create_account_delegation_time = (GOLOS_CREATE_ACCOUNT_DELEGATION_TIME).to_seconds();
 
             /**
-             * Multiplier of minimum delegated GP
-             *
-             * minimum delegated GP = min_delegation_multiplier * account_creation_fee
+             * Minimum delegated VIZ
              */
-            uint32_t min_delegation_multiplier = GOLOS_MIN_DELEGATION;
+            asset min_delegation = asset(GOLOS_MIN_DELEGATION, STEEM_SYMBOL);
 
             void validate() const {
                 FC_ASSERT(account_creation_fee.amount >= STEEMIT_MIN_ACCOUNT_CREATION_FEE);
                 FC_ASSERT(account_creation_fee.symbol == STEEM_SYMBOL);
                 FC_ASSERT(maximum_block_size >= STEEMIT_MIN_BLOCK_SIZE_LIMIT);
-                FC_ASSERT(min_delegation_multiplier > 0);
-                FC_ASSERT(create_account_delegation_time > 0);
                 FC_ASSERT(create_account_delegation_ratio > 0);
+                FC_ASSERT(create_account_delegation_time >= 0);
+                FC_ASSERT(min_delegation.amount > 0);
+                FC_ASSERT(min_delegation.symbol == STEEM_SYMBOL);
             }
 
             chain_properties& operator=(const chain_properties&) = default;
@@ -978,7 +977,7 @@ FC_REFLECT(
     (golos::protocol::chain_properties),
     (account_creation_fee)(maximum_block_size)
     (create_account_delegation_ratio)
-    (create_account_delegation_time)(min_delegation_multiplier))
+    (create_account_delegation_time)(min_delegation))
 
 FC_REFLECT_TYPENAME((golos::protocol::pow2_work))
 FC_REFLECT((golos::protocol::pow_operation), (worker_account)(block_id)(nonce)(work)(props))

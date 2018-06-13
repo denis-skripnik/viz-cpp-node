@@ -1627,7 +1627,7 @@ namespace golos { namespace chain {
             calc_median(&chain_properties::maximum_block_size);
             calc_median(&chain_properties::create_account_delegation_ratio);
             calc_median(&chain_properties::create_account_delegation_time);
-            calc_median(&chain_properties::min_delegation_multiplier);
+            calc_median(&chain_properties::min_delegation);
 
             modify(wso, [&](witness_schedule_object &_wso) {
                 _wso.median_props = median_props;

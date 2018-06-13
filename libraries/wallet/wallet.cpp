@@ -290,7 +290,7 @@ namespace golos { namespace wallet {
                     if (hf >= hardfork_version(0, STEEMIT_HARDFORK_0_18)) {
                         result["create_account_delegation_ratio"] = median_props.create_account_delegation_ratio;
                         result["create_account_delegation_time"] = median_props.create_account_delegation_time;
-                        result["min_delegation_multiplier"] = median_props.min_delegation_multiplier;
+                        result["min_delegation"] = median_props.min_delegation;
                     }
 
                     return result;
