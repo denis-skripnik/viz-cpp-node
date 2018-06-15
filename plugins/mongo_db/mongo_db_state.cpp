@@ -89,7 +89,6 @@ namespace mongo_db {
             format_value(body, "parent_author", comment.parent_author);
             format_value(body, "parent_permlink", comment.parent_permlink);
             format_value(body, "percent_steem_dollars", comment.percent_steem_dollars);
-            format_value(body, "reward_weight", comment.reward_weight);
             format_value(body, "total_payout", comment.total_payout_value);
             format_value(body, "total_vote_weight", comment.total_vote_weight);
             format_value(body, "vote_rshares", comment.vote_rshares);

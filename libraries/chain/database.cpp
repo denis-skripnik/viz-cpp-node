@@ -2054,7 +2054,6 @@ namespace golos { namespace chain {
                     uint128_t reward_tokens = uint128_t(
                          claim_rshare_reward(
                              comment.net_rshares,
-                             comment.reward_weight,
                              comment.max_accepted_payout));
 
                     asset total_payout;
@@ -2386,7 +2385,7 @@ namespace golos { namespace chain {
  *  This method reduces the rshare^2 supply and returns the number of tokens are
  *  redeemed.
  */
-        share_type database::claim_rshare_reward(share_type rshares, uint16_t reward_weight, asset max_steem) {
+        share_type database::claim_rshare_reward(share_type rshares, asset max_steem) {
         try {
                 FC_ASSERT(rshares > 0);
 
@@ -2397,7 +2396,6 @@ namespace golos { namespace chain {
                 u256 total_rshares2 = to256(props.total_reward_shares2);
 
                 u256 rs2 = to256(calculate_vshares(rshares.value));
-                rs2 = (rs2 * reward_weight) / STEEMIT_100_PERCENT;
 
                 u256 payout_u256 = (rf * rs2) / total_rshares2;
                 FC_ASSERT(payout_u256 <=

@@ -126,9 +126,7 @@ namespace golos { namespace chain {
         typedef object_id<required_approval_object> required_approval_object_id_type;
 
         enum bandwidth_type {
-            post,    ///< Rate limiting posting reward eligibility over time
-            forum,   ///< Rate limiting for all forum related actins
-            market   ///< Rate limiting for all other actions
+            forum
         };
 
 } } //golos::chain
