@@ -378,18 +378,10 @@ namespace golos { namespace chain {
                         }
                     }
 
-                    auto band = _db.find<account_bandwidth_object, by_account_bandwidth_type>(std::make_tuple(o.author, bandwidth_type::post));
-                    if (band == nullptr) {
-                        band = &_db.create<account_bandwidth_object>([&](account_bandwidth_object &b) {
-                            b.account = o.author;
-                            b.type = bandwidth_type::post;
-                        });
-                    }
-
                     if (_db.has_hardfork(STEEMIT_HARDFORK_0_12__176)) {
                         if (o.parent_author == STEEMIT_ROOT_POST_PARENT)
-                            FC_ASSERT((now - band->last_bandwidth_update) >
-                                      STEEMIT_MIN_ROOT_COMMENT_INTERVAL, "You may only post once every 5 minutes.", ("now", now)("last_root_post", band->last_bandwidth_update));
+                            FC_ASSERT((now - auth.last_root_post) >
+                                      STEEMIT_MIN_ROOT_COMMENT_INTERVAL, "You may only post once every 5 minutes.", ("now", now)("last_root_post", auth.last_root_post));
                         else
                             FC_ASSERT((now - auth.last_post) >
                                       STEEMIT_MIN_REPLY_INTERVAL, "You may only comment once every 20 seconds.", ("now", now)("auth.last_post", auth.last_post));
@@ -405,27 +397,10 @@ namespace golos { namespace chain {
                                   fc::seconds(60), "You may only post once per minute.", ("now", now)("auth.last_post", auth.last_post));
                     }
 
-                    if (o.parent_author == STEEMIT_ROOT_POST_PARENT) {
-                        auto post_bandwidth = band->average_bandwidth;
-
-                        if (_db.has_hardfork(STEEMIT_HARDFORK_0_12__176)) {
-                            auto post_delta_time = std::min(
-                                    now.sec_since_epoch() -
-                                    band->last_bandwidth_update.sec_since_epoch(), STEEMIT_POST_AVERAGE_WINDOW);
-                            auto old_weight = (post_bandwidth *
-                                               (STEEMIT_POST_AVERAGE_WINDOW -
-                                                post_delta_time)) /
-                                              STEEMIT_POST_AVERAGE_WINDOW;
-                            post_bandwidth = (old_weight + STEEMIT_100_PERCENT);
-                        }
-
-                        _db.modify(*band, [&](account_bandwidth_object &b) {
-                            b.last_bandwidth_update = now;
-                            b.average_bandwidth = post_bandwidth;
-                        });
-                    }
-
                     db().modify(auth, [&](account_object &a) {
+                        if( o.parent_author == STEEMIT_ROOT_POST_PARENT ) {
+                            a.last_root_post = now;
+                        }
                         a.last_post = now;
                         a.post_count++;
                     });
@@ -1922,16 +1897,6 @@ namespace golos { namespace chain {
 
         void reset_account_evaluator::do_apply(const reset_account_operation &op) {
             FC_ASSERT(false, "Reset Account Operation is currently disabled.");
-/*
-            database& _db = db();
-            const auto& acnt = _db.get_account(op.account_to_reset);
-            auto band = _db.find<account_bandwidth_object, by_account_bandwidth_type>(std::make_tuple(op.account_to_reset, bandwidth_type::old_forum));
-            if (band != nullptr)
-                FC_ASSERT((_db.head_block_time() - band->last_bandwidth_update) > fc::days(60),
-                    "Account must be inactive for 60 days to be eligible for reset");
-            FC_ASSERT(acnt.reset_account == op.reset_account, "Reset account does not match reset account on account.");
-            _db.update_owner_authority(acnt, op.new_owner_authority);
-*/
         }
 
         void set_reset_account_evaluator::do_apply(const set_reset_account_operation &op) {

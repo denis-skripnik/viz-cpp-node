@@ -25,7 +25,7 @@ account_api_object::account_api_object(const account_object& a, const golos::cha
         delegated_vesting_shares(a.delegated_vesting_shares), received_vesting_shares(a.received_vesting_shares),
         vesting_withdraw_rate(a.vesting_withdraw_rate), next_vesting_withdrawal(a.next_vesting_withdrawal),
         withdrawn(a.withdrawn), to_withdraw(a.to_withdraw), withdraw_routes(a.withdraw_routes),
-        witnesses_voted_for(a.witnesses_voted_for), last_post(a.last_post) {
+        witnesses_voted_for(a.witnesses_voted_for), last_root_post(a.last_root_post), last_post(a.last_post) {
     size_t n = a.proxied_vsf_votes.size();
     proxied_vsf_votes.reserve(n);
     for (size_t i = 0; i < n; i++) {
@@ -43,24 +43,11 @@ account_api_object::account_api_object(const account_object& a, const golos::cha
     json_metadata = golos::chain::to_string(meta.json_metadata);
 #endif
 
-    auto post = db.find<account_bandwidth_object, by_account_bandwidth_type>(std::make_tuple(name, bandwidth_type::post));
-    if (post != nullptr) {
-        post_bandwidth = post->average_bandwidth;
-        last_root_post = post->last_bandwidth_update;
-    }
-
     auto forum = db.find<account_bandwidth_object, by_account_bandwidth_type>(std::make_tuple(name, bandwidth_type::forum));
     if (forum != nullptr) {
         average_bandwidth = forum->average_bandwidth;
         lifetime_bandwidth = forum->lifetime_bandwidth;
         last_bandwidth_update = forum->last_bandwidth_update;
-    }
-
-    auto market = db.find<account_bandwidth_object, by_account_bandwidth_type>(std::make_tuple(name, bandwidth_type::market));
-    if (market != nullptr) {
-        average_market_bandwidth = market->average_bandwidth;
-        lifetime_market_bandwidth = market->lifetime_bandwidth;
-        last_market_bandwidth_update = market->last_bandwidth_update;
     }
 }
 

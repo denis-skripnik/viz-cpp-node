@@ -77,9 +77,8 @@ struct account_api_object {
     share_type lifetime_market_bandwidth;
     time_point_sec last_bandwidth_update;
     time_point_sec last_market_bandwidth_update;
-    time_point_sec last_post;
     time_point_sec last_root_post;
-    share_type post_bandwidth = STEEMIT_100_PERCENT;
+    time_point_sec last_post;
 
     set<string> witness_votes;
 
@@ -99,7 +98,7 @@ FC_REFLECT((golos::api::account_api_object),
     (curation_rewards)(posting_rewards)(proxied_vsf_votes)(witnesses_voted_for)
     (average_bandwidth)(average_market_bandwidth)(lifetime_bandwidth)(lifetime_market_bandwidth)
     (last_bandwidth_update)(last_market_bandwidth_update)
-    (last_post)(last_root_post)(post_bandwidth)
+    (last_post)(last_root_post)
     (witness_votes)(reputation))
 
 #endif //GOLOS_ACCOUNT_API_OBJ_HPP

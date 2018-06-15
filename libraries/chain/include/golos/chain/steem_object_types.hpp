@@ -224,4 +224,4 @@ FC_REFLECT_ENUM(golos::chain::object_type,
 FC_REFLECT_TYPENAME((golos::chain::shared_string))
 FC_REFLECT_TYPENAME((golos::chain::buffer_type))
 
-FC_REFLECT_ENUM(golos::chain::bandwidth_type, (post)(forum)(market))
+FC_REFLECT_ENUM(golos::chain::bandwidth_type, (forum))
