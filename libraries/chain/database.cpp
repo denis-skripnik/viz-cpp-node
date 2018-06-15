@@ -3214,12 +3214,6 @@ namespace golos { namespace chain {
                 for (const auto& auth : required) {
                     const auto& acnt = get_account(auth);
                     update_account_bandwidth(acnt, trx_size, bandwidth_type::forum);
-                    for (const auto& op : trx.operations) {
-                        if (is_market_operation(op)) {
-                            update_account_bandwidth(acnt, trx_size * 10, bandwidth_type::market);
-                            break;
-                        }
-                    }
                 }
 
                 //Insert transaction into unique transactions database.
