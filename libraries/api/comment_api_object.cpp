@@ -24,7 +24,6 @@ namespace golos { namespace api {
           cashout_time(o.cashout_time),
           max_cashout_time(o.max_cashout_time),
           total_vote_weight(o.total_vote_weight),
-          reward_weight(o.reward_weight),
           total_payout_value(o.total_payout_value),
           curator_payout_value(o.curator_payout_value),
           author_rewards(o.author_rewards),

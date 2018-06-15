@@ -405,8 +405,6 @@ namespace golos { namespace chain {
                                   fc::seconds(60), "You may only post once per minute.", ("now", now)("auth.last_post", auth.last_post));
                     }
 
-                    uint16_t reward_weight = STEEMIT_100_PERCENT;
-
                     if (o.parent_author == STEEMIT_ROOT_POST_PARENT) {
                         auto post_bandwidth = band->average_bandwidth;
 
@@ -419,11 +417,6 @@ namespace golos { namespace chain {
                                                 post_delta_time)) /
                                               STEEMIT_POST_AVERAGE_WINDOW;
                             post_bandwidth = (old_weight + STEEMIT_100_PERCENT);
-                            reward_weight = uint16_t(std::min(
-                                    (STEEMIT_POST_WEIGHT_CONSTANT *
-                                     STEEMIT_100_PERCENT) /
-                                    (post_bandwidth.value *
-                                     post_bandwidth.value), uint64_t(STEEMIT_100_PERCENT)));
                         }
 
                         _db.modify(*band, [&](account_bandwidth_object &b) {
@@ -450,7 +443,6 @@ namespace golos { namespace chain {
                         com.active = com.last_update;
                         com.last_payout = fc::time_point_sec::min();
                         com.max_cashout_time = fc::time_point_sec::maximum();
-                        com.reward_weight = reward_weight;
 
                         if (o.parent_author == STEEMIT_ROOT_POST_PARENT) {
                             com.parent_author = "";
