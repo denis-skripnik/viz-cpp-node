@@ -89,70 +89,7 @@ namespace golos { namespace chain {
 #endif
         }
 
-        void account_create_evaluator::do_apply(const account_create_operation &o) {
-            database &_db = db();
-            const auto &creator = _db.get_account(o.creator);
-
-            const auto &props = _db.get_dynamic_global_properties();
-            const auto &median_props = _db.get_witness_schedule_object().median_props;
-
-            FC_ASSERT(creator.balance >=
-                      o.fee, "Insufficient balance to create account.", ("creator.balance", creator.balance)("required", o.fee));
-
-            if (_db.has_hardfork(STEEMIT_HARDFORK_0_1)) {
-                auto min_fee = median_props.account_creation_fee;
-                FC_ASSERT(o.fee >= min_fee,
-                    "Insufficient Fee: ${f} required, ${p} provided.", ("f", min_fee)("p", o.fee));
-            }
-
-            if (_db.is_producing() ||
-                _db.has_hardfork(STEEMIT_HARDFORK_0_15__465)) {
-                for (auto &a : o.owner.account_auths) {
-                    _db.get_account(a.first);
-                }
-
-                for (auto &a : o.active.account_auths) {
-                    _db.get_account(a.first);
-                }
-
-                for (auto &a : o.posting.account_auths) {
-                    _db.get_account(a.first);
-                }
-            }
-
-            _db.modify(creator, [&](account_object &c) {
-                c.balance -= o.fee;
-            });
-
-            const auto& new_account = _db.create<account_object>([&](account_object& acc) {
-                acc.name = o.new_account_name;
-                acc.memo_key = o.memo_key;
-                acc.created = props.time;
-                acc.last_vote_time = props.time;
-                acc.mined = false;
-
-                if (!_db.has_hardfork(STEEMIT_HARDFORK_0_11__169)) {
-                    acc.recovery_account = STEEMIT_INIT_MINER_NAME;
-                } else {
-                    acc.recovery_account = o.creator;
-                }
-            });
-            store_account_json_metadata(_db, o.new_account_name, o.json_metadata);
-
-            _db.create<account_authority_object>([&](account_authority_object &auth) {
-                auth.account = o.new_account_name;
-                auth.owner = o.owner;
-                auth.active = o.active;
-                auth.posting = o.posting;
-                auth.last_owner_update = fc::time_point_sec::min();
-            });
-
-            if (o.fee.amount > 0) {
-                _db.create_vesting(new_account, o.fee);
-            }
-        }
-
-        void account_create_with_delegation_evaluator::do_apply(const account_create_with_delegation_operation& o) {
+        void account_create_evaluator::do_apply(const account_create_operation& o) {
             ASSERT_REQ_HF(STEEMIT_HARDFORK_0_18__535, "Account creation with delegation");
 
             const auto& creator = _db.get_account(o.creator);

@@ -18,7 +18,6 @@ namespace golos { namespace protocol {
                 transfer_to_vesting_operation,
                 withdraw_vesting_operation,
 
-                account_create_operation,
                 account_update_operation,
 
                 witness_update_operation,
@@ -52,7 +51,7 @@ namespace golos { namespace protocol {
                 reset_account_operation,
                 set_reset_account_operation,
                 delegate_vesting_shares_operation,
-                account_create_with_delegation_operation,
+                account_create_operation,
                 account_metadata_operation,
                 proposal_create_operation,
                 proposal_update_operation,

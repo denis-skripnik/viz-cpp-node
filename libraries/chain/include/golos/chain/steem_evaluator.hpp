@@ -11,7 +11,6 @@ namespace golos { namespace chain {
         using namespace golos::protocol;
 
         DEFINE_EVALUATOR(account_create)
-        DEFINE_EVALUATOR(account_create_with_delegation)
         DEFINE_EVALUATOR(account_update)
         DEFINE_EVALUATOR(account_metadata)
         DEFINE_EVALUATOR(transfer)

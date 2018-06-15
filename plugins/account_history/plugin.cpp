@@ -149,11 +149,6 @@ if( options.count(name) ) { \
             impacted.insert(op.creator);
         }
 
-        void operator()(const account_create_with_delegation_operation& op) {
-            impacted.insert(op.new_account_name);
-            impacted.insert(op.creator);
-        }
-
         void operator()(const account_update_operation& op) {
             impacted.insert(op.account);
         }

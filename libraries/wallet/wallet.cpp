@@ -634,6 +634,7 @@ namespace golos { namespace wallet {
                         account_create_op.owner = authority(1, owner_pubkey, 1);
                         account_create_op.active = authority(1, active_pubkey, 1);
                         account_create_op.memo_key = memo_pubkey;
+                        account_create_op.delegation = asset(0, VESTS_SYMBOL );
 
                         signed_transaction tx;
 
@@ -1265,47 +1266,10 @@ fc::ecc::private_key wallet_api::derive_private_key(const std::string& prefix_st
         }
 
 /**
- * This method is used by faucets to create new accounts for other users which must
- * provide their desired keys. The resulting account may not be controllable by this
- * wallet.
- */
-        annotated_signed_transaction wallet_api::create_account_with_keys(
-            string creator,
-            string new_account_name,
-            string json_meta,
-            asset fee,
-            public_key_type owner,
-            public_key_type active,
-            public_key_type posting,
-            public_key_type memo,
-            bool broadcast
-        ) const {
-            try {
-                FC_ASSERT( !is_locked() );
-                account_create_operation op;
-                op.creator = creator;
-                op.new_account_name = new_account_name;
-                op.owner = authority( 1, owner, 1 );
-                op.active = authority( 1, active, 1 );
-                op.posting = authority( 1, posting, 1 );
-                op.memo_key = memo;
-                op.json_metadata = json_meta;
-                op.fee = fee;
-
-                signed_transaction tx;
-                tx.operations.push_back(op);
-                tx.validate();
-
-                return my->sign_transaction( tx, broadcast );
-            } FC_CAPTURE_AND_RETHROW((creator)(new_account_name)(json_meta)(owner)(active)(posting)(memo)(broadcast))
-        }
-
-
-/**
  *  This method will generate new owner, active, posting and memo keys for the new account
  *  which will be controlable by this wallet.
  */
-        annotated_signed_transaction wallet_api::create_account_delegated(
+        annotated_signed_transaction wallet_api::create_account(
             string creator, asset steem_fee, asset delegated_vests, string new_account_name,
             string json_meta, bool broadcast
         ) {
@@ -1319,7 +1283,7 @@ fc::ecc::private_key wallet_api::derive_private_key(const std::string& prefix_st
                 import_key(active.wif_priv_key);
                 import_key(posting.wif_priv_key);
                 import_key(memo.wif_priv_key);
-                return create_account_with_keys_delegated(
+                return create_account_with_keys(
                     creator, steem_fee, delegated_vests, new_account_name, json_meta,
                     owner.pub_key, active.pub_key, posting.pub_key, memo.pub_key, broadcast);
             }
@@ -1330,7 +1294,7 @@ fc::ecc::private_key wallet_api::derive_private_key(const std::string& prefix_st
  * provide their desired keys. The resulting account may not be controllable by this
  * wallet.
  */
-        annotated_signed_transaction wallet_api::create_account_with_keys_delegated(
+        annotated_signed_transaction wallet_api::create_account_with_keys(
             string creator,
             asset steem_fee,
             asset delegated_vests,
@@ -1344,7 +1308,7 @@ fc::ecc::private_key wallet_api::derive_private_key(const std::string& prefix_st
         ) const {
             try {
                 FC_ASSERT(!is_locked());
-                account_create_with_delegation_operation op;
+                account_create_operation op;
                 op.creator = creator;
                 op.new_account_name = new_account_name;
                 op.owner = authority(1, owner, 1);
@@ -1702,33 +1666,6 @@ fc::ecc::private_key wallet_api::derive_private_key(const std::string& prefix_st
             return my->sign_transaction(tx, broadcast);
         }
 
-/**
- *  This method will generate new owner, active, posting and memo keys for the new account
- *  which will be controlable by this wallet.
- */
-        annotated_signed_transaction wallet_api::create_account(
-            string creator, string new_account_name, string json_meta, asset fee, bool broadcast
-        )
-        { try {
-                FC_ASSERT( !is_locked() );
-                auto owner = suggest_brain_key();
-                auto active = suggest_brain_key();
-                auto posting = suggest_brain_key();
-                auto memo = suggest_brain_key();
-                import_key( owner.wif_priv_key );
-                import_key( active.wif_priv_key );
-                import_key( posting.wif_priv_key );
-                import_key( memo.wif_priv_key );
-                if (!fee.amount.value) {
-                    auto prop = my->_remote_database_api->get_chain_properties();
-                    auto hf = my->_remote_database_api->get_hardfork_version();
-                    fee = prop.account_creation_fee;
-                }
-                return create_account_with_keys(
-                    creator, new_account_name, json_meta, fee,
-                    owner.pub_key, active.pub_key, posting.pub_key, memo.pub_key, broadcast
-                );
-            } FC_CAPTURE_AND_RETHROW( (creator)(new_account_name)(json_meta) ) }
 
 /**
  *  This method will generate new owner, active, and memo keys for the new account which

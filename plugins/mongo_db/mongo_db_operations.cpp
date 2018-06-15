@@ -124,20 +124,6 @@ namespace mongo_db {
         return body;
     }
 
-    auto operation_writer::operator()(const account_create_operation& op) -> result_type {
-        result_type body;
-
-        format_value(body, "fee", op.fee);
-        format_value(body, "creator", op.creator);
-        format_value(body, "new_account_name", op.new_account_name);
-        format_authority(body, "owner", op.owner);
-        format_value(body, "json_metadata", op.json_metadata);
-        format_value(body, "memo_key", (std::string)op.memo_key);
-        format_authority(body, "posting", op.posting);
-
-        return body;
-    }
-
     auto operation_writer::operator()(const account_update_operation& op) -> result_type {
         result_type body;
 
@@ -487,7 +473,7 @@ namespace mongo_db {
 
         return body;
     }
-    auto operation_writer::operator()(const account_create_with_delegation_operation& op) -> result_type {
+    auto operation_writer::operator()(const account_create_operation& op) -> result_type {
         result_type body;
 
         return body;

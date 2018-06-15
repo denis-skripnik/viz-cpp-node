@@ -37,18 +37,6 @@ namespace golos { namespace protocol {
         }
 
         void account_create_operation::validate() const {
-        	validate_create_account_name(new_account_name);
-            validate_account_name(new_account_name);
-            validate_account_name(creator);
-            validate_domain_name(new_account_name, creator);
-            FC_ASSERT(is_asset_type(fee, STEEM_SYMBOL), "Account creation fee must be GOLOS");
-            owner.validate();
-            active.validate();
-            validate_account_json_metadata(json_metadata);
-            FC_ASSERT(fee >= asset(0, STEEM_SYMBOL), "Account creation fee cannot be negative");
-        }
-
-        void account_create_with_delegation_operation::validate() const {
             validate_create_account_name(new_account_name);
             validate_account_name(new_account_name);
             validate_account_name(creator);

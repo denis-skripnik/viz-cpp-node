@@ -363,10 +363,6 @@ namespace mongo_db {
         format_account(op.account);
     }
 
-    auto state_writer::operator()(const account_create_with_delegation_operation& op) -> result_type {
-        format_account(op.new_account_name);
-    }
-
     auto state_writer::operator()(const account_metadata_operation& op) -> result_type {
         format_account(op.account);
     }
