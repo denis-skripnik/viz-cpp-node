@@ -33,6 +33,7 @@
 #include <cerrno>
 #include <cstring>
 
+#define VIRTUAL_SCHEDULE_LAP_LENGTH  ( fc::uint128_t(uint64_t(-1)) )
 #define VIRTUAL_SCHEDULE_LAP_LENGTH2 ( fc::uint128_t::max_value() )
 
 namespace graphene { namespace chain {
@@ -266,6 +267,7 @@ namespace graphene { namespace chain {
 
         void database::reindex(const fc::path &data_dir, const fc::path &shared_mem_dir, uint32_t from_block_num, uint64_t shared_file_size) {
             try {
+                signal_guard sg;
                 _fork_db.reset();    // override effect of _fork_db.start_block() call in open()
 
                 auto start = fc::time_point::now();
@@ -292,6 +294,10 @@ namespace graphene { namespace chain {
 
                     set_reserved_memory(1024*1024*1024); // protect from memory fragmentations ...
                     while (cur_block_num < last_block_num) {
+                        if (signal_guard::get_is_interrupted()) {
+                            return;
+                        }
+
                         auto end = fc::time_point::now();
                         auto cur_block = *_block_log.read_block_by_num(cur_block_num);
 
@@ -318,6 +324,12 @@ namespace graphene { namespace chain {
                     set_reserved_memory(0);
                     set_revision(head_block_num());
                 });
+
+                if (signal_guard::get_is_interrupted()) {
+                    sg.restore();
+
+                    appbase::app().quit();
+                }
 
                 if (_block_log.head()->block_num()) {
                     _fork_db.start_block(*_block_log.head());
