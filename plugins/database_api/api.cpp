@@ -22,6 +22,8 @@
 
 namespace golos { namespace plugins { namespace database_api {
 
+using protocol::share_type;
+
 struct block_applied_callback_info {
     using ptr = std::shared_ptr<block_applied_callback_info>;
     using cont = std::list<ptr>;
@@ -522,20 +524,6 @@ DEFINE_API(plugin, get_withdraw_routes) {
     return my->database().with_weak_read_lock([&]() {
         return my->get_withdraw_routes(account, type);
     });
-}
-
-DEFINE_API(plugin, get_account_bandwidth) {
-    CHECK_ARG_SIZE(2)
-    auto account = args.args->at(0).as<string>();
-    auto type = args.args->at(1).as<bandwidth_type>();
-    optional<account_bandwidth_api_object> result;
-    auto band = my->database().find<account_bandwidth_object, by_account_bandwidth_type>(
-            boost::make_tuple(account, type));
-    if (band != nullptr) {
-        result = *band;
-    }
-
-    return result;
 }
 
 

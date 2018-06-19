@@ -571,44 +571,35 @@ namespace golos { namespace chain {
             adjust_supply(-fee);
         }
 
-        bool database::update_account_bandwidth(const account_object &a, uint32_t trx_size, const bandwidth_type type) {
+        bool database::update_account_bandwidth(const account_object &a, uint32_t trx_size) {
             const auto &props = get_dynamic_global_properties();
             bool has_bandwidth = true;
 
             if (props.total_vesting_shares.amount > 0) {
-                auto band = find<account_bandwidth_object, by_account_bandwidth_type>(boost::make_tuple(a.name, type));
-                if (band == nullptr) {
-                    band = &create<account_bandwidth_object>([&](account_bandwidth_object &b) {
-                        b.account = a.name;
-                        b.type = type;
-                    });
-                }
-
                 share_type new_bandwidth;
                 share_type trx_bandwidth = trx_size * STEEMIT_BANDWIDTH_PRECISION;
-                auto delta_time = (head_block_time() - band->last_bandwidth_update).to_seconds();
+                auto delta_time = (head_block_time() - a.last_bandwidth_update).to_seconds();
                 if (delta_time > STEEMIT_BANDWIDTH_AVERAGE_WINDOW_SECONDS) {
                     new_bandwidth = 0;
                 } else {
                     new_bandwidth = (
                             ((STEEMIT_BANDWIDTH_AVERAGE_WINDOW_SECONDS -
                               delta_time) *
-                             fc::uint128_t(band->average_bandwidth.value))
+                             fc::uint128_t(a.average_bandwidth.value))
                             /
                             STEEMIT_BANDWIDTH_AVERAGE_WINDOW_SECONDS).to_uint64();
                 }
 
                 new_bandwidth += trx_bandwidth;
-
-                modify(*band, [&](account_bandwidth_object &b) {
-                    b.average_bandwidth = new_bandwidth;
-                    b.lifetime_bandwidth += trx_bandwidth;
-                    b.last_bandwidth_update = head_block_time();
+                modify(a, [&](account_object &acnt) {
+                    acnt.average_bandwidth = new_bandwidth;
+                    acnt.lifetime_bandwidth += trx_bandwidth;
+                    acnt.last_bandwidth_update = head_block_time();
                 });
 
                 fc::uint128_t account_vshares(a.effective_vesting_shares().amount.value);
                 fc::uint128_t total_vshares(props.total_vesting_shares.amount.value);
-                fc::uint128_t account_average_bandwidth(band->average_bandwidth.value);
+                fc::uint128_t account_average_bandwidth(a.average_bandwidth.value);
                 fc::uint128_t max_virtual_bandwidth(props.max_virtual_bandwidth);
 
                 has_bandwidth = (account_vshares * max_virtual_bandwidth) > (account_average_bandwidth * total_vshares);
@@ -2572,7 +2563,6 @@ namespace golos { namespace chain {
             add_core_index<dynamic_global_property_index>(*this);
             add_core_index<account_index>(*this);
             add_core_index<account_authority_index>(*this);
-            add_core_index<account_bandwidth_index>(*this);
             add_core_index<witness_index>(*this);
             add_core_index<transaction_index>(*this);
             add_core_index<block_summary_index>(*this);
@@ -3211,7 +3201,7 @@ namespace golos { namespace chain {
 
                 for (const auto& auth : required) {
                     const auto& acnt = get_account(auth);
-                    update_account_bandwidth(acnt, trx_size, bandwidth_type::forum);
+                    update_account_bandwidth(acnt, trx_size);
                 }
 
                 //Insert transaction into unique transactions database.

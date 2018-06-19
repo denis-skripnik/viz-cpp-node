@@ -113,7 +113,6 @@ DEFINE_API_ARGS(get_owner_history,                msg_pack, std::vector<owner_au
 DEFINE_API_ARGS(get_recovery_request,             msg_pack, optional<account_recovery_request_api_object>)
 DEFINE_API_ARGS(get_escrow,                       msg_pack, optional<escrow_api_object>)
 DEFINE_API_ARGS(get_withdraw_routes,              msg_pack, std::vector<withdraw_route>)
-DEFINE_API_ARGS(get_account_bandwidth,            msg_pack, optional<account_bandwidth_api_object>)
 DEFINE_API_ARGS(get_savings_withdraw_from,        msg_pack, std::vector<savings_withdraw_api_object>)
 DEFINE_API_ARGS(get_savings_withdraw_to,          msg_pack, std::vector<savings_withdraw_api_object>)
 
@@ -282,8 +281,6 @@ public:
         (get_escrow)
 
         (get_withdraw_routes)
-
-        (get_account_bandwidth)
 
         (get_savings_withdraw_from)
 

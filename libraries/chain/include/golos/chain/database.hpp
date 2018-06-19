@@ -188,7 +188,7 @@ namespace golos { namespace chain {
             /**
              * Update an account's bandwidth and returns if the account had the requisite bandwidth for the trx
              */
-            bool update_account_bandwidth(const account_object &a, uint32_t trx_size, const bandwidth_type type);
+            bool update_account_bandwidth(const account_object &a, uint32_t trx_size);
 
             void max_bandwidth_per_share() const;
 

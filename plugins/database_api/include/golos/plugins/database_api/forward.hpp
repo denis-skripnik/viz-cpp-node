@@ -4,6 +4,7 @@
 #include <golos/chain/steem_objects.hpp>
 
 namespace golos { namespace plugins { namespace database_api {
+			using protocol::share_type;
             typedef golos::chain::change_recovery_account_request_object change_recovery_account_request_api_object;
             typedef golos::chain::block_summary_object block_summary_api_object;
             typedef golos::chain::comment_vote_object comment_vote_api_object;
@@ -13,7 +14,6 @@ namespace golos { namespace plugins { namespace database_api {
             typedef golos::chain::decline_voting_rights_request_object decline_voting_rights_request_api_object;
             typedef golos::chain::witness_vote_object witness_vote_api_object;
             typedef golos::chain::witness_schedule_object witness_schedule_api_object;
-            typedef golos::chain::account_bandwidth_object account_bandwidth_api_object;
 
 using vesting_delegation_api_object = golos::chain::vesting_delegation_object;
 using vesting_delegation_expiration_api_object = golos::chain::vesting_delegation_expiration_object;

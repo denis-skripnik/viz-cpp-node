@@ -77,6 +77,10 @@ public:
     time_point_sec last_root_post;
     time_point_sec last_post;
 
+    share_type average_bandwidth;
+    share_type lifetime_bandwidth;
+    time_point_sec last_bandwidth_update;
+
     /// This function should be used only when the account votes for a witness directly
     share_type witness_vote_weight() const {
         return std::accumulate(proxied_vsf_votes.begin(),
@@ -122,26 +126,6 @@ public:
     shared_authority posting; ///< used for voting and posting
 
     time_point_sec last_owner_update;
-};
-
-class account_bandwidth_object
-        : public object<account_bandwidth_object_type, account_bandwidth_object> {
-public:
-    template<typename Constructor, typename Allocator>
-    account_bandwidth_object(Constructor &&c, allocator<Allocator> a) {
-        c(*this);
-    }
-
-    account_bandwidth_object() {
-    }
-
-    id_type id;
-
-    account_name_type account;
-    bandwidth_type type;
-    share_type average_bandwidth;
-    share_type lifetime_bandwidth;
-    time_point_sec last_bandwidth_update;
 };
 
 class account_metadata_object : public object<account_metadata_object_type, account_metadata_object> {
@@ -329,25 +313,6 @@ allocator<account_authority_object>
 >
 account_authority_index;
 
-
-struct by_account_bandwidth_type;
-
-typedef multi_index_container<
-        account_bandwidth_object,
-        indexed_by<
-                ordered_unique<tag<by_id>,
-                        member<account_bandwidth_object, account_bandwidth_id_type, &account_bandwidth_object::id>>,
-                ordered_unique<tag<by_account_bandwidth_type>,
-                        composite_key < account_bandwidth_object,
-                        member<account_bandwidth_object, account_name_type, &account_bandwidth_object::account>,
-                        member<account_bandwidth_object, bandwidth_type, &account_bandwidth_object::type>
-                >
-        >
->,
-allocator<account_bandwidth_object>
->
-account_bandwidth_index;
-
 struct by_delegation;
 struct by_received;
 
@@ -483,6 +448,7 @@ FC_REFLECT((golos::chain::account_object),
                 (posting_rewards)
                 (proxied_vsf_votes)(witnesses_voted_for)
                 (last_root_post)(last_post)
+                (average_bandwidth)(lifetime_bandwidth)(last_bandwidth_update)
 )
 CHAINBASE_SET_INDEX_TYPE(golos::chain::account_object, golos::chain::account_index)
 
@@ -490,10 +456,6 @@ FC_REFLECT((golos::chain::account_authority_object),
         (id)(account)(owner)(active)(posting)(last_owner_update)
 )
 CHAINBASE_SET_INDEX_TYPE(golos::chain::account_authority_object, golos::chain::account_authority_index)
-
-FC_REFLECT((golos::chain::account_bandwidth_object),
-        (id)(account)(type)(average_bandwidth)(lifetime_bandwidth)(last_bandwidth_update))
-CHAINBASE_SET_INDEX_TYPE(golos::chain::account_bandwidth_object, golos::chain::account_bandwidth_index)
 
 FC_REFLECT((golos::chain::account_metadata_object), (id)(account)(json_metadata))
 CHAINBASE_SET_INDEX_TYPE(golos::chain::account_metadata_object, golos::chain::account_metadata_index)

@@ -3,11 +3,8 @@
 namespace golos { namespace api {
 
 using golos::chain::by_account;
-using golos::chain::by_account_bandwidth_type;
-using golos::chain::account_bandwidth_object;
 using golos::chain::account_authority_object;
 using golos::chain::account_metadata_object;
-using golos::chain::bandwidth_type;
 
 account_api_object::account_api_object(const account_object& a, const golos::chain::database& db)
     :   id(a.id), name(a.name), memo_key(a.memo_key), proxy(a.proxy),
@@ -25,7 +22,8 @@ account_api_object::account_api_object(const account_object& a, const golos::cha
         delegated_vesting_shares(a.delegated_vesting_shares), received_vesting_shares(a.received_vesting_shares),
         vesting_withdraw_rate(a.vesting_withdraw_rate), next_vesting_withdrawal(a.next_vesting_withdrawal),
         withdrawn(a.withdrawn), to_withdraw(a.to_withdraw), withdraw_routes(a.withdraw_routes),
-        witnesses_voted_for(a.witnesses_voted_for), last_root_post(a.last_root_post), last_post(a.last_post) {
+        witnesses_voted_for(a.witnesses_voted_for), last_root_post(a.last_root_post), last_post(a.last_post),
+        average_bandwidth(a.average_bandwidth), lifetime_bandwidth(a.lifetime_bandwidth), last_bandwidth_update(a.last_bandwidth_update) {
     size_t n = a.proxied_vsf_votes.size();
     proxied_vsf_votes.reserve(n);
     for (size_t i = 0; i < n; i++) {
@@ -43,12 +41,6 @@ account_api_object::account_api_object(const account_object& a, const golos::cha
     json_metadata = golos::chain::to_string(meta.json_metadata);
 #endif
 
-    auto forum = db.find<account_bandwidth_object, by_account_bandwidth_type>(std::make_tuple(name, bandwidth_type::forum));
-    if (forum != nullptr) {
-        average_bandwidth = forum->average_bandwidth;
-        lifetime_bandwidth = forum->lifetime_bandwidth;
-        last_bandwidth_update = forum->last_bandwidth_update;
-    }
 }
 
 account_api_object::account_api_object() {}
