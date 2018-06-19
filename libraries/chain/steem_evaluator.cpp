@@ -304,8 +304,8 @@ namespace golos { namespace chain {
             _db.remove(comment);
         }
 
-        struct comment_options_extension_visitor {
-            comment_options_extension_visitor(const comment_object &c, database &db)
+        struct comment_extension_visitor {
+            comment_extension_visitor(const comment_object &c, database &db)
                     : _c(c), _db(db) {
             }
 
@@ -370,7 +370,6 @@ namespace golos { namespace chain {
 
                 if (itr == by_permlink_idx.end()) {
                     if (o.parent_author != STEEMIT_ROOT_POST_PARENT) {
-                        FC_ASSERT(_db.get(parent->root_comment).allow_replies, "The parent comment has disabled replies.");
                         if (_db.has_hardfork(STEEMIT_HARDFORK_0_12__177) && !_db.has_hardfork( STEEMIT_HARDFORK_0_18__536) ) {
                             FC_ASSERT(
                                     _db.calculate_discussion_payout_time(*parent) !=
@@ -439,14 +438,10 @@ namespace golos { namespace chain {
                         if (_db.has_hardfork( STEEMIT_HARDFORK_0_17__431)) {
                             com.cashout_time = com.created + STEEMIT_CASHOUT_WINDOW_SECONDS;
                         }
-
-                        com.max_accepted_payout = o.options.max_accepted_payout;
-                        com.allow_votes = o.options.allow_votes;
-                        com.allow_curation_rewards = o.options.allow_curation_rewards;
                     });
 
-                    for (auto &e : o.options.extensions) {
-                        e.visit(comment_options_extension_visitor(new_comment, _db));
+                    for (auto &e : o.extensions) {
+                        e.visit(comment_extension_visitor(new_comment, _db));
                     }
 
                     id = new_comment.id;
@@ -495,11 +490,6 @@ namespace golos { namespace chain {
                         }
                     }
 
-                    if (!o.options.allow_curation_rewards || !o.options.allow_votes || o.options.max_accepted_payout < comment.max_accepted_payout) {
-                        FC_ASSERT(comment.abs_rshares == 0,
-                                  "One of the included comment options requires the comment to have no rshares allocated to it.");
-                    }
-
                     _db.modify(comment, [&](comment_object &com) {
                         com.last_update = _db.head_block_time();
                         com.active = com.last_update;
@@ -514,19 +504,10 @@ namespace golos { namespace chain {
                                       o.parent_author, "The parent of a comment cannot change.");
                             FC_ASSERT(equal(com.parent_permlink, o.parent_permlink), "The permlink of a comment cannot change.");
                         }
-                        FC_ASSERT(comment.allow_curation_rewards >= o.options.allow_curation_rewards,
-                                  "Curation rewards cannot be re-enabled.");
-                        FC_ASSERT(comment.allow_votes >= o.options.allow_votes,
-                                  "Voting cannot be re-enabled.");
-                        FC_ASSERT(comment.max_accepted_payout >= o.options.max_accepted_payout,
-                                  "A comment cannot accept a greater payout.");
-                        com.max_accepted_payout = o.options.max_accepted_payout;
-                        com.allow_votes = o.options.allow_votes;
-                        com.allow_curation_rewards = o.options.allow_curation_rewards;
                     });
 
-                    for (auto &e : o.options.extensions) {
-                        e.visit(comment_options_extension_visitor(comment, _db));
+                    for (auto &e : o.extensions) {
+                        e.visit(comment_extension_visitor(comment, _db));
                     }
 
 #ifndef IS_LOW_MEM
@@ -989,9 +970,6 @@ namespace golos { namespace chain {
 
                 FC_ASSERT(voter.can_vote, "Voter has declined their voting rights.");
 
-                if (o.weight > 0)
-                    FC_ASSERT(comment.allow_votes, "Votes are not allowed on the comment.");
-
                 if (_db.has_hardfork(STEEMIT_HARDFORK_0_12__177) &&
                     _db.calculate_discussion_payout_time(comment) ==
                     fc::time_point_sec::maximum()
@@ -1203,9 +1181,7 @@ namespace golos { namespace chain {
                         cv.vote_percent = o.weight;
                         cv.last_update = _db.head_block_time();
 
-                        if (rshares > 0 &&
-                            (comment.last_payout == fc::time_point_sec()) &&
-                            comment.allow_curation_rewards) {
+                        if (rshares > 0 && (comment.last_payout == fc::time_point_sec())) {
                             if (comment.created <
                                 fc::time_point_sec(STEEMIT_HARDFORK_0_6_REVERSE_AUCTION_TIME)) {
                                 u512 rshares3(rshares);

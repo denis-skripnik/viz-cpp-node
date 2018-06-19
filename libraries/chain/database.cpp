@@ -2002,7 +2002,7 @@ namespace golos { namespace chain {
                 //edump( (total_weight)(max_rewards) );
                 share_type unclaimed_rewards = max_rewards;
 
-                if (c.total_vote_weight > 0 && c.allow_curation_rewards) {
+                if (c.total_vote_weight > 0) {
                     const auto &cvidx = get_index<comment_vote_index>().indices().get<by_comment_weight_voter>();
                     auto itr = cvidx.lower_bound(c.id);
                     while (itr != cvidx.end() && itr->comment == c.id) {
@@ -2026,15 +2026,6 @@ namespace golos { namespace chain {
                         ++itr;
                     }
                 }
-
-                if (!c.allow_curation_rewards) {
-                    modify(get_dynamic_global_properties(), [&](dynamic_global_property_object &props) {
-                        props.total_reward_fund_steem += unclaimed_rewards;
-                    });
-
-                    unclaimed_rewards = 0;
-                }
-
                 return unclaimed_rewards;
             } FC_CAPTURE_AND_RETHROW()
         }
@@ -2043,9 +2034,7 @@ namespace golos { namespace chain {
             try {
                 if (comment.net_rshares > 0) {
                     uint128_t reward_tokens = uint128_t(
-                         claim_rshare_reward(
-                             comment.net_rshares,
-                             comment.max_accepted_payout));
+                         claim_rshare_reward(comment.net_rshares));
 
                     asset total_payout;
                     if (reward_tokens > 0) {
@@ -2376,7 +2365,7 @@ namespace golos { namespace chain {
  *  This method reduces the rshare^2 supply and returns the number of tokens are
  *  redeemed.
  */
-        share_type database::claim_rshare_reward(share_type rshares, asset max_steem) {
+        share_type database::claim_rshare_reward(share_type rshares) {
         try {
                 FC_ASSERT(rshares > 0);
 
@@ -2393,14 +2382,12 @@ namespace golos { namespace chain {
                           u256(uint64_t(std::numeric_limits<int64_t>::max())));
                 uint64_t payout = static_cast< uint64_t >( payout_u256 );
 
-                payout = std::min(payout, uint64_t(max_steem.amount.value));
-
                 modify(props, [&](dynamic_global_property_object &p) {
                     p.total_reward_fund_steem.amount -= payout;
                 });
 
                 return payout;
-            } FC_CAPTURE_AND_RETHROW((rshares)(max_steem))
+            } FC_CAPTURE_AND_RETHROW((rshares))
         }
 
         void database::account_recovery_processing() {

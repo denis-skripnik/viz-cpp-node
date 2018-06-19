@@ -82,15 +82,7 @@ namespace mongo_db {
         format_value(body, "title", op.title);
         format_value(body, "body", op.body);
         format_value(body, "json_metadata", op.json_metadata);
-        format_value(body, "options", op.options);
-        /*
-        format_value(body, "max_accepted_payout", op.max_accepted_payout);
-        format_value(body, "percent_steem_dollars", op.percent_steem_dollars);
-        format_value(body, "allow_votes", op.allow_votes);
-        format_value(body, "allow_curation_rewards", op.allow_curation_rewards);
-        // comment_options_extensions_type extensions;
-        */
-
+        format_value(body, "extensions", op.extensions);
         return body;
     }
 

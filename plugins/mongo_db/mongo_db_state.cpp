@@ -68,9 +68,6 @@ namespace mongo_db {
             format_value(body, "abs_rshares", comment.abs_rshares);
             format_value(body, "active", comment.active);
 
-            format_value(body, "allow_curation_rewards", comment.allow_curation_rewards);
-            format_value(body, "allow_replies", comment.allow_replies);
-            format_value(body, "allow_votes", comment.allow_votes);
             format_value(body, "author_rewards", comment.author_rewards);
             format_value(body, "beneficiary_payout", comment.beneficiary_payout_value);
             format_value(body, "cashout_time", comment.cashout_time);
@@ -82,7 +79,6 @@ namespace mongo_db {
             format_value(body, "depth", comment.depth);
             format_value(body, "last_payout", comment.last_payout);
             format_value(body, "last_update", comment.last_update);
-            format_value(body, "max_accepted_payout", comment.max_accepted_payout);
             format_value(body, "max_cashout_time", comment.max_cashout_time);
             format_value(body, "net_rshares", comment.net_rshares);
             format_value(body, "net_votes", comment.net_votes);

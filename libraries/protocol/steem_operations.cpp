@@ -68,8 +68,8 @@ namespace golos { namespace protocol {
             validate_account_json_metadata(json_metadata);
         }
 
-        struct comment_options_extension_validate_visitor {
-            comment_options_extension_validate_visitor() {
+        struct comment_extension_validate_visitor {
+            comment_extension_validate_visitor() {
             }
 
             using result_type = void;
@@ -84,7 +84,7 @@ namespace golos { namespace protocol {
 
             FC_ASSERT(beneficiaries.size(), "Must specify at least one beneficiary");
             FC_ASSERT(beneficiaries.size() < 128,
-                      "Cannot specify more than 127 beneficiaries."); // Require size serializtion fits in one byte.
+                      "Cannot specify more than 127 beneficiaries."); // Require size serialization fits in one byte.
 
             validate_account_name(beneficiaries[0].account);
             FC_ASSERT(beneficiaries[0].weight <= STEEMIT_100_PERCENT,
@@ -122,10 +122,8 @@ namespace golos { namespace protocol {
                 FC_ASSERT(fc::json::is_valid(json_metadata), "JSON Metadata not valid JSON");
             }
 
-            FC_ASSERT(options.max_accepted_payout.symbol == STEEM_SYMBOL, "Max accepted payout must be in VIZ");
-            FC_ASSERT(options.max_accepted_payout.amount.value >= 0, "Cannot accept less than 0 payout");
-            for (auto &e : options.extensions) {
-                e.visit(comment_options_extension_validate_visitor());
+            for (auto &e : extensions) {
+                e.visit(comment_extension_validate_visitor());
             }
         }
 

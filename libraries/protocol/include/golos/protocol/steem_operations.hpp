@@ -87,16 +87,9 @@ namespace golos { namespace protocol {
 
         typedef static_variant <
             comment_payout_beneficiaries
-        > comment_options_extension;
+        > comment_extension;
 
-        typedef flat_set <comment_options_extension> comment_options_extensions_type;
-
-        struct comment_options {
-        	asset max_accepted_payout = asset(1000000000, STEEM_SYMBOL); /// VIZ value of the maximum payout this post will receive
-        	bool allow_votes = true;      /// allows a post to receive votes;
-        	bool allow_curation_rewards = true; /// allows voters to recieve curation rewards. Rewards return to reward fund.
-        	comment_options_extensions_type extensions;
-        };
+        typedef flat_set <comment_extension> comment_extensions_type;
 
         struct comment_operation : public base_operation {
             account_name_type parent_author;
@@ -108,7 +101,7 @@ namespace golos { namespace protocol {
             string title;
             string body;
             string json_metadata;
-            comment_options options;
+            comment_extensions_type extensions;
 
             void validate() const;
 
@@ -971,7 +964,7 @@ FC_REFLECT((golos::protocol::set_withdraw_vesting_route_operation), (from_accoun
 FC_REFLECT((golos::protocol::witness_update_operation), (owner)(url)(block_signing_key))
 FC_REFLECT((golos::protocol::account_witness_vote_operation), (account)(witness)(approve))
 FC_REFLECT((golos::protocol::account_witness_proxy_operation), (account)(proxy))
-FC_REFLECT((golos::protocol::comment_operation), (parent_author)(parent_permlink)(author)(permlink)(title)(body)(json_metadata)(options))
+FC_REFLECT((golos::protocol::comment_operation), (parent_author)(parent_permlink)(author)(permlink)(title)(body)(json_metadata)(extensions))
 FC_REFLECT((golos::protocol::vote_operation), (voter)(author)(permlink)(weight))
 FC_REFLECT((golos::protocol::custom_operation), (required_auths)(id)(data))
 FC_REFLECT((golos::protocol::custom_json_operation), (required_auths)(required_posting_auths)(id)(json))
@@ -981,8 +974,7 @@ FC_REFLECT((golos::protocol::delete_comment_operation), (author)(permlink));
 
 FC_REFLECT((golos::protocol::beneficiary_route_type), (account)(weight))
 FC_REFLECT((golos::protocol::comment_payout_beneficiaries), (beneficiaries));
-FC_REFLECT((golos::protocol::comment_options), (max_accepted_payout)(allow_votes)(allow_curation_rewards)(extensions))
-FC_REFLECT_TYPENAME((golos::protocol::comment_options_extension));
+FC_REFLECT_TYPENAME((golos::protocol::comment_extension));
 
 FC_REFLECT((golos::protocol::escrow_transfer_operation), (from)(to)(steem_amount)(escrow_id)(agent)(fee)(json_meta)(ratification_deadline)(escrow_expiration));
 FC_REFLECT((golos::protocol::escrow_approve_operation), (from)(to)(agent)(who)(escrow_id)(approve));

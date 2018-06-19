@@ -29,11 +29,7 @@ namespace golos { namespace api {
           author_rewards(o.author_rewards),
           net_votes(o.net_votes),
           mode(o.mode),
-          root_comment(o.root_comment),
-          max_accepted_payout(o.max_accepted_payout),
-          allow_replies(o.allow_replies),
-          allow_votes(o.allow_votes),
-          allow_curation_rewards(o.allow_curation_rewards) {
+          root_comment(o.root_comment) {
 
         for (auto& route : o.beneficiaries) {
             beneficiaries.push_back(route);

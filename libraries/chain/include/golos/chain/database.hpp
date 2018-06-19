@@ -401,7 +401,7 @@ namespace golos { namespace chain {
 
             void process_decline_voting_rights();
 
-            share_type claim_rshare_reward(share_type rshares, asset max_steem);
+            share_type claim_rshare_reward(share_type rshares);
 
             asset get_content_reward() const;
 
