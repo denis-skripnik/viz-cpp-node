@@ -33,12 +33,6 @@ namespace golos {
             }
         };
 
-        enum comment_mode {
-            first_payout,
-            second_payout,
-            archived
-        };
-
         class comment_content_object
                 : public object<comment_content_object_type, comment_content_object> {
         public:
@@ -113,8 +107,6 @@ namespace golos {
             int32_t net_votes = 0;
 
             id_type root_comment;
-
-            comment_mode mode = first_payout;
 
             bip::vector <protocol::beneficiary_route_type, allocator<protocol::beneficiary_route_type>> beneficiaries;
         };
@@ -266,8 +258,6 @@ namespace golos {
 
     }
 } // golos::chain
-
-FC_REFLECT_ENUM(golos::chain::comment_mode, (first_payout)(second_payout)(archived))
 
 CHAINBASE_SET_INDEX_TYPE(golos::chain::comment_object, golos::chain::comment_index)
 

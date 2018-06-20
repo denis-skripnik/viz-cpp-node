@@ -28,7 +28,6 @@ namespace golos { namespace api {
           curator_payout_value(o.curator_payout_value),
           author_rewards(o.author_rewards),
           net_votes(o.net_votes),
-          mode(o.mode),
           root_comment(o.root_comment) {
 
         for (auto& route : o.beneficiaries) {

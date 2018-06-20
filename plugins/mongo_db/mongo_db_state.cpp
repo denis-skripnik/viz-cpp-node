@@ -100,21 +100,6 @@ namespace mongo_db {
                 body << "beneficiaries" << ben_array;
             }
 
-            std::string comment_mode;
-            switch (comment.mode) {
-                case first_payout:
-                    comment_mode = "first_payout";
-                    break;
-                case second_payout:
-                    comment_mode = "second_payout";
-                    break;
-                case archived:
-                    comment_mode = "archived";
-                    break;
-            }
-
-            format_value(body, "mode", comment_mode);
-
             auto& content = db_.get_comment_content(comment_id_type(comment.id));
 
             format_value(body, "title", content.title);

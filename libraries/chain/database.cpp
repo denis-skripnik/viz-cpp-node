@@ -2119,13 +2119,6 @@ namespace golos { namespace chain {
                         }
                     }
 
-                    if (calculate_discussion_payout_time(c) ==
-                        fc::time_point_sec::maximum()) {
-                        c.mode = archived;
-                    } else {
-                        c.mode = second_payout;
-                    }
-
                     c.last_payout = head_block_time();
                 });
 
@@ -3752,14 +3745,12 @@ namespace golos { namespace chain {
                                 fc::time_point_sec::maximum()) {
                                 modify(*itr, [&](comment_object &c) {
                                     c.cashout_time = head_block_time() + STEEMIT_CASHOUT_WINDOW_SECONDS_PRE_HF17;
-                                    c.mode = first_payout;
                                 });
                             }
                                 // Has been paid out, needs to be on second cashout window
                             else if (itr->last_payout > fc::time_point_sec()) {
                                 modify(*itr, [&](comment_object &c) {
                                     c.cashout_time = c.last_payout + STEEMIT_SECOND_CASHOUT_WINDOW;
-                                    c.mode = second_payout;
                                 });
                             }
                         }
