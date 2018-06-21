@@ -3720,31 +3720,6 @@ namespace golos { namespace chain {
                 case STEEMIT_HARDFORK_0_11:
                     break;
                 case STEEMIT_HARDFORK_0_12: {
-                    const auto &comment_idx = get_index<comment_index>().indices();
-
-                    for (auto itr = comment_idx.begin();
-                         itr != comment_idx.end(); ++itr) {
-                        // At the hardfork time, all new posts with no votes get their cashout time set to +12 hrs from head block time.
-                        // All posts with a payout get their cashout time set to +30 days. This hardfork takes place within 30 days
-                        // initial payout so we don't have to handle the case of posts that should be frozen that aren't
-                        if (itr->parent_author == STEEMIT_ROOT_POST_PARENT) {
-                            // Post has not been paid out and has no votes (cashout_time == 0 === net_rshares == 0, under current semmantics)
-                            if (itr->last_payout == fc::time_point_sec::min() &&
-                                itr->cashout_time ==
-                                fc::time_point_sec::maximum()) {
-                                modify(*itr, [&](comment_object &c) {
-                                    c.cashout_time = head_block_time() + STEEMIT_CASHOUT_WINDOW_SECONDS_PRE_HF17;
-                                });
-                            }
-                                // Has been paid out, needs to be on second cashout window
-                            else if (itr->last_payout > fc::time_point_sec()) {
-                                modify(*itr, [&](comment_object &c) {
-                                    c.cashout_time = c.last_payout + STEEMIT_SECOND_CASHOUT_WINDOW;
-                                });
-                            }
-                        }
-                    }
-
                     modify(get<account_authority_object, by_account>(STEEMIT_MINER_ACCOUNT), [&](account_authority_object &auth) {
                         auth.posting = authority();
                         auth.posting.weight_threshold = 1;
