@@ -72,7 +72,6 @@ namespace mongo_db {
             format_value(body, "beneficiary_payout", comment.beneficiary_payout_value);
             format_value(body, "cashout_time", comment.cashout_time);
             format_value(body, "children", comment.children);
-            format_value(body, "children_abs_rshares", comment.children_abs_rshares);
             format_value(body, "children_rshares2", comment.children_rshares2);
             format_value(body, "created", comment.created);
             format_value(body, "curator_payout", comment.curator_payout_value);

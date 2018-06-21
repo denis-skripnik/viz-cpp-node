@@ -1055,7 +1055,6 @@ namespace golos { namespace chain {
 
                     /// if the current net_rshares is less than 0, the post is getting 0 rewards so it is not factored into total rshares^2
                     fc::uint128_t old_rshares = std::max(comment.net_rshares.value, int64_t(0));
-                    const auto &root = _db.get(comment.root_comment);
 
                     FC_ASSERT(abs_rshares > 0, "Cannot vote with 0 rshares.");
 
@@ -1076,10 +1075,6 @@ namespace golos { namespace chain {
                             c.net_rshares == -c.abs_rshares)
                             FC_ASSERT(c.net_votes <
                                       0, "Comment has negative network votes?");
-                    });
-
-                    _db.modify(root, [&](comment_object &c) {
-                        c.children_abs_rshares += abs_rshares;
                     });
 
                     fc::uint128_t new_rshares = std::max(comment.net_rshares.value, int64_t(0));
@@ -1219,7 +1214,6 @@ namespace golos { namespace chain {
 
                     /// if the current net_rshares is less than 0, the post is getting 0 rewards so it is not factored into total rshares^2
                     fc::uint128_t old_rshares = std::max(comment.net_rshares.value, int64_t(0));
-                    const auto &root = _db.get(comment.root_comment);
 
                     _db.modify(comment, [&](comment_object &c) {
                         c.net_rshares -= itr->rshares;
@@ -1240,10 +1234,6 @@ namespace golos { namespace chain {
                         } else if (rshares < 0 && itr->rshares > 0) {
                             c.net_votes -= 2;
                         }
-                    });
-
-                    _db.modify(root, [&](comment_object &c) {
-                        c.children_abs_rshares += abs_rshares;
                     });
 
                     fc::uint128_t new_rshares = std::max(comment.net_rshares.value, int64_t(0));

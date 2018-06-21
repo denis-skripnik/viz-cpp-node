@@ -20,7 +20,6 @@ namespace golos { namespace api {
           net_rshares(o.net_rshares),
           abs_rshares(o.abs_rshares),
           vote_rshares(o.vote_rshares),
-          children_abs_rshares(o.children_abs_rshares),
           cashout_time(o.cashout_time),
           total_vote_weight(o.total_vote_weight),
           total_payout_value(o.total_payout_value),
