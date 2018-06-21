@@ -1028,10 +1028,6 @@ namespace golos { namespace chain {
 
                     fc::uint128_t new_rshares = std::max(comment.net_rshares.value, int64_t(0));
 
-                    /// calculate rshares2 value
-                    new_rshares = _db.calculate_vshares(new_rshares);
-                    old_rshares = _db.calculate_vshares(old_rshares);
-
                     uint64_t max_vote_weight = 0;
 
                    /** this verifies uniqueness of voter
@@ -1075,13 +1071,11 @@ namespace golos { namespace chain {
                                     uint64_t old_weight = (
                                             (std::numeric_limits<uint64_t>::max() *
                                              fc::uint128_t(old_vote_rshares.value)) /
-                                            (2 * _db.get_content_constant_s() +
-                                             old_vote_rshares.value)).to_uint64();
+                                            (old_vote_rshares.value)).to_uint64();
                                     uint64_t new_weight = (
                                             (std::numeric_limits<uint64_t>::max() *
                                              fc::uint128_t(comment.vote_rshares.value)) /
-                                            (2 * _db.get_content_constant_s() +
-                                             comment.vote_rshares.value)).to_uint64();
+                                            (comment.vote_rshares.value)).to_uint64();
                                     cv.weight = new_weight - old_weight;
                             }
 
@@ -1163,10 +1157,6 @@ namespace golos { namespace chain {
                     });
 
                     fc::uint128_t new_rshares = std::max(comment.net_rshares.value, int64_t(0));
-
-                    /// calculate rshares2 value
-                    new_rshares = _db.calculate_vshares(new_rshares);
-                    old_rshares = _db.calculate_vshares(old_rshares);
 
                     _db.modify(comment, [&](comment_object &c) {
                         c.total_vote_weight -= itr->weight;

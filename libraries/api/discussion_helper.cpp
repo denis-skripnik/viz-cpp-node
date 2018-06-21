@@ -149,7 +149,7 @@ namespace golos { namespace api {
         u256 total_r2 = to256(props.total_reward_shares2);
 
         if (props.total_reward_shares2 > 0) {
-            auto vshares = db.calculate_vshares(d.net_rshares.value > 0 ? d.net_rshares.value : 0);
+            auto vshares = d.net_rshares.value > 0 ? d.net_rshares.value : 0;
 
             u256 r2 = to256(vshares); //to256(abs_net_rshares);
             r2 *= pot.amount.value;

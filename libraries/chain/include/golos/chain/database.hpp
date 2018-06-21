@@ -411,10 +411,6 @@ namespace golos { namespace chain {
 
             asset get_pow_reward() const;
 
-            uint128_t get_content_constant_s() const;
-
-            uint128_t calculate_vshares(uint128_t rshares) const;
-
             time_point_sec head_block_time() const;
 
             uint32_t head_block_num() const;

@@ -2091,7 +2091,7 @@ namespace golos { namespace chain {
 
                     }
 
-                    fc::uint128_t old_rshares2 = calculate_vshares(comment.net_rshares.value);
+                    fc::uint128_t old_rshares2 = comment.net_rshares.value;
                     adjust_rshares2(comment, old_rshares2, 0);
                 }
 
@@ -2322,26 +2322,6 @@ namespace golos { namespace chain {
             }
         }
 
-        uint128_t database::get_content_constant_s() const {
-            return uint128_t(uint64_t(2000000000000ll)); // looking good for posters
-        }
-
-        inline uint128_t calculate_vshares_linear(uint128_t rshares) {
-            return rshares;
-        }
-
-        inline const uint128_t calculate_vshares_quadratic(uint128_t rshares, uint128_t s) {
-            return (rshares + s) * (rshares + s) - s * s;
-        }
-
-        uint128_t database::calculate_vshares(uint128_t rshares) const {
-            if (has_hardfork(STEEMIT_HARDFORK_0_17__433)) {
-                return calculate_vshares_linear(rshares);
-            } else {
-                return calculate_vshares_quadratic(rshares, get_content_constant_s());
-            }
-        }
-
 /**
  *  This method reduces the rshare^2 supply and returns the number of tokens are
  *  redeemed.
@@ -2356,7 +2336,7 @@ namespace golos { namespace chain {
                 u256 rf(props.total_reward_fund_steem.amount.value);
                 u256 total_rshares2 = to256(props.total_reward_shares2);
 
-                u256 rs2 = to256(calculate_vshares(rshares.value));
+                u256 rs2 = to256(rshares.value);
 
                 u256 payout_u256 = (rf * rs2) / total_rshares2;
                 FC_ASSERT(payout_u256 <=
@@ -3789,13 +3769,6 @@ namespace golos { namespace chain {
                                 // limit second cashout window to 1 week, or a current block time
                                 c.cashout_time = std::max(c.created + STEEMIT_CASHOUT_WINDOW_SECONDS, max_cashout_time);
                             });
-
-                            if (itr->net_rshares.value > 0) {
-                                auto old_rshares2 = calculate_vshares_quadratic(
-                                        itr->net_rshares.value, get_content_constant_s());
-                                auto new_rshares2 = calculate_vshares_linear(itr->net_rshares.value);
-                                adjust_rshares2(*itr, old_rshares2, new_rshares2);
-                            }
                         }
                     }}
                     break;
@@ -3881,8 +3854,7 @@ namespace golos { namespace chain {
                 for (auto itr = comment_idx.begin();
                      itr != comment_idx.end(); ++itr) {
                     if (itr->net_rshares.value > 0) {
-                        auto delta = calculate_vshares(itr->net_rshares.value);
-                        total_rshares2 += delta;
+                        total_rshares2 += itr->net_rshares.value;
                     }
                     if (itr->parent_author == STEEMIT_ROOT_POST_PARENT) {
                         total_children_rshares2 += itr->children_rshares2;
