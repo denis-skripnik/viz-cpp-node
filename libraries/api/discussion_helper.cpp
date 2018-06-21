@@ -188,7 +188,7 @@ namespace golos { namespace api {
         const comment_api_object root(database().get<comment_object, by_id>(d.root_comment), database());
 
         d.root_title = root.title;
-        d.url = "/" + root.category + "/@" + root.author + "/" + root.permlink;
+        d.url = "/@" + root.author + "/" + root.permlink;
 
         if (root.id != d.id) {
             d.url += "#@" + d.author + "/" + d.permlink;

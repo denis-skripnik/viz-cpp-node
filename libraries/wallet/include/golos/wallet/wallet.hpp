@@ -851,7 +851,7 @@ namespace golos { namespace wallet {
              *  @param author the name of the account authoring the comment
              *  @param permlink the accountwide unique permlink for the comment
              *  @param parent_author can be null if this is a top level comment
-             *  @param parent_permlink becomes category if parent_author is ""
+             *  @param parent_permlink can be null if this is a top level comment
              *  @param title the title of the comment
              *  @param body the body of the comment
              *  @param json the json metadata of the comment

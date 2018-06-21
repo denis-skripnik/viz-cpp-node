@@ -14,7 +14,7 @@ namespace golos { namespace api {
         discussion() {
         }
 
-        string url; /// /category/@rootauthor/root_permlink#author/permlink
+        string url; /// /@rootauthor/root_permlink#author/permlink
         string root_title;
         asset pending_payout_value = asset(0, STEEM_SYMBOL);
         asset total_pending_payout_value = asset(0, STEEM_SYMBOL); /// including replies

@@ -24,8 +24,6 @@ namespace golos { namespace api {
         account_name_type author;
         std::string permlink;
 
-        std::string category;
-
         time_point_sec last_update;
         time_point_sec created;
         time_point_sec active;
@@ -59,7 +57,7 @@ namespace golos { namespace api {
 
 FC_REFLECT(
     (golos::api::comment_api_object),
-    (id)(author)(permlink)(parent_author)(parent_permlink)(category)(title)(body)(json_metadata)(last_update)
+    (id)(author)(permlink)(parent_author)(parent_permlink)(title)(body)(json_metadata)(last_update)
     (created)(active)(last_payout)(depth)(children)(children_rshares2)(net_rshares)(abs_rshares)
     (vote_rshares)(cashout_time)(total_vote_weight)
     (total_payout_value)(curator_payout_value)(author_rewards)(net_votes)
