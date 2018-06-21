@@ -729,11 +729,9 @@ namespace golos { namespace chain {
                     a.to_withdraw = 0;
                     a.withdrawn = 0;
                 });
-            } else {
-                int vesting_withdraw_intervals = STEEMIT_VESTING_WITHDRAW_INTERVALS_PRE_HF_16;
-                if (_db.has_hardfork(STEEMIT_HARDFORK_0_16__551)) {
-                    vesting_withdraw_intervals = STEEMIT_VESTING_WITHDRAW_INTERVALS;
-                } /// 13 weeks = 1 quarter of a year
+            }
+            else {
+                int vesting_withdraw_intervals = STEEMIT_VESTING_WITHDRAW_INTERVALS;
 
                 _db.modify(account, [&](account_object &a) {
                     auto new_vesting_withdraw_rate = asset(
@@ -1058,7 +1056,6 @@ namespace golos { namespace chain {
                     /// if the current net_rshares is less than 0, the post is getting 0 rewards so it is not factored into total rshares^2
                     fc::uint128_t old_rshares = std::max(comment.net_rshares.value, int64_t(0));
                     const auto &root = _db.get(comment.root_comment);
-                    auto old_root_abs_rshares = root.children_abs_rshares.value;
 
                     FC_ASSERT(abs_rshares > 0, "Cannot vote with 0 rshares.");
 
@@ -1223,7 +1220,6 @@ namespace golos { namespace chain {
                     /// if the current net_rshares is less than 0, the post is getting 0 rewards so it is not factored into total rshares^2
                     fc::uint128_t old_rshares = std::max(comment.net_rshares.value, int64_t(0));
                     const auto &root = _db.get(comment.root_comment);
-                    auto old_root_abs_rshares = root.children_abs_rshares.value;
 
                     _db.modify(comment, [&](comment_object &c) {
                         c.net_rshares -= itr->rshares;
