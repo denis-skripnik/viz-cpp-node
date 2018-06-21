@@ -7,56 +7,9 @@
 namespace golos { namespace chain {
         using fc::uint128_t;
 
-        inline void validate_permlink_0_1(const string &permlink) {
-            FC_ASSERT(permlink.size() > STEEMIT_MIN_PERMLINK_LENGTH &&
-                      permlink.size() <
-                      STEEMIT_MAX_PERMLINK_LENGTH, "Permlink is not a valid size.");
-
-            for (auto c : permlink) {
-                switch (c) {
-                    case 'a':
-                    case 'b':
-                    case 'c':
-                    case 'd':
-                    case 'e':
-                    case 'f':
-                    case 'g':
-                    case 'h':
-                    case 'i':
-                    case 'j':
-                    case 'k':
-                    case 'l':
-                    case 'm':
-                    case 'n':
-                    case 'o':
-                    case 'p':
-                    case 'q':
-                    case 'r':
-                    case 's':
-                    case 't':
-                    case 'u':
-                    case 'v':
-                    case 'w':
-                    case 'x':
-                    case 'y':
-                    case 'z':
-                    case '0':
-                    case '1':
-                    case '2':
-                    case '3':
-                    case '4':
-                    case '5':
-                    case '6':
-                    case '7':
-                    case '8':
-                    case '9':
-                    case '-':
-                        break;
-                    default:
-                        FC_ASSERT(false, "Invalid permlink character: ${s}", ("s",
-                                std::string() + c));
-                }
-            }
+        inline void validate_permlink(const string &permlink) {
+            FC_ASSERT(permlink.size() < STEEMIT_MAX_PERMLINK_LENGTH, "permlink is too long");
+            FC_ASSERT(fc::is_utf8(permlink), "permlink not formatted in UTF8");
         }
 
         struct strcmp_equal {
@@ -162,9 +115,7 @@ namespace golos { namespace chain {
 
         void account_update_evaluator::do_apply(const account_update_operation &o) {
             database &_db = db();
-            if (_db.has_hardfork(STEEMIT_HARDFORK_0_1))
-                FC_ASSERT(o.account !=
-                          STEEMIT_TEMP_ACCOUNT, "Cannot update temp account.");
+            FC_ASSERT(o.account != STEEMIT_TEMP_ACCOUNT, "Cannot update temp account.");
 
             if ((_db.has_hardfork(STEEMIT_HARDFORK_0_15__465) ||
                  _db.is_producing()) && o.posting) { // TODO: Add HF 15
@@ -397,10 +348,8 @@ namespace golos { namespace chain {
                     });
 
                     const auto &new_comment = _db.create<comment_object>([&](comment_object &com) {
-                        if (_db.has_hardfork(STEEMIT_HARDFORK_0_1)) {
-                            validate_permlink_0_1(o.parent_permlink);
-                            validate_permlink_0_1(o.permlink);
-                        }
+                        validate_permlink(o.parent_permlink);
+                        validate_permlink(o.permlink);
 
                         com.author = o.author;
                         from_string(com.permlink, o.permlink);
@@ -1117,18 +1066,12 @@ namespace golos { namespace chain {
                                 u512 rshares3(rshares);
                                 u256 total2(comment.abs_rshares.value);
 
-                                if (!_db.has_hardfork(STEEMIT_HARDFORK_0_1)) {
-                                    rshares3 *= 10000;
-                                    total2 *= 10000;
-                                }
-
                                 rshares3 = rshares3 * rshares3 * rshares3;
 
                                 total2 *= total2;
                                 cv.weight = static_cast<uint64_t>( rshares3 /
                                                                    total2 );
                             } else {// cv.weight = W(R_1) - W(R_0)
-                                if (_db.has_hardfork(STEEMIT_HARDFORK_0_1)) {
                                     uint64_t old_weight = (
                                             (std::numeric_limits<uint64_t>::max() *
                                              fc::uint128_t(old_vote_rshares.value)) /
@@ -1140,23 +1083,6 @@ namespace golos { namespace chain {
                                             (2 * _db.get_content_constant_s() +
                                              comment.vote_rshares.value)).to_uint64();
                                     cv.weight = new_weight - old_weight;
-                                } else {
-                                    uint64_t old_weight = (
-                                            (std::numeric_limits<uint64_t>::max() *
-                                             fc::uint128_t(10000 *
-                                                           old_vote_rshares.value)) /
-                                            (2 * _db.get_content_constant_s() +
-                                             (10000 *
-                                              old_vote_rshares.value))).to_uint64();
-                                    uint64_t new_weight = (
-                                            (std::numeric_limits<uint64_t>::max() *
-                                             fc::uint128_t(10000 *
-                                                           comment.vote_rshares.value)) /
-                                            (2 * _db.get_content_constant_s() +
-                                             (10000 *
-                                              comment.vote_rshares.value))).to_uint64();
-                                    cv.weight = new_weight - old_weight;
-                                }
                             }
 
                             max_vote_weight = cv.weight;
