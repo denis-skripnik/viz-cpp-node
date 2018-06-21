@@ -1071,11 +1071,11 @@ namespace golos { namespace chain {
                                     uint64_t old_weight = (
                                             (std::numeric_limits<uint64_t>::max() *
                                              fc::uint128_t(old_vote_rshares.value)) /
-                                            (old_vote_rshares.value)).to_uint64();
+                                            (1 + old_vote_rshares.value)).to_uint64();
                                     uint64_t new_weight = (
                                             (std::numeric_limits<uint64_t>::max() *
                                              fc::uint128_t(comment.vote_rshares.value)) /
-                                            (comment.vote_rshares.value)).to_uint64();
+                                            (1 + comment.vote_rshares.value)).to_uint64();
                                     cv.weight = new_weight - old_weight;
                             }
 
