@@ -94,7 +94,6 @@ namespace golos {
 
             share_type children_abs_rshares; /// this is used to calculate cashout time of a discussion.
             time_point_sec cashout_time; /// 24 hours from the weighted average of vote time
-            time_point_sec max_cashout_time;
             uint64_t total_vote_weight = 0; /// the total weight of voting rewards, used to calculate pro-rata share of curation payouts
 
             /** tracks the total payout this comment has received over time, measured in VIZ */

@@ -79,7 +79,6 @@ namespace mongo_db {
             format_value(body, "depth", comment.depth);
             format_value(body, "last_payout", comment.last_payout);
             format_value(body, "last_update", comment.last_update);
-            format_value(body, "max_cashout_time", comment.max_cashout_time);
             format_value(body, "net_rshares", comment.net_rshares);
             format_value(body, "net_votes", comment.net_votes);
             format_value(body, "parent_author", comment.parent_author);

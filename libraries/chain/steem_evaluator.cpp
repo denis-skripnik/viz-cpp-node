@@ -408,27 +408,18 @@ namespace golos { namespace chain {
                         com.created = com.last_update;
                         com.active = com.last_update;
                         com.last_payout = fc::time_point_sec::min();
-                        com.max_cashout_time = fc::time_point_sec::maximum();
+                        com.cashout_time = com.created + STEEMIT_CASHOUT_WINDOW_SECONDS;
 
                         if (o.parent_author == STEEMIT_ROOT_POST_PARENT) {
                             com.parent_author = "";
                             from_string(com.parent_permlink, o.parent_permlink);
                             com.root_comment = com.id;
-                            com.cashout_time = _db.has_hardfork(STEEMIT_HARDFORK_0_12__177)
-                                               ?
-                                               _db.head_block_time() +
-                                               STEEMIT_CASHOUT_WINDOW_SECONDS_PRE_HF17 :
-                                               fc::time_point_sec::maximum();
-                        } else {
+                        }
+                        else {
                             com.parent_author = parent->author;
                             com.parent_permlink = parent->permlink;
                             com.depth = parent->depth + 1;
                             com.root_comment = parent->root_comment;
-                            com.cashout_time = fc::time_point_sec::maximum();
-                        }
-
-                        if (_db.has_hardfork( STEEMIT_HARDFORK_0_17__431)) {
-                            com.cashout_time = com.created + STEEMIT_CASHOUT_WINDOW_SECONDS;
                         }
                     });
 
@@ -1111,22 +1102,6 @@ namespace golos { namespace chain {
 
                     _db.modify(root, [&](comment_object &c) {
                         c.children_abs_rshares += abs_rshares;
-                        if (!_db.has_hardfork( STEEMIT_HARDFORK_0_17__431)) {
-                            if (_db.has_hardfork(STEEMIT_HARDFORK_0_12__177) &&
-                                c.last_payout > fc::time_point_sec::min()
-                            ) {
-                                c.cashout_time = c.last_payout + STEEMIT_SECOND_CASHOUT_WINDOW;
-                            } else {
-                                c.cashout_time = fc::time_point_sec(
-                                        std::min(uint32_t(avg_cashout_sec.to_uint64()),
-                                                 c.max_cashout_time.sec_since_epoch()));
-                            }
-
-                            if (c.max_cashout_time == fc::time_point_sec::maximum()) {
-                                c.max_cashout_time =
-                                        _db.head_block_time() + fc::seconds(STEEMIT_MAX_CASHOUT_WINDOW_SECONDS);
-                            }
-                        }
                     });
 
                     fc::uint128_t new_rshares = std::max(comment.net_rshares.value, int64_t(0));
@@ -1315,22 +1290,6 @@ namespace golos { namespace chain {
 
                     _db.modify(root, [&](comment_object &c) {
                         c.children_abs_rshares += abs_rshares;
-                        if (!_db.has_hardfork( STEEMIT_HARDFORK_0_17__431)) {
-                            if (_db.has_hardfork(STEEMIT_HARDFORK_0_12__177) &&
-                                c.last_payout > fc::time_point_sec::min()
-                            ) {
-                                c.cashout_time = c.last_payout + STEEMIT_SECOND_CASHOUT_WINDOW;
-                            } else {
-                                c.cashout_time = fc::time_point_sec(
-                                        std::min(uint32_t(avg_cashout_sec.to_uint64()),
-                                                 c.max_cashout_time.sec_since_epoch()));
-                            }
-
-                            if (c.max_cashout_time == fc::time_point_sec::maximum()) {
-                                c.max_cashout_time =
-                                        _db.head_block_time() + fc::seconds(STEEMIT_MAX_CASHOUT_WINDOW_SECONDS);
-                            }
-                        }
                     });
 
                     fc::uint128_t new_rshares = std::max(comment.net_rshares.value, int64_t(0));

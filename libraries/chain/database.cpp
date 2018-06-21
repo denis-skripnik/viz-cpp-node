@@ -2107,18 +2107,7 @@ namespace golos { namespace chain {
                     c.abs_rshares = 0;
                     c.vote_rshares = 0;
                     c.total_vote_weight = 0;
-                    c.max_cashout_time = fc::time_point_sec::maximum();
-
-                    if (has_hardfork(STEEMIT_HARDFORK_0_17__431)) {
-                        c.cashout_time = fc::time_point_sec::maximum();
-                    } else if (c.parent_author == STEEMIT_ROOT_POST_PARENT) {
-                        if (has_hardfork(STEEMIT_HARDFORK_0_12__177) && c.last_payout == fc::time_point_sec::min()) {
-                            c.cashout_time = head_block_time() + STEEMIT_SECOND_CASHOUT_WINDOW;
-                        } else {
-                            c.cashout_time = fc::time_point_sec::maximum();
-                        }
-                    }
-
+                    c.cashout_time = fc::time_point_sec::maximum();
                     c.last_payout = head_block_time();
                 });
 

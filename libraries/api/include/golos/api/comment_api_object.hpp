@@ -42,7 +42,6 @@ namespace golos { namespace api {
 
         share_type children_abs_rshares;
         time_point_sec cashout_time;
-        time_point_sec max_cashout_time;
         uint64_t total_vote_weight;
 
         protocol::asset total_payout_value;
@@ -63,7 +62,7 @@ FC_REFLECT(
     (golos::api::comment_api_object),
     (id)(author)(permlink)(parent_author)(parent_permlink)(category)(title)(body)(json_metadata)(last_update)
     (created)(active)(last_payout)(depth)(children)(children_rshares2)(net_rshares)(abs_rshares)
-    (vote_rshares)(children_abs_rshares)(cashout_time)(max_cashout_time)(total_vote_weight)
+    (vote_rshares)(children_abs_rshares)(cashout_time)(total_vote_weight)
     (total_payout_value)(curator_payout_value)(author_rewards)(net_votes)
     (root_comment)(beneficiaries))
 
