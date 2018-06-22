@@ -1145,7 +1145,7 @@ namespace golos { namespace chain {
                 const auto &cprops = get_dynamic_global_properties();
 
                 /**
-                 *  The ratio of total_vesting_shares / total_vesting_fund_steem should not
+                 *  The ratio of total_vesting_shares / total_vesting_fund should not
                  *  change as the result of the user adding funds
                  *
                  *  V / C = (V+Vn) / (C+Cn)
@@ -1164,7 +1164,7 @@ namespace golos { namespace chain {
                 });
 
                 modify(cprops, [&](dynamic_global_property_object &props) {
-                    props.total_vesting_fund_steem += steem;
+                    props.total_vesting_fund += steem;
                     props.total_vesting_shares += new_vesting;
                 });
 
@@ -1761,7 +1761,7 @@ namespace golos { namespace chain {
 
                 modify(gpo, [&](dynamic_global_property_object &g) {
                     g.total_vesting_shares -= null_account.vesting_shares;
-                    g.total_vesting_fund_steem -= converted_steem;
+                    g.total_vesting_fund -= converted_steem;
                 });
 
                 modify(null_account, [&](account_object &a) {
@@ -1797,7 +1797,7 @@ namespace golos { namespace chain {
 
                 modify(gpo, [&](dynamic_global_property_object &g) {
                     g.total_vesting_shares -= committee_account.vesting_shares;
-                    g.total_vesting_fund_steem -= converted_steem;
+                    g.total_vesting_fund -= converted_steem;
                 });
 
                 modify(committee_account, [&](account_object &a) {
@@ -1930,7 +1930,7 @@ namespace golos { namespace chain {
                             });
 
                             modify(cprops, [&](dynamic_global_property_object &o) {
-                                o.total_vesting_fund_steem -= converted_steem;
+                                o.total_vesting_fund -= converted_steem;
                                 o.total_vesting_shares.amount -= to_deposit;
                             });
 
@@ -1962,7 +1962,7 @@ namespace golos { namespace chain {
                 });
 
                 modify(cprops, [&](dynamic_global_property_object &o) {
-                    o.total_vesting_fund_steem -= converted_steem;
+                    o.total_vesting_fund -= converted_steem;
                     o.total_vesting_shares.amount -= to_convert;
                 });
 
@@ -2200,7 +2200,7 @@ namespace golos { namespace chain {
             */
             modify( props, [&]( dynamic_global_property_object& p )
             {
-               p.total_vesting_fund_steem += asset( vesting_reward, STEEM_SYMBOL );
+               p.total_vesting_fund += asset( vesting_reward, STEEM_SYMBOL );
                p.committee_supply += asset( committee_reward, STEEM_SYMBOL );
                p.total_reward_fund_steem  += asset( content_reward, STEEM_SYMBOL );
                p.current_supply           += asset( inflation_per_block, STEEM_SYMBOL );
@@ -3478,7 +3478,7 @@ namespace golos { namespace chain {
                         asset new_vesting((adjust_vesting && delta.amount > 0) ?
                                           delta.amount * 9 : 0, STEEM_SYMBOL);
                         props.current_supply += delta + new_vesting;
-                        props.total_vesting_fund_steem += new_vesting;
+                        props.total_vesting_fund += new_vesting;
                         assert(props.current_supply.amount.value >= 0);
                         break;
                     }
@@ -3861,7 +3861,7 @@ namespace golos { namespace chain {
                     }
                 }
 
-                total_supply += gpo.total_vesting_fund_steem +
+                total_supply += gpo.total_vesting_fund +
                                 gpo.total_reward_fund_steem;
 
                 FC_ASSERT(gpo.current_supply ==

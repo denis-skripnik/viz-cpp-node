@@ -54,18 +54,18 @@ namespace golos {
             asset committee_supply = asset(0, STEEM_SYMBOL);
             asset current_supply = asset(0, STEEM_SYMBOL);
             asset confidential_supply = asset(0, STEEM_SYMBOL); ///< total asset held in confidential balances
-            asset total_vesting_fund_steem = asset(0, STEEM_SYMBOL);
+            asset total_vesting_fund = asset(0, STEEM_SYMBOL);
             asset total_vesting_shares = asset(0, VESTS_SYMBOL);
             asset total_reward_fund_steem = asset(0, STEEM_SYMBOL);
             fc::uint128_t total_reward_shares2; ///< the running total of REWARD^2
 
             price get_vesting_share_price() const {
-                if (total_vesting_fund_steem.amount == 0 ||
+                if (total_vesting_fund.amount == 0 ||
                     total_vesting_shares.amount == 0) {
                         return price(asset(1000, STEEM_SYMBOL), asset(1000000, VESTS_SYMBOL));
                 }
 
-                return price(total_vesting_shares, total_vesting_fund_steem);
+                return price(total_vesting_shares, total_vesting_fund);
             }
 
             /**
@@ -154,7 +154,7 @@ FC_REFLECT((golos::chain::dynamic_global_property_object),
                 (committee_supply)
                 (current_supply)
                 (confidential_supply)
-                (total_vesting_fund_steem)
+                (total_vesting_fund)
                 (total_vesting_shares)
                 (total_reward_fund_steem)
                 (total_reward_shares2)
