@@ -14,9 +14,7 @@ namespace golos { namespace api {
     class discussion_helper {
     public:
         discussion_helper() = delete;
-        discussion_helper(
-            golos::chain::database& db,
-            std::function<void(const golos::chain::database&, const account_name_type&, fc::optional<share_type>&)> fill_reputation);
+        discussion_helper(golos::chain::database& db);
         ~discussion_helper();
 
 

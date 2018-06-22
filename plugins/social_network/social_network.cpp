@@ -33,7 +33,7 @@ namespace golos { namespace plugins { namespace social_network {
 
     struct social_network::impl final {
         impl(): database_(appbase::app().get_plugin<chain::plugin>().db()) {
-            helper = std::make_unique<discussion_helper>(database_, follow::fill_account_reputation);
+            helper = std::make_unique<discussion_helper>(database_);
         }
 
         ~impl() = default;

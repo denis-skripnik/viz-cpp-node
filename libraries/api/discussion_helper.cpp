@@ -54,12 +54,7 @@ namespace golos { namespace api {
     struct discussion_helper::impl final {
     public:
         impl() = delete;
-        impl(
-            golos::chain::database& db,
-            std::function<void(const golos::chain::database&, const account_name_type&, fc::optional<share_type>&)> fill_reputation)
-            : database_(db),
-              fill_reputation_(fill_reputation) {
-        }
+        impl(golos::chain::database& db):database_(db){}
         ~impl() = default;
 
         discussion create_discussion(const comment_object& o) const ;
@@ -85,7 +80,6 @@ namespace golos { namespace api {
 
     private:
         golos::chain::database& database_;
-        std::function<void(const golos::chain::database&, const account_name_type&, fc::optional<share_type>&)> fill_reputation_;
     };
 
 // get_discussion
@@ -121,7 +115,6 @@ namespace golos { namespace api {
                 vstate.rshares = itr->rshares;
                 vstate.percent = itr->vote_percent;
                 vstate.time = itr->last_update;
-                fill_reputation_(database(), vo.name, vstate.reputation);
                 result.emplace_back(vstate);
             }
         }
@@ -157,8 +150,6 @@ namespace golos { namespace api {
             d.pending_payout_value = asset(static_cast<uint64_t>(r2), pot.symbol);
             d.total_pending_payout_value = asset(static_cast<uint64_t>(tpp), pot.symbol);
         }
-
-        fill_reputation_(db, d.author, d.author_reputation);
 
         if (d.parent_author != STEEMIT_ROOT_POST_PARENT) {
             d.cashout_time = db.calculate_discussion_payout_time(db.get<comment_object>(d.id));
@@ -204,10 +195,9 @@ namespace golos { namespace api {
     }
 
     discussion_helper::discussion_helper(
-        golos::chain::database& db,
-        std::function<void(const golos::chain::database&, const account_name_type&, fc::optional<share_type>&)> fill_reputation
+        golos::chain::database& db
     ) {
-        pimpl = std::make_unique<impl>(db, fill_reputation);
+        pimpl = std::make_unique<impl>(db);
     }
 
     discussion_helper::~discussion_helper() = default;

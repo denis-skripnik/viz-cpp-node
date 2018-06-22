@@ -139,7 +139,6 @@ struct remote_follow {
     vector< comment_feed_entry > get_feed( account_name_type, uint32_t, uint32_t );
     vector< blog_entry > get_blog_entries( account_name_type, uint32_t, uint32_t );
     vector< comment_blog_entry > get_blog( account_name_type, uint32_t, uint32_t );
-    vector< account_reputation > get_account_reputations( account_name_type, uint32_t );
     vector< account_name_type > get_reblogged_by( account_name_type, string );
     vector< reblog_count > get_blog_authors( account_name_type );
 };
@@ -268,7 +267,6 @@ FC_API( golos::wallet::remote_follow,
         (get_feed)
         (get_blog_entries)
         (get_blog)
-        (get_account_reputations)
         (get_reblogged_by)
         (get_blog_authors)
 )

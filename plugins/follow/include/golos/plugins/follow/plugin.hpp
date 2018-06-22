@@ -8,12 +8,6 @@
 namespace golos { namespace plugins { namespace follow {
     using json_rpc::msg_pack;
 
-    void fill_account_reputation(
-        const golos::chain::database& db,
-        const account_name_type& account,
-        fc::optional<share_type>& reputation
-    );
-
     ///               API,                          args,       return
     DEFINE_API_ARGS(get_followers,           msg_pack, std::vector<follow_api_object>)
     DEFINE_API_ARGS(get_following,           msg_pack, std::vector<follow_api_object>)
@@ -22,7 +16,6 @@ namespace golos { namespace plugins { namespace follow {
     DEFINE_API_ARGS(get_feed,                msg_pack, std::vector<comment_feed_entry>)
     DEFINE_API_ARGS(get_blog_entries,        msg_pack, std::vector<blog_entry>)
     DEFINE_API_ARGS(get_blog,                msg_pack, std::vector<comment_blog_entry>)
-    DEFINE_API_ARGS(get_account_reputations, msg_pack, std::vector<account_reputation>)
     DEFINE_API_ARGS(get_reblogged_by,        msg_pack, std::vector<account_name_type>)
     DEFINE_API_ARGS(get_blog_authors,        msg_pack, blog_authors_r)
 
@@ -50,7 +43,6 @@ namespace golos { namespace plugins { namespace follow {
                 (get_feed)
                 (get_blog_entries)
                 (get_blog)
-                (get_account_reputations)
                         /// Gets list of accounts that have reblogged a particular post
                 (get_reblogged_by)
                         /// Gets a list of authors that have had their content reblogged on a given blog account

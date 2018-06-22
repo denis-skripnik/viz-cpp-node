@@ -25,24 +25,6 @@ namespace golos {
             using golos::chain::account_index;
             using golos::chain::by_name;
 
-            void fill_account_reputation(
-                const golos::chain::database& db,
-                const account_name_type& account,
-                fc::optional<share_type>& reputation
-            ) {
-                if (!db.has_index<follow::reputation_index>()) {
-                    return;
-                }
-
-                auto &rep_idx = db.get_index<follow::reputation_index>().indices().get<follow::by_account>();
-                auto itr = rep_idx.find(account);
-                if (rep_idx.end() != itr) {
-                    reputation = itr->reputation;
-                } else {
-                    reputation = 0;
-                }
-            }
-
             struct pre_operation_visitor {
                 plugin &_plugin;
                 golos::chain::database &db;
@@ -54,32 +36,6 @@ namespace golos {
 
                 template<typename T>
                 void operator()(const T &) const {
-                }
-
-                void operator()(const vote_operation &op) const {
-                    try {
-
-                        const auto &c = db.get_comment(op.author, op.permlink);
-
-                        if (db.calculate_discussion_payout_time(c) == fc::time_point_sec::maximum()) {
-                            return;
-                        }
-
-                        const auto &cv_idx = db.get_index<comment_vote_index>().indices().get<by_comment_voter>();
-                        auto cv = cv_idx.find(std::make_tuple(c.id, db.get_account(op.voter).id));
-
-                        if (cv != cv_idx.end()) {
-                            const auto &rep_idx = db.get_index<reputation_index>().indices().get<by_account>();
-                            auto rep = rep_idx.find(op.author);
-
-                            if (rep != rep_idx.end()) {
-                                db.modify(*rep, [&](reputation_object &r) {
-                                    r.reputation -= (cv->rshares >> 6); // Shift away precision from vests. It is noise
-                                });
-                            }
-                        }
-                    } catch (const fc::exception &e) {
-                    }
                 }
 
                 void operator()(const delete_comment_operation &op) const {
@@ -226,52 +182,6 @@ namespace golos {
                         }
                     } FC_LOG_AND_RETHROW()
                 }
-
-                void operator()(const vote_operation &op) const {
-                    try {
-                        const auto &comment = db.get_comment(op.author, op.permlink);
-
-                        if (db.calculate_discussion_payout_time(comment) == fc::time_point_sec::maximum()) {
-                            return;
-                        }
-
-                        const auto &cv_idx = db.get_index<comment_vote_index>().indices().get<by_comment_voter>();
-                        auto cv = cv_idx.find(boost::make_tuple(comment.id, db.get_account(op.voter).id));
-
-                        const auto &rep_idx = db.get_index<reputation_index>().indices().get<by_account>();
-                        auto voter_rep = rep_idx.find(op.voter);
-                        auto author_rep = rep_idx.find(op.author);
-
-                        // Rules are a plugin, do not effect consensus, and are subject to change.
-                        // Rule #1: Must have non-negative reputation to effect another user's reputation
-                        if (voter_rep != rep_idx.end() && voter_rep->reputation < 0) {
-                            return;
-                        }
-
-                        if (author_rep == rep_idx.end()) {
-                            // Rule #2: If you are down voting another user, you must have more reputation than them to impact their reputation
-                            // User rep is 0, so requires voter having positive rep
-                            if (cv->rshares < 0 && !(voter_rep != rep_idx.end() && voter_rep->reputation > 0)) {
-                                return;
-                            }
-
-                            db.create<reputation_object>([&](reputation_object &r) {
-                                r.account = op.author;
-                                r.reputation = (cv->rshares >> 6); // Shift away precision from vests. It is noise
-                            });
-                        } else {
-                            // Rule #2: If you are down voting another user, you must have more reputation than them to impact their reputation
-                            if (cv->rshares < 0 &&
-                                !(voter_rep != rep_idx.end() && voter_rep->reputation > author_rep->reputation)) {
-                                return;
-                            }
-
-                            db.modify(*author_rep, [&](reputation_object &r) {
-                                r.reputation += (cv->rshares >> 6); // Shift away precision from vests. It is noise
-                            });
-                        }
-                    } FC_CAPTURE_AND_RETHROW()
-                }
             };
 
             inline void set_what(std::vector<follow_type> &what, uint16_t bitmask) {
@@ -361,9 +271,6 @@ namespace golos {
                         uint32_t start_entry_id = 0,
                         uint32_t limit = 500);
 
-                std::vector<account_reputation> get_account_reputations(
-                        std::vector < account_name_type > accounts);
-
                 follow_count_api_obj get_follow_count(account_name_type start);
 
                 std::vector<account_name_type> get_reblogged_by(
@@ -408,7 +315,6 @@ namespace golos {
                     golos::chain::add_plugin_index<follow_index>(db);
                     golos::chain::add_plugin_index<feed_index>(db);
                     golos::chain::add_plugin_index<blog_index>(db);
-                    golos::chain::add_plugin_index<reputation_index>(db);
                     golos::chain::add_plugin_index<follow_count_index>(db);
                     golos::chain::add_plugin_index<blog_author_stats_index>(db);
 
@@ -641,38 +547,6 @@ namespace golos {
                 return result;
             }
 
-            std::vector<account_reputation> plugin::impl::get_account_reputations(
-                    std::vector < account_name_type > accounts
-                ) {
-
-                FC_ASSERT(accounts.size() <= 100, "Cannot retrieve more than 100 account reputations at a time.");
-
-                const auto &idx = database().get_index<account_index>().indices().get<by_name>();
-
-                size_t acc_count = accounts.size();
-
-                std::vector<account_reputation> result;
-                result.reserve(acc_count);
-
-                for (size_t i = 0; i < acc_count; i++) {
-                    account_reputation rep;
-                    auto itr = idx.find(accounts[i]);
-
-                    // checking the presence of account with such name in database
-                    if (itr == idx.end()) {
-                        rep.account = accounts[i];
-                        rep.reputation = 0;
-                        result.push_back(std::move(rep));
-                        continue;
-                    }
-
-                    rep.account = itr->name;
-                    fill_account_reputation(database(), itr->name, rep.reputation);
-                    result.push_back(std::move(rep));
-                }
-                return result;
-            }
-
             std::vector<account_name_type> plugin::impl::get_reblogged_by(
                     account_name_type author,
                     std::string permlink
@@ -767,14 +641,6 @@ namespace golos {
                 auto limit = args.args->at(2).as<uint32_t>();
                 return pimpl->database().with_weak_read_lock([&]() {
                     return pimpl->get_blog(account, entry_id, limit);
-                });
-            }
-
-            DEFINE_API(plugin, get_account_reputations) {
-                CHECK_ARG_SIZE(1)
-                auto accounts = args.args->at(0).as< std::vector < account_name_type > >();
-                return pimpl->database().with_weak_read_lock([&]() {
-                    return pimpl->get_account_reputations( accounts );
                 });
             }
 

@@ -40,11 +40,6 @@ namespace golos {
                 uint32_t entry_id = 0;
             };
 
-            struct account_reputation {
-                std::string account;
-                fc::optional<golos::protocol::share_type> reputation;
-            };
-
             struct follow_api_object {
                 std::string follower;
                 std::string following;
@@ -89,8 +84,6 @@ FC_REFLECT((golos::plugins::follow::comment_feed_entry), (comment)(reblog_by)(re
 FC_REFLECT((golos::plugins::follow::blog_entry), (author)(permlink)(blog)(reblog_on)(entry_id));
 
 FC_REFLECT((golos::plugins::follow::comment_blog_entry), (comment)(blog)(reblog_on)(entry_id));
-
-FC_REFLECT((golos::plugins::follow::account_reputation), (account)(reputation));
 
 FC_REFLECT((golos::plugins::follow::follow_api_object), (follower)(following)(what));
 
