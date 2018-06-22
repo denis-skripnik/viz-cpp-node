@@ -146,7 +146,6 @@ namespace golos { namespace plugins { namespace tags {
         set_url(d);
         set_pending_payout(d);
         select_active_votes(d.active_votes, d.active_votes_count, d.author, d.permlink, query.vote_limit);
-        d.body_length = static_cast<uint32_t>(d.body.size());
         if (query.truncate_body) {
             if (d.body.size() > query.truncate_body) {
                 d.body.erase(query.truncate_body);

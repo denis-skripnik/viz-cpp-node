@@ -23,7 +23,6 @@ namespace golos { namespace api {
         std::vector<string> replies; ///< author/slug mapping
         double hot = 0;
         double trending = 0;
-        uint32_t body_length = 0;
         std::vector<account_name_type> reblogged_by;
         optional <account_name_type> first_reblogged_by;
         optional <time_point_sec> first_reblogged_on;
@@ -33,4 +32,4 @@ namespace golos { namespace api {
 
 FC_REFLECT_DERIVED( (golos::api::discussion), ((golos::api::comment_api_object)),
         (url)(root_title)(pending_payout_value)(total_pending_payout_value)(active_votes)(active_votes_count)(replies)
-        (body_length)(reblogged_by)(first_reblogged_by)(first_reblogged_on))
+        (reblogged_by)(first_reblogged_by)(first_reblogged_on))
