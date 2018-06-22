@@ -90,8 +90,6 @@ namespace golos { namespace plugins { namespace tags {
         double hot = 0;
         double trending = 0;
 
-        share_type promoted_balance = 0;
-
         /**
          *  Used to track the total rshares^2 of all children, this is used for indexing purposes. A discussion
          *  that has a nested comment of high value should promote the entire discussion so that the comment can
@@ -176,15 +174,6 @@ namespace golos { namespace plugins { namespace tags {
                     member<tag_object, tag_id_type, &tag_object::id> >,
                 composite_key_compare<
                     std::greater<time_point_sec>,
-                    std::less<tag_id_type>>>,
-            ordered_non_unique<
-                tag<sort::by_promoted>,
-                composite_key<
-                    tag_object,
-                    member<tag_object, share_type, &tag_object::promoted_balance>,
-                    member<tag_object, tag_id_type, &tag_object::id> >,
-                composite_key_compare<
-                    std::greater<share_type>,
                     std::less<tag_id_type>>>,
             ordered_non_unique<
                 tag<sort::by_net_rshares>,

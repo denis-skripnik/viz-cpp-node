@@ -30,7 +30,6 @@ namespace golos { namespace plugins { namespace tags {
     DEFINE_API_ARGS(get_discussions_by_feed,               msg_pack, std::vector<discussion>)
     DEFINE_API_ARGS(get_discussions_by_blog,               msg_pack, std::vector<discussion>)
     DEFINE_API_ARGS(get_discussions_by_comments,           msg_pack, std::vector<discussion>)
-    DEFINE_API_ARGS(get_discussions_by_promoted,           msg_pack, std::vector<discussion>)
     DEFINE_API_ARGS(get_discussions_by_author_before_date, msg_pack, std::vector<discussion>)
     DEFINE_API_ARGS(get_languages,                         msg_pack, get_languages_result);
 
@@ -130,13 +129,6 @@ namespace golos { namespace plugins { namespace tags {
             (get_tags_used_by_author)
 
             /**
-             * Used to retrieve the list of discussions sorted by promoted balance amount
-             * @param query @ref discussion_query
-             * @return vector of discussions sorted by promoted balance amount
-             **/
-            (get_discussions_by_promoted)
-
-            /**
              *  This method is used to fetch all posts/comments by start_author that occur after before_date and
              *  start_permlink with up to limit being returned.
              *
@@ -170,9 +162,6 @@ namespace golos { namespace plugins { namespace tags {
         struct impl;
         std::unique_ptr<impl> pimpl;
     };
-
-    // Needed for correct work of golos::api::discussion_helper::set_pending_payout
-    void fill_promoted(const golos::chain::database& db, discussion& d);
 } } } // golos::plugins::tags
 
 FC_REFLECT((golos::plugins::tags::get_languages_result), (languages))

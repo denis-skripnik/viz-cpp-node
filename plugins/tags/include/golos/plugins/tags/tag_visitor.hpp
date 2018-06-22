@@ -57,8 +57,6 @@ namespace golos { namespace plugins { namespace tags {
 
         void operator()(const comment_operation& op) const;
 
-        void operator()(const transfer_operation& op) const;
-
         void operator()(const vote_operation& op) const;
 
         void operator()(const delete_comment_operation& op) const;

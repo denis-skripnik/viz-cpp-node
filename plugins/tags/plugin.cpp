@@ -34,10 +34,7 @@ namespace golos { namespace plugins { namespace tags {
 
     struct tags_plugin::impl final {
         impl(): database_(appbase::app().get_plugin<chain::plugin>().db()) {
-            helper = std::make_unique<discussion_helper>(
-                database_,
-                follow::fill_account_reputation,
-                fill_promoted);
+            helper = std::make_unique<discussion_helper>(database_, follow::fill_account_reputation);
         }
 
         ~impl() {}
@@ -403,7 +400,6 @@ namespace golos { namespace plugins { namespace tags {
             }
 
             discussion d = create_discussion(*comment);
-            d.promoted = asset(itr->promoted_balance, STEEM_SYMBOL);
 
             if (!select(d) || !query.is_good_tags(d)) {
                 continue;
@@ -633,22 +629,6 @@ namespace golos { namespace plugins { namespace tags {
             query,
             [&](const discussion& d) -> bool {
                 return d.net_rshares > 0;
-            }
-        );
-#endif
-        return std::vector<discussion>();
-    }
-
-    DEFINE_API(tags_plugin, get_discussions_by_promoted) {
-        CHECK_ARG_SIZE(1)
-        auto query = args.args->at(0).as<discussion_query>();
-        query.prepare();
-        query.validate();
-#ifndef IS_LOW_MEM
-        return pimpl->select_ordered_discussions<sort::by_promoted>(
-            query,
-            [&](const discussion& d) -> bool {
-                return !!d.promoted && d.promoted->amount > 0;
             }
         );
 #endif
@@ -893,21 +873,6 @@ namespace golos { namespace plugins { namespace tags {
         });
 #endif
         return result;
-    }
-
-    // Needed for correct work of golos::api::discussion_helper::set_pending_payout and etc api methods
-    void fill_promoted(const golos::chain::database& db, discussion & d) {
-        if (!db.has_index<tags::tag_index>()) {
-            return;
-        }
-
-        const auto& cidx = db.get_index<tags::tag_index>().indices().get<tags::by_comment>();
-        auto itr = cidx.lower_bound(d.id);
-        if (itr != cidx.end() && itr->comment == d.id) {
-            d.promoted = asset(itr->promoted_balance, STEEM_SYMBOL);
-        } else {
-            d.promoted = asset(0, STEEM_SYMBOL);
-        }
     }
 
 } } } // golos::plugins::tags

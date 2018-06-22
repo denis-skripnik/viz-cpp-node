@@ -95,9 +95,6 @@ namespace golos { namespace plugins { namespace tags {
             obj.children_rshares2 = comment.children_rshares2;
             obj.hot = hot;
             obj.trending = trending;
-            if (obj.cashout == fc::time_point_sec()) {
-                obj.promoted_balance = 0;
-            }
         });
         add_stats(current);
     }
@@ -256,35 +253,6 @@ namespace golos { namespace plugins { namespace tags {
 
         if (comment.parent_author.size()) {
             update_tags(comment.parent_author, to_string(comment.parent_permlink));
-        }
-    }
-
-    void operation_visitor::operator()(const transfer_operation& op) const {
-        if (op.to == STEEMIT_NULL_ACCOUNT && op.amount.symbol == STEEM_SYMBOL) {
-            std::vector<std::string> part;
-            part.reserve(4);
-            auto path = op.memo;
-            boost::split(part, path, boost::is_any_of("/"));
-            if (!part[0].empty() && part[0][0] == '@') {
-                auto acnt = part[0].substr(1);
-                auto perm = part[1];
-
-                auto c = db_.find_comment(acnt, perm);
-                if (c && c->parent_author.size() == 0) {
-                    const auto& comment_idx = db_.get_index<tag_index>().indices().get<by_comment>();
-                    auto citr = comment_idx.lower_bound(c->id);
-                    while (citr != comment_idx.end() && citr->comment == c->id) {
-                        db_.modify(*citr, [&](tag_object& t) {
-                            if (t.cashout != fc::time_point_sec::maximum()) {
-                                t.promoted_balance += op.amount.amount;
-                            }
-                        });
-                        ++citr;
-                    }
-                } else {
-                    ilog("unable to find body");
-                }
-            }
         }
     }
 

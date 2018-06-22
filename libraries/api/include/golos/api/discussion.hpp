@@ -22,7 +22,6 @@ namespace golos { namespace api {
         uint32_t active_votes_count = 0;
         std::vector<string> replies; ///< author/slug mapping
         fc::optional<share_type> author_reputation;
-        fc::optional<asset> promoted;
         double hot = 0;
         double trending = 0;
         uint32_t body_length = 0;
@@ -35,4 +34,4 @@ namespace golos { namespace api {
 
 FC_REFLECT_DERIVED( (golos::api::discussion), ((golos::api::comment_api_object)),
         (url)(root_title)(pending_payout_value)(total_pending_payout_value)(active_votes)(active_votes_count)(replies)
-        (author_reputation)(promoted)(body_length)(reblogged_by)(first_reblogged_by)(first_reblogged_on))
+        (author_reputation)(body_length)(reblogged_by)(first_reblogged_by)(first_reblogged_on))

@@ -56,11 +56,9 @@ namespace golos { namespace api {
         impl() = delete;
         impl(
             golos::chain::database& db,
-            std::function<void(const golos::chain::database&, const account_name_type&, fc::optional<share_type>&)> fill_reputation,
-            std::function<void(const golos::chain::database&, discussion&)> fill_promoted)
+            std::function<void(const golos::chain::database&, const account_name_type&, fc::optional<share_type>&)> fill_reputation)
             : database_(db),
-              fill_reputation_(fill_reputation),
-              fill_promoted_(fill_promoted) {
+              fill_reputation_(fill_reputation) {
         }
         ~impl() = default;
 
@@ -88,7 +86,6 @@ namespace golos { namespace api {
     private:
         golos::chain::database& database_;
         std::function<void(const golos::chain::database&, const account_name_type&, fc::optional<share_type>&)> fill_reputation_;
-        std::function<void(const golos::chain::database&, discussion&)> fill_promoted_;
     };
 
 // get_discussion
@@ -140,8 +137,6 @@ namespace golos { namespace api {
 // set_pending_payout
     void discussion_helper::impl::set_pending_payout(discussion& d) const {
         auto& db = database();
-
-        fill_promoted_(db, d);
 
         const auto& props = db.get_dynamic_global_properties();
         asset pot = props.total_reward_fund_steem;
@@ -210,10 +205,9 @@ namespace golos { namespace api {
 
     discussion_helper::discussion_helper(
         golos::chain::database& db,
-        std::function<void(const golos::chain::database&, const account_name_type&, fc::optional<share_type>&)> fill_reputation,
-        std::function<void(const golos::chain::database&, discussion&)> fill_promoted
+        std::function<void(const golos::chain::database&, const account_name_type&, fc::optional<share_type>&)> fill_reputation
     ) {
-        pimpl = std::make_unique<impl>(db, fill_reputation, fill_promoted);
+        pimpl = std::make_unique<impl>(db, fill_reputation);
     }
 
     discussion_helper::~discussion_helper() = default;

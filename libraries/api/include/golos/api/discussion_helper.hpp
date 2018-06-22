@@ -16,8 +16,7 @@ namespace golos { namespace api {
         discussion_helper() = delete;
         discussion_helper(
             golos::chain::database& db,
-            std::function<void(const golos::chain::database&, const account_name_type&, fc::optional<share_type>&)> fill_reputation,
-            std::function<void(const golos::chain::database&, discussion&)> fill_promoted);
+            std::function<void(const golos::chain::database&, const account_name_type&, fc::optional<share_type>&)> fill_reputation);
         ~discussion_helper();
 
 

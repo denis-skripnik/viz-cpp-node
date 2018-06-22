@@ -112,7 +112,6 @@ struct remote_social_network {
     vector< discussion > get_discussions_by_feed( discussion_query );
     vector< discussion > get_discussions_by_blog( discussion_query );
     vector< discussion > get_discussions_by_comments( discussion_query );
-    vector< discussion > get_discussions_by_promoted( discussion_query );
     vector< discussion > get_discussions_by_author_before_date( discussion_query );
 
     vector< discussion > get_replies_by_last_update( discussion_query );
@@ -245,7 +244,6 @@ FC_API( golos::wallet::remote_social_network,
         (get_discussions_by_feed)
         (get_discussions_by_blog)
         (get_discussions_by_comments)
-        (get_discussions_by_promoted)
         (get_discussions_by_author_before_date)
         (get_replies_by_last_update)
 )

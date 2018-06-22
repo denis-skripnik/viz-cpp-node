@@ -11,7 +11,7 @@ namespace golos { namespace plugins { namespace tags { namespace sort {
     using protocol::authority;
     using protocol::account_name_type;
     using protocol::public_key_type;
-    
+
     struct by_trending {
         bool operator()(const discussion& first, const discussion& second) const {
             if (std::greater<double>()(first.trending, second.trending)) {
@@ -20,20 +20,6 @@ namespace golos { namespace plugins { namespace tags { namespace sort {
                 return false;
             }
             return std::less<comment_object::id_type>()(first.id, second.id);
-        }
-    };
-
-    struct by_promoted {
-        bool operator()(const discussion& first, const discussion& second) const {
-            if (!first.promoted) {
-                return false;
-            }
-            if (std::greater<share_type>()(first.promoted->amount, second.promoted->amount)) {
-                return true;
-            } else if (std::equal_to<share_type>()(first.promoted->amount, second.promoted->amount)) {
-                return std::less<comment_object::id_type>()(first.id, second.id);
-            }
-            return false;
         }
     };
 
