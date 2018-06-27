@@ -2202,8 +2202,8 @@ namespace golos { namespace chain {
             {
                p.total_vesting_fund += asset( vesting_reward, STEEM_SYMBOL );
                p.committee_supply += asset( committee_reward, STEEM_SYMBOL );
-               p.total_reward_fund_steem  += asset( content_reward, STEEM_SYMBOL );
-               p.current_supply           += asset( inflation_per_block, STEEM_SYMBOL );
+               p.total_reward_fund += asset( content_reward, STEEM_SYMBOL );
+               p.current_supply += asset( inflation_per_block, STEEM_SYMBOL );
             });
 
             create_vesting(get_account(cwit.owner), asset(witness_reward, STEEM_SYMBOL));
@@ -2333,7 +2333,7 @@ namespace golos { namespace chain {
                 const auto &props = get_dynamic_global_properties();
 
                 u256 rs(rshares.value);
-                u256 rf(props.total_reward_fund_steem.amount.value);
+                u256 rf(props.total_reward_fund.amount.value);
                 u256 total_rshares2 = to256(props.total_reward_shares2);
 
                 u256 rs2 = to256(rshares.value);
@@ -2344,7 +2344,7 @@ namespace golos { namespace chain {
                 uint64_t payout = static_cast< uint64_t >( payout_u256 );
 
                 modify(props, [&](dynamic_global_property_object &p) {
-                    p.total_reward_fund_steem.amount -= payout;
+                    p.total_reward_fund.amount -= payout;
                 });
 
                 return payout;
@@ -3861,8 +3861,7 @@ namespace golos { namespace chain {
                     }
                 }
 
-                total_supply += gpo.total_vesting_fund +
-                                gpo.total_reward_fund_steem;
+                total_supply += gpo.total_vesting_fund + gpo.total_reward_fund;
 
                 FC_ASSERT(gpo.current_supply ==
                           total_supply, "", ("gpo.current_supply", gpo.current_supply)("total_supply", total_supply));

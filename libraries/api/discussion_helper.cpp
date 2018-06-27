@@ -132,7 +132,7 @@ namespace golos { namespace api {
         auto& db = database();
 
         const auto& props = db.get_dynamic_global_properties();
-        asset pot = props.total_reward_fund_steem;
+        asset pot = props.total_reward_fund;
 
         u256 total_r2 = to256(props.total_reward_shares2);
 
