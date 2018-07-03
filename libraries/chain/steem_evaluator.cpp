@@ -651,6 +651,7 @@ namespace golos { namespace chain {
                 "Account does not have sufficient Golos Power for withdraw.");
             FC_ASSERT(account.available_vesting_shares() >= o.vesting_shares,
                 "Account does not have sufficient Golos Power for withdraw.");
+            FC_ASSERT(o.vesting_shares.amount >= 0, "Cannot withdraw negative VESTS.");
 
             if (!account.mined && _db.has_hardfork(STEEMIT_HARDFORK_0_1)) {
                 const auto &props = _db.get_dynamic_global_properties();
