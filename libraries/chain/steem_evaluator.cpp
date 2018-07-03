@@ -653,20 +653,6 @@ namespace golos { namespace chain {
                 "Account does not have sufficient Golos Power for withdraw.");
             FC_ASSERT(o.vesting_shares.amount >= 0, "Cannot withdraw negative VESTS.");
 
-            if (!account.mined && _db.has_hardfork(STEEMIT_HARDFORK_0_1)) {
-                const auto &props = _db.get_dynamic_global_properties();
-                const witness_schedule_object &wso = _db.get_witness_schedule_object();
-
-                asset min_vests = wso.median_props.account_creation_fee *
-                                  props.get_vesting_share_price();
-                min_vests.amount.value *= 10;
-
-                FC_ASSERT(account.vesting_shares.amount > min_vests.amount ||
-                          (_db.has_hardfork(STEEMIT_HARDFORK_0_16__562) &&
-                           o.vesting_shares.amount == 0),
-                        "Account registered by another account requires 10x account creation fee worth of Golos Power before it can be powered down.");
-            }
-
             if (o.vesting_shares.amount == 0) {
                 if (_db.is_producing() ||
                     _db.has_hardfork(STEEMIT_HARDFORK_0_5__57))
