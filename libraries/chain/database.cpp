@@ -2002,6 +2002,10 @@ namespace golos { namespace chain {
                     to_withdraw = std::min(from_account.vesting_shares.amount, from_account.vesting_withdraw_rate.amount).value;
                 }
 
+                if(to_withdraw<0){
+                    to_withdraw=0;
+                }
+
                 share_type vests_deposited_as_steem = 0;
                 share_type vests_deposited_as_vests = 0;
                 asset total_steem_converted = asset(0, STEEM_SYMBOL);
@@ -2063,8 +2067,9 @@ namespace golos { namespace chain {
 
                 share_type to_convert = to_withdraw - vests_deposited_as_steem -
                                         vests_deposited_as_vests;
-                FC_ASSERT(to_convert >=
-                          0, "Deposited more vests than were supposed to be withdrawn");
+                if(to_convert<0){
+                    to_convert=0;
+                }
 
                 auto converted_steem = asset(to_convert, VESTS_SYMBOL) *
                                        cprops.get_vesting_share_price();
@@ -2090,9 +2095,8 @@ namespace golos { namespace chain {
 
                 if (to_withdraw > 0) {
                     adjust_proxied_witness_votes(from_account, -to_withdraw);
+                    push_virtual_operation(fill_vesting_withdraw_operation(from_account.name, from_account.name, asset(to_withdraw, VESTS_SYMBOL), converted_steem));
                 }
-
-                push_virtual_operation(fill_vesting_withdraw_operation(from_account.name, from_account.name, asset(to_withdraw, VESTS_SYMBOL), converted_steem));
             }
         }
 
