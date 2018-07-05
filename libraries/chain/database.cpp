@@ -1425,10 +1425,8 @@ namespace golos { namespace chain {
                 reset_virtual_schedule_time();
             }
 
-            size_t expected_active_witnesses = std::min(size_t(STEEMIT_MAX_WITNESSES), widx.size());
-            FC_ASSERT( ( active_witnesses.size() + support_witnesses.size() ) ==
-                      expected_active_witnesses, "number of active witnesses does not equal expected_active_witnesses=${expected_active_witnesses}",
-                    ("active_witnesses.size()", active_witnesses.size())("STEEMIT_MAX_WITNESSES", STEEMIT_MAX_WITNESSES)("expected_active_witnesses", expected_active_witnesses));
+            FC_ASSERT( ( active_witnesses.size() + support_witnesses.size() ) <= STEEMIT_MAX_WITNESSES, "Number of active witnesses does cannot be more STEEMIT_MAX_WITNESSES",
+                    ("active_witnesses.size()", active_witnesses.size())("support_witnesses.size()", support_witnesses.size())("STEEMIT_MAX_WITNESSES", STEEMIT_MAX_WITNESSES));
 
             auto majority_version = wso.majority_version;
 
@@ -3370,7 +3368,7 @@ namespace golos { namespace chain {
                                 if (has_hardfork(STEEMIT_HARDFORK_0_14__278)) {
                                     if (head_block_num() -
                                         w.last_confirmed_block_num >
-                                        STEEMIT_BLOCKS_PER_DAY) {
+                                        STEEMIT_MAX_WITNESS_MISSED_BLOCKS) {
                                         w.signing_key = public_key_type();
                                         push_virtual_operation(shutdown_witness_operation(w.owner));
                                     }
