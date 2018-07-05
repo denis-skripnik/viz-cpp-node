@@ -7,11 +7,6 @@ namespace golos { namespace chain {
     void witness_update_evaluator::do_apply(const witness_update_operation& o) {
         _db.get_account(o.owner); // verify owner exists
 
-        if (o.url.size() > STEEMIT_MAX_WITNESS_URL_LENGTH) {
-            // after HF, above check can be moved to validate() if reindex doesn't show this warning
-            wlog("URL is too long in block ${b}", ("b", _db.head_block_num() + 1));
-        }
-
         const auto &idx = _db.get_index<witness_index>().indices().get<by_name>();
         auto itr = idx.find(o.owner);
         if (itr != idx.end()) {

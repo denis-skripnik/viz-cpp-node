@@ -190,6 +190,7 @@ namespace golos { namespace protocol {
         void witness_update_operation::validate() const {
             validate_account_name(owner);
             FC_ASSERT(url.size() > 0, "URL size must be greater than 0");
+            FC_ASSERT(url.size() < STEEMIT_MAX_WITNESS_URL_LENGTH, "URL size must be lesser than STEEMIT_MAX_WITNESS_URL_LENGTH");
             FC_ASSERT(fc::is_utf8(url), "URL is not valid UTF8");
         }
 
