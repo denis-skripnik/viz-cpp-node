@@ -19,6 +19,7 @@ namespace golos { namespace protocol {
             authority posting;
             public_key_type memo_key;
             string json_metadata;
+            account_name_type referrer;
 
             extensions_type extensions;
 
@@ -945,7 +946,7 @@ FC_REFLECT((golos::protocol::pow_operation), (worker_account)(block_id)(nonce)(w
 FC_REFLECT((golos::protocol::pow2_operation), (work)(new_owner_key)(props))
 
 FC_REFLECT((golos::protocol::account_create_operation),
-    (fee)(delegation)(creator)(new_account_name)(owner)(active)(posting)(memo_key)(json_metadata)(extensions));
+    (fee)(delegation)(creator)(new_account_name)(owner)(active)(posting)(memo_key)(json_metadata)(referrer)(extensions));
 
 FC_REFLECT((golos::protocol::account_update_operation),
         (account)

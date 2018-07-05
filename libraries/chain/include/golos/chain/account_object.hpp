@@ -32,6 +32,7 @@ public:
     account_name_type name;
     public_key_type memo_key;
     account_name_type proxy;
+    account_name_type referrer;
 
     time_point_sec last_account_update;
 
@@ -435,7 +436,7 @@ change_recovery_account_request_index;
 
 
 FC_REFLECT((golos::chain::account_object),
-        (id)(name)(memo_key)(proxy)(last_account_update)
+        (id)(name)(memo_key)(proxy)(referrer)(last_account_update)
                 (created)(mined)
                 (owner_challenged)(active_challenged)(last_owner_proved)(last_active_proved)(recovery_account)(last_account_recovery)(reset_account)
                 (comment_count)(lifetime_vote_count)(post_count)(can_vote)(voting_power)(last_vote_time)

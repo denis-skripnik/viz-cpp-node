@@ -29,6 +29,7 @@ struct account_api_object {
     public_key_type memo_key;
     std::string json_metadata;
     account_name_type proxy;
+    account_name_type referrer;
 
     time_point_sec last_owner_update;
     time_point_sec last_account_update;
@@ -84,7 +85,7 @@ struct account_api_object {
 
 
 FC_REFLECT((golos::api::account_api_object),
-    (id)(name)(owner)(active)(posting)(memo_key)(json_metadata)(proxy)(last_owner_update)(last_account_update)
+    (id)(name)(owner)(active)(posting)(memo_key)(json_metadata)(proxy)(referrer)(last_owner_update)(last_account_update)
     (created)(mined)(owner_challenged)(active_challenged)(last_owner_proved)(last_active_proved)
     (recovery_account)(last_account_recovery)(reset_account)(comment_count)(lifetime_vote_count)
     (post_count)(can_vote)(voting_power)(last_vote_time)(balance)(savings_balance)

@@ -7,7 +7,7 @@ using golos::chain::account_authority_object;
 using golos::chain::account_metadata_object;
 
 account_api_object::account_api_object(const account_object& a, const golos::chain::database& db)
-    :   id(a.id), name(a.name), memo_key(a.memo_key), proxy(a.proxy),
+    :   id(a.id), name(a.name), memo_key(a.memo_key), proxy(a.proxy), referrer(a.referrer),
         last_account_update(a.last_account_update), created(a.created), mined(a.mined),
         owner_challenged(a.owner_challenged), active_challenged(a.active_challenged),
         last_owner_proved(a.last_owner_proved), last_active_proved(a.last_active_proved),
