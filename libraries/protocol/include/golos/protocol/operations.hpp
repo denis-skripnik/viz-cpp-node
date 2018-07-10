@@ -26,8 +26,6 @@ namespace golos { namespace protocol {
 
                 pow_operation,
 
-                custom_operation,
-
                 report_over_production_operation,
 
                 delete_comment_operation,
@@ -46,7 +44,6 @@ namespace golos { namespace protocol {
                 transfer_to_savings_operation,
                 transfer_from_savings_operation,
                 cancel_transfer_from_savings_operation,
-                custom_binary_operation,
                 decline_voting_rights_operation,
                 reset_account_operation,
                 set_reset_account_operation,

@@ -1167,9 +1167,6 @@ namespace golos { namespace chain {
             } FC_CAPTURE_AND_RETHROW((o))
         }
 
-        void custom_evaluator::do_apply(const custom_operation &o) {
-        }
-
         void custom_json_evaluator::do_apply(const custom_json_operation &o) {
             database &d = db();
             std::shared_ptr<custom_operation_interpreter> eval = d.get_custom_json_evaluator(o.id);
@@ -1189,30 +1186,6 @@ namespace golos { namespace chain {
                 elog("Unexpected exception applying custom json evaluator.");
             }
         }
-
-
-        void custom_binary_evaluator::do_apply(const custom_binary_operation &o) {
-            database &d = db();
-            FC_ASSERT(d.has_hardfork(STEEMIT_HARDFORK_0_14__317));
-
-            std::shared_ptr<custom_operation_interpreter> eval = d.get_custom_json_evaluator(o.id);
-            if (!eval) {
-                return;
-            }
-
-            try {
-                eval->apply(o);
-            }
-            catch (const fc::exception &e) {
-                if (d.is_producing()) {
-                    throw e;
-                }
-            }
-            catch (...) {
-                elog("Unexpected exception applying custom json evaluator.");
-            }
-        }
-
 
         template<typename Operation>
         void pow_apply(database &db, Operation o) {

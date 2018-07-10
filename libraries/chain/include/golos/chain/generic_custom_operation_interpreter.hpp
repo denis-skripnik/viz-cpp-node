@@ -78,23 +78,6 @@ namespace golos {
                     apply_operations(custom_operations, operation(outer_o));
                 } FC_CAPTURE_AND_RETHROW((outer_o))
             }
-
-            virtual void apply(const protocol::custom_binary_operation &outer_o) override {
-                try {
-                    vector<CustomOperationType> custom_operations;
-
-                    try {
-                        custom_operations = fc::raw::unpack<vector<CustomOperationType>>(outer_o.data);
-                    }
-                    catch (fc::exception &) {
-                        custom_operations.push_back(fc::raw::unpack<CustomOperationType>(outer_o.data));
-                    }
-
-                    apply_operations(custom_operations, operation(outer_o));
-                }
-                FC_CAPTURE_AND_RETHROW((outer_o))
-            }
-
         };
 
     }

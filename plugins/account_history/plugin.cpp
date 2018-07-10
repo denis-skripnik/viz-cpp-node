@@ -225,12 +225,6 @@ if( options.count(name) ) { \
             impacted.insert(op.owner);
         }
 
-        void operator()(const custom_operation& op) {
-            for (auto& s: op.required_auths) {
-                impacted.insert(s);
-            }
-        }
-
         void operator()(const request_account_recovery_operation& op) {
             impacted.insert(op.account_to_recover);
         }
