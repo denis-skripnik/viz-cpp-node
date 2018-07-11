@@ -919,31 +919,17 @@ namespace golos { namespace chain {
                                          (60 * 60 * 24);
                 FC_ASSERT(max_vote_denom > 0);
 
-                if (!_db.has_hardfork(STEEMIT_HARDFORK_0_14__259)) {
-                    used_power = (used_power / max_vote_denom) + 1;
-                } else {
-                    used_power =
-                            (used_power + max_vote_denom - 1) / max_vote_denom;
-                }
+
+                used_power = (used_power + max_vote_denom - 1) / max_vote_denom;
                 FC_ASSERT(used_power <=
                           current_power, "Account does not have enough power to vote.");
 
                 int64_t abs_rshares = (
                     (uint128_t(voter.effective_vesting_shares().amount.value) * used_power) /
                     (STEEMIT_100_PERCENT)).to_uint64();
-                if (!_db.has_hardfork(STEEMIT_HARDFORK_0_14__259) && abs_rshares == 0) {
-                    abs_rshares = 1;
-                }
 
-                if (_db.has_hardfork(STEEMIT_HARDFORK_0_14__259)) {
-                    FC_ASSERT(abs_rshares > 30000000 || o.weight ==
-                                                        0, "Voting weight is too small, please accumulate more voting power or steem power.");
-                } else if (_db.has_hardfork(STEEMIT_HARDFORK_0_13__248)) {
-                    FC_ASSERT(abs_rshares > 30000000 || abs_rshares ==
-                                                        1, "Voting weight is too small, please accumulate more voting power or steem power.");
-                }
-
-
+                FC_ASSERT(abs_rshares > 30000000 || o.weight ==
+                                                    0, "Voting weight is too small, please accumulate more voting power or steem power.");
 
                 // Lazily delete vote
                 if (itr != comment_vote_idx.end() && itr->num_changes == -1) {
@@ -1344,9 +1330,8 @@ namespace golos { namespace chain {
         }
 
         void challenge_authority_evaluator::do_apply(const challenge_authority_operation &o) {
+            FC_ASSERT(false, "Challenge authority operation is currently disabled.");
             database &_db = db();
-            if (_db.has_hardfork(STEEMIT_HARDFORK_0_14__307))
-                FC_ASSERT(false, "Challenge authority operation is currently disabled.");
             const auto &challenged = _db.get_account(o.challenged);
             const auto &challenger = _db.get_account(o.challenger);
 
@@ -1573,7 +1558,6 @@ namespace golos { namespace chain {
 
         void decline_voting_rights_evaluator::do_apply(const decline_voting_rights_operation &o) {
             database &_db = db();
-            FC_ASSERT(_db.has_hardfork(STEEMIT_HARDFORK_0_14__324));
 
             const auto &account = _db.get_account(o.account);
             const auto &request_idx = _db.get_index<decline_voting_rights_request_index>().indices().get<by_account>();

@@ -1329,8 +1329,7 @@ namespace golos { namespace chain {
                  itr != widx.end() &&
                  selected_voted.size() < STEEMIT_MAX_VOTED_WITNESSES;
                  ++itr) {
-                if (has_hardfork(STEEMIT_HARDFORK_0_14__278) &&
-                    (itr->signing_key == public_key_type())) {
+                if (itr->signing_key == public_key_type()) {
                     continue;
                 }
                 selected_voted.insert(itr->id);
@@ -1349,9 +1348,7 @@ namespace golos { namespace chain {
                 // Only consider a miner who is not a top voted witness
                 if (selected_voted.find(mitr->id) == selected_voted.end()) {
                     // Only consider a miner who has a valid block signing key
-                    if (!(has_hardfork(STEEMIT_HARDFORK_0_14__278) &&
-                          get_witness(mitr->owner).signing_key ==
-                          public_key_type())) {
+                    if (!(get_witness(mitr->owner).signing_key == public_key_type())) {
                         selected_miners.insert(mitr->id);
                         active_witnesses.push_back(mitr->owner);
                         modify(*mitr, [&](witness_object &wo) { wo.schedule = witness_object::miner; });
@@ -1382,8 +1379,7 @@ namespace golos { namespace chain {
                 new_virtual_time = sitr->virtual_scheduled_time; /// everyone advances to at least this time
                 processed_witnesses.push_back(sitr);
 
-                if (has_hardfork(STEEMIT_HARDFORK_0_14__278) &&
-                    sitr->signing_key == public_key_type()) {
+                if (sitr->signing_key == public_key_type()) {
                     continue;
                 } /// skip witnesses without a valid block signing key
 
@@ -1849,10 +1845,6 @@ namespace golos { namespace chain {
         }
 
         void database::clear_null_account_balance() {
-            if (!has_hardfork(STEEMIT_HARDFORK_0_14__327)) {
-                return;
-            }
-
             const auto &null_account = get_account(STEEMIT_NULL_ACCOUNT);
             asset total_steem(0, STEEM_SYMBOL);
 
@@ -3320,13 +3312,11 @@ namespace golos { namespace chain {
                         if (witness_missed.owner != b.witness) {
                             modify(witness_missed, [&](witness_object &w) {
                                 w.total_missed++;
-                                if (has_hardfork(STEEMIT_HARDFORK_0_14__278)) {
-                                    if (head_block_num() -
-                                        w.last_confirmed_block_num >
-                                        STEEMIT_MAX_WITNESS_MISSED_BLOCKS) {
-                                        w.signing_key = public_key_type();
-                                        push_virtual_operation(shutdown_witness_operation(w.owner));
-                                    }
+                                if (head_block_num() -
+                                    w.last_confirmed_block_num >
+                                    STEEMIT_MAX_WITNESS_MISSED_BLOCKS) {
+                                    w.signing_key = public_key_type();
+                                    push_virtual_operation(shutdown_witness_operation(w.owner));
                                 }
                             });
                         }
@@ -3632,9 +3622,6 @@ namespace golos { namespace chain {
             FC_ASSERT(STEEMIT_HARDFORK_0_13 == 13, "Invalid hardfork configuration");
             _hardfork_times[STEEMIT_HARDFORK_0_13] = fc::time_point_sec(STEEMIT_HARDFORK_0_13_TIME);
             _hardfork_versions[STEEMIT_HARDFORK_0_13] = STEEMIT_HARDFORK_0_13_VERSION;
-            FC_ASSERT(STEEMIT_HARDFORK_0_14 == 14, "Invalid hardfork configuration");
-            _hardfork_times[STEEMIT_HARDFORK_0_14] = fc::time_point_sec(STEEMIT_HARDFORK_0_14_TIME);
-            _hardfork_versions[STEEMIT_HARDFORK_0_14] = STEEMIT_HARDFORK_0_14_VERSION;
 
             const auto &hardforks = get_hardfork_property_object();
             FC_ASSERT(
@@ -3786,8 +3773,6 @@ namespace golos { namespace chain {
                 }
                     break;
                 case STEEMIT_HARDFORK_0_13:
-                    break;
-                case STEEMIT_HARDFORK_0_14:
                     break;
                 default:
                     break;
