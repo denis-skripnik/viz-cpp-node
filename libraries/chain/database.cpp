@@ -2879,12 +2879,7 @@ namespace golos { namespace chain {
                     ("trx.expiration", trx.expiration)("now", now)
                     ("max_til_exp", STEEMIT_MAX_TIME_UNTIL_EXPIRATION));
 
-                // Simple solution to pending trx bug when now == trx.expiration
-                if (is_producing() || has_hardfork(STEEMIT_HARDFORK_0_9)) {
-                    FC_ASSERT(now < trx.expiration, "", ("now", now)("trx.exp", trx.expiration));
-                }
-
-                FC_ASSERT(now <= trx.expiration, "", ("now", now)("trx.exp", trx.expiration));
+                FC_ASSERT(now < trx.expiration, "", ("now", now)("trx.exp", trx.expiration));
             }
         }
 
@@ -3606,9 +3601,6 @@ namespace golos { namespace chain {
             FC_ASSERT(STEEMIT_HARDFORK_0_8 == 8, "Invalid hardfork configuration");
             _hardfork_times[STEEMIT_HARDFORK_0_8] = fc::time_point_sec(STEEMIT_HARDFORK_0_8_TIME);
             _hardfork_versions[STEEMIT_HARDFORK_0_8] = STEEMIT_HARDFORK_0_8_VERSION;
-            FC_ASSERT(STEEMIT_HARDFORK_0_9 == 9, "Invalid hardfork configuration");
-            _hardfork_times[STEEMIT_HARDFORK_0_9] = fc::time_point_sec(STEEMIT_HARDFORK_0_9_TIME);
-            _hardfork_versions[STEEMIT_HARDFORK_0_9] = STEEMIT_HARDFORK_0_9_VERSION;
 
             const auto &hardforks = get_hardfork_property_object();
             FC_ASSERT(
@@ -3733,10 +3725,6 @@ namespace golos { namespace chain {
                     break;
                 case STEEMIT_HARDFORK_0_8:
                     retally_witness_vote_counts(true);
-                    break;
-                case STEEMIT_HARDFORK_0_9: {
-
-                }
                     break;
                 default:
                     break;
