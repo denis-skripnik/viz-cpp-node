@@ -309,11 +309,6 @@ namespace golos { namespace chain {
                 if (o.parent_author != STEEMIT_ROOT_POST_PARENT) {
                     parent = &_db.get_comment(o.parent_author, o.parent_permlink);
                     auto max_depth = STEEMIT_MAX_COMMENT_DEPTH;
-                    if (!_db.has_hardfork(STEEMIT_HARDFORK_0_17__430)) {
-                        max_depth = STEEMIT_MAX_COMMENT_DEPTH_PRE_HF17;
-                    } else if (_db.is_producing()) {
-                        max_depth = STEEMIT_SOFT_MAX_COMMENT_DEPTH;
-                    }
                     FC_ASSERT(parent->depth < max_depth,
                               "Comment is nested ${x} posts deep, maximum depth is ${y}.",
                               ("x", parent->depth)("y", max_depth));

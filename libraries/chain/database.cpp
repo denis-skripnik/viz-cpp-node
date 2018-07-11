@@ -674,11 +674,7 @@ namespace golos { namespace chain {
         }
 
         const time_point_sec database::calculate_discussion_payout_time(const comment_object &comment) const {
-            if (has_hardfork(STEEMIT_HARDFORK_0_17__431) || comment.parent_author == STEEMIT_ROOT_POST_PARENT) {
-                return comment.cashout_time;
-            } else {
-                return get<comment_object>(comment.root_comment).cashout_time;
-            }
+            return comment.cashout_time;
         }
 
         void database::pay_fee(const account_object &account, asset fee) {
@@ -2261,22 +2257,11 @@ namespace golos { namespace chain {
             int count = 0;
             const auto &cidx = get_index<comment_index>().indices().get<by_cashout_time>();
             const auto &com_by_root = get_index<comment_index>().indices().get<by_root>();
-            const bool has_hardfork_0_17__431 = has_hardfork(STEEMIT_HARDFORK_0_17__431);
             const auto block_time = head_block_time();
 
             auto current = cidx.begin();
             while (current != cidx.end() && current->cashout_time <= block_time) {
-                if (has_hardfork_0_17__431) {
-                    cashout_comment_helper(*current);
-                } else {
-                    auto itr = com_by_root.lower_bound(current->root_comment);
-                    while (itr != com_by_root.end() && itr->root_comment == current->root_comment) {
-                        const auto &comment = *itr;
-                        ++itr;
-                        cashout_comment_helper(comment);
-                        ++count;
-                    }
-                }
+                cashout_comment_helper(*current);
                 current = cidx.begin();
             }
         }
@@ -3684,9 +3669,6 @@ namespace golos { namespace chain {
             FC_ASSERT(STEEMIT_HARDFORK_0_16 == 16, "Invalid hardfork configuration");
             _hardfork_times[STEEMIT_HARDFORK_0_16] = fc::time_point_sec(STEEMIT_HARDFORK_0_16_TIME);
             _hardfork_versions[STEEMIT_HARDFORK_0_16] = STEEMIT_HARDFORK_0_16_VERSION;
-            FC_ASSERT(STEEMIT_HARDFORK_0_17 == 17, "Invalid hardfork configuration");
-            _hardfork_times[STEEMIT_HARDFORK_0_17] = fc::time_point_sec(STEEMIT_HARDFORK_0_17_TIME);
-            _hardfork_versions[STEEMIT_HARDFORK_0_17] = STEEMIT_HARDFORK_0_17_VERSION;
 
             const auto &hardforks = get_hardfork_property_object();
             FC_ASSERT(
@@ -3857,43 +3839,6 @@ namespace golos { namespace chain {
                             auth.posting = authority(1, public_key_type("GLS8hLtc7rC59Ed7uNVVTXtF578pJKQwMfdTvuzYLwUi8GkNTh5F6"), 1);
                         });
                     }
-                    break;
-                case STEEMIT_HARDFORK_0_17: {
-                    /*
-                     * For all current comments we will either keep their current cashout time, or extend it to 1 week
-                     * after creation.
-                     *
-                     * We cannot do a simple iteration by cashout time because we are editting cashout time.
-                     * More specifically, we will be adding an explicit cashout time to all comments with parents.
-                     * To find all discussions that have not been paid out we fir iterate over posts by cashout time.
-                     * Before the hardfork these are all root posts. Iterate over all of their children, adding each
-                     * to a specific list. Next, update payout times for all discussions on the root post. This defines
-                     * the min cashout time for each child in the discussion. Then iterate over the children and set
-                     * their cashout time in a similar way, grabbing the root post as their inherent cashout time.
-                     */
-                    const auto &by_time_idx = get_index<comment_index, by_cashout_time>();
-                    const auto &by_root_idx = get_index<comment_index, by_root>();
-                    const auto max_cashout_time = head_block_time();
-
-                    std::vector<comment_object::id_type> root_posts;
-                    root_posts.reserve(STEEMIT_HF_17_NUM_POSTS);
-
-                    for (const auto &comment: by_time_idx) {
-                        if (comment.cashout_time == fc::time_point_sec::maximum()) {
-                            break;
-                        }
-                        root_posts.push_back(comment.id);
-                    }
-
-                    for (const auto &id: root_posts) {
-                        auto itr = by_root_idx.lower_bound(id);
-                        for (; itr != by_root_idx.end() && itr->root_comment == id; ++itr) {
-                            modify(*itr, [&](comment_object &c) {
-                                // limit second cashout window to 1 week, or a current block time
-                                c.cashout_time = std::max(c.created + STEEMIT_CASHOUT_WINDOW_SECONDS, max_cashout_time);
-                            });
-                        }
-                    }}
                     break;
                 default:
                     break;
