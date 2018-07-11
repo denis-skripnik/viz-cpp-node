@@ -1835,11 +1835,9 @@ namespace golos { namespace chain {
                 remove(current);
             }
 
-            if (has_hardfork(STEEMIT_HARDFORK_0_6__104)) { // TODO: this check can be removed after hard fork
-                modify(a, [&](account_object &acc) {
-                    acc.witnesses_voted_for = 0;
-                });
-            }
+            modify(a, [&](account_object &acc) {
+                acc.witnesses_voted_for = 0;
+            });
         }
 
         void database::clear_null_account_balance() {
@@ -3592,9 +3590,6 @@ namespace golos { namespace chain {
             FC_ASSERT(STEEMIT_HARDFORK_0_5 == 5, "Invalid hardfork configuration");
             _hardfork_times[STEEMIT_HARDFORK_0_5] = fc::time_point_sec(STEEMIT_HARDFORK_0_5_TIME);
             _hardfork_versions[STEEMIT_HARDFORK_0_5] = STEEMIT_HARDFORK_0_5_VERSION;
-            FC_ASSERT(STEEMIT_HARDFORK_0_6 == 6, "Invalid hardfork configuration");
-            _hardfork_times[STEEMIT_HARDFORK_0_6] = fc::time_point_sec(STEEMIT_HARDFORK_0_6_TIME);
-            _hardfork_versions[STEEMIT_HARDFORK_0_6] = STEEMIT_HARDFORK_0_6_VERSION;
 
             const auto &hardforks = get_hardfork_property_object();
             FC_ASSERT(
@@ -3710,10 +3705,6 @@ namespace golos { namespace chain {
                     reset_virtual_schedule_time();
                     break;
                 case STEEMIT_HARDFORK_0_5:
-                    break;
-                case STEEMIT_HARDFORK_0_6:
-                    retally_witness_vote_counts();
-                    retally_comment_children();
                     break;
                 default:
                     break;

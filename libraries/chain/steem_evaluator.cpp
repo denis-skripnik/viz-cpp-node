@@ -218,8 +218,7 @@ namespace golos { namespace chain {
             }
 
             /// this loop can be skiped for validate-only nodes as it is merely gathering stats for indicies
-            if (_db.has_hardfork(STEEMIT_HARDFORK_0_6__80) &&
-                comment.parent_author != STEEMIT_ROOT_POST_PARENT) {
+            if (comment.parent_author != STEEMIT_ROOT_POST_PARENT) {
                 auto parent = &_db.get_comment(comment.parent_author, comment.parent_permlink);
                 auto now = _db.head_block_time();
                 while (parent) {
@@ -957,10 +956,6 @@ namespace golos { namespace chain {
                         } else {
                             c.net_votes--;
                         }
-                        if (!_db.has_hardfork(STEEMIT_HARDFORK_0_6__114) &&
-                            c.net_rshares == -c.abs_rshares)
-                            FC_ASSERT(c.net_votes <
-                                      0, "Comment has negative network votes?");
                     });
 
                     fc::uint128_t new_rshares = std::max(comment.net_rshares.value, int64_t(0));
@@ -994,43 +989,27 @@ namespace golos { namespace chain {
                         cv.last_update = _db.head_block_time();
 
                         if (rshares > 0 && (comment.last_payout == fc::time_point_sec())) {
-                            if (comment.created <
-                                fc::time_point_sec(STEEMIT_HARDFORK_0_6_REVERSE_AUCTION_TIME)) {
-                                u512 rshares3(rshares);
-                                u256 total2(comment.abs_rshares.value);
-
-                                rshares3 = rshares3 * rshares3 * rshares3;
-
-                                total2 *= total2;
-                                cv.weight = static_cast<uint64_t>( rshares3 /
-                                                                   total2 );
-                            } else {// cv.weight = W(R_1) - W(R_0)
-                                    uint64_t old_weight = (
-                                            (std::numeric_limits<uint64_t>::max() *
-                                             fc::uint128_t(old_vote_rshares.value)) /
-                                            (1 + old_vote_rshares.value)).to_uint64();
-                                    uint64_t new_weight = (
-                                            (std::numeric_limits<uint64_t>::max() *
-                                             fc::uint128_t(comment.vote_rshares.value)) /
-                                            (1 + comment.vote_rshares.value)).to_uint64();
-                                    cv.weight = new_weight - old_weight;
-                            }
+                            uint64_t old_weight = (
+                                    (std::numeric_limits<uint64_t>::max() *
+                                     fc::uint128_t(old_vote_rshares.value)) /
+                                    (1 + old_vote_rshares.value)).to_uint64();
+                            uint64_t new_weight = (
+                                    (std::numeric_limits<uint64_t>::max() *
+                                     fc::uint128_t(comment.vote_rshares.value)) /
+                                    (1 + comment.vote_rshares.value)).to_uint64();
+                            cv.weight = new_weight - old_weight;
 
                             max_vote_weight = cv.weight;
 
-                            if (_db.head_block_time() >
-                                fc::time_point_sec(STEEMIT_HARDFORK_0_6_REVERSE_AUCTION_TIME))  /// start enforcing this prior to the hardfork
-                            {
-                                /// discount weight by time
-                                uint128_t w(max_vote_weight);
-                                uint64_t delta_t = std::min(uint64_t((
-                                        cv.last_update -
-                                        comment.created).to_seconds()), uint64_t(STEEMIT_REVERSE_AUCTION_WINDOW_SECONDS));
+                            /// discount weight by time
+                            uint128_t w(max_vote_weight);
+                            uint64_t delta_t = std::min(uint64_t((
+                                    cv.last_update -
+                                    comment.created).to_seconds()), uint64_t(STEEMIT_REVERSE_AUCTION_WINDOW_SECONDS));
 
-                                w *= delta_t;
-                                w /= STEEMIT_REVERSE_AUCTION_WINDOW_SECONDS;
-                                cv.weight = w.to_uint64();
-                            }
+                            w *= delta_t;
+                            w /= STEEMIT_REVERSE_AUCTION_WINDOW_SECONDS;
+                            cv.weight = w.to_uint64();
                         } else {
                             cv.weight = 0;
                         }
@@ -1048,10 +1027,8 @@ namespace golos { namespace chain {
                     FC_ASSERT(itr->num_changes <
                               STEEMIT_MAX_VOTE_CHANGES, "Voter has used the maximum number of vote changes on this comment.");
 
-                    if (_db.is_producing() ||
-                        _db.has_hardfork(STEEMIT_HARDFORK_0_6__112))
-                        FC_ASSERT(itr->vote_percent !=
-                                  o.weight, "You have already voted in a similar way.");
+                    FC_ASSERT(itr->vote_percent !=
+                              o.weight, "You have already voted in a similar way.");
 
                     /// this is the rshares voting for or against the post
                     int64_t rshares = o.weight < 0 ? -abs_rshares : abs_rshares;
