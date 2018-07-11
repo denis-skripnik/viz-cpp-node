@@ -777,28 +777,16 @@ namespace golos { namespace chain {
             if (itr == by_account_witness_idx.end()) {
                 FC_ASSERT(o.approve, "Vote doesn't exist, user must indicate a desire to approve witness.");
 
-                if (_db.has_hardfork(STEEMIT_HARDFORK_0_2)) {
-                    FC_ASSERT(voter.witnesses_voted_for <
-                              STEEMIT_MAX_ACCOUNT_WITNESS_VOTES, "Account has voted for too many witnesses."); // TODO: Remove after hardfork 2
+                FC_ASSERT(voter.witnesses_voted_for <
+                          STEEMIT_MAX_ACCOUNT_WITNESS_VOTES, "Account has voted for too many witnesses."); // TODO: Remove after hardfork 2
 
-                    _db.create<witness_vote_object>([&](witness_vote_object &v) {
-                        v.witness = witness.id;
-                        v.account = voter.id;
-                    });
+                _db.create<witness_vote_object>([&](witness_vote_object &v) {
+                    v.witness = witness.id;
+                    v.account = voter.id;
+                });
 
-                    _db.adjust_witness_vote(witness, voter.witness_vote_weight());
+                _db.adjust_witness_vote(witness, voter.witness_vote_weight());
 
-                } else {
-
-                    _db.create<witness_vote_object>([&](witness_vote_object &v) {
-                        v.witness = witness.id;
-                        v.account = voter.id;
-                    });
-                    _db.modify(witness, [&](witness_object &w) {
-                        w.votes += voter.witness_vote_weight();
-                    });
-
-                }
                 _db.modify(voter, [&](account_object &a) {
                     a.witnesses_voted_for++;
                 });
@@ -806,13 +794,7 @@ namespace golos { namespace chain {
             } else {
                 FC_ASSERT(!o.approve, "Vote currently exists, user must indicate a desire to reject witness.");
 
-                if (_db.has_hardfork(STEEMIT_HARDFORK_0_2)) {
-                    _db.adjust_witness_vote(witness, -voter.witness_vote_weight());
-                } else {
-                    _db.modify(witness, [&](witness_object &w) {
-                        w.votes -= voter.witness_vote_weight();
-                    });
-                }
+                _db.adjust_witness_vote(witness, -voter.witness_vote_weight());
                 _db.modify(voter, [&](account_object &a) {
                     a.witnesses_voted_for--;
                 });

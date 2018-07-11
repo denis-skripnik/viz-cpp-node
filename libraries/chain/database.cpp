@@ -31,7 +31,6 @@
 #include <cerrno>
 #include <cstring>
 
-#define VIRTUAL_SCHEDULE_LAP_LENGTH  ( fc::uint128_t(uint64_t(-1)) )
 #define VIRTUAL_SCHEDULE_LAP_LENGTH2 ( fc::uint128_t::max_value() )
 
 namespace golos { namespace chain {
@@ -1643,17 +1642,10 @@ namespace golos { namespace chain {
                 FC_ASSERT(w.votes <=
                           get_dynamic_global_properties().total_vesting_shares.amount, "", ("w.votes", w.votes)("props", get_dynamic_global_properties().total_vesting_shares));
 
-                if (has_hardfork(STEEMIT_HARDFORK_0_2)) {
-                    w.virtual_scheduled_time = w.virtual_last_update +
-                                               (VIRTUAL_SCHEDULE_LAP_LENGTH2 -
-                                                w.virtual_position) /
-                                               (w.votes.value + 1);
-                } else {
-                    w.virtual_scheduled_time = w.virtual_last_update +
-                                               (VIRTUAL_SCHEDULE_LAP_LENGTH -
-                                                w.virtual_position) /
-                                               (w.votes.value + 1);
-                }
+                w.virtual_scheduled_time = w.virtual_last_update +
+                                           (VIRTUAL_SCHEDULE_LAP_LENGTH2 -
+                                            w.virtual_position) /
+                                           (w.votes.value + 1);
 
                 /** witnesses with a low number of votes could overflow the time field and end up with a scheduled time in the past */
                 if (w.virtual_scheduled_time < wso.current_virtual_time) {
@@ -3191,8 +3183,7 @@ namespace golos { namespace chain {
                             dgp.current_reserve_ratio++;
                         }
 
-                        if (has_hardfork(STEEMIT_HARDFORK_0_2) &&
-                            dgp.current_reserve_ratio >
+                        if (dgp.current_reserve_ratio >
                             STEEMIT_MAX_RESERVE_RATIO) {
                             dgp.current_reserve_ratio = STEEMIT_MAX_RESERVE_RATIO;
                         }
@@ -3410,9 +3401,6 @@ namespace golos { namespace chain {
             FC_ASSERT(STEEMIT_HARDFORK_0_1 == 1, "Invalid hardfork configuration");
             _hardfork_times[STEEMIT_HARDFORK_0_1] = fc::time_point_sec(STEEMIT_HARDFORK_0_1_TIME);
             _hardfork_versions[STEEMIT_HARDFORK_0_1] = STEEMIT_HARDFORK_0_1_VERSION;
-            FC_ASSERT(STEEMIT_HARDFORK_0_2 == 2, "Invlaid hardfork configuration");
-            _hardfork_times[STEEMIT_HARDFORK_0_2] = fc::time_point_sec(STEEMIT_HARDFORK_0_2_TIME);
-            _hardfork_versions[STEEMIT_HARDFORK_0_2] = STEEMIT_HARDFORK_0_2_VERSION;
 
             const auto &hardforks = get_hardfork_property_object();
             FC_ASSERT(
@@ -3503,9 +3491,6 @@ namespace golos { namespace chain {
                 }
                 break;
 #endif
-                    break;
-                case STEEMIT_HARDFORK_0_2:
-                    retally_witness_votes();
                     break;
                 default:
                     break;
