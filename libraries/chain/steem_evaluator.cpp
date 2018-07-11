@@ -276,10 +276,8 @@ namespace golos { namespace chain {
             try {
                 database &_db = db();
 
-                if (_db.is_producing() ||
-                    _db.has_hardfork(STEEMIT_HARDFORK_0_5__55))
-                    FC_ASSERT(o.title.size() + o.body.size() +
-                              o.json_metadata.size(), "Cannot update comment because nothing appears to be changing.");
+                FC_ASSERT(o.title.size() + o.body.size() +
+                          o.json_metadata.size(), "Cannot update comment because nothing appears to be changing.");
 
                 const auto &by_permlink_idx = _db.get_index<comment_index>().indices().get<by_permlink>();
                 auto itr = by_permlink_idx.find(boost::make_tuple(o.author, o.permlink));
@@ -624,10 +622,8 @@ namespace golos { namespace chain {
             FC_ASSERT(o.vesting_shares.amount >= 0, "Cannot withdraw negative VESTS.");
 
             if (o.vesting_shares.amount == 0) {
-                if (_db.is_producing() ||
-                    _db.has_hardfork(STEEMIT_HARDFORK_0_5__57))
-                    FC_ASSERT(account.vesting_withdraw_rate.amount !=
-                              0, "This operation would not change the vesting withdraw rate.");
+                FC_ASSERT(account.vesting_withdraw_rate.amount !=
+                          0, "This operation would not change the vesting withdraw rate.");
 
                 _db.modify(account, [&](account_object &a) {
                     a.vesting_withdraw_rate = asset(0, VESTS_SYMBOL);
@@ -647,10 +643,8 @@ namespace golos { namespace chain {
                     if (new_vesting_withdraw_rate.amount == 0)
                         new_vesting_withdraw_rate.amount = 1;
 
-                    if (_db.is_producing() ||
-                        _db.has_hardfork(STEEMIT_HARDFORK_0_5__57))
-                        FC_ASSERT(account.vesting_withdraw_rate !=
-                                  new_vesting_withdraw_rate, "This operation would not change the vesting withdraw rate.");
+                    FC_ASSERT(account.vesting_withdraw_rate !=
+                              new_vesting_withdraw_rate, "This operation would not change the vesting withdraw rate.");
 
                     a.vesting_withdraw_rate = new_vesting_withdraw_rate;
                     a.next_vesting_withdrawal = _db.head_block_time() +
@@ -1112,13 +1106,10 @@ namespace golos { namespace chain {
         void pow_apply(database &db, Operation o) {
             const auto &dgp = db.get_dynamic_global_properties();
 
-            if (db.is_producing() ||
-                db.has_hardfork(STEEMIT_HARDFORK_0_5__59)) {
-                const auto &witness_by_work = db.get_index<witness_index>().indices().get<by_work>();
-                auto work_itr = witness_by_work.find(o.work.work);
-                if (work_itr != witness_by_work.end()) {
-                    FC_ASSERT(!"DUPLICATE WORK DISCOVERED", "${w}  ${witness}", ("w", o)("witness", *work_itr));
-                }
+            const auto &witness_by_work = db.get_index<witness_index>().indices().get<by_work>();
+            auto work_itr = witness_by_work.find(o.work.work);
+            if (work_itr != witness_by_work.end()) {
+                FC_ASSERT(!"DUPLICATE WORK DISCOVERED", "${w}  ${witness}", ("w", o)("witness", *work_itr));
             }
 
             const auto& name = o.get_worker_account();

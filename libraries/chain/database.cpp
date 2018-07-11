@@ -1088,35 +1088,34 @@ namespace golos { namespace chain {
             pending_block.timestamp = when;
             pending_block.transaction_merkle_root = pending_block.calculate_merkle_root();
             pending_block.witness = witness_owner;
-            if (has_hardfork(STEEMIT_HARDFORK_0_5__54)) {
-                const auto &witness = get_witness(witness_owner);
 
-                if (witness.running_version != STEEMIT_BLOCKCHAIN_VERSION) {
-                    pending_block.extensions.insert(block_header_extensions(STEEMIT_BLOCKCHAIN_VERSION));
-                }
+            const auto &witness = get_witness(witness_owner);
 
-                const auto &hfp = get_hardfork_property_object();
+            if (witness.running_version != STEEMIT_BLOCKCHAIN_VERSION) {
+                pending_block.extensions.insert(block_header_extensions(STEEMIT_BLOCKCHAIN_VERSION));
+            }
 
-                if (hfp.current_hardfork_version <
-                    STEEMIT_BLOCKCHAIN_HARDFORK_VERSION // Binary is newer hardfork than has been applied
-                    && (witness.hardfork_version_vote !=
-                        _hardfork_versions[hfp.last_hardfork + 1] ||
-                        witness.hardfork_time_vote !=
-                        _hardfork_times[hfp.last_hardfork +
-                                        1])) // Witness vote does not match binary configuration
-                {
-                    // Make vote match binary configuration
-                    pending_block.extensions.insert(block_header_extensions(hardfork_version_vote(_hardfork_versions[
-                            hfp.last_hardfork + 1], _hardfork_times[
-                            hfp.last_hardfork + 1])));
-                } else if (hfp.current_hardfork_version ==
-                           STEEMIT_BLOCKCHAIN_HARDFORK_VERSION // Binary does not know of a new hardfork
-                           && witness.hardfork_version_vote >
-                              STEEMIT_BLOCKCHAIN_HARDFORK_VERSION) // Voting for hardfork in the future, that we do not know of...
-                {
-                    // Make vote match binary configuration. This is vote to not apply the new hardfork.
-                    pending_block.extensions.insert(block_header_extensions(hardfork_version_vote(_hardfork_versions[hfp.last_hardfork], _hardfork_times[hfp.last_hardfork])));
-                }
+            const auto &hfp = get_hardfork_property_object();
+
+            if (hfp.current_hardfork_version <
+                STEEMIT_BLOCKCHAIN_HARDFORK_VERSION // Binary is newer hardfork than has been applied
+                && (witness.hardfork_version_vote !=
+                    _hardfork_versions[hfp.last_hardfork + 1] ||
+                    witness.hardfork_time_vote !=
+                    _hardfork_times[hfp.last_hardfork +
+                                    1])) // Witness vote does not match binary configuration
+            {
+                // Make vote match binary configuration
+                pending_block.extensions.insert(block_header_extensions(hardfork_version_vote(_hardfork_versions[
+                        hfp.last_hardfork + 1], _hardfork_times[
+                        hfp.last_hardfork + 1])));
+            } else if (hfp.current_hardfork_version ==
+                       STEEMIT_BLOCKCHAIN_HARDFORK_VERSION // Binary does not know of a new hardfork
+                       && witness.hardfork_version_vote >
+                          STEEMIT_BLOCKCHAIN_HARDFORK_VERSION) // Voting for hardfork in the future, that we do not know of...
+            {
+                // Make vote match binary configuration. This is vote to not apply the new hardfork.
+                pending_block.extensions.insert(block_header_extensions(hardfork_version_vote(_hardfork_versions[hfp.last_hardfork], _hardfork_times[hfp.last_hardfork])));
             }
 
             if (!(skip & skip_witness_signature)) {
@@ -1416,70 +1415,68 @@ namespace golos { namespace chain {
 
             auto majority_version = wso.majority_version;
 
-            if (has_hardfork(STEEMIT_HARDFORK_0_5__54)) {
-                flat_map<version, uint32_t, std::greater<version>> witness_versions;
-                flat_map<std::tuple<hardfork_version, time_point_sec>, uint32_t> hardfork_version_votes;
+            flat_map<version, uint32_t, std::greater<version>> witness_versions;
+            flat_map<std::tuple<hardfork_version, time_point_sec>, uint32_t> hardfork_version_votes;
 
-                for (uint32_t i = 0; i < wso.num_scheduled_witnesses; i++) {
-                    auto witness = get_witness(wso.current_shuffled_witnesses[i]);
-                    if (witness_versions.find(witness.running_version) ==
-                        witness_versions.end()) {
-                        witness_versions[witness.running_version] = 1;
-                    } else {
-                        witness_versions[witness.running_version] += 1;
-                    }
-
-                    auto version_vote = std::make_tuple(witness.hardfork_version_vote, witness.hardfork_time_vote);
-                    if (hardfork_version_votes.find(version_vote) ==
-                        hardfork_version_votes.end()) {
-                        hardfork_version_votes[version_vote] = 1;
-                    } else {
-                        hardfork_version_votes[version_vote] += 1;
-                    }
+            for (uint32_t i = 0; i < wso.num_scheduled_witnesses; i++) {
+                auto witness = get_witness(wso.current_shuffled_witnesses[i]);
+                if (witness_versions.find(witness.running_version) ==
+                    witness_versions.end()) {
+                    witness_versions[witness.running_version] = 1;
+                } else {
+                    witness_versions[witness.running_version] += 1;
                 }
 
-                int witnesses_on_version = 0;
-                auto ver_itr = witness_versions.begin();
+                auto version_vote = std::make_tuple(witness.hardfork_version_vote, witness.hardfork_time_vote);
+                if (hardfork_version_votes.find(version_vote) ==
+                    hardfork_version_votes.end()) {
+                    hardfork_version_votes[version_vote] = 1;
+                } else {
+                    hardfork_version_votes[version_vote] += 1;
+                }
+            }
 
-                // The map should be sorted highest version to smallest, so we iterate until we hit the majority of witnesses on at least this version
-                while (ver_itr != witness_versions.end()) {
-                    witnesses_on_version += ver_itr->second;
+            int witnesses_on_version = 0;
+            auto ver_itr = witness_versions.begin();
 
-                    if (witnesses_on_version >=
-                        STEEMIT_HARDFORK_REQUIRED_WITNESSES) {
-                        majority_version = ver_itr->first;
-                        break;
+            // The map should be sorted highest version to smallest, so we iterate until we hit the majority of witnesses on at least this version
+            while (ver_itr != witness_versions.end()) {
+                witnesses_on_version += ver_itr->second;
+
+                if (witnesses_on_version >=
+                    STEEMIT_HARDFORK_REQUIRED_WITNESSES) {
+                    majority_version = ver_itr->first;
+                    break;
+                }
+
+                ++ver_itr;
+            }
+
+            auto hf_itr = hardfork_version_votes.begin();
+
+            while (hf_itr != hardfork_version_votes.end()) {
+                if (hf_itr->second >= STEEMIT_HARDFORK_REQUIRED_WITNESSES) {
+                    const auto &hfp = get_hardfork_property_object();
+                    if (hfp.next_hardfork != std::get<0>(hf_itr->first) ||
+                        hfp.next_hardfork_time !=
+                        std::get<1>(hf_itr->first)) {
+
+                        modify(hfp, [&](hardfork_property_object &hpo) {
+                            hpo.next_hardfork = std::get<0>(hf_itr->first);
+                            hpo.next_hardfork_time = std::get<1>(hf_itr->first);
+                        });
                     }
-
-                    ++ver_itr;
+                    break;
                 }
 
-                auto hf_itr = hardfork_version_votes.begin();
+                ++hf_itr;
+            }
 
-                while (hf_itr != hardfork_version_votes.end()) {
-                    if (hf_itr->second >= STEEMIT_HARDFORK_REQUIRED_WITNESSES) {
-                        const auto &hfp = get_hardfork_property_object();
-                        if (hfp.next_hardfork != std::get<0>(hf_itr->first) ||
-                            hfp.next_hardfork_time !=
-                            std::get<1>(hf_itr->first)) {
-
-                            modify(hfp, [&](hardfork_property_object &hpo) {
-                                hpo.next_hardfork = std::get<0>(hf_itr->first);
-                                hpo.next_hardfork_time = std::get<1>(hf_itr->first);
-                            });
-                        }
-                        break;
-                    }
-
-                    ++hf_itr;
-                }
-
-                // We no longer have a majority
-                if (hf_itr == hardfork_version_votes.end()) {
-                    modify(get_hardfork_property_object(), [&](hardfork_property_object &hpo) {
-                        hpo.next_hardfork = hpo.current_hardfork_version;
-                    });
-                }
+            // We no longer have a majority
+            if (hf_itr == hardfork_version_votes.end()) {
+                modify(get_hardfork_property_object(), [&](hardfork_property_object &hpo) {
+                    hpo.next_hardfork = hpo.current_hardfork_version;
+                });
             }
 
             modify(wso, [&](witness_schedule_object &_wso) {
@@ -3091,16 +3088,12 @@ namespace golos { namespace chain {
                 /// parse witness version reporting
                 process_header_extensions(next_block);
 
-                if (has_hardfork(STEEMIT_HARDFORK_0_5__54)) // Cannot remove after hardfork
-                {
-                    const auto &witness = get_witness(next_block.witness);
-                    const auto &hardfork_state = get_hardfork_property_object();
-                    FC_ASSERT(witness.running_version >=
-                              hardfork_state.current_hardfork_version,
-                            "Block produced by witness that is not running current hardfork",
-                            ("witness", witness)("next_block.witness", next_block.witness)("hardfork_state", hardfork_state)
-                    );
-                }
+                const auto &witness = get_witness(next_block.witness);
+                const auto &hardfork_state = get_hardfork_property_object();
+                FC_ASSERT(witness.running_version >= hardfork_state.current_hardfork_version,
+                        "Block produced by witness that is not running current hardfork",
+                        ("witness", witness)("next_block.witness", next_block.witness)("hardfork_state", hardfork_state)
+                );
 
                 for (const auto &trx : next_block.transactions) {
                     /* We do not need to push the undo state for each transaction
@@ -3587,9 +3580,6 @@ namespace golos { namespace chain {
             FC_ASSERT(STEEMIT_HARDFORK_0_4 == 4, "Invalid hardfork configuration");
             _hardfork_times[STEEMIT_HARDFORK_0_4] = fc::time_point_sec(STEEMIT_HARDFORK_0_4_TIME);
             _hardfork_versions[STEEMIT_HARDFORK_0_4] = STEEMIT_HARDFORK_0_4_VERSION;
-            FC_ASSERT(STEEMIT_HARDFORK_0_5 == 5, "Invalid hardfork configuration");
-            _hardfork_times[STEEMIT_HARDFORK_0_5] = fc::time_point_sec(STEEMIT_HARDFORK_0_5_TIME);
-            _hardfork_versions[STEEMIT_HARDFORK_0_5] = STEEMIT_HARDFORK_0_5_VERSION;
 
             const auto &hardforks = get_hardfork_property_object();
             FC_ASSERT(
@@ -3625,24 +3615,14 @@ namespace golos { namespace chain {
                 // If there are upcoming hardforks and the next one is later, do nothing
                 const auto &hardforks = get_hardfork_property_object();
 
-                if (has_hardfork(STEEMIT_HARDFORK_0_5__54)) {
-                    while (_hardfork_versions[hardforks.last_hardfork] <
-                           hardforks.next_hardfork
-                           &&
-                           hardforks.next_hardfork_time <= head_block_time()) {
-                        if (hardforks.last_hardfork < STEEMIT_NUM_HARDFORKS) {
-                            apply_hardfork(hardforks.last_hardfork + 1);
-                        } else {
-                            throw unknown_hardfork_exception();
-                        }
-                    }
-                } else {
-                    while (hardforks.last_hardfork < STEEMIT_NUM_HARDFORKS
-                           && _hardfork_times[hardforks.last_hardfork + 1] <=
-                              head_block_time()
-                           &&
-                           hardforks.last_hardfork < STEEMIT_HARDFORK_0_5__54) {
+                while (_hardfork_versions[hardforks.last_hardfork] <
+                       hardforks.next_hardfork
+                       &&
+                       hardforks.next_hardfork_time <= head_block_time()) {
+                    if (hardforks.last_hardfork < STEEMIT_NUM_HARDFORKS) {
                         apply_hardfork(hardforks.last_hardfork + 1);
+                    } else {
+                        throw unknown_hardfork_exception();
                     }
                 }
             }
@@ -3659,14 +3639,10 @@ namespace golos { namespace chain {
 
             for (uint32_t i = hardforks.last_hardfork + 1;
                  i <= hardfork && i <= STEEMIT_NUM_HARDFORKS; i++) {
-                if (i <= STEEMIT_HARDFORK_0_5__54) {
-                    _hardfork_times[i] = head_block_time();
-                } else {
-                    modify(hardforks, [&](hardfork_property_object &hpo) {
-                        hpo.next_hardfork = _hardfork_versions[i];
-                        hpo.next_hardfork_time = head_block_time();
-                    });
-                }
+                modify(hardforks, [&](hardfork_property_object &hpo) {
+                    hpo.next_hardfork = _hardfork_versions[i];
+                    hpo.next_hardfork_time = head_block_time();
+                });
 
                 if (apply_now) {
                     apply_hardfork(i);
@@ -3703,8 +3679,6 @@ namespace golos { namespace chain {
                     break;
                 case STEEMIT_HARDFORK_0_4:
                     reset_virtual_schedule_time();
-                    break;
-                case STEEMIT_HARDFORK_0_5:
                     break;
                 default:
                     break;
