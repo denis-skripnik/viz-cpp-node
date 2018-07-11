@@ -97,8 +97,6 @@ namespace golos { namespace chain {
     }
 
     void proposal_create_evaluator::do_apply(const proposal_create_operation& o) { try {
-        ASSERT_REQ_HF(STEEMIT_HARDFORK_0_18__542, "Proposal transaction creating"); // remove after hf
-
         safe_int_increment depth_increment(depth_);
 
         if (_db.is_producing()) {
@@ -204,8 +202,6 @@ namespace golos { namespace chain {
     }
 
     void proposal_update_evaluator::do_apply(const proposal_update_operation& o) { try {
-        ASSERT_REQ_HF(STEEMIT_HARDFORK_0_18__542, "Proposal transaction updating"); // remove after hf
-
         safe_int_increment depth_increment(depth_);
 
         if (_db.is_producing()) {
@@ -291,7 +287,6 @@ namespace golos { namespace chain {
     } FC_CAPTURE_AND_RETHROW((o)) }
 
     void proposal_delete_evaluator::do_apply(const proposal_delete_operation& o) { try {
-        ASSERT_REQ_HF(STEEMIT_HARDFORK_0_18__542, "Proposal transaction deleting"); // remove after hf
         const auto& proposal = _db.get_proposal(o.author, o.title);
 
         FC_ASSERT(

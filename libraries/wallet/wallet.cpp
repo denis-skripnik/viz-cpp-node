@@ -285,13 +285,9 @@ namespace golos { namespace wallet {
                     result["participation"] =
                         (100 * dynamic_props.recent_slots_filled.popcount()) / 128.0;
                     result["account_creation_fee"] = median_props.account_creation_fee;
-
-                    auto hf = _remote_database_api->get_hardfork_version();
-                    if (hf >= hardfork_version(0, STEEMIT_HARDFORK_0_18)) {
-                        result["create_account_delegation_ratio"] = median_props.create_account_delegation_ratio;
-                        result["create_account_delegation_time"] = median_props.create_account_delegation_time;
-                        result["min_delegation"] = median_props.min_delegation;
-                    }
+                    result["create_account_delegation_ratio"] = median_props.create_account_delegation_ratio;
+                    result["create_account_delegation_time"] = median_props.create_account_delegation_time;
+                    result["min_delegation"] = median_props.min_delegation;
 
                     return result;
                 }
@@ -1609,20 +1605,10 @@ fc::ecc::private_key wallet_api::derive_private_key(const std::string& prefix_st
             FC_ASSERT(account_name == accounts[0].name, "Account name doesn't match?");
 
             signed_transaction tx;
-            auto hf = my->_remote_database_api->get_hardfork_version();
-            if (hf < hardfork_version(0, STEEMIT_HARDFORK_0_18)) {
-                // TODO: remove this branch after HF 0.18
-                account_update_operation op;
-                op.account = account_name;
-                op.memo_key = accounts[0].memo_key;
-                op.json_metadata = json_meta;
-                tx.operations.push_back(op);
-            } else {
-                account_metadata_operation op;
-                op.account = account_name;
-                op.json_metadata = json_meta;
-                tx.operations.push_back(op);
-            }
+            account_metadata_operation op;
+            op.account = account_name;
+            op.json_metadata = json_meta;
+            tx.operations.push_back(op);
             tx.validate();
             return my->sign_transaction(tx, broadcast);
         }

@@ -25,7 +25,6 @@ namespace golos { namespace chain {
     }
 
     void chain_properties_update_evaluator::do_apply(const chain_properties_update_operation& o) {
-        ASSERT_REQ_HF(STEEMIT_HARDFORK_0_18__673, "Chain properties"); // remove after hf
         _db.get_account(o.owner); // verify owner exists
 
         const auto &idx = _db.get_index<witness_index>().indices().get<by_name>();
