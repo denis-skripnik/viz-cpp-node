@@ -2250,9 +2250,7 @@ namespace golos { namespace chain {
         }
 
         void database::process_comment_cashout() {
-            int count = 0;
             const auto &cidx = get_index<comment_index>().indices().get<by_cashout_time>();
-            const auto &com_by_root = get_index<comment_index>().indices().get<by_root>();
             const auto block_time = head_block_time();
 
             auto current = cidx.begin();
@@ -3637,9 +3635,6 @@ namespace golos { namespace chain {
             FC_ASSERT(STEEMIT_HARDFORK_0_14 == 14, "Invalid hardfork configuration");
             _hardfork_times[STEEMIT_HARDFORK_0_14] = fc::time_point_sec(STEEMIT_HARDFORK_0_14_TIME);
             _hardfork_versions[STEEMIT_HARDFORK_0_14] = STEEMIT_HARDFORK_0_14_VERSION;
-            FC_ASSERT(STEEMIT_HARDFORK_0_15 == 15, "Invalid hardfork configuration");
-            _hardfork_times[STEEMIT_HARDFORK_0_15] = fc::time_point_sec(STEEMIT_HARDFORK_0_15_TIME);
-            _hardfork_versions[STEEMIT_HARDFORK_0_15] = STEEMIT_HARDFORK_0_15_VERSION;
 
             const auto &hardforks = get_hardfork_property_object();
             FC_ASSERT(
@@ -3793,8 +3788,6 @@ namespace golos { namespace chain {
                 case STEEMIT_HARDFORK_0_13:
                     break;
                 case STEEMIT_HARDFORK_0_14:
-                    break;
-                case STEEMIT_HARDFORK_0_15:
                     break;
                 default:
                     break;
