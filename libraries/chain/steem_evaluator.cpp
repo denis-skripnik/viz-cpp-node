@@ -128,10 +128,9 @@ namespace golos { namespace chain {
 
             if (o.owner) {
 #ifndef STEEMIT_BUILD_TESTNET
-                if (_db.has_hardfork(STEEMIT_HARDFORK_0_11))
-                    FC_ASSERT(_db.head_block_time() -
-                              account_auth.last_owner_update >
-                              STEEMIT_OWNER_UPDATE_LIMIT, "Owner authority can only be updated once an hour.");
+                FC_ASSERT(_db.head_block_time() -
+                          account_auth.last_owner_update >
+                          STEEMIT_OWNER_UPDATE_LIMIT, "Owner authority can only be updated once an hour.");
 #endif
                 for (auto a: o.owner->account_auths) {
                     _db.get_account(a.first);
@@ -880,9 +879,8 @@ namespace golos { namespace chain {
                 int64_t elapsed_seconds = (_db.head_block_time() -
                                            voter.last_vote_time).to_seconds();
 
-                if (_db.has_hardfork(STEEMIT_HARDFORK_0_11))
-                    FC_ASSERT(elapsed_seconds >=
-                              STEEMIT_MIN_VOTE_INTERVAL_SEC, "Can only vote once every 3 seconds.");
+                FC_ASSERT(elapsed_seconds >=
+                          STEEMIT_MIN_VOTE_INTERVAL_SEC, "Can only vote once every 1 second.");
 
                 int64_t regenerated_power =
                         (STEEMIT_100_PERCENT * elapsed_seconds) /
@@ -1163,12 +1161,7 @@ namespace golos { namespace chain {
                     acc.memo_key = o.work.worker;
                     acc.created = dgp.time;
                     acc.last_vote_time = dgp.time;
-
-                    if (!db.has_hardfork(STEEMIT_HARDFORK_0_11__169)) {
-                        acc.recovery_account = STEEMIT_INIT_MINER_NAME;
-                    } else {
-                        acc.recovery_account = "";
-                    } /// highest voted witness at time of recovery
+                    acc.recovery_account = "";
                 });
                 store_account_json_metadata(db, name, "");
 
