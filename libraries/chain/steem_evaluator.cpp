@@ -1205,9 +1205,8 @@ namespace golos { namespace chain {
                       o.work.worker, "Work must be performed by key that signed the work.");
             FC_ASSERT(
                     o.block_id == db.head_block_id(), "pow not for last block");
-            if (db.has_hardfork(STEEMIT_HARDFORK_0_13__256))
-                FC_ASSERT(worker_account.last_account_update <
-                          db.head_block_time(), "Worker account must not have updated their account this block.");
+            FC_ASSERT(worker_account.last_account_update <
+                      db.head_block_time(), "Worker account must not have updated their account this block.");
 
             fc::sha256 target = db.get_pow_target();
 
@@ -1255,7 +1254,7 @@ namespace golos { namespace chain {
         }
 
         void pow_evaluator::do_apply(const pow_operation &o) {
-            FC_ASSERT(!db().has_hardfork(STEEMIT_HARDFORK_0_13__256), "pow is deprecated. Use pow2 instead");
+            FC_ASSERT(false, "pow is deprecated. Use pow2 instead");
             pow_apply(db(), o);
         }
 
