@@ -191,11 +191,9 @@ namespace golos { namespace chain {
  */
         void delete_comment_evaluator::do_apply(const delete_comment_operation &o) {
             database &_db = db();
-            if (_db.has_hardfork(STEEMIT_HARDFORK_0_10)) {
-                const auto &auth = _db.get_account(o.author);
-                FC_ASSERT(!(auth.owner_challenged ||
-                            auth.active_challenged), "Operation cannot be processed because account is currently challenged.");
-            }
+            const auto &auth = _db.get_account(o.author);
+            FC_ASSERT(!(auth.owner_challenged ||
+                        auth.active_challenged), "Operation cannot be processed because account is currently challenged.");
 
             const auto &comment = _db.get_comment(o.author, o.permlink);
             FC_ASSERT(comment.children ==
@@ -289,9 +287,8 @@ namespace golos { namespace chain {
 
                 const auto &auth = _db.get_account(o.author); /// prove it exists
 
-                if (_db.has_hardfork(STEEMIT_HARDFORK_0_10))
-                    FC_ASSERT(!(auth.owner_challenged ||
-                                auth.active_challenged), "Operation cannot be processed because account is currently challenged.");
+                FC_ASSERT(!(auth.owner_challenged ||
+                            auth.active_challenged), "Operation cannot be processed because account is currently challenged.");
 
                 comment_id_type id;
 
@@ -845,9 +842,8 @@ namespace golos { namespace chain {
                 const auto &comment = _db.get_comment(o.author, o.permlink);
                 const auto &voter = _db.get_account(o.voter);
 
-                if (_db.has_hardfork(STEEMIT_HARDFORK_0_10))
-                    FC_ASSERT(!(voter.owner_challenged ||
-                                voter.active_challenged), "Operation cannot be processed because the account is currently challenged.");
+                FC_ASSERT(!(voter.owner_challenged ||
+                            voter.active_challenged), "Operation cannot be processed because the account is currently challenged.");
 
                 FC_ASSERT(voter.can_vote, "Voter has declined their voting rights.");
 
