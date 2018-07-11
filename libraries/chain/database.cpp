@@ -797,14 +797,12 @@ namespace golos { namespace chain {
             if (!(skip & skip_block_size_check)) {
                 const auto &gprops = get_dynamic_global_properties();
                 auto block_size = fc::raw::pack_size(new_block);
-                if (has_hardfork(STEEMIT_HARDFORK_0_12)) {
-                    FC_ASSERT(
-                        block_size <= gprops.maximum_block_size,
-                        "Block Size is too Big",
-                        ("next_block_num", new_block_num)
-                        ("block_size", block_size)
-                        ("max", gprops.maximum_block_size));
-                }
+                FC_ASSERT(
+                    block_size <= gprops.maximum_block_size,
+                    "Block Size is too Big",
+                    ("next_block_num", new_block_num)
+                    ("block_size", block_size)
+                    ("max", gprops.maximum_block_size));
             }
         }
 
@@ -2226,9 +2224,7 @@ namespace golos { namespace chain {
                        vote_itr->comment == comment.id) {
                     const auto &cur_vote = *vote_itr;
                     ++vote_itr;
-                    if (!has_hardfork(STEEMIT_HARDFORK_0_12__177) ||
-                        calculate_discussion_payout_time(comment) !=
-                        fc::time_point_sec::maximum()) {
+                    if (calculate_discussion_payout_time(comment) != fc::time_point_sec::maximum()) {
                         modify(cur_vote, [&](comment_vote_object &cvo) {
                             cvo.num_changes = -1;
                         });
@@ -2688,6 +2684,8 @@ namespace golos { namespace chain {
                     auth.account = STEEMIT_MINER_ACCOUNT;
                     auth.owner.weight_threshold = 1;
                     auth.active.weight_threshold = 1;
+                    auth.posting = authority();
+                    auth.posting.weight_threshold = 1;
                 });
 
                 create<account_object>([&](account_object &a) {
@@ -2702,6 +2700,8 @@ namespace golos { namespace chain {
                     auth.account = STEEMIT_NULL_ACCOUNT;
                     auth.owner.weight_threshold = 1;
                     auth.active.weight_threshold = 1;
+                    auth.posting = authority();
+                    auth.posting.weight_threshold = 1;
                 });
 
                 create<account_object>([&](account_object &a) {
@@ -2716,6 +2716,8 @@ namespace golos { namespace chain {
                     auth.account = STEEMIT_COMMITTEE_ACCOUNT;
                     auth.owner.weight_threshold = 1;
                     auth.active.weight_threshold = 1;
+                    auth.posting = authority();
+                    auth.posting.weight_threshold = 1;
                 });
 
                 create<account_object>([&](account_object &a) {
@@ -2730,6 +2732,8 @@ namespace golos { namespace chain {
                     auth.account = STEEMIT_TEMP_ACCOUNT;
                     auth.owner.weight_threshold = 0;
                     auth.active.weight_threshold = 0;
+                    auth.posting = authority();
+                    auth.posting.weight_threshold = 1;
                 });
 
                 for (int i = 0; i < STEEMIT_NUM_INIT_MINERS; ++i) {
@@ -3341,7 +3345,7 @@ namespace golos { namespace chain {
 
        /*
        *  About once per minute the average network use is consulted and used to adjust
-       *  the reserve ratio. Anything above 25% usage (since STEEMIT_HARDFORK_0_12__179)
+       *  the reserve ratio. Anything above 25% usage
        *  reduces the ratio by half which should instantly bring the network from 50% to
        *  25% use unless the demand comes from users who have surplus capacity. In other
        *  words, a 50% reduction in reserve ratio does not result in a 50% reduction in
@@ -3356,12 +3360,7 @@ namespace golos { namespace chain {
        *  increase the capacity of the network.
        */
                     if (dgp.head_block_number % 20 == 0) {
-                        if ((!has_hardfork(STEEMIT_HARDFORK_0_12__179) &&
-                             dgp.average_block_size >
-                             dgp.maximum_block_size / 2) ||
-                            (has_hardfork(STEEMIT_HARDFORK_0_12__179) &&
-                             dgp.average_block_size >
-                             dgp.maximum_block_size / 4)) {
+                        if (dgp.average_block_size > dgp.maximum_block_size / 4) {
                             dgp.current_reserve_ratio /= 2; /// exponential back up
                         } else { /// linear growth... not much fine grain control near full capacity
                             dgp.current_reserve_ratio++;
@@ -3616,9 +3615,6 @@ namespace golos { namespace chain {
             FC_ASSERT(STEEMIT_HARDFORK_0_11 == 11, "Invalid hardfork configuration");
             _hardfork_times[STEEMIT_HARDFORK_0_11] = fc::time_point_sec(STEEMIT_HARDFORK_0_11_TIME);
             _hardfork_versions[STEEMIT_HARDFORK_0_11] = STEEMIT_HARDFORK_0_11_VERSION;
-            FC_ASSERT(STEEMIT_HARDFORK_0_12 == 12, "Invalid hardfork configuration");
-            _hardfork_times[STEEMIT_HARDFORK_0_12] = fc::time_point_sec(STEEMIT_HARDFORK_0_12_TIME);
-            _hardfork_versions[STEEMIT_HARDFORK_0_12] = STEEMIT_HARDFORK_0_12_VERSION;
 
             const auto &hardforks = get_hardfork_property_object();
             FC_ASSERT(
@@ -3751,23 +3747,6 @@ namespace golos { namespace chain {
                 case STEEMIT_HARDFORK_0_10:
                     break;
                 case STEEMIT_HARDFORK_0_11:
-                    break;
-                case STEEMIT_HARDFORK_0_12: {
-                    modify(get<account_authority_object, by_account>(STEEMIT_MINER_ACCOUNT), [&](account_authority_object &auth) {
-                        auth.posting = authority();
-                        auth.posting.weight_threshold = 1;
-                    });
-
-                    modify(get<account_authority_object, by_account>(STEEMIT_NULL_ACCOUNT), [&](account_authority_object &auth) {
-                        auth.posting = authority();
-                        auth.posting.weight_threshold = 1;
-                    });
-
-                    modify(get<account_authority_object, by_account>(STEEMIT_TEMP_ACCOUNT), [&](account_authority_object &auth) {
-                        auth.posting = authority();
-                        auth.posting.weight_threshold = 1;
-                    });
-                }
                     break;
                 default:
                     break;

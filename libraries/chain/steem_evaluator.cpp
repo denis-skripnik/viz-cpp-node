@@ -307,24 +307,12 @@ namespace golos { namespace chain {
                 auto now = _db.head_block_time();
 
                 if (itr == by_permlink_idx.end()) {
-                    if (_db.has_hardfork(STEEMIT_HARDFORK_0_12__176)) {
-                        if (o.parent_author == STEEMIT_ROOT_POST_PARENT)
-                            FC_ASSERT((now - auth.last_root_post) >
-                                      STEEMIT_MIN_ROOT_COMMENT_INTERVAL, "You may only post once every 5 minutes.", ("now", now)("last_root_post", auth.last_root_post));
-                        else
-                            FC_ASSERT((now - auth.last_post) >
-                                      STEEMIT_MIN_REPLY_INTERVAL, "You may only comment once every 20 seconds.", ("now", now)("auth.last_post", auth.last_post));
-                    } else if (_db.has_hardfork(STEEMIT_HARDFORK_0_6__113)) {
-                        if (o.parent_author == STEEMIT_ROOT_POST_PARENT)
-                            FC_ASSERT((now - auth.last_post) >
-                                      STEEMIT_MIN_ROOT_COMMENT_INTERVAL, "You may only post once every 5 minutes.", ("now", now)("auth.last_post", auth.last_post));
-                        else
-                            FC_ASSERT((now - auth.last_post) >
-                                      STEEMIT_MIN_REPLY_INTERVAL, "You may only comment once every 20 seconds.", ("now", now)("auth.last_post", auth.last_post));
-                    } else {
+                    if (o.parent_author == STEEMIT_ROOT_POST_PARENT)
+                        FC_ASSERT((now - auth.last_root_post) >
+                                  STEEMIT_MIN_ROOT_COMMENT_INTERVAL, "You may only post once every 1 second.", ("now", now)("last_root_post", auth.last_root_post));
+                    else
                         FC_ASSERT((now - auth.last_post) >
-                                  fc::seconds(60), "You may only post once per minute.", ("now", now)("auth.last_post", auth.last_post));
-                    }
+                                  STEEMIT_MIN_REPLY_INTERVAL, "You may only comment once every 1 second.", ("now", now)("auth.last_post", auth.last_post));
 
                     db().modify(auth, [&](account_object &a) {
                         if( o.parent_author == STEEMIT_ROOT_POST_PARENT ) {
@@ -864,10 +852,8 @@ namespace golos { namespace chain {
 
                 FC_ASSERT(voter.can_vote, "Voter has declined their voting rights.");
 
-                if (_db.has_hardfork(STEEMIT_HARDFORK_0_12__177) &&
-                    _db.calculate_discussion_payout_time(comment) ==
-                    fc::time_point_sec::maximum()
-                ) {
+                if (_db.calculate_discussion_payout_time(comment) ==
+                    fc::time_point_sec::maximum()) {
                     if(!_db.clear_votes()) {
                         const auto& comment_vote_idx = _db.get_index< comment_vote_index >().indices().get< by_comment_voter >();
                         auto itr = comment_vote_idx.find( std::make_tuple( comment.id, voter.id ) );
@@ -933,8 +919,7 @@ namespace golos { namespace chain {
 
                 // Lazily delete vote
                 if (itr != comment_vote_idx.end() && itr->num_changes == -1) {
-                    if (_db.is_producing() ||
-                        _db.has_hardfork(STEEMIT_HARDFORK_0_12__177))
+                    if (_db.is_producing())
                         FC_ASSERT(false, "Cannot vote again on a comment after payout.");
 
                     _db.remove(*itr);
@@ -1438,10 +1423,9 @@ namespace golos { namespace chain {
             database &_db = db();
             const auto &account = _db.get_account(o.account_to_recover);
 
-            if (_db.has_hardfork(STEEMIT_HARDFORK_0_12))
-                FC_ASSERT(
-                        _db.head_block_time() - account.last_account_recovery >
-                        STEEMIT_OWNER_UPDATE_LIMIT, "Owner authority can only be updated once an hour.");
+            FC_ASSERT(
+                    _db.head_block_time() - account.last_account_recovery >
+                    STEEMIT_OWNER_UPDATE_LIMIT, "Owner authority can only be updated once an hour.");
 
             const auto &recovery_request_idx = _db.get_index<account_recovery_request_index>().indices().get<by_account>();
             auto request = recovery_request_idx.find(o.account_to_recover);
