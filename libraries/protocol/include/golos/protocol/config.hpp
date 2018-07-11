@@ -3,7 +3,7 @@
  */
 #pragma once
 
-#define STEEMIT_BLOCKCHAIN_VERSION              (version(0, 16, 0))
+#define STEEMIT_BLOCKCHAIN_VERSION              (version(0, 15, 0))
 #define STEEMIT_BLOCKCHAIN_HARDFORK_VERSION     (hardfork_version(STEEMIT_BLOCKCHAIN_VERSION))
 
 #ifdef STEEMIT_BUILD_TESTNET
@@ -99,16 +99,13 @@
 #define GOLOS_MIN_DELEGATION                        1
 
 #define STEEMIT_MINING_REWARD                   asset( 666, STEEM_SYMBOL )
-#define STEEMIT_MINING_REWARD_PRE_HF_16         asset( 1000, STEEM_SYMBOL )
 #define STEEMIT_EQUIHASH_N                      140
 #define STEEMIT_EQUIHASH_K                      6
 
 #define STEEMIT_MIN_CONTENT_REWARD              asset( 1500, STEEM_SYMBOL )
 #define STEEMIT_MIN_CURATE_REWARD               asset( 500, STEEM_SYMBOL )
 #define STEEMIT_MIN_PRODUCER_REWARD             STEEMIT_MINING_REWARD
-#define STEEMIT_MIN_PRODUCER_REWARD_PRE_HF_16   STEEMIT_MINING_REWARD_PRE_HF_16
 #define STEEMIT_MIN_POW_REWARD                  STEEMIT_MINING_REWARD
-#define STEEMIT_MIN_POW_REWARD_PRE_HF_16        STEEMIT_MINING_REWARD_PRE_HF_16
 
 #define STEEMIT_ACTIVE_CHALLENGE_FEE            asset( 2000, STEEM_SYMBOL )
 #define STEEMIT_OWNER_CHALLENGE_FEE             asset( 30000, STEEM_SYMBOL )
@@ -277,16 +274,13 @@
 #define GOLOS_MIN_DELEGATION                        1
 
 #define STEEMIT_MINING_REWARD                   asset( 666, STEEM_SYMBOL )
-#define STEEMIT_MINING_REWARD_PRE_HF_16         asset( 1000, STEEM_SYMBOL )
 #define STEEMIT_EQUIHASH_N                      140
 #define STEEMIT_EQUIHASH_K                      6
 
 #define STEEMIT_MIN_CONTENT_REWARD              asset( 1500, STEEM_SYMBOL )
 #define STEEMIT_MIN_CURATE_REWARD               asset( 500, STEEM_SYMBOL )
 #define STEEMIT_MIN_PRODUCER_REWARD             STEEMIT_MINING_REWARD
-#define STEEMIT_MIN_PRODUCER_REWARD_PRE_HF_16   STEEMIT_MINING_REWARD_PRE_HF_16
 #define STEEMIT_MIN_POW_REWARD                  STEEMIT_MINING_REWARD
-#define STEEMIT_MIN_POW_REWARD_PRE_HF_16        STEEMIT_MINING_REWARD_PRE_HF_16
 
 #define STEEMIT_ACTIVE_CHALLENGE_FEE            asset( 2000, STEEM_SYMBOL )
 #define STEEMIT_OWNER_CHALLENGE_FEE             asset( 30000, STEEM_SYMBOL )

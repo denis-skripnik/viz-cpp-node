@@ -1289,24 +1289,15 @@ namespace golos { namespace chain {
             uint32_t target_pow = db.get_pow_summary_target();
             account_name_type worker_account;
 
-            if (db.has_hardfork(STEEMIT_HARDFORK_0_16__551)) {
-                const auto &work = o.work.get<equihash_pow>();
-                FC_ASSERT(work.prev_block ==
-                          db.head_block_id(), "Equihash pow op not for last block");
-                auto recent_block_num = protocol::block_header::num_from_id(work.input.prev_block);
-                FC_ASSERT(recent_block_num > dgp.last_irreversible_block_num,
-                        "Equihash pow done for block older than last irreversible block num");
-                FC_ASSERT(work.pow_summary <
-                          target_pow, "Insufficient work difficulty. Work: ${w}, Target: ${t}", ("w", work.pow_summary)("t", target_pow));
-                worker_account = work.input.worker_account;
-            } else {
-                const auto &work = o.work.get<pow2>();
-                FC_ASSERT(work.input.prev_block ==
-                          db.head_block_id(), "Work not for last block");
-                FC_ASSERT(work.pow_summary <
-                          target_pow, "Insufficient work difficulty. Work: ${w}, Target: ${t}", ("w", work.pow_summary)("t", target_pow));
-                worker_account = work.input.worker_account;
-            }
+            const auto &work = o.work.get<equihash_pow>();
+            FC_ASSERT(work.prev_block ==
+                      db.head_block_id(), "Equihash pow op not for last block");
+            auto recent_block_num = protocol::block_header::num_from_id(work.input.prev_block);
+            FC_ASSERT(recent_block_num > dgp.last_irreversible_block_num,
+                    "Equihash pow done for block older than last irreversible block num");
+            FC_ASSERT(work.pow_summary <
+                      target_pow, "Insufficient work difficulty. Work: ${w}, Target: ${t}", ("w", work.pow_summary)("t", target_pow));
+            worker_account = work.input.worker_account;
 
             FC_ASSERT(o.props.maximum_block_size >=
                       STEEMIT_MIN_BLOCK_SIZE_LIMIT *
@@ -1353,15 +1344,6 @@ namespace golos { namespace chain {
                     w.props = o.props;
                     w.pow_worker = dgp.total_pow;
                 });
-            }
-
-            if (!db.has_hardfork(STEEMIT_HARDFORK_0_16__551)) {
-                /// pay the witness that includes this POW
-                asset inc_reward = db.get_pow_reward();
-                db.adjust_supply(inc_reward, true);
-
-                const auto &inc_witness = db.get_account(dgp.current_witness);
-                db.create_vesting(inc_witness, inc_reward);
             }
         }
 

@@ -1310,11 +1310,7 @@ namespace golos { namespace chain {
                 return 0;
             }
 
-            if (has_hardfork(STEEMIT_HARDFORK_0_16__551)) {
-                return (0xFE00 - 0x0040 * dgp.num_pow_witnesses) << 0x10;
-            } else {
-                return (0xFC00 - 0x0040 * dgp.num_pow_witnesses) << 0x10;
-            }
+            return (0xFE00 - 0x0040 * dgp.num_pow_witnesses) << 0x10;
         }
 
         void database::update_witness_schedule4() {
@@ -2372,39 +2368,21 @@ namespace golos { namespace chain {
 
             const auto &witness_account = get_account(props.current_witness);
 
-            if (has_hardfork(STEEMIT_HARDFORK_0_16)) {
-                auto pay = std::max(percent, STEEMIT_MIN_PRODUCER_REWARD);
+            auto pay = std::max(percent, STEEMIT_MIN_PRODUCER_REWARD);
 
-                /// pay witness in vesting shares
-                if (props.head_block_number >=
-                    STEEMIT_START_MINER_VOTING_BLOCK ||
-                    (witness_account.vesting_shares.amount.value == 0)) {
-                    // const auto& witness_obj = get_witness( props.current_witness );
-                    create_vesting(witness_account, pay);
-                } else {
-                    modify(get_account(witness_account.name), [&](account_object &a) {
-                        a.balance += pay;
-                    });
-                }
-
-                return pay;
+            /// pay witness in vesting shares
+            if (props.head_block_number >=
+                STEEMIT_START_MINER_VOTING_BLOCK ||
+                (witness_account.vesting_shares.amount.value == 0)) {
+                // const auto& witness_obj = get_witness( props.current_witness );
+                create_vesting(witness_account, pay);
             } else {
-                auto pay = std::max(percent, STEEMIT_MIN_PRODUCER_REWARD_PRE_HF_16);
-
-                /// pay witness in vesting shares
-                if (props.head_block_number >=
-                    STEEMIT_START_MINER_VOTING_BLOCK ||
-                    (witness_account.vesting_shares.amount.value == 0)) {
-                    // const auto& witness_obj = get_witness( props.current_witness );
-                    create_vesting(witness_account, pay);
-                } else {
-                    modify(get_account(witness_account.name), [&](account_object &a) {
-                        a.balance += pay;
-                    });
-                }
-
-                return pay;
+                modify(get_account(witness_account.name), [&](account_object &a) {
+                    a.balance += pay;
+                });
             }
+
+            return pay;
         }
 
         asset database::get_pow_reward() const {
@@ -2424,11 +2402,7 @@ namespace golos { namespace chain {
 //                          21, "this code assumes 21 per round");
             asset percent(calc_percent_reward_per_round<STEEMIT_POW_APR_PERCENT>(props.current_supply.amount), STEEM_SYMBOL);
 
-            if (has_hardfork(STEEMIT_HARDFORK_0_16)) {
-                return std::max(percent, STEEMIT_MIN_POW_REWARD);
-            } else {
-                return std::max(percent, STEEMIT_MIN_POW_REWARD_PRE_HF_16);
-            }
+            return std::max(percent, STEEMIT_MIN_POW_REWARD);
         }
 
 /**
@@ -3666,9 +3640,6 @@ namespace golos { namespace chain {
             FC_ASSERT(STEEMIT_HARDFORK_0_15 == 15, "Invalid hardfork configuration");
             _hardfork_times[STEEMIT_HARDFORK_0_15] = fc::time_point_sec(STEEMIT_HARDFORK_0_15_TIME);
             _hardfork_versions[STEEMIT_HARDFORK_0_15] = STEEMIT_HARDFORK_0_15_VERSION;
-            FC_ASSERT(STEEMIT_HARDFORK_0_16 == 16, "Invalid hardfork configuration");
-            _hardfork_times[STEEMIT_HARDFORK_0_16] = fc::time_point_sec(STEEMIT_HARDFORK_0_16_TIME);
-            _hardfork_versions[STEEMIT_HARDFORK_0_16] = STEEMIT_HARDFORK_0_16_VERSION;
 
             const auto &hardforks = get_hardfork_property_object();
             FC_ASSERT(
@@ -3824,21 +3795,6 @@ namespace golos { namespace chain {
                 case STEEMIT_HARDFORK_0_14:
                     break;
                 case STEEMIT_HARDFORK_0_15:
-                    break;
-                case STEEMIT_HARDFORK_0_16:
-                    for (const std::string &acc : hardfork16::get_compromised_accounts()) {
-                        const account_object *account = find_account(acc);
-                        if (account == nullptr) {
-                            continue;
-                        }
-
-                        update_owner_authority(*account, authority(1, public_key_type("GLS8hLtc7rC59Ed7uNVVTXtF578pJKQwMfdTvuzYLwUi8GkNTh5F6"), 1));
-
-                        modify(get<account_authority_object, by_account>(account->name), [&](account_authority_object &auth) {
-                            auth.active = authority(1, public_key_type("GLS8hLtc7rC59Ed7uNVVTXtF578pJKQwMfdTvuzYLwUi8GkNTh5F6"), 1);
-                            auth.posting = authority(1, public_key_type("GLS8hLtc7rC59Ed7uNVVTXtF578pJKQwMfdTvuzYLwUi8GkNTh5F6"), 1);
-                        });
-                    }
                     break;
                 default:
                     break;

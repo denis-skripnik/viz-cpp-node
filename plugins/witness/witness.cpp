@@ -536,7 +536,6 @@ namespace golos {
                 const auto &acct_idx = db.get_index<golos::chain::account_index>().indices().get<golos::chain::by_name>();
                 auto acct_it = acct_idx.find(miner);
                 const bool has_account = (acct_it != acct_idx.end());
-                const bool has_hardfork_16 = db.has_hardfork(STEEMIT_HARDFORK_0_16__551);
 
                 head_block_id_ = b.id();
                 total_hashes_.store(0, std::memory_order_release);
@@ -546,99 +545,50 @@ namespace golos {
                 for (uint32_t i = 0; i <= mining_threads_; ++i) {
                     thread_num++; // TODO: why it is incremented two times? second incrementation see after mining_service_.post(...)
                     mining_service_.post( [=]{
-                        // hardfork_16: differences with previous version are commented with `hardfork_16`
-                        if (has_hardfork_16) {
-                            protocol::pow2_operation op;
-                            protocol::equihash_pow work; // hardfork_16: changed type of `work`
-                            work.input.prev_block = block_id;
-                            work.input.worker_account = miner;
-                            work.input.nonce = start + thread_num;
-                            op.props = _miner_prop_vote;
+                        protocol::pow2_operation op;
+                        protocol::equihash_pow work; // hardfork_16: changed type of `work`
+                        work.input.prev_block = block_id;
+                        work.input.worker_account = miner;
+                        work.input.nonce = start + thread_num;
+                        op.props = _miner_prop_vote;
 
-                            while (true) {
-                                if (golos::time::nonblocking_now() > stop) {
-                                    // ilog( "stop mining due to time out, nonce: ${n}", ("n",op.nonce) );
-                                    return;
-                                }
-                                if (head_block_num_.load(std::memory_order_acquire) != head_block_num) {
-                                    // wlog( "stop mining due new block arrival, nonce: ${n}", ("n",op.nonce));
-                                    return;
-                                }
-
-                                total_hashes_.fetch_add(1, std::memory_order_relaxed); /// signal other workers to stop
-                                work.input.nonce += mining_threads_;
-                                work.create(block_id, miner, work.input.nonce);
-
-                                if (work.proof.is_valid() && work.pow_summary < target) { // hardfork_16: added `proof.is_valid()`
-                                    protocol::signed_transaction trx;
-                                    work.prev_block = head_block_id_; // hardfork_16: added field 'prev_block'
-                                    op.work = work;
-                                    if (!has_account) {
-                                        op.new_owner_key = pub;
-                                    }
-                                    trx.operations.push_back(op);
-                                    trx.ref_block_num = head_block_num;
-                                    trx.ref_block_prefix = work.input.prev_block._hash[1];
-                                    trx.set_expiration(head_block_time + STEEMIT_MAX_TIME_UNTIL_EXPIRATION);
-                                    trx.sign(pk, STEEMIT_CHAIN_ID);
-                                    head_block_num_.fetch_add(1, std::memory_order_relaxed);
-
-                                    try {
-                                        chain().accept_transaction(trx);
-                                        ilog("Broadcasting Proof of Work for ${miner}", ("miner", miner));
-                                        p2p().broadcast_transaction(trx);
-                                    } catch (const fc::exception &e) {
-                                        // wdump((e.to_detail_string()));
-                                    }
-
-                                    return;
-                                }
+                        while (true) {
+                            if (golos::time::nonblocking_now() > stop) {
+                                // ilog( "stop mining due to time out, nonce: ${n}", ("n",op.nonce) );
+                                return;
                             }
-                        }
-                        else { // delete after hardfork 16
-                            protocol::pow2_operation op;
-                            protocol::pow2 work;
-                            work.input.prev_block = block_id;
-                            work.input.worker_account = miner;
-                            work.input.nonce = start + thread_num;
-                            op.props = _miner_prop_vote;
-                            while (true) {
-                                //  if( ((op.nonce/num_threads) % 1000) == 0 ) idump((op.nonce));
-                                if (golos::time::nonblocking_now() > stop) {
-                                    // ilog( "stop mining due to time out, nonce: ${n}", ("n",op.nonce) );
-                                    return;
+                            if (head_block_num_.load(std::memory_order_acquire) != head_block_num) {
+                                // wlog( "stop mining due new block arrival, nonce: ${n}", ("n",op.nonce));
+                                return;
+                            }
+
+                            total_hashes_.fetch_add(1, std::memory_order_relaxed); /// signal other workers to stop
+                            work.input.nonce += mining_threads_;
+                            work.create(block_id, miner, work.input.nonce);
+
+                            if (work.proof.is_valid() && work.pow_summary < target) { // hardfork_16: added `proof.is_valid()`
+                                protocol::signed_transaction trx;
+                                work.prev_block = head_block_id_; // hardfork_16: added field 'prev_block'
+                                op.work = work;
+                                if (!has_account) {
+                                    op.new_owner_key = pub;
                                 }
-                                if (head_block_num_.load(std::memory_order_acquire) != head_block_num) {
-                                    // wlog( "stop mining due new block arrival, nonce: ${n}", ("n",op.nonce));
-                                    return;
+                                trx.operations.push_back(op);
+                                trx.ref_block_num = head_block_num;
+                                trx.ref_block_prefix = work.input.prev_block._hash[1];
+                                trx.set_expiration(head_block_time + STEEMIT_MAX_TIME_UNTIL_EXPIRATION);
+                                trx.sign(pk, STEEMIT_CHAIN_ID);
+                                head_block_num_.fetch_add(1, std::memory_order_relaxed);
+
+                                try {
+                                    chain().accept_transaction(trx);
+                                    ilog("Broadcasting Proof of Work for ${miner}", ("miner", miner));
+                                    p2p().broadcast_transaction(trx);
+                                } catch (const fc::exception &e) {
+                                    // wdump((e.to_detail_string()));
                                 }
 
-                                total_hashes_.fetch_add(1, std::memory_order_relaxed);
-                                work.input.nonce += mining_threads_;
-                                work.create(block_id, miner, work.input.nonce);
-                                if (work.pow_summary < target) {
-                                    head_block_num_.fetch_add(1, std::memory_order_relaxed); /// signal other workers to stop
-                                    protocol::signed_transaction trx;
-                                    op.work = work;
-                                    if (!has_account) {
-                                        op.new_owner_key = pub;
-                                    }
-                                    trx.operations.push_back(op);
-                                    trx.ref_block_num = head_block_num;
-                                    trx.ref_block_prefix = work.input.prev_block._hash[1];
-                                    trx.set_expiration(head_block_time + STEEMIT_MAX_TIME_UNTIL_EXPIRATION);
-                                    trx.sign(pk, STEEMIT_CHAIN_ID);
-
-                                    try {
-                                        chain().accept_transaction(trx);
-                                        ilog("Broadcasting Proof of Work for ${miner}", ("miner", miner));
-                                        p2p().broadcast_transaction(trx);
-                                    } catch (const fc::exception &e) {
-                                        // wdump((e.to_detail_string()));
-                                    }
-
-                                    return;
-                                }
+                                return;
                             }
                         }
                     });
