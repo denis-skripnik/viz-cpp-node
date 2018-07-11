@@ -786,11 +786,7 @@ namespace golos { namespace chain {
                         v.account = voter.id;
                     });
 
-                    if (_db.has_hardfork(STEEMIT_HARDFORK_0_3)) {
-                        _db.adjust_witness_vote(witness, voter.witness_vote_weight());
-                    } else {
-                        _db.adjust_proxied_witness_votes(voter, voter.witness_vote_weight());
-                    }
+                    _db.adjust_witness_vote(witness, voter.witness_vote_weight());
 
                 } else {
 
@@ -811,11 +807,7 @@ namespace golos { namespace chain {
                 FC_ASSERT(!o.approve, "Vote currently exists, user must indicate a desire to reject witness.");
 
                 if (_db.has_hardfork(STEEMIT_HARDFORK_0_2)) {
-                    if (_db.has_hardfork(STEEMIT_HARDFORK_0_3)) {
-                        _db.adjust_witness_vote(witness, -voter.witness_vote_weight());
-                    } else {
-                        _db.adjust_proxied_witness_votes(voter, -voter.witness_vote_weight());
-                    }
+                    _db.adjust_witness_vote(witness, -voter.witness_vote_weight());
                 } else {
                     _db.modify(witness, [&](witness_object &w) {
                         w.votes -= voter.witness_vote_weight();
