@@ -498,8 +498,6 @@ namespace golos { namespace chain {
 
             void create_block_summary(const signed_block &next_block);
 
-            void update_witness_schedule4();
-
             void update_median_witness_props();
 
             void clear_null_account_balance();
