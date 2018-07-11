@@ -926,11 +926,9 @@ namespace golos { namespace chain {
                     int64_t rshares = o.weight < 0 ? -abs_rshares : abs_rshares;
 
                     if (rshares > 0) {
-                        if (_db.has_hardfork(STEEMIT_HARDFORK_0_7)) {
-                            FC_ASSERT(_db.head_block_time() <
-                                      _db.calculate_discussion_payout_time(comment) - STEEMIT_UPVOTE_LOCKOUT,
-                                      "Cannot increase reward of post within the last minute before payout.");
-                        }
+                        FC_ASSERT(_db.head_block_time() <
+                                  _db.calculate_discussion_payout_time(comment) - STEEMIT_UPVOTE_LOCKOUT,
+                                  "Cannot increase reward of post within the last minute before payout.");
                     }
 
                     //used_power /= (50*7); /// a 100% vote means use .28% of voting power which should force users to spread their votes around over 50+ posts day for a week
@@ -1059,11 +1057,9 @@ namespace golos { namespace chain {
                     int64_t rshares = o.weight < 0 ? -abs_rshares : abs_rshares;
 
                     if (itr->rshares < rshares) {
-                        if (_db.has_hardfork(STEEMIT_HARDFORK_0_7)) {
-                            FC_ASSERT(_db.head_block_time() <
-                                      _db.calculate_discussion_payout_time(comment) - STEEMIT_UPVOTE_LOCKOUT,
-                                      "Cannot increase reward of post within the last minute before payout.");
-                        }
+                        FC_ASSERT(_db.head_block_time() <
+                                  _db.calculate_discussion_payout_time(comment) - STEEMIT_UPVOTE_LOCKOUT,
+                                  "Cannot increase reward of post within the last minute before payout.");
                     }
 
                     _db.modify(voter, [&](account_object &a) {
