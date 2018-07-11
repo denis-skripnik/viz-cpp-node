@@ -51,7 +51,6 @@ namespace golos { namespace chain {
                 ("creator.vesting_shares", creator.vesting_shares)
                 ("creator.delegated_vesting_shares", creator.delegated_vesting_shares)
                 ("required", o.delegation));
-            const auto &referrer = _db.get_account(o.referrer);
 
             const auto& v_share_price = _db.get_dynamic_global_properties().get_vesting_share_price();
             const auto& median_props = _db.get_witness_schedule_object().median_props;
@@ -89,9 +88,10 @@ namespace golos { namespace chain {
                 acc.mined = false;
                 acc.recovery_account = o.creator;
                 acc.received_vesting_shares = o.delegation;
-                if(referrer.name.size()){
-	                    acc.referrer = referrer.name;
-                }
+                if(o.referrer.size()){
+                	const auto &referrer = _db.get_account(o.referrer);
+		            acc.referrer = referrer.name;
+	            }
             });
             store_account_json_metadata(_db, o.new_account_name, o.json_metadata);
 
