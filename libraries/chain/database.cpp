@@ -2200,13 +2200,11 @@ namespace golos { namespace chain {
         asset database::get_pow_reward() const {
             const auto &props = get_dynamic_global_properties();
 
-#ifndef STEEMIT_BUILD_TESTNET
             /// 0 block rewards until at least STEEMIT_MAX_WITNESSES have produced a POW
             if (props.num_pow_witnesses < STEEMIT_MAX_WITNESSES &&
                 props.head_block_number < STEEMIT_START_VESTING_BLOCK) {
                 return asset(0, STEEM_SYMBOL);
             }
-#endif
 
             static_assert(STEEMIT_BLOCK_INTERVAL ==
                           3, "this code assumes a 3-second time interval");

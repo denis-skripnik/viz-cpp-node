@@ -127,11 +127,9 @@ namespace golos { namespace chain {
             const auto &account_auth = _db.get<account_authority_object, by_account>(o.account);
 
             if (o.owner) {
-#ifndef STEEMIT_BUILD_TESTNET
                 FC_ASSERT(_db.head_block_time() -
                           account_auth.last_owner_update >
                           STEEMIT_OWNER_UPDATE_LIMIT, "Owner authority can only be updated once an hour.");
-#endif
                 for (auto a: o.owner->account_auths) {
                     _db.get_account(a.first);
                 }

@@ -28,7 +28,7 @@ For more info about runtime config check [Boost.Tests documentation](https://www
 If you have not done so, install lcov `brew install lcov`
 
 ```
-cmake -D BUILD_GOLOS_TESTNET=ON -D ENABLE_COVERAGE_TESTING=true -D CMAKE_BUILD_TYPE=Debug .
+cmake -D ENABLE_COVERAGE_TESTING=true -D CMAKE_BUILD_TYPE=Debug .
 make
 lcov --capture --initial --directory . --output-file base.info --no-external
 tests/chain_test

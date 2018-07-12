@@ -14,10 +14,6 @@ Builds golosd to be a consensus-only low memory node. Data and fields not
 needed for consensus are not stored in the object database.  This option is
 recommended for witnesses and seed-nodes.
 
-### BUILD_GOLOS_TESTNET=[FALSE/TRUE]
-
-Builds golos for use in a private testnet. Also required for building unit tests.
-
 ## Building under Docker
 
 We ship a Dockerfile.  This builds both common node type binaries.

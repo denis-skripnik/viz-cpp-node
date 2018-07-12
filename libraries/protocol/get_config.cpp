@@ -9,12 +9,6 @@ namespace golos {
         fc::variant_object get_config() {
             fc::mutable_variant_object result;
 
-#ifdef STEEMIT_BUILD_TESTNET
-            result[ "STEEMIT_BUILD_TESTNET" ] = true;
-#else
-            result["STEEMIT_BUILD_TESTNET"] = false;
-#endif
-
             result["GRAPHENE_CURRENT_DB_VERSION"] = GRAPHENE_CURRENT_DB_VERSION;
             result["STEEMIT_100_PERCENT"] = STEEMIT_100_PERCENT;
             result["STEEMIT_1_PERCENT"] = STEEMIT_1_PERCENT;

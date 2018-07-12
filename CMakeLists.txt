@@ -53,26 +53,6 @@ option(Boost_USE_STATIC_LIBS "Build with Boost static libraries usage" TRUE)
 
 option(BUILD_SHARED_LIBRARIES "Build shared libraries" FALSE)
 
-option(BUILD_GOLOS_TESTNET "Build source for test network (ON OR OFF)" OFF)
-message(STATUS "BUILD_GOLOS_TESTNET: ${BUILD_GOLOS_TESTNET}")
-if(BUILD_GOLOS_TESTNET)
-    message(STATUS "     ")
-    message(STATUS "             CONFIGURING FOR TEST NET             ")
-    message(STATUS "     ")
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DSTEEMIT_BUILD_TESTNET")
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DSTEEMIT_BUILD_TESTNET")
-endif()
-
-option(MAX_19_VOTED_WITNESSES "Build source with 19 voted witnesses (ON OR OFF)" OFF)
-message(STATUS "MAX_19_VOTED_WITNESSES: ${MAX_19_VOTED_WITNESSES}")
-if(MAX_19_VOTED_WITNESSES AND BUILD_GOLOS_TESTNET)
-    message(STATUS "     ")
-    message(STATUS "             CONFIGURING FOR 19 VOTED WITNESSES   ")
-    message(STATUS "     ")
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DSTEEMIT_MAX_VOTED_WITNESSES=19")
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DSTEEMIT_MAX_VOTED_WITNESSES=19")
-endif()
-
 option(LOW_MEMORY_NODE "Build source for low memory node (ON OR OFF)" FALSE)
 message(STATUS "LOW_MEMORY_NODE: ${LOW_MEMORY_NODE}")
 if(LOW_MEMORY_NODE)
@@ -217,12 +197,6 @@ if(ENABLE_COVERAGE_TESTING)
     set(CMAKE_CXX_FLAGS "--coverage ${CMAKE_CXX_FLAGS}")
 endif()
 
-set(ENABLE_TESTING FALSE CACHE BOOL "Run unit tests for Golos")
-
-if (ENABLE_TESTING)
-  enable_testing()
-endif()
-
 # external_plugins needs to be compiled first because libraries/app depends on GOLOSIT_EXTERNAL_PLUGINS being fully populated
 add_subdirectory(thirdparty)
 add_subdirectory(libraries)
@@ -278,11 +252,7 @@ if(ENABLE_INSTALLER)
     include(CPack)
 endif(ENABLE_INSTALLER)
 
-if(BUILD_GOLOS_TESTNET)
-    message(STATUS "\n\n             CONFIGURED FOR TEST NETWORK             \n\n")
-else()
-    message(STATUS "\n\n             CONFIGURED FOR GOLOS NETWORK             \n\n")
-endif()
+message(STATUS "\n\n             CONFIGURED FOR GOLOS NETWORK             \n\n")
 
 if(LOW_MEMORY_NODE)
     message(STATUS "\n\n             CONFIGURED FOR LOW MEMORY NODE          \n\n")
