@@ -1090,14 +1090,14 @@ namespace golos { namespace chain {
 
             const auto &witness = get_witness(witness_owner);
 
-            if (witness.running_version != STEEMIT_BLOCKCHAIN_VERSION) {
-                pending_block.extensions.insert(block_header_extensions(STEEMIT_BLOCKCHAIN_VERSION));
+            if (witness.running_version != BLOCKCHAIN_VERSION) {
+                pending_block.extensions.insert(block_header_extensions(BLOCKCHAIN_VERSION));
             }
 
             const auto &hfp = get_hardfork_property_object();
 
             if (hfp.current_hardfork_version <
-                STEEMIT_BLOCKCHAIN_HARDFORK_VERSION // Binary is newer hardfork than has been applied
+                BLOCKCHAIN_HARDFORK_VERSION // Binary is newer hardfork than has been applied
                 && (witness.hardfork_version_vote !=
                     _hardfork_versions[hfp.last_hardfork + 1] ||
                     witness.hardfork_time_vote !=
@@ -1109,9 +1109,9 @@ namespace golos { namespace chain {
                         hfp.last_hardfork + 1], _hardfork_times[
                         hfp.last_hardfork + 1])));
             } else if (hfp.current_hardfork_version ==
-                       STEEMIT_BLOCKCHAIN_HARDFORK_VERSION // Binary does not know of a new hardfork
+                       BLOCKCHAIN_HARDFORK_VERSION // Binary does not know of a new hardfork
                        && witness.hardfork_version_vote >
-                          STEEMIT_BLOCKCHAIN_HARDFORK_VERSION) // Voting for hardfork in the future, that we do not know of...
+                          BLOCKCHAIN_HARDFORK_VERSION) // Voting for hardfork in the future, that we do not know of...
             {
                 // Make vote match binary configuration. This is vote to not apply the new hardfork.
                 pending_block.extensions.insert(block_header_extensions(hardfork_version_vote(_hardfork_versions[hfp.last_hardfork], _hardfork_times[hfp.last_hardfork])));
@@ -1764,8 +1764,7 @@ namespace golos { namespace chain {
         }
 
         void database::update_owner_authority(const account_object &account, const authority &owner_authority) {
-            if (head_block_num() >=
-                STEEMIT_OWNER_AUTH_HISTORY_TRACKING_START_BLOCK_NUM) {
+            if (head_block_num() >= 1) {
                 create<owner_authority_history_object>([&](owner_authority_history_object &hist) {
                     hist.account = account.name;
                     hist.previous_owner_authority = get<account_authority_object, by_account>(account.name).owner;
@@ -3395,7 +3394,7 @@ namespace golos { namespace chain {
 
         void database::init_hardforks() {
             _hardfork_times[0] = fc::time_point_sec(STEEMIT_GENESIS_TIME);
-            _hardfork_versions[0] = hardfork_version(0, 0);
+            _hardfork_versions[0] = hardfork_version(1, 0);
 
             const auto &hardforks = get_hardfork_property_object();
             FC_ASSERT(
@@ -3404,9 +3403,9 @@ namespace golos { namespace chain {
                 ("hardforks.last_hardfork", hardforks.last_hardfork)
                 ("STEEMIT_NUM_HARDFORKS", STEEMIT_NUM_HARDFORKS));
             FC_ASSERT(
-                _hardfork_versions[hardforks.last_hardfork] <= STEEMIT_BLOCKCHAIN_VERSION,
+                _hardfork_versions[hardforks.last_hardfork] <= BLOCKCHAIN_VERSION,
                 "Blockchain version is older than last applied hardfork");
-            FC_ASSERT(STEEMIT_BLOCKCHAIN_HARDFORK_VERSION == _hardfork_versions[STEEMIT_NUM_HARDFORKS]);
+            FC_ASSERT(BLOCKCHAIN_HARDFORK_VERSION == _hardfork_versions[STEEMIT_NUM_HARDFORKS]);
         }
 
         void database::reset_virtual_schedule_time() {

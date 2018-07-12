@@ -3,12 +3,11 @@
  */
 #pragma once
 
-#define STEEMIT_BLOCKCHAIN_VERSION              (version(0, 0, 0))
-#define STEEMIT_BLOCKCHAIN_HARDFORK_VERSION     (hardfork_version(STEEMIT_BLOCKCHAIN_VERSION))
+#define BLOCKCHAIN_VERSION              (version(1, 0, 0))
+#define BLOCKCHAIN_HARDFORK_VERSION     (hardfork_version(BLOCKCHAIN_VERSION))
 
 #define BLOCKCHAIN_NAME                         "VIZ"
 #define STEEMIT_CHAIN_ID                        (fc::sha256::hash(BLOCKCHAIN_NAME))
-#define STEEMIT_SYMBOL                          "VIZ"
 #define STEEMIT_ADDRESS_PREFIX                  "VIZ"
 
 #define VESTS_SYMBOL  (uint64_t(6) | (uint64_t('S') << 8) | (uint64_t('H') << 16) | (uint64_t('A') << 24) | (uint64_t('R') << 32) | (uint64_t('E') << 40) | (uint64_t('S') << 48)) ///< GESTS with 6 digits of precision
@@ -17,7 +16,6 @@
 #define STEEMIT_INIT_PUBLIC_KEY_STR             "VIZ6MyX5QiXAXRZk7SYCiqpi6Mtm8UbHWDFSV8HPpt7FJyahCnc2T"
 
 #define STEEMIT_GENESIS_TIME                    (fc::time_point_sec(1476788400))
-#define STEEMIT_MINING_TIME                     (fc::time_point_sec(1458838800))
 #define STEEMIT_CASHOUT_WINDOW_SECONDS          (60*60*24)  // 1 day
 
 #define STEEMIT_MAX_PROPOSAL_LIFETIME_SEC       (60*60*24*7*4) /// 4 weeks
@@ -28,7 +26,6 @@
 #define STEEMIT_OWNER_AUTH_RECOVERY_PERIOD                  fc::days(30)
 #define STEEMIT_ACCOUNT_RECOVERY_REQUEST_EXPIRATION_PERIOD  fc::days(1)
 #define STEEMIT_OWNER_UPDATE_LIMIT                          fc::minutes(60)
-#define STEEMIT_OWNER_AUTH_HISTORY_TRACKING_START_BLOCK_NUM 1
 
 #define STEEMIT_BLOCK_INTERVAL                  3
 #define STEEMIT_BLOCKS_PER_YEAR                 (365*24*60*60/STEEMIT_BLOCK_INTERVAL)
