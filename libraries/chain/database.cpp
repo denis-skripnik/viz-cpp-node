@@ -2133,75 +2133,6 @@ modify(null_account, [&](account_object &a) {
             }
         }
 
-        asset database::get_content_reward() const {
-            const auto &props = get_dynamic_global_properties();
-            auto reward = asset(255, STEEM_SYMBOL);
-            static_assert(STEEMIT_BLOCK_INTERVAL ==
-                          3, "this code assumes a 3-second time interval");
-            if (props.head_block_number > STEEMIT_START_VESTING_BLOCK) {
-                asset percent(protocol::calc_percent_reward_per_block<STEEMIT_CONTENT_APR_PERCENT>(props.current_supply.amount), STEEM_SYMBOL);
-                reward = std::max(percent, STEEMIT_MIN_CONTENT_REWARD);
-            }
-
-            return reward;
-        }
-
-        asset database::get_curation_reward() const {
-            const auto &props = get_dynamic_global_properties();
-            auto reward = asset(85, STEEM_SYMBOL);
-            static_assert(STEEMIT_BLOCK_INTERVAL ==
-                          3, "this code assumes a 3-second time interval");
-            if (props.head_block_number > STEEMIT_START_VESTING_BLOCK) {
-                asset percent(protocol::calc_percent_reward_per_block<STEEMIT_CURATE_APR_PERCENT>(props.current_supply.amount), STEEM_SYMBOL);
-                reward = std::max(percent, STEEMIT_MIN_CURATE_REWARD);
-            }
-
-            return reward;
-        }
-
-        asset database::get_producer_reward() {
-            const auto &props = get_dynamic_global_properties();
-            static_assert(STEEMIT_BLOCK_INTERVAL ==
-                          3, "this code assumes a 3-second time interval");
-            asset percent(protocol::calc_percent_reward_per_block<STEEMIT_PRODUCER_APR_PERCENT>(props.current_supply.amount), STEEM_SYMBOL);
-
-            const auto &witness_account = get_account(props.current_witness);
-
-            auto pay = std::max(percent, STEEMIT_MIN_PRODUCER_REWARD);
-
-            /// pay witness in vesting shares
-            if (props.head_block_number >=
-                STEEMIT_START_MINER_VOTING_BLOCK ||
-                (witness_account.vesting_shares.amount.value == 0)) {
-                // const auto& witness_obj = get_witness( props.current_witness );
-                create_vesting(witness_account, pay);
-            } else {
-                modify(get_account(witness_account.name), [&](account_object &a) {
-                    a.balance += pay;
-                });
-            }
-
-            return pay;
-        }
-
-        asset database::get_pow_reward() const {
-            const auto &props = get_dynamic_global_properties();
-
-            /// 0 block rewards until at least STEEMIT_MAX_WITNESSES have produced a POW
-            if (props.num_pow_witnesses < STEEMIT_MAX_WITNESSES &&
-                props.head_block_number < STEEMIT_START_VESTING_BLOCK) {
-                return asset(0, STEEM_SYMBOL);
-            }
-
-            static_assert(STEEMIT_BLOCK_INTERVAL ==
-                          3, "this code assumes a 3-second time interval");
-//            static_assert(STEEMIT_MAX_WITNESSES ==
-//                          21, "this code assumes 21 per round");
-            asset percent(calc_percent_reward_per_round<STEEMIT_POW_APR_PERCENT>(props.current_supply.amount), STEEM_SYMBOL);
-
-            return std::max(percent, STEEMIT_MIN_POW_REWARD);
-        }
-
 /**
  *  This method reduces the rshare^2 supply and returns the number of tokens are
  *  redeemed.
@@ -2482,22 +2413,6 @@ modify(null_account, [&](account_object &a) {
             try {
                 // Create blockchain accounts
                 public_key_type init_public_key(STEEMIT_INIT_PUBLIC_KEY);
-
-                create<account_object>([&](account_object &a) {
-                    a.name = STEEMIT_MINER_ACCOUNT;
-                });
-#ifndef IS_LOW_MEM
-                create<account_metadata_object>([&](account_metadata_object& m) {
-                    m.account = STEEMIT_MINER_ACCOUNT;
-                });
-#endif
-                create<account_authority_object>([&](account_authority_object &auth) {
-                    auth.account = STEEMIT_MINER_ACCOUNT;
-                    auth.owner.weight_threshold = 1;
-                    auth.active.weight_threshold = 1;
-                    auth.posting = authority();
-                    auth.posting.weight_threshold = 1;
-                });
 
                 create<account_object>([&](account_object &a) {
                     a.name = STEEMIT_NULL_ACCOUNT;
@@ -3209,53 +3124,39 @@ modify(null_account, [&](account_object &a) {
         void database::update_last_irreversible_block(uint32_t skip) {
             try {
                 const dynamic_global_property_object &dpo = get_dynamic_global_properties();
+                const witness_schedule_object &wso = get_witness_schedule_object();
 
-                /**
-    * Prior to voting taking over, we must be more conservative...
-    *
-    */
-                if (head_block_num() < STEEMIT_START_MINER_VOTING_BLOCK) {
-                    modify(dpo, [&](dynamic_global_property_object &_dpo) {
-                        if (head_block_num() > STEEMIT_MAX_WITNESSES) {
-                            _dpo.last_irreversible_block_num =
-                                    head_block_num() - STEEMIT_MAX_WITNESSES;
-                        }
-                    });
-                } else {
-                    const witness_schedule_object &wso = get_witness_schedule_object();
+                vector<const witness_object *> wit_objs;
+                wit_objs.reserve(wso.num_scheduled_witnesses);
+                for (int i = 0; i < wso.num_scheduled_witnesses; i++) {
+                    wit_objs.push_back(&get_witness(wso.current_shuffled_witnesses[i]));
+                }
 
-                    vector<const witness_object *> wit_objs;
-                    wit_objs.reserve(wso.num_scheduled_witnesses);
-                    for (int i = 0; i < wso.num_scheduled_witnesses; i++) {
-                        wit_objs.push_back(&get_witness(wso.current_shuffled_witnesses[i]));
-                    }
+                static_assert(STEEMIT_IRREVERSIBLE_THRESHOLD >
+                              0, "irreversible threshold must be nonzero");
 
-                    static_assert(STEEMIT_IRREVERSIBLE_THRESHOLD >
-                                  0, "irreversible threshold must be nonzero");
+                // 1 1 1 2 2 2 2 2 2 2 -> 2     .7*10 = 7
+                // 1 1 1 1 1 1 1 2 2 2 -> 1
+                // 3 3 3 3 3 3 3 3 3 3 -> 3
 
-                    // 1 1 1 2 2 2 2 2 2 2 -> 2     .7*10 = 7
-                    // 1 1 1 1 1 1 1 2 2 2 -> 1
-                    // 3 3 3 3 3 3 3 3 3 3 -> 3
+                size_t offset = ((STEEMIT_100_PERCENT -
+                                  STEEMIT_IRREVERSIBLE_THRESHOLD) *
+                                 wit_objs.size() / STEEMIT_100_PERCENT);
 
-                    size_t offset = ((STEEMIT_100_PERCENT -
-                                      STEEMIT_IRREVERSIBLE_THRESHOLD) *
-                                     wit_objs.size() / STEEMIT_100_PERCENT);
-
-                    std::nth_element(wit_objs.begin(),
-                            wit_objs.begin() + offset, wit_objs.end(),
-                            [](const witness_object *a, const witness_object *b) {
-                                return a->last_confirmed_block_num <
-                                       b->last_confirmed_block_num;
-                            });
-
-                    uint32_t new_last_irreversible_block_num = wit_objs[offset]->last_confirmed_block_num;
-
-                    if (new_last_irreversible_block_num >
-                        dpo.last_irreversible_block_num) {
-                        modify(dpo, [&](dynamic_global_property_object &_dpo) {
-                            _dpo.last_irreversible_block_num = new_last_irreversible_block_num;
+                std::nth_element(wit_objs.begin(),
+                        wit_objs.begin() + offset, wit_objs.end(),
+                        [](const witness_object *a, const witness_object *b) {
+                            return a->last_confirmed_block_num <
+                                   b->last_confirmed_block_num;
                         });
-                    }
+
+                uint32_t new_last_irreversible_block_num = wit_objs[offset]->last_confirmed_block_num;
+
+                if (new_last_irreversible_block_num >
+                    dpo.last_irreversible_block_num) {
+                    modify(dpo, [&](dynamic_global_property_object &_dpo) {
+                        _dpo.last_irreversible_block_num = new_last_irreversible_block_num;
+                    });
                 }
 
                 commit(dpo.last_irreversible_block_num);

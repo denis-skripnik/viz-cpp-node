@@ -31,12 +31,9 @@
 #define STEEMIT_BLOCKS_PER_YEAR                 (365*24*60*60/STEEMIT_BLOCK_INTERVAL)
 #define STEEMIT_BLOCKS_PER_DAY                  (24*60*60/STEEMIT_BLOCK_INTERVAL)
 #define STEEMIT_MAX_WITNESS_MISSED_BLOCKS       200
-#define STEEMIT_START_VESTING_BLOCK             (STEEMIT_BLOCKS_PER_DAY * 49)
-#define STEEMIT_START_MINER_VOTING_BLOCK        (60*10/STEEMIT_BLOCK_INTERVAL)
 
 #define STEEMIT_INIT_MINER_NAME                 "viz"
 #define STEEMIT_NUM_INIT_MINERS                 1
-#define STEEMIT_INIT_TIME                       (fc::time_point_sec());
 #define STEEMIT_MAX_VOTED_WITNESSES             10
 #define STEEMIT_MAX_MINER_WITNESSES             0
 #define STEEMIT_MAX_RUNNER_WITNESSES            11
@@ -56,13 +53,10 @@
 #define STEEMIT_REVERSE_AUCTION_WINDOW_SECONDS  (60*30) /// 30 minutes
 #define STEEMIT_MIN_VOTE_INTERVAL_SEC           1
 #define STEEMIT_MAX_COMMENT_BENEFICIARIES       64
-#define STEEMIT_VOTE_POWER_RATE					100
+#define STEEMIT_VOTE_POWER_RATE					1
 
 #define STEEMIT_MIN_ROOT_COMMENT_INTERVAL       (fc::seconds(1))
 #define STEEMIT_MIN_REPLY_INTERVAL              (fc::seconds(1))
-#define STEEMIT_POST_AVERAGE_WINDOW             (60*60*24u) // 1 day
-#define STEEMIT_POST_MAX_BANDWIDTH              (4*STEEMIT_100_PERCENT) // 2 posts per 1 days, average 1 every 12 hours
-#define STEEMIT_POST_WEIGHT_CONSTANT            (uint64_t(STEEMIT_POST_MAX_BANDWIDTH) * STEEMIT_POST_MAX_BANDWIDTH)
 
 #define STEEMIT_MAX_ACCOUNT_WITNESS_VOTES       2
 
@@ -76,11 +70,6 @@
 #define STEEMIT_VESTING_FUND_PERCENT            (40*STEEMIT_1_PERCENT) //40% of inflation
 #define STEEMIT_COMMITTEE_FUND_PERCENT          (15*STEEMIT_1_PERCENT) //15% of inflation
 
-#define STEEMIT_MINER_PAY_PERCENT               (STEEMIT_1_PERCENT) // 1%
-#define STEEMIT_MIN_RATION                      100000
-#define STEEMIT_MAX_RATION_DECAY_RATE           (1000000)
-#define STEEMIT_FREE_TRANSACTIONS_WITH_NEW_ACCOUNT 100
-
 #define STEEMIT_BANDWIDTH_AVERAGE_WINDOW_SECONDS (60*60*24*7) ///< 1 week
 #define STEEMIT_BANDWIDTH_PRECISION             1000000ll ///< 1 million
 #define STEEMIT_MAX_COMMENT_DEPTH               0xfff0 // 64k - 16
@@ -91,53 +80,13 @@
 #define GOLOS_CREATE_ACCOUNT_DELEGATION_TIME        (fc::days(30))
 #define GOLOS_MIN_DELEGATION                        1
 
-#define STEEMIT_MINING_REWARD                   asset( 666, STEEM_SYMBOL )
 #define STEEMIT_EQUIHASH_N                      140
 #define STEEMIT_EQUIHASH_K                      6
-
-#define STEEMIT_MIN_CONTENT_REWARD              asset( 1500, STEEM_SYMBOL )
-#define STEEMIT_MIN_CURATE_REWARD               asset( 500, STEEM_SYMBOL )
-#define STEEMIT_MIN_PRODUCER_REWARD             STEEMIT_MINING_REWARD
-#define STEEMIT_MIN_POW_REWARD                  STEEMIT_MINING_REWARD
 
 #define STEEMIT_ACTIVE_CHALLENGE_FEE            asset( 2000, STEEM_SYMBOL )
 #define STEEMIT_OWNER_CHALLENGE_FEE             asset( 30000, STEEM_SYMBOL )
 #define STEEMIT_ACTIVE_CHALLENGE_COOLDOWN       fc::days(1)
 #define STEEMIT_OWNER_CHALLENGE_COOLDOWN        fc::days(1)
-
-// 5ccc e802 de5f
-// int(expm1( log1p( 1 ) / BLOCKS_PER_YEAR ) * 2**STEEMIT_APR_PERCENT_SHIFT_PER_BLOCK / 100000 + 0.5)
-// we use 100000 here instead of 10000 because we end up creating an additional 9x for vesting
-#define STEEMIT_APR_PERCENT_MULTIPLY_PER_BLOCK          ( (uint64_t( 0x5ccc ) << 0x20) \
-                                                        | (uint64_t( 0xe802 ) << 0x10) \
-                                                        | (uint64_t( 0xde5f )        ) \
-                                                        )
-// chosen to be the maximal value such that STEEMIT_APR_PERCENT_MULTIPLY_PER_BLOCK * 2**64 * 100000 < 2**128
-#define STEEMIT_APR_PERCENT_SHIFT_PER_BLOCK             87
-
-#define STEEMIT_APR_PERCENT_MULTIPLY_PER_ROUND          ( (uint64_t( 0x79cc ) << 0x20 ) \
-                                                        | (uint64_t( 0xf5c7 ) << 0x10 ) \
-                                                        | (uint64_t( 0x3480 )         ) \
-                                                        )
-
-#define STEEMIT_APR_PERCENT_SHIFT_PER_ROUND             83
-
-// We have different constants for hourly rewards
-// i.e. hex(int(math.expm1( math.log1p( 1 ) / HOURS_PER_YEAR ) * 2**STEEMIT_APR_PERCENT_SHIFT_PER_HOUR / 100000 + 0.5))
-#define STEEMIT_APR_PERCENT_MULTIPLY_PER_HOUR           ( (uint64_t( 0x6cc1 ) << 0x20) \
-                                                        | (uint64_t( 0x39a1 ) << 0x10) \
-                                                        | (uint64_t( 0x5cbd )        ) \
-                                                        )
-
-// chosen to be the maximal value such that STEEMIT_APR_PERCENT_MULTIPLY_PER_HOUR * 2**64 * 100000 < 2**128
-#define STEEMIT_APR_PERCENT_SHIFT_PER_HOUR              77
-
-// These constants add up to GRAPHENE_100_PERCENT.  Each GRAPHENE_1_PERCENT is equivalent to 1% per year APY
-// *including the corresponding 9x vesting rewards*
-#define STEEMIT_CURATE_APR_PERCENT              1937
-#define STEEMIT_CONTENT_APR_PERCENT             5813
-#define STEEMIT_PRODUCER_APR_PERCENT             750
-#define STEEMIT_POW_APR_PERCENT                  750
 
 #define STEEMIT_MIN_ACCOUNT_NAME_LENGTH          2
 #define STEEMIT_CREATE_MIN_ACCOUNT_NAME_LENGTH   3
@@ -151,28 +100,13 @@
 #define STEEMIT_MAX_SHARE_SUPPLY                int64_t(1000000000000000ll)
 #define STEEMIT_MAX_SIG_CHECK_DEPTH             2
 
-#define STEEMIT_MIN_TRANSACTION_SIZE_LIMIT      1024
 #define STEEMIT_SECONDS_PER_YEAR                (uint64_t(60*60*24*365ll))
 
 #define STEEMIT_MAX_TRANSACTION_SIZE            (1024*64)
 #define STEEMIT_MIN_BLOCK_SIZE_LIMIT            (STEEMIT_MAX_TRANSACTION_SIZE)
 #define STEEMIT_MAX_BLOCK_SIZE                  (STEEMIT_MAX_TRANSACTION_SIZE*STEEMIT_BLOCK_INTERVAL*2000)
-#define STEEMIT_BLOCKS_PER_HOUR                 (60*60/STEEMIT_BLOCK_INTERVAL)
 
-#define STEEMIT_MIN_UNDO_HISTORY                10
 #define STEEMIT_MAX_UNDO_HISTORY                10000
-
-#define STEEMIT_MIN_TRANSACTION_EXPIRATION_LIMIT (STEEMIT_BLOCK_INTERVAL * 5) // 5 transactions per block
-#define STEEMIT_BLOCKCHAIN_PRECISION            uint64_t( 1000 )
-
-#define STEEMIT_BLOCKCHAIN_PRECISION_DIGITS     3
-#define STEEMIT_MAX_INSTANCE_ID                 (uint64_t(-1)>>16)
-/** NOTE: making this a power of 2 (say 2^15) would greatly accelerate fee calcs */
-#define STEEMIT_MAX_AUTHORITY_MEMBERSHIP        10
-#define STEEMIT_MAX_ASSET_WHITELIST_AUTHORITIES 10
-#define STEEMIT_MAX_URL_LENGTH                  127
-
-#define GRAPHENE_CURRENT_DB_VERSION             "GPH2.4"
 
 #define STEEMIT_IRREVERSIBLE_THRESHOLD          (75 * STEEMIT_1_PERCENT)
 
@@ -180,8 +114,6 @@
  *  Reserved Account IDs with special meaning
  */
 ///@{
-/// Represents the current witnesses
-#define STEEMIT_MINER_ACCOUNT                   "miners"
 /// Represents the canonical account with NO authority (nobody can access funds in null account)
 #define STEEMIT_NULL_ACCOUNT                    "null"
 /// Represents the canonical account with NO authority (nobody can access funds in committee account, all income transfers going to committee fund)

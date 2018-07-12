@@ -398,14 +398,6 @@ namespace golos { namespace chain {
 
             share_type claim_rshare_reward(share_type rshares);
 
-            asset get_content_reward() const;
-
-            asset get_producer_reward();
-
-            asset get_curation_reward() const;
-
-            asset get_pow_reward() const;
-
             time_point_sec head_block_time() const;
 
             uint32_t head_block_num() const;

@@ -1148,19 +1148,11 @@ namespace golos { namespace chain {
                 });
             }
             /// POW reward depends upon whether we are before or after MINER_VOTING kicks in
-            asset pow_reward = db.get_pow_reward();
-            if (db.head_block_num() < STEEMIT_START_MINER_VOTING_BLOCK) {
-                pow_reward.amount *= STEEMIT_MAX_WITNESSES;
-            }
-            db.burn_asset(pow_reward);
+            asset pow_reward = asset(0, STEEM_SYMBOL);
 
             /// pay the witness that includes this POW
             const auto &inc_witness = db.get_account(dgp.current_witness);
-            if (db.head_block_num() < STEEMIT_START_MINER_VOTING_BLOCK) {
-                db.adjust_balance(inc_witness, pow_reward);
-            } else {
-                db.create_vesting(inc_witness, pow_reward);
-            }
+            db.create_vesting(inc_witness, pow_reward);
         }
 
         void pow_evaluator::do_apply(const pow_operation &o) {
