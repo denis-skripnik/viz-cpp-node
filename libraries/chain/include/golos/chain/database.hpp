@@ -393,8 +393,6 @@ namespace golos { namespace chain {
 
             void expire_escrow_ratification();
 
-            void process_decline_voting_rights();
-
             share_type claim_rshare_reward(share_type rshares);
 
             time_point_sec head_block_time() const;

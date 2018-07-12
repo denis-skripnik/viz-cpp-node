@@ -427,18 +427,6 @@ namespace mongo_db {
 
     }
 
-    auto state_writer::operator()(const decline_voting_rights_operation& op) -> result_type {
-
-    }
-
-    auto state_writer::operator()(const reset_account_operation& op) -> result_type {
-
-    }
-
-    auto state_writer::operator()(const set_reset_account_operation& op) -> result_type {
-
-    }
-
     auto state_writer::operator()(const delegate_vesting_shares_operation& op) -> result_type {
 
     }

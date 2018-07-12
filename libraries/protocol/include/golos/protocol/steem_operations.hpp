@@ -681,47 +681,6 @@ namespace golos { namespace protocol {
 
 
         /**
-         *  This operation allows recovery_accoutn to change account_to_reset's owner authority to
-         *  new_owner_authority after 60 days of inactivity.
-         */
-        struct reset_account_operation : public base_operation {
-            account_name_type reset_account;
-            account_name_type account_to_reset;
-            authority new_owner_authority;
-
-            void get_required_active_authorities(flat_set<account_name_type> &a) const {
-                a.insert(reset_account);
-            }
-
-            void validate() const;
-        };
-
-        /**
-         * This operation allows 'account' owner to control which account has the power
-         * to execute the 'reset_account_operation' after 60 days.
-         */
-        struct set_reset_account_operation : public base_operation {
-            account_name_type account;
-            account_name_type current_reset_account;
-            account_name_type reset_account;
-
-            void validate() const;
-
-            void get_required_owner_authorities(flat_set<account_name_type> &a) const {
-                if (current_reset_account.size()) {
-                    a.insert(account);
-                }
-            }
-
-            void get_required_posting_authorities(flat_set<account_name_type> &a) const {
-                if (!current_reset_account.size()) {
-                    a.insert(account);
-                }
-            }
-        };
-
-
-        /**
          * Each account lists another account as their recovery account.
          * The recovery account has the ability to create account_recovery_requests
          * for the account to recover. An account can change their recovery account
@@ -792,18 +751,6 @@ namespace golos { namespace protocol {
             void validate() const;
         };
 
-
-        struct decline_voting_rights_operation : public base_operation {
-            account_name_type account;
-            bool decline = true;
-
-            void get_required_owner_authorities(flat_set<account_name_type> &a) const {
-                a.insert(account);
-            }
-
-            void validate() const;
-        };
-
 /**
  * Delegate vesting shares from one account to the other. The vesting shares are still owned
  * by the original account, but content voting rights and bandwidth allocation are transferred
@@ -830,10 +777,6 @@ namespace golos { namespace protocol {
 FC_REFLECT((golos::protocol::transfer_to_savings_operation), (from)(to)(amount)(memo))
 FC_REFLECT((golos::protocol::transfer_from_savings_operation), (from)(request_id)(to)(amount)(memo))
 FC_REFLECT((golos::protocol::cancel_transfer_from_savings_operation), (from)(request_id))
-
-FC_REFLECT((golos::protocol::reset_account_operation), (reset_account)(account_to_reset)(new_owner_authority))
-FC_REFLECT((golos::protocol::set_reset_account_operation), (account)(current_reset_account)(reset_account))
-
 
 FC_REFLECT((golos::protocol::report_over_production_operation), (reporter)(first_block)(second_block))
 FC_REFLECT((golos::protocol::pow2), (input)(pow_summary))
@@ -888,6 +831,5 @@ FC_REFLECT((golos::protocol::prove_authority_operation), (challenged)(require_ow
 FC_REFLECT((golos::protocol::request_account_recovery_operation), (recovery_account)(account_to_recover)(new_owner_authority)(extensions));
 FC_REFLECT((golos::protocol::recover_account_operation), (account_to_recover)(new_owner_authority)(recent_owner_authority)(extensions));
 FC_REFLECT((golos::protocol::change_recovery_account_operation), (account_to_recover)(new_recovery_account)(extensions));
-FC_REFLECT((golos::protocol::decline_voting_rights_operation), (account)(decline));
 FC_REFLECT((golos::protocol::delegate_vesting_shares_operation), (delegator)(delegatee)(vesting_shares));
 FC_REFLECT((golos::protocol::chain_properties_update_operation), (owner)(props));

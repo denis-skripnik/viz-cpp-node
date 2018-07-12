@@ -962,8 +962,6 @@ namespace golos { namespace wallet {
              */
             string decrypt_memo( string memo );
 
-            annotated_signed_transaction decline_voting_rights( string account, bool decline, bool broadcast );
-
             // Private message
             vector<extended_message_object> get_inbox(
                     const std::string& to, time_point newest, uint16_t limit, std::uint64_t offset);
@@ -1054,7 +1052,6 @@ FC_API( golos::wallet::wallet_api,
                 (cancel_transfer_from_savings)
                 (get_encrypted_memo)
                 (decrypt_memo)
-                (decline_voting_rights)
 
                 /// helper api
                 (begin_builder_transaction)

@@ -44,9 +44,6 @@ namespace mongo_db {
         result_type operator()(const transfer_from_savings_operation& op);
         result_type operator()(const cancel_transfer_from_savings_operation&op);
         result_type operator()(const custom_binary_operation& op);
-        result_type operator()(const decline_voting_rights_operation& op);
-        result_type operator()(const reset_account_operation& op);
-        result_type operator()(const set_reset_account_operation& op);
 //
         result_type operator()(const delegate_vesting_shares_operation& op);
         result_type operator()(const account_create_operation& op);

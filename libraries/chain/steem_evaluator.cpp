@@ -1368,50 +1368,6 @@ namespace golos { namespace chain {
             });
         }
 
-        void decline_voting_rights_evaluator::do_apply(const decline_voting_rights_operation &o) {
-            database &_db = db();
-
-            const auto &account = _db.get_account(o.account);
-            const auto &request_idx = _db.get_index<decline_voting_rights_request_index>().indices().get<by_account>();
-            auto itr = request_idx.find(account.id);
-
-            if (o.decline) {
-                FC_ASSERT(itr ==
-                          request_idx.end(), "Cannot create new request because one already exists.");
-
-                _db.create<decline_voting_rights_request_object>([&](decline_voting_rights_request_object &req) {
-                    req.account = account.id;
-                    req.effective_date = _db.head_block_time() +
-                                         STEEMIT_OWNER_AUTH_RECOVERY_PERIOD;
-                });
-            } else {
-                FC_ASSERT(itr !=
-                          request_idx.end(), "Cannot cancel the request because it does not exist.");
-                _db.remove(*itr);
-            }
-        }
-
-        void reset_account_evaluator::do_apply(const reset_account_operation &op) {
-            FC_ASSERT(false, "Reset Account Operation is currently disabled.");
-        }
-
-        void set_reset_account_evaluator::do_apply(const set_reset_account_operation &op) {
-            FC_ASSERT(false, "Set Reset Account Operation is currently disabled.");
-/*
-            database& _db = db();
-            const auto& acnt = _db.get_account(op.account);
-            _db.get_account(op.reset_account);
-
-            FC_ASSERT(acnt.reset_account == op.current_reset_account,
-                "Current reset account does not match reset account on account.");
-            FC_ASSERT(acnt.reset_account != op.reset_account, "Reset account must change");
-
-            _db.modify(acnt, [&](account_object& a) {
-                a.reset_account = op.reset_account;
-            });
-*/
-        }
-
         void delegate_vesting_shares_evaluator::do_apply(const delegate_vesting_shares_operation& op) {
             const auto& delegator = _db.get_account(op.delegator);
             const auto& delegatee = _db.get_account(op.delegatee);

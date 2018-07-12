@@ -91,23 +91,6 @@ namespace golos {
         };
 
 
-        class decline_voting_rights_request_object
-                : public object<decline_voting_rights_request_object_type, decline_voting_rights_request_object> {
-        public:
-            template<typename Constructor, typename Allocator>
-            decline_voting_rights_request_object(Constructor &&c, allocator <Allocator> a) {
-                c(*this);
-            }
-
-            decline_voting_rights_request_object() {
-            }
-
-            id_type id;
-
-            account_id_type account;
-            time_point_sec effective_date;
-        };
-
         struct by_withdraw_route;
         struct by_destination;
         typedef multi_index_container <
@@ -213,30 +196,6 @@ namespace golos {
         allocator <savings_withdraw_object>
         >
         savings_withdraw_index;
-
-        struct by_account;
-        struct by_effective_date;
-        typedef multi_index_container <
-        decline_voting_rights_request_object,
-        indexed_by<
-                ordered_unique < tag <
-                by_id>, member<decline_voting_rights_request_object, decline_voting_rights_request_id_type, &decline_voting_rights_request_object::id>>,
-        ordered_unique <tag<by_account>,
-        member<decline_voting_rights_request_object, account_id_type, &decline_voting_rights_request_object::account>
-        >,
-        ordered_unique <tag<by_effective_date>,
-        composite_key<decline_voting_rights_request_object,
-                member <
-                decline_voting_rights_request_object, time_point_sec, &decline_voting_rights_request_object::effective_date>,
-        member<decline_voting_rights_request_object, account_id_type, &decline_voting_rights_request_object::account>
-        >,
-        composite_key_compare <std::less<time_point_sec>, std::less<account_id_type>>
-        >
-        >,
-        allocator <decline_voting_rights_request_object>
-        >
-        decline_voting_rights_request_index;
-
     }
 } // golos::chain
 
@@ -257,7 +216,3 @@ FC_REFLECT((golos::chain::escrow_object),
                 (steem_balance)(pending_fee)
                 (to_approved)(agent_approved)(disputed))
 CHAINBASE_SET_INDEX_TYPE(golos::chain::escrow_object, golos::chain::escrow_index)
-
-FC_REFLECT((golos::chain::decline_voting_rights_request_object),
-        (id)(account)(effective_date))
-CHAINBASE_SET_INDEX_TYPE(golos::chain::decline_voting_rights_request_object, golos::chain::decline_voting_rights_request_index)

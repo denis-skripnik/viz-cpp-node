@@ -2216,35 +2216,6 @@ modify(null_account, [&](account_object &a) {
             }
         }
 
-        void database::process_decline_voting_rights() {
-            const auto &request_idx = get_index<decline_voting_rights_request_index>().indices().get<by_effective_date>();
-            auto itr = request_idx.begin();
-
-            while (itr != request_idx.end() &&
-                   itr->effective_date <= head_block_time()) {
-                const auto &account = get(itr->account);
-
-                /// remove all current votes
-                std::array<share_type,
-                        STEEMIT_MAX_PROXY_RECURSION_DEPTH + 1> delta;
-                delta[0] = -account.vesting_shares.amount;
-                for (int i = 0; i < STEEMIT_MAX_PROXY_RECURSION_DEPTH; ++i) {
-                    delta[i + 1] = -account.proxied_vsf_votes[i];
-                }
-                adjust_proxied_witness_votes(account, delta);
-
-                clear_witness_votes(account);
-
-                modify(get(itr->account), [&](account_object &a) {
-                    a.can_vote = false;
-                    a.proxy = STEEMIT_PROXY_TO_SELF_ACCOUNT;
-                });
-
-                remove(*itr);
-                itr = request_idx.begin();
-            }
-        }
-
         time_point_sec database::head_block_time() const {
             return get_dynamic_global_properties().time;
         }
@@ -2290,9 +2261,6 @@ modify(null_account, [&](account_object &a) {
             _my->_evaluator_registry.register_evaluator<transfer_to_savings_evaluator>();
             _my->_evaluator_registry.register_evaluator<transfer_from_savings_evaluator>();
             _my->_evaluator_registry.register_evaluator<cancel_transfer_from_savings_evaluator>();
-            _my->_evaluator_registry.register_evaluator<decline_voting_rights_evaluator>();
-            _my->_evaluator_registry.register_evaluator<reset_account_evaluator>();
-            _my->_evaluator_registry.register_evaluator<set_reset_account_evaluator>();
             _my->_evaluator_registry.register_evaluator<delegate_vesting_shares_evaluator>();
             _my->_evaluator_registry.register_evaluator<proposal_create_evaluator>();
             _my->_evaluator_registry.register_evaluator<proposal_update_evaluator>();
@@ -2333,7 +2301,6 @@ modify(null_account, [&](account_object &a) {
             add_core_index<change_recovery_account_request_index>(*this);
             add_core_index<escrow_index>(*this);
             add_core_index<savings_withdraw_index>(*this);
-            add_core_index<decline_voting_rights_request_index>(*this);
             add_core_index<vesting_delegation_index>(*this);
             add_core_index<vesting_delegation_expiration_index>(*this);
             add_core_index<account_metadata_index>(*this);
@@ -2850,7 +2817,6 @@ modify(null_account, [&](account_object &a) {
 
                 account_recovery_processing();
                 expire_escrow_ratification();
-                process_decline_voting_rights();
 
                 process_hardforks();
 

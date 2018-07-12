@@ -271,10 +271,6 @@ if( options.count(name) ) { \
             impacted.insert(op.from);
         }
 
-        void operator()(const decline_voting_rights_operation& op) {
-            impacted.insert(op.account);
-        }
-
         void operator()(const comment_benefactor_reward_operation& op) {
             impacted.insert(op.benefactor);
             impacted.insert(op.author);

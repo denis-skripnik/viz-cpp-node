@@ -413,35 +413,6 @@ namespace mongo_db {
         return body;
     }
 
-    auto operation_writer::operator()(const decline_voting_rights_operation& op) -> result_type {
-        result_type body;
-
-        format_value(body, "account", op.account);
-        format_value(body, "decline", op.decline);
-
-        return body;
-    }
-
-    auto operation_writer::operator()(const reset_account_operation& op) -> result_type {
-        result_type body;
-
-        format_value(body, "reset_account", op.reset_account);
-        format_value(body, "account_to_reset", op.account_to_reset);
-        format_authority(body, "new_owner_authority", op.new_owner_authority);
-
-        return body;
-    }
-
-    auto operation_writer::operator()(const set_reset_account_operation& op) -> result_type {
-        result_type body;
-
-        format_value(body, "account", op.account);
-        format_value(body, "current_reset_account", op.current_reset_account);
-        format_value(body, "reset_account", op.reset_account);
-
-        return body;
-    }
-
 //
     auto operation_writer::operator()(const delegate_vesting_shares_operation& op) -> result_type {
         result_type body;
