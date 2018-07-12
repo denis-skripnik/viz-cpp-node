@@ -2248,7 +2248,6 @@ modify(null_account, [&](account_object &a) {
             _my->_evaluator_registry.register_evaluator<account_witness_proxy_evaluator>();
             _my->_evaluator_registry.register_evaluator<custom_json_evaluator>();
             _my->_evaluator_registry.register_evaluator<pow2_evaluator>();
-            _my->_evaluator_registry.register_evaluator<report_over_production_evaluator>();
             _my->_evaluator_registry.register_evaluator<challenge_authority_evaluator>();
             _my->_evaluator_registry.register_evaluator<prove_authority_evaluator>();
             _my->_evaluator_registry.register_evaluator<request_account_recovery_evaluator>();

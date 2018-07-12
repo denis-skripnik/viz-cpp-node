@@ -557,29 +557,6 @@ namespace golos { namespace protocol {
             }
         };
 
-
-        /**
-         * This operation is used to report a miner who signs two blocks
-         * at the same time. To be valid, the violation must be reported within
-         * STEEMIT_MAX_WITNESSES blocks of the head block (1 round) and the
-         * producer must be in the ACTIVE witness set.
-         *
-         * Users not in the ACTIVE witness set should not have to worry about their
-         * key getting compromised and being used to produced multiple blocks so
-         * the attacker can report it and steel their vesting steem.
-         *
-         * The result of the operation is to transfer the full VESTING STEEM balance
-         * of the block producer to the reporter.
-         */
-        struct report_over_production_operation : public base_operation {
-            account_name_type reporter;
-            signed_block_header first_block;
-            signed_block_header second_block;
-
-            void validate() const;
-        };
-
-
         /**
          * All account recovery requests come from a listed recovery account. This
          * is secure based on the assumption that only a trusted account should be
@@ -778,7 +755,6 @@ FC_REFLECT((golos::protocol::transfer_to_savings_operation), (from)(to)(amount)(
 FC_REFLECT((golos::protocol::transfer_from_savings_operation), (from)(request_id)(to)(amount)(memo))
 FC_REFLECT((golos::protocol::cancel_transfer_from_savings_operation), (from)(request_id))
 
-FC_REFLECT((golos::protocol::report_over_production_operation), (reporter)(first_block)(second_block))
 FC_REFLECT((golos::protocol::pow2), (input)(pow_summary))
 FC_REFLECT((golos::protocol::pow2_input), (worker_account)(prev_block)(nonce))
 FC_REFLECT((golos::protocol::equihash_pow), (input)(proof)(prev_block)(pow_summary))

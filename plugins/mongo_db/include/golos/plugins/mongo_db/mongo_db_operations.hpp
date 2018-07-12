@@ -26,7 +26,6 @@ namespace mongo_db {
         result_type operator()(const account_witness_vote_operation& op);
         result_type operator()(const account_witness_proxy_operation& op);
         result_type operator()(const custom_operation& op);
-        result_type operator()(const report_over_production_operation& op);
         result_type operator()(const delete_comment_operation& op);
         result_type operator()(const custom_json_operation& op);
         result_type operator()(const set_withdraw_vesting_route_operation& op);

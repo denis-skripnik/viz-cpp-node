@@ -185,27 +185,6 @@ namespace mongo_db {
         return body;
     }
 
-    auto operation_writer::operator()(const report_over_production_operation& op) -> result_type {
-        result_type body;
-
-        document doc1;
-        format_value(doc1, "id", op.first_block.id().str());
-        format_value(doc1, "timestamp", op.first_block.timestamp);
-        format_value(doc1, "witness", op.first_block.witness);
-
-        document doc2;
-        format_value(doc2, "id", op.second_block.id().str());
-        format_value(doc2, "timestamp", op.first_block.timestamp);
-        format_value(doc2, "witness", op.second_block.witness);
-
-        format_value(body, "reporter", op.reporter);
-
-        body << "first_block" << doc1;
-        body << "second_block" << doc2;
-
-        return body;
-    }
-
     auto operation_writer::operator()(const delete_comment_operation& op) -> result_type {
         result_type body;
 

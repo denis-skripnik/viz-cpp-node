@@ -25,7 +25,6 @@ namespace golos { namespace chain {
         DEFINE_EVALUATOR(vote)
         DEFINE_EVALUATOR(custom_json)
         DEFINE_EVALUATOR(pow2)
-        DEFINE_EVALUATOR(report_over_production)
         DEFINE_EVALUATOR(escrow_transfer)
         DEFINE_EVALUATOR(escrow_approve)
         DEFINE_EVALUATOR(escrow_dispute)

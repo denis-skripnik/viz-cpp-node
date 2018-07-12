@@ -358,10 +358,6 @@ namespace mongo_db {
 
     }
 
-    auto state_writer::operator()(const report_over_production_operation& op) -> result_type {
-
-    }
-
     auto state_writer::operator()(const custom_json_operation& op) -> result_type {
 
     }

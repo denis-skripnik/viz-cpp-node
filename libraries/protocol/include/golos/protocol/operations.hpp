@@ -24,8 +24,6 @@ namespace golos { namespace protocol {
                 account_witness_vote_operation,
                 account_witness_proxy_operation,
 
-                report_over_production_operation,
-
                 delete_comment_operation,
                 custom_json_operation,
                 set_withdraw_vesting_route_operation,
