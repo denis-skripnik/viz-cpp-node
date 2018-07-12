@@ -212,10 +212,6 @@ if( options.count(name) ) { \
             impacted.insert(op.proxy);
         }
 
-        void operator()(const pow_operation& op) {
-            impacted.insert(op.worker_account);
-        }
-
         void operator()(const fill_vesting_withdraw_operation& op) {
             impacted.insert(op.from_account);
             impacted.insert(op.to_account);

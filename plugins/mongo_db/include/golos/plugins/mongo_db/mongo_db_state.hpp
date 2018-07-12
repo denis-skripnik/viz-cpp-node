@@ -31,7 +31,6 @@ namespace mongo_db {
         result_type operator()(const witness_update_operation& op);
         result_type operator()(const account_witness_vote_operation& op);
         result_type operator()(const account_witness_proxy_operation& op);
-        result_type operator()(const pow_operation& op);
         result_type operator()(const custom_operation& op);
         result_type operator()(const report_over_production_operation& op);
         result_type operator()(const delete_comment_operation& op);

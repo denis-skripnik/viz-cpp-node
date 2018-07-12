@@ -512,39 +512,6 @@ namespace golos { namespace protocol {
         };
 
 
-        struct pow {
-            public_key_type worker;
-            digest_type input;
-            signature_type signature;
-            digest_type work;
-
-            void create(const fc::ecc::private_key &w, const digest_type &i);
-
-            void validate() const;
-        };
-
-
-        struct pow_operation : public base_operation {
-            account_name_type worker_account;
-            block_id_type block_id;
-            uint64_t nonce = 0;
-            pow work;
-            chain_properties props;
-
-            void validate() const;
-
-            fc::sha256 work_input() const;
-
-            const account_name_type &get_worker_account() const {
-                return worker_account;
-            }
-
-            /** there is no need to verify authority, the proof of work is sufficient */
-            void get_required_active_authorities(flat_set<account_name_type> &a) const {
-            }
-        };
-
-
         struct pow2_input {
             account_name_type worker_account;
             block_id_type prev_block;
@@ -869,7 +836,6 @@ FC_REFLECT((golos::protocol::set_reset_account_operation), (account)(current_res
 
 
 FC_REFLECT((golos::protocol::report_over_production_operation), (reporter)(first_block)(second_block))
-FC_REFLECT((golos::protocol::pow), (worker)(input)(signature)(work))
 FC_REFLECT((golos::protocol::pow2), (input)(pow_summary))
 FC_REFLECT((golos::protocol::pow2_input), (worker_account)(prev_block)(nonce))
 FC_REFLECT((golos::protocol::equihash_pow), (input)(proof)(prev_block)(pow_summary))
@@ -881,7 +847,6 @@ FC_REFLECT(
     (create_account_delegation_time)(min_delegation))
 
 FC_REFLECT_TYPENAME((golos::protocol::pow2_work))
-FC_REFLECT((golos::protocol::pow_operation), (worker_account)(block_id)(nonce)(work)(props))
 FC_REFLECT((golos::protocol::pow2_operation), (work)(new_owner_key)(props))
 
 FC_REFLECT((golos::protocol::account_create_operation),

@@ -221,20 +221,6 @@ namespace golos { namespace protocol {
             FC_ASSERT(fc::json::is_valid(json), "JSON Metadata not valid JSON");
         }
 
-        fc::sha256 pow_operation::work_input() const {
-            auto hash = fc::sha256::hash(block_id);
-            hash._hash[0] = nonce;
-            return fc::sha256::hash(hash);
-        }
-
-        void pow_operation::validate() const {
-            props.validate();
-            validate_account_name(worker_account);
-            FC_ASSERT(work_input() ==
-                      work.input, "Determninistic input does not match recorded input");
-            work.validate();
-        }
-
         struct pow2_operation_validate_visitor {
             typedef void result_type;
 
@@ -271,16 +257,6 @@ namespace golos { namespace protocol {
             }
         }
 
-        void pow::create(const fc::ecc::private_key &w, const digest_type &i) {
-            input = i;
-            signature = w.sign_compact(input, false);
-
-            auto sig_hash = fc::sha256::hash(signature);
-            public_key_type recover = fc::ecc::public_key(signature, sig_hash, false);
-
-            work = fc::sha256::hash(recover);
-        }
-
         void pow2::create(const block_id_type &prev, const account_name_type &account_name, uint64_t n) {
             input.worker_account = account_name;
             input.prev_block = prev;
@@ -305,16 +281,6 @@ namespace golos { namespace protocol {
             auto seed = fc::sha256::hash(input);
             proof = fc::equihash::proof::hash(STEEMIT_EQUIHASH_N, STEEMIT_EQUIHASH_K, seed);
             pow_summary = fc::sha256::hash(proof.inputs).approx_log_32();
-        }
-
-        void pow::validate() const {
-            FC_ASSERT(work != fc::sha256());
-            FC_ASSERT(
-                    public_key_type(fc::ecc::public_key(signature, input, false)) ==
-                    worker);
-            auto sig_hash = fc::sha256::hash(signature);
-            public_key_type recover = fc::ecc::public_key(signature, sig_hash, false);
-            FC_ASSERT(work == fc::sha256::hash(recover));
         }
 
         void pow2::validate() const {

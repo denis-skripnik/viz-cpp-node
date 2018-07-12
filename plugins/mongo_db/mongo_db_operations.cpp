@@ -170,23 +170,6 @@ namespace mongo_db {
         return body;
     }
 
-    auto operation_writer::operator()(const pow_operation& op) -> result_type {
-        result_type body;
-
-        format_value(body, "worker", (std::string)op.work.worker);
-        format_value(body, "input", op.work.input.str());
-        format_value(body, "signature", to_string(op.work.signature));
-        format_value(body, "work", op.work.work.str());
-
-        format_value(body, "block_id", op.block_id.str());
-        format_value(body, "worker_account", op.worker_account);
-        format_value(body, "nonce", op.nonce);
-
-        format_chain_properties(body, op.props);
-
-        return body;
-    }
-
     auto operation_writer::operator()(const custom_operation& op) -> result_type {
         result_type body;
 

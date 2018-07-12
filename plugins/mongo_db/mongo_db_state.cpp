@@ -355,10 +355,6 @@ namespace mongo_db {
 
     }
 
-    auto state_writer::operator()(const pow_operation& op) -> result_type {
-
-    }
-
     auto state_writer::operator()(const custom_operation& op) -> result_type {
 
     }
