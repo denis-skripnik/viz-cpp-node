@@ -163,7 +163,6 @@ namespace mongo_db {
             format_value(body, "lifetime_vote_count", account.lifetime_vote_count);
             format_value(body, "post_count", account.post_count);
 
-            format_value(body, "can_vote", account.can_vote);
             format_value(body, "voting_power", account.voting_power);
             format_value(body, "last_vote_time", account.last_vote_time);
 

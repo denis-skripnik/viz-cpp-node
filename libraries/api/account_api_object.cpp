@@ -13,7 +13,7 @@ account_api_object::account_api_object(const account_object& a, const golos::cha
         last_owner_proved(a.last_owner_proved), last_active_proved(a.last_active_proved),
         recovery_account(a.recovery_account), reset_account(a.reset_account),
         last_account_recovery(a.last_account_recovery), comment_count(a.comment_count),
-        lifetime_vote_count(a.lifetime_vote_count), post_count(a.post_count), can_vote(a.can_vote),
+        lifetime_vote_count(a.lifetime_vote_count), post_count(a.post_count),
         voting_power(a.voting_power), last_vote_time(a.last_vote_time),
         balance(a.balance), savings_balance(a.savings_balance),
         savings_withdraw_requests(a.savings_withdraw_requests),

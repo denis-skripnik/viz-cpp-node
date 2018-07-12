@@ -712,8 +712,6 @@ namespace golos { namespace chain {
             const auto &account = _db.get_account(o.account);
             FC_ASSERT(account.proxy != o.proxy, "Proxy must change.");
 
-            FC_ASSERT(account.can_vote, "Account has declined the ability to vote and cannot proxy votes.");
-
             /// remove all current votes
             std::array<share_type, STEEMIT_MAX_PROXY_RECURSION_DEPTH + 1> delta;
             delta[0] = -account.vesting_shares.amount;
@@ -764,9 +762,6 @@ namespace golos { namespace chain {
             FC_ASSERT(voter.proxy.size() ==
                       0, "A proxy is currently set, please clear the proxy before voting for a witness.");
 
-            if (o.approve)
-                FC_ASSERT(voter.can_vote, "Account has declined its voting rights.");
-
             const auto &witness = _db.get_witness(o.witness);
 
             const auto &by_account_witness_idx = _db.get_index<witness_vote_index>().indices().get<by_account_witness>();
@@ -809,8 +804,6 @@ namespace golos { namespace chain {
 
                 FC_ASSERT(!(voter.owner_challenged ||
                             voter.active_challenged), "Operation cannot be processed because the account is currently challenged.");
-
-                FC_ASSERT(voter.can_vote, "Voter has declined their voting rights.");
 
                 if (_db.calculate_discussion_payout_time(comment) ==
                     fc::time_point_sec::maximum()) {
