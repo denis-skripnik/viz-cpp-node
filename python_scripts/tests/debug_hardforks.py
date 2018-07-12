@@ -74,7 +74,7 @@ def run_steemd_tests( debug_node ):
       sys.stdout.flush()
       total_blocks = 0
       while( total_blocks % 100000 == 0 ):
-         total_blocks += debug_node.debug_push_blocks( 100000, skip_validate_invariants=True )
+         total_blocks += debug_node.debug_push_blocks( 100000 )
          print( 'Blocks Replayed: ' + str( total_blocks ) )
          sys.stdout.flush()
 

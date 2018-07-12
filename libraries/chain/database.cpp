@@ -283,7 +283,6 @@ namespace golos { namespace chain {
                         skip_witness_schedule_check |
                         skip_authority_check |
                         skip_validate_operations | /// no need to validate operations
-                        skip_validate_invariants |
                         skip_block_log;
 
                 with_strong_write_lock([&]() {
@@ -2670,8 +2669,7 @@ modify(null_account, [&](account_object &a) {
                                /* | skip_merkle_check While blockchain is being downloaded, txs need to be validated against block headers */
                                | skip_undo_history_check
                                | skip_witness_schedule_check
-                               | skip_validate_operations
-                               | skip_validate_invariants;
+                               | skip_validate_operations;
                     }
                 }
 

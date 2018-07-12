@@ -65,11 +65,10 @@ namespace golos { namespace chain {
                 skip_undo_history_check = 1 << 8,  ///< used while reindexing
                 skip_witness_schedule_check = 1 << 9,  ///< used while reindexing
                 skip_validate_operations = 1 << 10, ///< used prior to checkpoint, skips validate() call on transaction
-                skip_validate_invariants = 1 << 11, ///< used to skip database invariant check on block application
-                skip_undo_block = 1 << 12, ///< used to skip undo db on reindex
-                skip_block_log = 1 << 13,  ///< used to skip block logging on reindex
-                skip_apply_transaction = 1 << 14, ///< used to skip apply transaction
-                skip_database_locking = 1 << 15 ///< used to skip locking of database
+                skip_undo_block = 1 << 11, ///< used to skip undo db on reindex
+                skip_block_log = 1 << 12,  ///< used to skip block logging on reindex
+                skip_apply_transaction = 1 << 13, ///< used to skip apply transaction
+                skip_database_locking = 1 << 14 ///< used to skip locking of database
             };
 
             /**

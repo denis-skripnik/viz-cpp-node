@@ -38,8 +38,7 @@ public:
 
     uint32_t debug_push_blocks(
         std::string src_filename,
-        uint32_t count,
-        bool skip_validate_invariants = false
+        uint32_t count
     );
 
     uint32_t debug_push_json_blocks(
@@ -171,7 +170,7 @@ inline void plugin::plugin_impl::disconnect_signal( boost::signals2::connection&
 
 void plugin::plugin_impl::debug_update (
         std::function< void( golos::chain::database& ) > callback,
-        uint32_t skip 
+        uint32_t skip
     ) {
     // this was a method on database in Graphene
     golos::chain::database& db = database();
@@ -225,7 +224,7 @@ uint32_t plugin::plugin_impl::debug_generate_blocks(
     uint32_t count,
     uint32_t skip,
     uint32_t miss_blocks,
-    bool edit_if_needed 
+    bool edit_if_needed
 ) {
     uint32_t ret;
     if( count == 0 ) {
@@ -321,8 +320,7 @@ uint32_t plugin::plugin_impl::debug_generate_blocks_until(
 
 uint32_t plugin::plugin_impl::debug_push_blocks(
     std::string src_filename,
-    uint32_t count,
-    bool skip_validate_invariants
+    uint32_t count
 ) {
     if( count == 0 ) {
         return 0;
@@ -335,15 +333,11 @@ uint32_t plugin::plugin_impl::debug_push_blocks(
         !fc::is_directory(src_path) && !fc::is_directory(index_path)
     ) {
         ilog( "Loading ${n} from block_log ${fn}", ("n", count)("fn", src_filename) );
-        idump( (src_filename)(count)(skip_validate_invariants) );
+        idump( (src_filename)(count) );
         golos::chain::block_log log;
         log.open( src_path );
         uint32_t first_block = database().head_block_num()+1;
         uint32_t skip_flags = golos::chain::database::skip_nothing;
-
-        if( skip_validate_invariants ) {
-            skip_flags = skip_flags | golos::chain::database::skip_validate_invariants;
-        }
 
         for( uint32_t i=0; i<count; i++ ) {
             //fc::optional< chain::signed_block > block = log.read_block( log.get_block_pos( first_block + i ) );
@@ -497,9 +491,8 @@ DEFINE_PLUGIN_API ( debug_push_blocks ) {
     PLUGIN_API_VALIDATE_ARGS(
         (std::string,   src_filename)
         (uint32_t,      count)
-        (bool,          skip_validate_invariants, false)
     )
-    return my->debug_push_blocks( src_filename, count, skip_validate_invariants );
+    return my->debug_push_blocks( src_filename, count );
 }
 
 DEFINE_PLUGIN_API ( debug_push_json_blocks ) {
