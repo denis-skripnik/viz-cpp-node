@@ -1152,7 +1152,7 @@ namespace golos { namespace chain {
             if (db.head_block_num() < STEEMIT_START_MINER_VOTING_BLOCK) {
                 pow_reward.amount *= STEEMIT_MAX_WITNESSES;
             }
-            db.adjust_supply(pow_reward, true);
+            db.burn_asset(pow_reward);
 
             /// pay the witness that includes this POW
             const auto &inc_witness = db.get_account(dgp.current_witness);

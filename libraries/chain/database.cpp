@@ -676,18 +676,6 @@ namespace golos { namespace chain {
             return comment.cashout_time;
         }
 
-        void database::pay_fee(const account_object &account, asset fee) {
-            FC_ASSERT(fee.amount >=
-                      0); /// NOTE if this fails then validate() on some operation is probably wrong
-            if (fee.amount == 0) {
-                return;
-            }
-
-            FC_ASSERT(account.balance >= fee);
-            adjust_balance(account, -fee);
-            adjust_supply(-fee);
-        }
-
         bool database::update_account_bandwidth(const account_object &a, uint32_t trx_size) {
             const auto &props = get_dynamic_global_properties();
             bool has_bandwidth = true;
@@ -1687,20 +1675,20 @@ namespace golos { namespace chain {
                 auto converted_steem = null_account.vesting_shares *
                                        gpo.get_vesting_share_price();
 
-                modify(gpo, [&](dynamic_global_property_object &g) {
-                    g.total_vesting_shares -= null_account.vesting_shares;
-                    g.total_vesting_fund -= converted_steem;
-                });
+modify(gpo, [&](dynamic_global_property_object &g) {
+    g.total_vesting_shares -= null_account.vesting_shares;
+    g.total_vesting_fund -= converted_steem;
+});
 
-                modify(null_account, [&](account_object &a) {
-                    a.vesting_shares.amount = 0;
-                });
+modify(null_account, [&](account_object &a) {
+    a.vesting_shares.amount = 0;
+});
 
                 total_steem += converted_steem;
             }
 
             if (total_steem.amount > 0) {
-                adjust_supply(-total_steem);
+                burn_asset(-total_steem);
             }
         }
 
@@ -1736,7 +1724,7 @@ namespace golos { namespace chain {
             }
 
             if (total_steem.amount > 0) {
-                adjust_supply(-total_steem);
+                burn_asset(-total_steem);
                 modify(gpo, [&](dynamic_global_property_object &g) {
                     g.committee_supply += total_steem;
                 });
@@ -3350,20 +3338,12 @@ namespace golos { namespace chain {
         }
 
 
-        void database::adjust_supply(const asset &delta, bool adjust_vesting) {
-
+        void database::burn_asset(const asset &delta) {
             const auto &props = get_dynamic_global_properties();
-            if (props.head_block_number < STEEMIT_BLOCKS_PER_DAY * 7) {
-                adjust_vesting = false;
-            }
-
             modify(props, [&](dynamic_global_property_object &props) {
                 switch (delta.symbol) {
                     case STEEM_SYMBOL: {
-                        asset new_vesting((adjust_vesting && delta.amount > 0) ?
-                                          delta.amount * 9 : 0, STEEM_SYMBOL);
-                        props.current_supply += delta + new_vesting;
-                        props.total_vesting_fund += new_vesting;
+                        props.current_supply += delta;
                         assert(props.current_supply.amount.value >= 0);
                         break;
                     }

@@ -181,11 +181,6 @@ namespace golos { namespace chain {
             const time_point_sec calculate_discussion_payout_time(const comment_object &comment) const;
 
             /**
-             *  Deducts fee from the account and the share supply
-             */
-            void pay_fee(const account_object &a, asset fee);
-
-            /**
              * Update an account's bandwidth and returns if the account had the requisite bandwidth for the trx
              */
             bool update_account_bandwidth(const account_object &a, uint32_t trx_size);
@@ -348,7 +343,7 @@ namespace golos { namespace chain {
 
             void adjust_savings_balance(const account_object &a, const asset &delta);
 
-            void adjust_supply(const asset &delta, bool adjust_vesting = false);
+            void burn_asset(const asset &delta);
 
             void adjust_rshares2(const comment_object &comment, fc::uint128_t old_rshares2, fc::uint128_t new_rshares2);
 
