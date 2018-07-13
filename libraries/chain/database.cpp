@@ -1674,14 +1674,50 @@ namespace golos { namespace chain {
                 auto converted_steem = null_account.vesting_shares *
                                        gpo.get_vesting_share_price();
 
-modify(gpo, [&](dynamic_global_property_object &g) {
-    g.total_vesting_shares -= null_account.vesting_shares;
-    g.total_vesting_fund -= converted_steem;
-});
+			modify(gpo, [&](dynamic_global_property_object &g) {
+			    g.total_vesting_shares -= null_account.vesting_shares;
+			    g.total_vesting_fund -= converted_steem;
+			});
 
-modify(null_account, [&](account_object &a) {
-    a.vesting_shares.amount = 0;
-});
+			modify(null_account, [&](account_object &a) {
+			    a.vesting_shares.amount = 0;
+			});
+
+                total_steem += converted_steem;
+            }
+
+            if (total_steem.amount > 0) {
+                burn_asset(-total_steem);
+            }
+        }
+
+        void database::clear_anonymous_account_balance() {
+            const auto &anonymous_account = get_account(STEEMIT_ANONYMOUS_ACCOUNT);
+            asset total_steem(0, STEEM_SYMBOL);
+
+            if (anonymous_account.balance.amount > 0) {
+                total_steem += anonymous_account.balance;
+                adjust_balance(anonymous_account, -anonymous_account.balance);
+            }
+
+            if (anonymous_account.savings_balance.amount > 0) {
+                total_steem += anonymous_account.savings_balance;
+                adjust_savings_balance(anonymous_account, -anonymous_account.savings_balance);
+            }
+
+            if (anonymous_account.vesting_shares.amount > 0) {
+                const auto &gpo = get_dynamic_global_properties();
+                auto converted_steem = anonymous_account.vesting_shares *
+                                       gpo.get_vesting_share_price();
+
+			modify(gpo, [&](dynamic_global_property_object &g) {
+			    g.total_vesting_shares -= anonymous_account.vesting_shares;
+			    g.total_vesting_fund -= converted_steem;
+			});
+
+			modify(anonymous_account, [&](account_object &a) {
+			    a.vesting_shares.amount = 0;
+			});
 
                 total_steem += converted_steem;
             }
@@ -2390,7 +2426,6 @@ modify(null_account, [&](account_object &a) {
                     auth.account = STEEMIT_NULL_ACCOUNT;
                     auth.owner.weight_threshold = 1;
                     auth.active.weight_threshold = 1;
-                    auth.posting = authority();
                     auth.posting.weight_threshold = 1;
                 });
 
@@ -2406,7 +2441,22 @@ modify(null_account, [&](account_object &a) {
                     auth.account = STEEMIT_COMMITTEE_ACCOUNT;
                     auth.owner.weight_threshold = 1;
                     auth.active.weight_threshold = 1;
-                    auth.posting = authority();
+                    auth.posting.weight_threshold = 1;
+                });
+
+                create<account_object>([&](account_object &a) {
+                    a.name = STEEMIT_ANONYMOUS_ACCOUNT;
+                });
+#ifndef IS_LOW_MEM
+                create<account_metadata_object>([&](account_metadata_object& m) {
+                    m.account = STEEMIT_ANONYMOUS_ACCOUNT;
+                    from_string(m.json_metadata,"0");
+                });
+#endif
+                create<account_authority_object>([&](account_authority_object &auth) {
+                    auth.account = STEEMIT_ANONYMOUS_ACCOUNT;
+                    auth.owner.weight_threshold = 1;
+                    auth.active.weight_threshold = 1;
                     auth.posting.weight_threshold = 1;
                 });
 
@@ -2422,7 +2472,6 @@ modify(null_account, [&](account_object &a) {
                     auth.account = STEEMIT_TEMP_ACCOUNT;
                     auth.owner.weight_threshold = 0;
                     auth.active.weight_threshold = 0;
-                    auth.posting = authority();
                     auth.posting.weight_threshold = 1;
                 });
 
@@ -2808,6 +2857,7 @@ modify(null_account, [&](account_object &a) {
                 update_witness_schedule();
 
                 clear_null_account_balance();
+                clear_anonymous_account_balance();
                 claim_committee_account_balance();
                 process_funds();
                 process_comment_cashout();

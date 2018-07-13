@@ -593,6 +593,45 @@ namespace golos { namespace chain {
                       o.amount, "Account does not have sufficient funds for transfer.");
             _db.adjust_balance(from_account, -o.amount);
             _db.adjust_balance(to_account, o.amount);
+
+            //VIZ support anonymous account creation
+            if(STEEMIT_ANONYMOUS_ACCOUNT==to_account.name){
+            	const auto& median_props = _db.get_witness_schedule_object().median_props;
+            	FC_ASSERT(o.amount >= median_props.account_creation_fee,
+            	    "Inssufficient amount ${f} required, ${p} provided.",
+            	    ("f", median_props.account_creation_fee)("p", o.amount));
+            	if(o.memo.size()){
+            		public_key_type key_from_memo(o.memo);
+            		const auto& meta = _db.get<account_metadata_object, by_account>(to_account.name);
+            		int anonymous_num=std::stoi(meta.json_metadata.c_str());
+            		anonymous_num++;
+            		store_account_json_metadata(_db, STEEMIT_ANONYMOUS_ACCOUNT,fc::to_string(anonymous_num));
+            		const auto now = _db.head_block_time();
+            		account_name_type new_account_name="n" + fc::to_string(anonymous_num) + "." + STEEMIT_ANONYMOUS_ACCOUNT;
+
+                    _db.create<account_object>([&](account_object &acc) {
+                        acc.name = new_account_name;
+                        acc.memo_key = key_from_memo;
+                        acc.created = _db.head_block_time();
+                        acc.recovery_account = "";
+                        acc.created = now;
+                        acc.mined = false;
+                    });
+                    _db.create<account_authority_object>([&](account_authority_object &auth) {
+                    	auth.account = new_account_name;
+                    	auth.owner.add_authority(key_from_memo, 1);
+                    	auth.owner.weight_threshold = 1;
+                    	auth.active = auth.owner;
+                    	auth.posting = auth.active;
+                    });
+                    _db.create<account_metadata_object>([&](account_metadata_object& m) {
+                        m.account = new_account_name;
+                    });
+                    const auto &new_account = _db.get_account(new_account_name);
+                    _db.adjust_balance(to_account, -o.amount);
+                    _db.create_vesting(new_account, o.amount);
+	            }
+            }
         }
 
         void transfer_to_vesting_evaluator::do_apply(const transfer_to_vesting_operation &o) {

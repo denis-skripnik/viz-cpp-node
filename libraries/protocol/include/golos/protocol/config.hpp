@@ -120,6 +120,8 @@
 #define STEEMIT_COMMITTEE_ACCOUNT               "committee"
 /// Represents the canonical account with WILDCARD authority (anybody can access funds in temp account)
 #define STEEMIT_TEMP_ACCOUNT                    "temp"
+/// Represents the canonical account with NO authority (nobody can access funds in committee account, all income transfers going to new anonymous sub-account)
+#define STEEMIT_ANONYMOUS_ACCOUNT                    "anonymous"
 /// Represents the canonical account for specifying you will vote for directly (as opposed to a proxy)
 #define STEEMIT_PROXY_TO_SELF_ACCOUNT           ""
 /// Represents the canonical root post parent account
