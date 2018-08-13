@@ -81,21 +81,6 @@ namespace golos { namespace protocol {
         };
 
 
-        struct fill_transfer_from_savings_operation : public virtual_operation {
-            fill_transfer_from_savings_operation() {
-            }
-
-            fill_transfer_from_savings_operation(const account_name_type &f, const account_name_type &t, const asset &a, const uint32_t r, const string &m)
-                    : from(f), to(t), amount(a), request_id(r), memo(m) {
-            }
-
-            account_name_type from;
-            account_name_type to;
-            asset amount;
-            uint32_t request_id = 0;
-            string memo;
-        };
-
         struct hardfork_operation : public virtual_operation {
             hardfork_operation() {
             }
@@ -149,7 +134,6 @@ FC_REFLECT((golos::protocol::curation_reward_operation), (curator)(reward)(comme
 FC_REFLECT((golos::protocol::comment_reward_operation), (author)(permlink)(payout))
 FC_REFLECT((golos::protocol::fill_vesting_withdraw_operation), (from_account)(to_account)(withdrawn)(deposited))
 FC_REFLECT((golos::protocol::shutdown_witness_operation), (owner))
-FC_REFLECT((golos::protocol::fill_transfer_from_savings_operation), (from)(to)(amount)(request_id)(memo))
 FC_REFLECT((golos::protocol::hardfork_operation), (hardfork_id))
 FC_REFLECT((golos::protocol::comment_payout_update_operation), (author)(permlink))
 FC_REFLECT((golos::protocol::comment_benefactor_reward_operation), (benefactor)(author)(permlink)(reward))

@@ -643,16 +643,6 @@ namespace golos { namespace chain {
             return find<escrow_object, by_from_id>(boost::make_tuple(name, escrow_id));
         }
 
-        const savings_withdraw_object &database::get_savings_withdraw(const account_name_type &owner, uint32_t request_id) const {
-            try {
-                return get<savings_withdraw_object, by_from_rid>(boost::make_tuple(owner, request_id));
-            } FC_CAPTURE_AND_RETHROW((owner)(request_id))
-        }
-
-        const savings_withdraw_object *database::find_savings_withdraw(const account_name_type &owner, uint32_t request_id) const {
-            return find<savings_withdraw_object, by_from_rid>(boost::make_tuple(owner, request_id));
-        }
-
         const dynamic_global_property_object &database::get_dynamic_global_properties() const {
             try {
                 return get<dynamic_global_property_object>();
@@ -1664,11 +1654,6 @@ namespace golos { namespace chain {
                 adjust_balance(null_account, -null_account.balance);
             }
 
-            if (null_account.savings_balance.amount > 0) {
-                total_steem += null_account.savings_balance;
-                adjust_savings_balance(null_account, -null_account.savings_balance);
-            }
-
             if (null_account.vesting_shares.amount > 0) {
                 const auto &gpo = get_dynamic_global_properties();
                 auto converted_steem = null_account.vesting_shares *
@@ -1698,11 +1683,6 @@ namespace golos { namespace chain {
             if (anonymous_account.balance.amount > 0) {
                 total_steem += anonymous_account.balance;
                 adjust_balance(anonymous_account, -anonymous_account.balance);
-            }
-
-            if (anonymous_account.savings_balance.amount > 0) {
-                total_steem += anonymous_account.savings_balance;
-                adjust_savings_balance(anonymous_account, -anonymous_account.savings_balance);
             }
 
             if (anonymous_account.vesting_shares.amount > 0) {
@@ -1735,11 +1715,6 @@ namespace golos { namespace chain {
             if (committee_account.balance.amount > 0) {
                 total_steem += committee_account.balance;
                 adjust_balance(committee_account, -committee_account.balance);
-            }
-
-            if (committee_account.savings_balance.amount > 0) {
-                total_steem += committee_account.savings_balance;
-                adjust_savings_balance(committee_account, -committee_account.savings_balance);
             }
 
             if (committee_account.vesting_shares.amount > 0) {
@@ -2148,26 +2123,6 @@ namespace golos { namespace chain {
             create_vesting(get_account(cwit.owner), asset(witness_reward, STEEM_SYMBOL));
         }
 
-        void database::process_savings_withdraws() {
-            const auto &idx = get_index<savings_withdraw_index>().indices().get<by_complete_from_rid>();
-            auto itr = idx.begin();
-            while (itr != idx.end()) {
-                if (itr->complete > head_block_time()) {
-                    break;
-                }
-                adjust_balance(get_account(itr->to), itr->amount);
-
-                modify(get_account(itr->from), [&](account_object &a) {
-                    a.savings_withdraw_requests--;
-                });
-
-                push_virtual_operation(fill_transfer_from_savings_operation(itr->from, itr->to, itr->amount, itr->request_id, to_string(itr->memo)));
-
-                remove(*itr);
-                itr = idx.begin();
-            }
-        }
-
 /**
  *  This method reduces the rshare^2 supply and returns the number of tokens are
  *  redeemed.
@@ -2293,9 +2248,6 @@ namespace golos { namespace chain {
             _my->_evaluator_registry.register_evaluator<escrow_approve_evaluator>();
             _my->_evaluator_registry.register_evaluator<escrow_dispute_evaluator>();
             _my->_evaluator_registry.register_evaluator<escrow_release_evaluator>();
-            _my->_evaluator_registry.register_evaluator<transfer_to_savings_evaluator>();
-            _my->_evaluator_registry.register_evaluator<transfer_from_savings_evaluator>();
-            _my->_evaluator_registry.register_evaluator<cancel_transfer_from_savings_evaluator>();
             _my->_evaluator_registry.register_evaluator<delegate_vesting_shares_evaluator>();
             _my->_evaluator_registry.register_evaluator<proposal_create_evaluator>();
             _my->_evaluator_registry.register_evaluator<proposal_update_evaluator>();
@@ -2335,7 +2287,6 @@ namespace golos { namespace chain {
             add_core_index<account_recovery_request_index>(*this);
             add_core_index<change_recovery_account_request_index>(*this);
             add_core_index<escrow_index>(*this);
-            add_core_index<savings_withdraw_index>(*this);
             add_core_index<vesting_delegation_index>(*this);
             add_core_index<vesting_delegation_expiration_index>(*this);
             add_core_index<account_metadata_index>(*this);
@@ -2862,7 +2813,6 @@ namespace golos { namespace chain {
                 process_funds();
                 process_comment_cashout();
                 process_vesting_withdrawals();
-                process_savings_withdraws();
 
                 account_recovery_processing();
                 expire_escrow_ratification();
@@ -3230,19 +3180,6 @@ namespace golos { namespace chain {
         }
 
 
-        void database::adjust_savings_balance(const account_object &a, const asset &delta) {
-            modify(a, [&](account_object &acnt) {
-                switch (delta.symbol) {
-                    case STEEM_SYMBOL:
-                        acnt.savings_balance += delta;
-                        break;
-                    default:
-                        FC_ASSERT(!"invalid symbol");
-                }
-            });
-        }
-
-
         void database::burn_asset(const asset &delta) {
             const auto &props = get_dynamic_global_properties();
             modify(props, [&](dynamic_global_property_object &props) {
@@ -3268,14 +3205,6 @@ namespace golos { namespace chain {
             }
         }
 
-        asset database::get_savings_balance(const account_object &a, asset_symbol_type symbol) const {
-            switch (symbol) {
-                case STEEM_SYMBOL:
-                    return a.savings_balance;
-                default:
-                    FC_ASSERT(!"invalid symbol");
-            }
-        }
 
         void database::init_hardforks() {
             _hardfork_times[0] = fc::time_point_sec(STEEMIT_GENESIS_TIME);

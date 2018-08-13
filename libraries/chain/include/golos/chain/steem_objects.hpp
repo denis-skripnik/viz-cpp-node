@@ -46,28 +46,6 @@ namespace golos {
         };
 
 
-        class savings_withdraw_object
-                : public object<savings_withdraw_object_type, savings_withdraw_object> {
-            savings_withdraw_object() = delete;
-
-        public:
-            template<typename Constructor, typename Allocator>
-            savings_withdraw_object(Constructor &&c, allocator <Allocator> a)
-                    :memo(a) {
-                c(*this);
-            }
-
-            id_type id;
-
-            account_name_type from;
-            account_name_type to;
-            shared_string memo;
-            uint32_t request_id = 0;
-            asset amount;
-            time_point_sec complete;
-        };
-
-
         /**
          * @breif a route to send withdrawn vesting shares.
          */
@@ -160,42 +138,6 @@ namespace golos {
         allocator <escrow_object>
         >
         escrow_index;
-
-        struct by_from_rid;
-        struct by_to_complete;
-        struct by_complete_from_rid;
-        typedef multi_index_container <
-        savings_withdraw_object,
-        indexed_by<
-                ordered_unique < tag <
-                by_id>, member<savings_withdraw_object, savings_withdraw_id_type, &savings_withdraw_object::id>>,
-        ordered_unique <tag<by_from_rid>,
-        composite_key<savings_withdraw_object,
-                member <
-                savings_withdraw_object, account_name_type, &savings_withdraw_object::from>,
-        member<savings_withdraw_object, uint32_t, &savings_withdraw_object::request_id>
-        >
-        >,
-        ordered_unique <tag<by_to_complete>,
-        composite_key<savings_withdraw_object,
-                member <
-                savings_withdraw_object, account_name_type, &savings_withdraw_object::to>,
-        member<savings_withdraw_object, time_point_sec, &savings_withdraw_object::complete>,
-        member<savings_withdraw_object, savings_withdraw_id_type, &savings_withdraw_object::id>
-        >
-        >,
-        ordered_unique <tag<by_complete_from_rid>,
-        composite_key<savings_withdraw_object,
-                member <
-                savings_withdraw_object, time_point_sec, &savings_withdraw_object::complete>,
-        member<savings_withdraw_object, account_name_type, &savings_withdraw_object::from>,
-        member<savings_withdraw_object, uint32_t, &savings_withdraw_object::request_id>
-        >
-        >
-        >,
-        allocator <savings_withdraw_object>
-        >
-        savings_withdraw_index;
     }
 } // golos::chain
 
@@ -205,10 +147,6 @@ namespace golos {
 FC_REFLECT((golos::chain::withdraw_vesting_route_object),
         (id)(from_account)(to_account)(percent)(auto_vest))
 CHAINBASE_SET_INDEX_TYPE(golos::chain::withdraw_vesting_route_object, golos::chain::withdraw_vesting_route_index)
-
-FC_REFLECT((golos::chain::savings_withdraw_object),
-        (id)(from)(to)(memo)(request_id)(amount)(complete))
-CHAINBASE_SET_INDEX_TYPE(golos::chain::savings_withdraw_object, golos::chain::savings_withdraw_index)
 
 FC_REFLECT((golos::chain::escrow_object),
         (id)(escrow_id)(from)(to)(agent)

@@ -381,28 +381,6 @@ namespace golos { namespace protocol {
             validate_account_name(new_recovery_account);
         }
 
-        void transfer_to_savings_operation::validate() const {
-            validate_account_name(from);
-            validate_account_name(to);
-            FC_ASSERT(amount.amount > 0);
-            FC_ASSERT(amount.symbol == STEEM_SYMBOL);
-            FC_ASSERT(memo.size() < STEEMIT_MAX_MEMO_SIZE, "Memo is too large");
-            FC_ASSERT(fc::is_utf8(memo), "Memo is not UTF8");
-        }
-
-        void transfer_from_savings_operation::validate() const {
-            validate_account_name(from);
-            validate_account_name(to);
-            FC_ASSERT(amount.amount > 0);
-            FC_ASSERT(amount.symbol == STEEM_SYMBOL);
-            FC_ASSERT(memo.size() < STEEMIT_MAX_MEMO_SIZE, "Memo is too large");
-            FC_ASSERT(fc::is_utf8(memo), "Memo is not UTF8");
-        }
-
-        void cancel_transfer_from_savings_operation::validate() const {
-            validate_account_name(from);
-        }
-
         void delegate_vesting_shares_operation::validate() const {
             validate_account_name(delegator);
             validate_account_name(delegatee);

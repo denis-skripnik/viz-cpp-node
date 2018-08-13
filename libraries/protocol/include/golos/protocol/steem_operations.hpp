@@ -688,46 +688,6 @@ namespace golos { namespace protocol {
         };
 
 
-        struct transfer_to_savings_operation : public base_operation {
-            account_name_type from;
-            account_name_type to;
-            asset amount;
-            string memo;
-
-            void get_required_active_authorities(flat_set<account_name_type> &a) const {
-                a.insert(from);
-            }
-
-            void validate() const;
-        };
-
-
-        struct transfer_from_savings_operation : public base_operation {
-            account_name_type from;
-            uint32_t request_id = 0;
-            account_name_type to;
-            asset amount;
-            string memo;
-
-            void get_required_active_authorities(flat_set<account_name_type> &a) const {
-                a.insert(from);
-            }
-
-            void validate() const;
-        };
-
-
-        struct cancel_transfer_from_savings_operation : public base_operation {
-            account_name_type from;
-            uint32_t request_id = 0;
-
-            void get_required_active_authorities(flat_set<account_name_type> &a) const {
-                a.insert(from);
-            }
-
-            void validate() const;
-        };
-
 /**
  * Delegate vesting shares from one account to the other. The vesting shares are still owned
  * by the original account, but content voting rights and bandwidth allocation are transferred
@@ -750,10 +710,6 @@ namespace golos { namespace protocol {
         };
 } } // golos::protocol
 
-
-FC_REFLECT((golos::protocol::transfer_to_savings_operation), (from)(to)(amount)(memo))
-FC_REFLECT((golos::protocol::transfer_from_savings_operation), (from)(request_id)(to)(amount)(memo))
-FC_REFLECT((golos::protocol::cancel_transfer_from_savings_operation), (from)(request_id))
 
 FC_REFLECT((golos::protocol::pow2), (input)(pow_summary))
 FC_REFLECT((golos::protocol::pow2_input), (worker_account)(prev_block)(nonce))

@@ -328,38 +328,6 @@ namespace mongo_db {
         return body;
     }
 
-    auto operation_writer::operator()(const transfer_to_savings_operation& op) -> result_type {
-        result_type body;
-
-        format_value(body, "from", op.from);
-        format_value(body, "to", op.to);
-        format_value(body, "amount", op.amount);
-        format_value(body, "memo", op.memo);
-
-        return body;
-    }
-
-    auto operation_writer::operator()(const transfer_from_savings_operation& op) -> result_type {
-        result_type body;
-
-        format_value(body, "from", op.from);
-        format_value(body, "to", op.to);
-        format_value(body, "amount", op.amount);
-        format_value(body, "memo", op.memo);
-        format_value(body, "request_id", op.request_id);
-
-        return body;
-    }
-
-    auto operation_writer::operator()(const cancel_transfer_from_savings_operation& op) -> result_type {
-        result_type body;
-
-        format_value(body, "from", op.from);
-        format_value(body, "request_id", op.request_id);
-
-        return body;
-    }
-
     auto operation_writer::operator()(const custom_binary_operation& op) -> result_type {
         result_type body;
 
@@ -471,18 +439,6 @@ namespace mongo_db {
         result_type body;
 
         format_value(body, "owner", op.owner);
-
-        return body;
-    }
-
-    auto operation_writer::operator()(const fill_transfer_from_savings_operation& op) -> result_type {
-        result_type body;
-
-        format_value(body, "from", op.from);
-        format_value(body, "to", op.to);
-        format_value(body, "amount", op.amount);
-        format_value(body, "request_id", op.request_id);
-        format_value(body, "memo", op.memo);
 
         return body;
     }

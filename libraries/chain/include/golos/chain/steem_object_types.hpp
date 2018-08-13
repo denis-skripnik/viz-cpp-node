@@ -59,7 +59,6 @@ namespace golos { namespace chain {
             account_recovery_request_object_type,
             change_recovery_account_request_object_type,
             escrow_object_type,
-            savings_withdraw_object_type,
             block_stats_object_type,
             vesting_delegation_object_type,
             vesting_delegation_expiration_object_type,
@@ -87,7 +86,6 @@ namespace golos { namespace chain {
         class account_recovery_request_object;
         class change_recovery_account_request_object;
         class escrow_object;
-        class savings_withdraw_object;
         class block_stats_object;
         class vesting_delegation_object;
         class vesting_delegation_expiration_object;
@@ -111,7 +109,6 @@ namespace golos { namespace chain {
         typedef object_id<account_recovery_request_object> account_recovery_request_id_type;
         typedef object_id<change_recovery_account_request_object> change_recovery_account_request_id_type;
         typedef object_id<escrow_object> escrow_id_type;
-        typedef object_id<savings_withdraw_object> savings_withdraw_id_type;
         typedef object_id<block_stats_object> block_stats_id_type;
         typedef object_id<vesting_delegation_object> vesting_delegation_id_type;
         typedef object_id<vesting_delegation_expiration_object> vesting_delegation_expiration_id_type;
@@ -200,7 +197,6 @@ FC_REFLECT_ENUM(golos::chain::object_type,
                 (account_recovery_request_object_type)
                 (change_recovery_account_request_object_type)
                 (escrow_object_type)
-                (savings_withdraw_object_type)
                 (block_stats_object_type)
                 (vesting_delegation_object_type)
                 (vesting_delegation_expiration_object_type)

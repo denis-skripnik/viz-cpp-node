@@ -57,8 +57,6 @@ struct remote_database_api {
     optional< database_api::account_recovery_request_api_object > get_recovery_request( account_name_type );
     optional< database_api::escrow_api_object > get_escrow( account_name_type, uint32_t );
     vector< database_api::withdraw_vesting_route_api_object > get_withdraw_routes( account_name_type, database_api::withdraw_route_type );
-    vector< database_api::savings_withdraw_api_object > get_savings_withdraw_from( account_name_type );
-    vector< database_api::savings_withdraw_api_object > get_savings_withdraw_to( account_name_type );
     string get_transaction_hex( signed_transaction );
     set< public_key_type > get_required_signatures( signed_transaction, flat_set< public_key_type > );
     set< public_key_type > get_potential_signatures( signed_transaction );
@@ -195,8 +193,6 @@ FC_API( golos::wallet::remote_database_api,
         (get_recovery_request)
         (get_escrow)
         (get_withdraw_routes)
-        (get_savings_withdraw_from)
-        (get_savings_withdraw_to)
         (get_transaction_hex)
         (get_required_signatures)
         (get_potential_signatures)

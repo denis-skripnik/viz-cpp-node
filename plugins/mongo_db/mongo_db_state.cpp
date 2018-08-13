@@ -167,9 +167,6 @@ namespace mongo_db {
             format_value(body, "last_vote_time", account.last_vote_time);
 
             format_value(body, "balance", account.balance);
-            format_value(body, "savings_balance", account.savings_balance);
-
-            format_value(body, "savings_withdraw_requests", account.savings_withdraw_requests);
 
             format_value(body, "curation_rewards", account.curation_rewards);
             format_value(body, "posting_rewards", account.posting_rewards);
@@ -406,18 +403,6 @@ namespace mongo_db {
 
     }
 
-    auto state_writer::operator()(const transfer_to_savings_operation& op) -> result_type {
-
-    }
-
-    auto state_writer::operator()(const transfer_from_savings_operation& op) -> result_type {
-
-    }
-
-    auto state_writer::operator()(const cancel_transfer_from_savings_operation& op) -> result_type {
-
-    }
-
     auto state_writer::operator()(const custom_binary_operation& op) -> result_type {
 
     }
@@ -443,10 +428,6 @@ namespace mongo_db {
     }
 
     auto state_writer::operator()(const shutdown_witness_operation& op) -> result_type {
-
-    }
-
-    auto state_writer::operator()(const fill_transfer_from_savings_operation& op) -> result_type {
 
     }
 

@@ -257,20 +257,6 @@ if( options.count(name) ) { \
             impacted.insert(op.agent);
         }
 
-        void operator()(const transfer_to_savings_operation& op) {
-            impacted.insert(op.from);
-            impacted.insert(op.to);
-        }
-
-        void operator()(const transfer_from_savings_operation& op) {
-            impacted.insert(op.from);
-            impacted.insert(op.to);
-        }
-
-        void operator()(const cancel_transfer_from_savings_operation& op) {
-            impacted.insert(op.from);
-        }
-
         void operator()(const comment_benefactor_reward_operation& op) {
             impacted.insert(op.benefactor);
             impacted.insert(op.author);

@@ -657,38 +657,6 @@ bool plugin::api_impl::verify_account_authority(
     return verify_authority(trx);
 }
 
-DEFINE_API(plugin, get_savings_withdraw_from) {
-    CHECK_ARG_SIZE(1)
-    auto account = args.args->at(0).as<string>();
-    return my->database().with_weak_read_lock([&]() {
-        std::vector<savings_withdraw_api_object> result;
-
-        const auto &from_rid_idx = my->database().get_index<savings_withdraw_index>().indices().get<by_from_rid>();
-        auto itr = from_rid_idx.lower_bound(account);
-        while (itr != from_rid_idx.end() && itr->from == account) {
-            result.push_back(savings_withdraw_api_object(*itr));
-            ++itr;
-        }
-        return result;
-    });
-}
-
-DEFINE_API(plugin, get_savings_withdraw_to) {
-    CHECK_ARG_SIZE(1)
-    auto account = args.args->at(0).as<string>();
-    return my->database().with_weak_read_lock([&]() {
-        std::vector<savings_withdraw_api_object> result;
-
-        const auto &to_complete_idx = my->database().get_index<savings_withdraw_index>().indices().get<by_to_complete>();
-        auto itr = to_complete_idx.lower_bound(account);
-        while (itr != to_complete_idx.end() && itr->to == account) {
-            result.push_back(savings_withdraw_api_object(*itr));
-            ++itr;
-        }
-        return result;
-    });
-}
-
 //vector<vesting_delegation_api_obj> get_vesting_delegations(string account, string from, uint32_t limit, delegations_type type = delegated) const;
 DEFINE_API(plugin, get_vesting_delegations) {
     size_t n_args = args.args->size();
