@@ -81,11 +81,6 @@
 #define STEEMIT_EQUIHASH_N                      140
 #define STEEMIT_EQUIHASH_K                      6
 
-#define STEEMIT_ACTIVE_CHALLENGE_FEE            asset( 2000, STEEM_SYMBOL )
-#define STEEMIT_OWNER_CHALLENGE_FEE             asset( 30000, STEEM_SYMBOL )
-#define STEEMIT_ACTIVE_CHALLENGE_COOLDOWN       fc::days(1)
-#define STEEMIT_OWNER_CHALLENGE_COOLDOWN        fc::days(1)
-
 #define STEEMIT_MIN_ACCOUNT_NAME_LENGTH          2
 #define STEEMIT_CREATE_MIN_ACCOUNT_NAME_LENGTH   3
 #define STEEMIT_MAX_ACCOUNT_NAME_LENGTH         25
