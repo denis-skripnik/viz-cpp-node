@@ -155,7 +155,7 @@ namespace mongo_db {
             format_value(body, "recovery_account", account.recovery_account);
             format_value(body, "last_account_recovery", account.last_account_recovery);
             format_value(body, "comment_count", account.comment_count);
-            format_value(body, "lifetime_vote_count", account.lifetime_vote_count);
+            format_value(body, "vote_count", account.vote_count);
             format_value(body, "post_count", account.post_count);
 
             format_value(body, "voting_power", account.voting_power);
