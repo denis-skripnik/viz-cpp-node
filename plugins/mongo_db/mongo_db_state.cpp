@@ -157,7 +157,6 @@ namespace mongo_db {
             format_value(body, "last_owner_proved", account.last_owner_proved);
             format_value(body, "last_active_proved", account.last_active_proved);
             format_value(body, "recovery_account", account.recovery_account);
-            format_value(body, "reset_account", account.reset_account);
             format_value(body, "last_account_recovery", account.last_account_recovery);
             format_value(body, "comment_count", account.comment_count);
             format_value(body, "lifetime_vote_count", account.lifetime_vote_count);
@@ -360,14 +359,6 @@ namespace mongo_db {
     }
 
     auto state_writer::operator()(const set_withdraw_vesting_route_operation& op) -> result_type {
-
-    }
-
-    auto state_writer::operator()(const challenge_authority_operation& op) -> result_type {
-
-    }
-
-    auto state_writer::operator()(const prove_authority_operation& op) -> result_type {
 
     }
 

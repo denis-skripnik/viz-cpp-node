@@ -214,25 +214,6 @@ namespace mongo_db {
         return body;
     }
 
-    auto operation_writer::operator()(const challenge_authority_operation& op) -> result_type {
-        result_type body;
-
-        format_value(body, "challenger", op.challenger);
-        format_value(body, "challenged", op.challenged);
-        format_value(body, "require_owner", op.require_owner);
-
-        return body;
-    }
-
-    auto operation_writer::operator()(const prove_authority_operation& op) -> result_type {
-        result_type body;
-
-        format_value(body, "challenged", op.challenged);
-        format_value(body, "require_owner", op.require_owner);
-
-        return body;
-    }
-
     auto operation_writer::operator()(const request_account_recovery_operation& op) -> result_type {
         result_type body;
 

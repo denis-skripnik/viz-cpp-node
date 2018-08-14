@@ -2239,8 +2239,6 @@ namespace golos { namespace chain {
             _my->_evaluator_registry.register_evaluator<account_witness_proxy_evaluator>();
             _my->_evaluator_registry.register_evaluator<custom_json_evaluator>();
             _my->_evaluator_registry.register_evaluator<pow2_evaluator>();
-            _my->_evaluator_registry.register_evaluator<challenge_authority_evaluator>();
-            _my->_evaluator_registry.register_evaluator<prove_authority_evaluator>();
             _my->_evaluator_registry.register_evaluator<request_account_recovery_evaluator>();
             _my->_evaluator_registry.register_evaluator<recover_account_evaluator>();
             _my->_evaluator_registry.register_evaluator<change_recovery_account_evaluator>();

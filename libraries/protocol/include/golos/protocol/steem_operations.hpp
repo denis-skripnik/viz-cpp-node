@@ -112,39 +112,6 @@ namespace golos { namespace protocol {
         };
 
 
-        struct challenge_authority_operation : public base_operation {
-            account_name_type challenger;
-            account_name_type challenged;
-            bool require_owner = false;
-
-            void validate() const;
-
-            void get_required_active_authorities(flat_set<account_name_type> &a) const {
-                a.insert(challenger);
-            }
-        };
-
-
-        struct prove_authority_operation : public base_operation {
-            account_name_type challenged;
-            bool require_owner = false;
-
-            void validate() const;
-
-            void get_required_active_authorities(flat_set<account_name_type> &a) const {
-                if (!require_owner) {
-                    a.insert(challenged);
-                }
-            }
-
-            void get_required_owner_authorities(flat_set<account_name_type> &a) const {
-                if (require_owner) {
-                    a.insert(challenged);
-                }
-            }
-        };
-
-
         struct delete_comment_operation : public base_operation {
             account_name_type author;
             string permlink;
@@ -758,8 +725,6 @@ FC_REFLECT((golos::protocol::escrow_transfer_operation), (from)(to)(steem_amount
 FC_REFLECT((golos::protocol::escrow_approve_operation), (from)(to)(agent)(who)(escrow_id)(approve));
 FC_REFLECT((golos::protocol::escrow_dispute_operation), (from)(to)(agent)(who)(escrow_id));
 FC_REFLECT((golos::protocol::escrow_release_operation), (from)(to)(agent)(who)(receiver)(escrow_id)(steem_amount));
-FC_REFLECT((golos::protocol::challenge_authority_operation), (challenger)(challenged)(require_owner));
-FC_REFLECT((golos::protocol::prove_authority_operation), (challenged)(require_owner));
 FC_REFLECT((golos::protocol::request_account_recovery_operation), (recovery_account)(account_to_recover)(new_owner_authority)(extensions));
 FC_REFLECT((golos::protocol::recover_account_operation), (account_to_recover)(new_owner_authority)(recent_owner_authority)(extensions));
 FC_REFLECT((golos::protocol::change_recovery_account_operation), (account_to_recover)(new_recovery_account)(extensions));

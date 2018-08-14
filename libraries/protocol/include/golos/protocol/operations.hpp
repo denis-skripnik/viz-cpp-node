@@ -27,8 +27,6 @@ namespace golos { namespace protocol {
                 delete_comment_operation,
                 custom_json_operation,
                 set_withdraw_vesting_route_operation,
-                challenge_authority_operation,
-                prove_authority_operation,
                 request_account_recovery_operation,
                 recover_account_operation,
                 change_recovery_account_operation,

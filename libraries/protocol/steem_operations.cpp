@@ -132,16 +132,6 @@ namespace golos { namespace protocol {
             validate_account_name(author);
         }
 
-        void challenge_authority_operation::validate() const {
-            validate_account_name(challenger);
-            validate_account_name(challenged);
-            FC_ASSERT(challenged != challenger, "cannot challenge yourself");
-        }
-
-        void prove_authority_operation::validate() const {
-            validate_account_name(challenged);
-        }
-
         void vote_operation::validate() const {
             validate_account_name(voter);
             validate_account_name(author);\

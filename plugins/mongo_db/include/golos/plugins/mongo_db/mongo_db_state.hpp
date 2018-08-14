@@ -35,8 +35,6 @@ namespace mongo_db {
         result_type operator()(const delete_comment_operation& op);
         result_type operator()(const custom_json_operation& op);
         result_type operator()(const set_withdraw_vesting_route_operation& op);
-        result_type operator()(const challenge_authority_operation& op);
-        result_type operator()(const prove_authority_operation& op);
         result_type operator()(const request_account_recovery_operation& op);
         result_type operator()(const recover_account_operation& op);
         result_type operator()(const change_recovery_account_operation& op);

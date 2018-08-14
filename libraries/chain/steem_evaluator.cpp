@@ -1170,60 +1170,6 @@ namespace golos { namespace chain {
             }
         }
 
-        void challenge_authority_evaluator::do_apply(const challenge_authority_operation &o) {
-            FC_ASSERT(false, "Challenge authority operation is currently disabled.");
-            database &_db = db();
-            const auto &challenged = _db.get_account(o.challenged);
-            const auto &challenger = _db.get_account(o.challenger);
-
-            if (o.require_owner) {
-                FC_ASSERT(challenged.reset_account ==
-                          o.challenger, "Owner authority can only be challenged by its reset account.");
-                FC_ASSERT(challenger.balance >= STEEMIT_OWNER_CHALLENGE_FEE);
-                FC_ASSERT(!challenged.owner_challenged);
-                FC_ASSERT(_db.head_block_time() - challenged.last_owner_proved >
-                          STEEMIT_OWNER_CHALLENGE_COOLDOWN);
-
-                _db.adjust_balance(challenger, -STEEMIT_OWNER_CHALLENGE_FEE);
-                _db.create_vesting(_db.get_account(o.challenged), STEEMIT_OWNER_CHALLENGE_FEE);
-
-                _db.modify(challenged, [&](account_object &a) {
-                    a.owner_challenged = true;
-                });
-            } else {
-                FC_ASSERT(challenger.balance >=
-                          STEEMIT_ACTIVE_CHALLENGE_FEE, "Account does not have sufficient funds to pay challenge fee.");
-                FC_ASSERT(!(challenged.owner_challenged ||
-                            challenged.active_challenged), "Account is already challenged.");
-                FC_ASSERT(
-                        _db.head_block_time() - challenged.last_active_proved >
-                        STEEMIT_ACTIVE_CHALLENGE_COOLDOWN, "Account cannot be challenged because it was recently challenged.");
-
-                _db.adjust_balance(challenger, -STEEMIT_ACTIVE_CHALLENGE_FEE);
-                _db.create_vesting(_db.get_account(o.challenged), STEEMIT_ACTIVE_CHALLENGE_FEE);
-
-                _db.modify(challenged, [&](account_object &a) {
-                    a.active_challenged = true;
-                });
-            }
-        }
-
-        void prove_authority_evaluator::do_apply(const prove_authority_operation &o) {
-            database &_db = db();
-            const auto &challenged = _db.get_account(o.challenged);
-            FC_ASSERT(challenged.owner_challenged ||
-                      challenged.active_challenged, "Account is not challeneged. No need to prove authority.");
-
-            _db.modify(challenged, [&](account_object &a) {
-                a.active_challenged = false;
-                a.last_active_proved = _db.head_block_time();
-                if (o.require_owner) {
-                    a.owner_challenged = false;
-                    a.last_owner_proved = _db.head_block_time();
-                }
-            });
-        }
-
         void request_account_recovery_evaluator::do_apply(const request_account_recovery_operation &o) {
             database &_db = db();
             const auto &account_to_recover = _db.get_account(o.account_to_recover);
