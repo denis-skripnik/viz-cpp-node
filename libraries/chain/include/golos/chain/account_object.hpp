@@ -38,10 +38,6 @@ public:
 
     time_point_sec created;
     bool mined = true;
-    bool owner_challenged = false;
-    bool active_challenged = false;
-    time_point_sec last_owner_proved = time_point_sec::min();
-    time_point_sec last_active_proved = time_point_sec::min();
     account_name_type recovery_account;
     time_point_sec last_account_recovery;
     uint32_t comment_count = 0;
@@ -433,7 +429,7 @@ change_recovery_account_request_index;
 FC_REFLECT((golos::chain::account_object),
         (id)(name)(memo_key)(proxy)(referrer)(last_account_update)
                 (created)(mined)
-                (owner_challenged)(active_challenged)(last_owner_proved)(last_active_proved)(recovery_account)(last_account_recovery)
+                (recovery_account)(last_account_recovery)
                 (comment_count)(lifetime_vote_count)(post_count)(voting_power)(last_vote_time)
                 (balance)
                 (vesting_shares)(delegated_vesting_shares)(received_vesting_shares)

@@ -155,10 +155,6 @@ namespace golos { namespace chain {
                 if (o.memo_key != public_key_type()) {
                     acc.memo_key = o.memo_key;
                 }
-                if ((o.active || o.owner) && acc.active_challenged) {
-                    acc.active_challenged = false;
-                    acc.last_active_proved = _db.head_block_time();
-                }
                 acc.last_account_update = _db.head_block_time();
             });
             store_account_json_metadata(_db, account.name, o.json_metadata, true);
@@ -189,10 +185,6 @@ namespace golos { namespace chain {
  */
         void delete_comment_evaluator::do_apply(const delete_comment_operation &o) {
             database &_db = db();
-            const auto &auth = _db.get_account(o.author);
-            FC_ASSERT(!(auth.owner_challenged ||
-                        auth.active_challenged), "Operation cannot be processed because account is currently challenged.");
-
             const auto &comment = _db.get_comment(o.author, o.permlink);
             FC_ASSERT(comment.children ==
                       0, "Cannot delete a comment with replies.");
@@ -281,9 +273,6 @@ namespace golos { namespace chain {
                 auto itr = by_permlink_idx.find(boost::make_tuple(o.author, o.permlink));
 
                 const auto &auth = _db.get_account(o.author); /// prove it exists
-
-                FC_ASSERT(!(auth.owner_challenged ||
-                            auth.active_challenged), "Operation cannot be processed because account is currently challenged.");
 
                 comment_id_type id;
 
@@ -582,13 +571,6 @@ namespace golos { namespace chain {
             const auto &from_account = _db.get_account(o.from);
             const auto &to_account = _db.get_account(o.to);
 
-            if (from_account.active_challenged) {
-                _db.modify(from_account, [&](account_object &a) {
-                    a.active_challenged = false;
-                    a.last_active_proved = _db.head_block_time();
-                });
-            }
-
             FC_ASSERT(_db.get_balance(from_account, o.amount.symbol) >=
                       o.amount, "Account does not have sufficient funds for transfer.");
             _db.adjust_balance(from_account, -o.amount);
@@ -840,9 +822,6 @@ namespace golos { namespace chain {
 
                 const auto &comment = _db.get_comment(o.author, o.permlink);
                 const auto &voter = _db.get_account(o.voter);
-
-                FC_ASSERT(!(voter.owner_challenged ||
-                            voter.active_challenged), "Operation cannot be processed because the account is currently challenged.");
 
                 if (_db.calculate_discussion_payout_time(comment) ==
                     fc::time_point_sec::maximum()) {
