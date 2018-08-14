@@ -207,6 +207,16 @@ namespace golos { namespace chain {
                 _db.remove(cur_vote);
             }
 
+            const auto &auth = _db.get_account(comment.author); /// prove it exists
+            db().modify(auth, [&](account_object &a) {
+                if( comment.parent_author == STEEMIT_ROOT_POST_PARENT ) {
+                    a.post_count--;
+                }
+                else{
+                    a.comment_count--;
+                }
+            });
+
             /// this loop can be skiped for validate-only nodes as it is merely gathering stats for indicies
             if (comment.parent_author != STEEMIT_ROOT_POST_PARENT) {
                 auto parent = &_db.get_comment(comment.parent_author, comment.parent_permlink);
@@ -295,11 +305,14 @@ namespace golos { namespace chain {
                                   STEEMIT_MIN_REPLY_INTERVAL, "You may only comment once every 1 second.", ("now", now)("auth.last_post", auth.last_post));
 
                     db().modify(auth, [&](account_object &a) {
+                        a.last_post = now;
                         if( o.parent_author == STEEMIT_ROOT_POST_PARENT ) {
                             a.last_root_post = now;
+                            a.post_count++;
                         }
-                        a.last_post = now;
-                        a.post_count++;
+                        else{
+                            a.comment_count++;
+                        }
                     });
 
                     const auto &new_comment = _db.create<comment_object>([&](comment_object &com) {
@@ -913,6 +926,7 @@ namespace golos { namespace chain {
                     _db.modify(voter, [&](account_object &a) {
                         a.voting_power = current_power - used_power;
                         a.last_vote_time = _db.head_block_time();
+                        a.vote_count++;
                     });
 
                     /// if the current net_rshares is less than 0, the post is getting 0 rewards so it is not factored into total rshares^2
