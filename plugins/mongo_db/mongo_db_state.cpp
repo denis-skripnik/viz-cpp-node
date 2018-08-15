@@ -382,10 +382,6 @@ namespace mongo_db {
 
     }
 
-    auto state_writer::operator()(const pow2_operation& op) -> result_type {
-
-    }
-
     auto state_writer::operator()(const escrow_approve_operation& op) -> result_type {
 
     }

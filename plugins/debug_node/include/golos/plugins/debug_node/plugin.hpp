@@ -13,7 +13,6 @@
 #include <golos/plugins/json_rpc/plugin.hpp>
 
 namespace golos { namespace protocol {
-    struct pow2;
     struct signed_block;
 } }
 
@@ -33,7 +32,7 @@ DEFINE_API_ARGS ( debug_get_witness_schedule,         msg_pack,   witness_schedu
 // DEFINE_API_ARGS ( debug_get_hardfork_property_object, msg_pack,   debug_get_hardfork_property_object_r  )
 DEFINE_API_ARGS ( debug_set_hardfork,                 msg_pack,   void_type                                     )
 DEFINE_API_ARGS ( debug_has_hardfork,                 msg_pack,   bool                                          );
-// 
+//
 
 
 class plugin final : public appbase::plugin<plugin> {
@@ -94,7 +93,7 @@ public:
 
     void save_debug_updates( fc::mutable_variant_object& target );
     void load_debug_updates( const fc::variant_object& target );
-    void debug_update( 
+    void debug_update(
         std::function< void( golos::chain::database& ) > callback,
         uint32_t skip = golos::chain::database::skip_nothing
     );

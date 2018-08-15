@@ -222,11 +222,6 @@ namespace golos { namespace wallet {
             vector< account_name_type > get_active_witnesses()const;
 
             /**
-             * Returns the queue of pow miners waiting to produce blocks.
-             */
-            vector<account_name_type> get_miner_queue()const;
-
-            /**
              * Returns vesting withdraw routes for an account.
              *
              * @param account Account to query routes
@@ -1043,7 +1038,6 @@ FC_API( golos::wallet::wallet_api,
                 (sign_transaction)
 
                 (get_active_witnesses)
-                (get_miner_queue)
                 (get_transaction)
                 (get_inbox)
                 (get_outbox)

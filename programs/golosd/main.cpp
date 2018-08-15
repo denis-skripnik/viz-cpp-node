@@ -88,7 +88,7 @@ void logo(){
     std::cerr << "------------------------------------------------------\n\n";
     std::cerr << "            STARTING VIZ NETWORK\n\n";
     std::cerr << "------------------------------------------------------\n";
-    std::cerr << "initminer public key: " << STEEMIT_INIT_PUBLIC_KEY_STR << "\n";
+    std::cerr << "initiator public key: " << STEEMIT_INIT_PUBLIC_KEY_STR << "\n";
     std::cerr << "chain id: " << std::string( STEEMIT_CHAIN_ID ) << "\n";
     std::cerr << "blockchain version: " << std::string( BLOCKCHAIN_VERSION ) << "\n";
     std::cerr << "------------------------------------------------------\n";

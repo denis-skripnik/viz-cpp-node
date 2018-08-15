@@ -1266,26 +1266,6 @@ namespace golos { namespace chain {
             FC_CAPTURE_AND_RETHROW((to_account.name)(steem))
         }
 
-        fc::sha256 database::get_pow_target() const {
-            const auto &dgp = get_dynamic_global_properties();
-            fc::sha256 target;
-            target._hash[0] = -1;
-            target._hash[1] = -1;
-            target._hash[2] = -1;
-            target._hash[3] = -1;
-            target = target >> ((dgp.num_pow_witnesses / 4) + 4);
-            return target;
-        }
-
-        uint32_t database::get_pow_summary_target() const {
-            const dynamic_global_property_object &dgp = get_dynamic_global_properties();
-            if (dgp.num_pow_witnesses >= 1004) {
-                return 0;
-            }
-
-            return (0xFE00 - 0x0040 * dgp.num_pow_witnesses) << 0x10;
-        }
-
         void database::update_witness_schedule() {
         	if ((head_block_num() % STEEMIT_MAX_WITNESSES) != 0) return;
             vector<account_name_type> active_witnesses;
@@ -1296,47 +1276,19 @@ namespace golos { namespace chain {
 
             /// Add the highest voted witnesses
             flat_set<witness_id_type> selected_voted;
-            selected_voted.reserve(STEEMIT_MAX_VOTED_WITNESSES);
+            selected_voted.reserve(STEEMIT_MAX_TOP_WITNESSES);
 
             const auto &widx = get_index<witness_index>().indices().get<by_vote_name>();
             for (auto itr = widx.begin();
                  itr != widx.end() &&
-                 selected_voted.size() < STEEMIT_MAX_VOTED_WITNESSES;
+                 selected_voted.size() < STEEMIT_MAX_TOP_WITNESSES;
                  ++itr) {
                 if (itr->signing_key == public_key_type()) {
                     continue;
                 }
                 selected_voted.insert(itr->id);
                 active_witnesses.push_back(itr->owner);
-                modify(*itr, [&](witness_object &wo) { wo.schedule = witness_object::top19; });
-            }
-
-            /// Add miners from the top of the mining queue
-            flat_set<witness_id_type> selected_miners;
-            selected_miners.reserve(STEEMIT_MAX_MINER_WITNESSES);
-            const auto &gprops = get_dynamic_global_properties();
-            const auto &pow_idx = get_index<witness_index>().indices().get<by_pow>();
-            auto mitr = pow_idx.upper_bound(0);
-            while (mitr != pow_idx.end() &&
-                   selected_miners.size() < STEEMIT_MAX_MINER_WITNESSES) {
-                // Only consider a miner who is not a top voted witness
-                if (selected_voted.find(mitr->id) == selected_voted.end()) {
-                    // Only consider a miner who has a valid block signing key
-                    if (!(get_witness(mitr->owner).signing_key == public_key_type())) {
-                        selected_miners.insert(mitr->id);
-                        active_witnesses.push_back(mitr->owner);
-                        modify(*mitr, [&](witness_object &wo) { wo.schedule = witness_object::miner; });
-                    }
-                }
-                // Remove processed miner from the queue
-                auto itr = mitr;
-                ++mitr;
-                modify(*itr, [&](witness_object &wit) {
-                    wit.pow_worker = 0;
-                });
-                modify(gprops, [&](dynamic_global_property_object &obj) {
-                    obj.num_pow_witnesses--;
-                });
+                modify(*itr, [&](witness_object &wo) { wo.schedule = witness_object::top; });
             }
 
             /// Add the running witnesses in the lead
@@ -1345,8 +1297,7 @@ namespace golos { namespace chain {
             const auto &schedule_idx = get_index<witness_index>().indices().get<by_schedule_time>();
             auto sitr = schedule_idx.begin();
             vector<decltype(sitr)> processed_witnesses;
-            for (auto witness_count =
-                    selected_voted.size() + selected_miners.size();
+            for (auto witness_count = selected_voted.size();
                  sitr != schedule_idx.end() &&
                  witness_count < STEEMIT_MAX_WITNESSES;
                  ++sitr) {
@@ -1357,10 +1308,9 @@ namespace golos { namespace chain {
                     continue;
                 } /// skip witnesses without a valid block signing key
 
-                if (selected_miners.find(sitr->id) == selected_miners.end()
-                    && selected_voted.find(sitr->id) == selected_voted.end()) {
+                if (selected_voted.find(sitr->id) == selected_voted.end()) {
                     support_witnesses.push_back(sitr->owner);
-                    modify(*sitr, [&](witness_object &wo) { wo.schedule = witness_object::timeshare; });
+                    modify(*sitr, [&](witness_object &wo) { wo.schedule = witness_object::support; });
                     ++witness_count;
                 }
             }
@@ -2238,7 +2188,6 @@ namespace golos { namespace chain {
             _my->_evaluator_registry.register_evaluator<account_witness_vote_evaluator>();
             _my->_evaluator_registry.register_evaluator<account_witness_proxy_evaluator>();
             _my->_evaluator_registry.register_evaluator<custom_json_evaluator>();
-            _my->_evaluator_registry.register_evaluator<pow2_evaluator>();
             _my->_evaluator_registry.register_evaluator<request_account_recovery_evaluator>();
             _my->_evaluator_registry.register_evaluator<recover_account_evaluator>();
             _my->_evaluator_registry.register_evaluator<change_recovery_account_evaluator>();
@@ -2424,8 +2373,8 @@ namespace golos { namespace chain {
                     auth.posting.weight_threshold = 1;
                 });
 
-                for (int i = 0; i < STEEMIT_NUM_INIT_MINERS; ++i) {
-                    const auto& name = STEEMIT_INIT_MINER_NAME + (i ? fc::to_string(i) : std::string());
+                for (int i = 0; i < STEEMIT_NUM_INITIATORS; ++i) {
+                    const auto& name = STEEMIT_INITIATOR_NAME + (i ? fc::to_string(i) : std::string());
                     create<account_object>([&](account_object &a) {
                         a.name = name;
                         a.memo_key = init_public_key;
@@ -2446,12 +2395,12 @@ namespace golos { namespace chain {
                     create<witness_object>([&](witness_object &w) {
                         w.owner = name;
                         w.signing_key = init_public_key;
-                        w.schedule = witness_object::miner;
+                        w.schedule = witness_object::top;
                     });
                 }
 
                 create<dynamic_global_property_object>([&](dynamic_global_property_object &p) {
-                    p.current_witness = STEEMIT_INIT_MINER_NAME;
+                    p.current_witness = STEEMIT_INITIATOR_NAME;
                     p.time = STEEMIT_GENESIS_TIME;
                     p.recent_slots_filled = fc::uint128_t::max_value();
                     p.participation_count = 128;
@@ -2469,7 +2418,7 @@ namespace golos { namespace chain {
 
                 // Create witness scheduler
                 create<witness_schedule_object>([&](witness_schedule_object &wso) {
-                    wso.current_shuffled_witnesses[0] = STEEMIT_INIT_MINER_NAME;
+                    wso.current_shuffled_witnesses[0] = STEEMIT_INITIATOR_NAME;
                 });
             }
             FC_CAPTURE_AND_RETHROW()
@@ -2735,7 +2684,7 @@ namespace golos { namespace chain {
                          {
                             a.name = account.login;
                             a.memo_key = account_public_key;
-                            a.recovery_account = STEEMIT_INIT_MINER_NAME;
+                            a.recovery_account = STEEMIT_INITIATOR_NAME;
                             a.mined = false;
                             a.created = STEEMIT_GENESIS_TIME;
                             a.last_vote_time = STEEMIT_GENESIS_TIME;
@@ -2760,12 +2709,12 @@ namespace golos { namespace chain {
 
                          ilog( "Import account ${a} with public key ${k}, shares: ${s} (remaining init supply: ${i})", ("a", account.login)("k", account.public_key)("s", account.shares_ammount)("i", init_supply) );
                       }
-                      const auto& init_miner = get_account( STEEMIT_INIT_MINER_NAME );
-                      modify( init_miner, [&]( account_object& a )
+                      const auto& initiator = get_account( STEEMIT_INITIATOR_NAME );
+                      modify( initiator, [&]( account_object& a )
                       {
                          a.balance  = asset( init_supply, STEEM_SYMBOL );
                       } );
-                      ilog( "Modify init miner account ${a}, remaining balance: ${i}", ("a", STEEMIT_INIT_MINER_NAME)("i", init_supply) );
+                      ilog( "Modify initiator account ${a}, remaining balance: ${i}", ("a", STEEMIT_INITIATOR_NAME)("i", init_supply) );
                    }
                 }
 

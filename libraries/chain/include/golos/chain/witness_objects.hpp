@@ -30,9 +30,8 @@ namespace golos { namespace chain {
 
     public:
         enum witness_schedule_type {
-            top19,
-            timeshare,
-            miner,
+            top,
+            support,
             none
         };
 
@@ -51,14 +50,6 @@ namespace golos { namespace chain {
         uint32_t total_missed = 0;
         uint64_t last_aslot = 0;
         uint64_t last_confirmed_block_num = 0;
-
-        /**
-         * Some witnesses have the job because they did a proof of work,
-         * this field indicates where they were in the POW order. After
-         * each round, the witness with the lowest pow_worker value greater
-         * than 0 is removed.
-         */
-        uint64_t pow_worker = 0;
 
         /**
          *  This is the key used to sign blocks on behalf of this witness
@@ -169,10 +160,6 @@ namespace golos { namespace chain {
         uint32_t next_shuffle_block_num = 1;
         fc::array<account_name_type, STEEMIT_MAX_WITNESSES> current_shuffled_witnesses;
         uint8_t num_scheduled_witnesses = 1;
-        uint8_t top19_weight = 1;
-        uint8_t timeshare_weight = 5;
-        uint8_t miner_weight = 1;
-        uint32_t witness_pay_normalization_factor = 25;
         chain_properties median_props;
         version majority_version;
     };
@@ -180,7 +167,6 @@ namespace golos { namespace chain {
 
     struct by_vote_name;
     struct by_name;
-    struct by_pow;
     struct by_work;
     struct by_schedule_time;
 
@@ -199,9 +185,6 @@ namespace golos { namespace chain {
             ordered_unique<
                 tag<by_name>,
                 member<witness_object, account_name_type, &witness_object::owner>>,
-            ordered_non_unique<
-                tag<by_pow>,
-                member<witness_object, uint64_t, &witness_object::pow_worker>>,
             ordered_unique<
                 tag<by_vote_name>,
                 composite_key<
@@ -258,12 +241,12 @@ namespace golos { namespace chain {
 
 } }
 
-FC_REFLECT_ENUM(golos::chain::witness_object::witness_schedule_type, (top19)(timeshare)(miner)(none))
+FC_REFLECT_ENUM(golos::chain::witness_object::witness_schedule_type, (top)(support)(none))
 
 FC_REFLECT(
     (golos::chain::witness_object),
     (id)(owner)(created)(url)(votes)(schedule)(virtual_last_update)(virtual_position)(virtual_scheduled_time)(total_missed)
-    (last_aslot)(last_confirmed_block_num)(pow_worker)(signing_key)(props)
+    (last_aslot)(last_confirmed_block_num)(signing_key)(props)
     (last_work)(running_version)(hardfork_version_vote)(hardfork_time_vote))
 
 CHAINBASE_SET_INDEX_TYPE(golos::chain::witness_object, golos::chain::witness_index)

@@ -39,18 +39,6 @@ namespace golos {
             time_point_sec time;
             account_name_type current_witness;
 
-
-            /**
-             *  The total POW accumulated, aka the sum of num_pow_witness at the time new POW is added
-             */
-            uint64_t total_pow = -1;
-
-            /**
-             * The current count of how many pending POW witnesses there are, determines the difficulty
-             * of doing pow
-             */
-            uint32_t num_pow_witnesses = 0;
-
             asset committee_supply = asset(0, STEEM_SYMBOL);
             asset current_supply = asset(0, STEEM_SYMBOL);
             asset confidential_supply = asset(0, STEEM_SYMBOL); ///< total asset held in confidential balances
@@ -149,8 +137,6 @@ FC_REFLECT((golos::chain::dynamic_global_property_object),
                 (head_block_id)
                 (time)
                 (current_witness)
-                (total_pow)
-                (num_pow_witnesses)
                 (committee_supply)
                 (current_supply)
                 (confidential_supply)

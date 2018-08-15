@@ -35,7 +35,6 @@ namespace mongo_db {
         result_type operator()(const escrow_transfer_operation& op);
         result_type operator()(const escrow_dispute_operation& op);
         result_type operator()(const escrow_release_operation&op);
-        result_type operator()(const pow2_operation& op);
         result_type operator()(const escrow_approve_operation& op);
         result_type operator()(const custom_binary_operation& op);
 //

@@ -12,7 +12,7 @@ namespace golos { namespace plugins { namespace witness_api {
             struct witness_api_object {
                 witness_api_object(const witness_object &w) : id(w.id), owner(w.owner), created(w.created),
                         url(to_string(w.url)), total_missed(w.total_missed), last_aslot(w.last_aslot),
-                        last_confirmed_block_num(w.last_confirmed_block_num), pow_worker(w.pow_worker),
+                        last_confirmed_block_num(w.last_confirmed_block_num),
                         signing_key(w.signing_key), props(w.props), votes(w.votes),
                         virtual_last_update(w.virtual_last_update), virtual_position(w.virtual_position),
                         virtual_scheduled_time(w.virtual_scheduled_time), last_work(w.last_work),
@@ -30,7 +30,6 @@ namespace golos { namespace plugins { namespace witness_api {
                 uint32_t total_missed;
                 uint64_t last_aslot;
                 uint64_t last_confirmed_block_num;
-                uint64_t pow_worker;
                 public_key_type signing_key;
                 chain_properties props;
                 share_type votes;
@@ -49,9 +48,8 @@ namespace golos { namespace plugins { namespace witness_api {
 
 
 FC_REFLECT((golos::plugins::witness_api::witness_api_object),
-           (id)(owner)(created)(url)(votes)(virtual_last_update)(virtual_position)(virtual_scheduled_time)(
-                   total_missed)(last_aslot)(last_confirmed_block_num)(pow_worker)(signing_key)(props)
-                   (last_work)(running_version)(hardfork_version_vote)(
-                   hardfork_time_vote))
+           (id)(owner)(created)(url)(votes)(virtual_last_update)(virtual_position)(virtual_scheduled_time)
+           (total_missed)(last_aslot)(last_confirmed_block_num)(signing_key)(props)
+           (last_work)(running_version)(hardfork_version_vote)(hardfork_time_vote))
 
 #endif //GOLOS_WITNESS_API_OBJ_HPP

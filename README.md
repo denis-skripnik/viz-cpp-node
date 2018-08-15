@@ -56,16 +56,12 @@ This same file is baked into the docker images and can be overridden by
 setting `STEEMD_SEED_NODES` in the container environment at `docker run`
 time to a whitespace delimited list of seed nodes (with port).
 
-# How to Mine
+# How to produce blocks
 
-The mining algorithm used by Golos requires the owner to have access to the
-private key used by the account. This means it does not favor mining pools.
+The produce blocks algorithm used by VIZ requires the owner to have access to the
+private key used by the account.
 
-    ./golosd --miner=["accountname","${WIFPRIVATEKEY}"] \
-        --witness="accountname" --seed-node="95.85.13.229:2225"
-
-Make sure that your accountname is unique and not already used by someone
-else or your proof of work might not be accepted by the blockchain.
+    ./golosd --witness="accountname" --seed-node="95.85.13.229:2225"
 
 # Building
 

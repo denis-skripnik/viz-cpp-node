@@ -43,7 +43,6 @@ using namespace golos::api;
 using plugins::json_rpc::msg_pack;
 
 
-DEFINE_API_ARGS(get_miner_queue,                  msg_pack, std::vector<account_name_type>)
 DEFINE_API_ARGS(get_active_witnesses,             msg_pack, std::vector<account_name_type>)
 DEFINE_API_ARGS(get_witness_schedule,             msg_pack, golos::chain::witness_schedule_object)
 DEFINE_API_ARGS(get_witnesses,                    msg_pack, std::vector<optional<witness_api_object> >)
@@ -82,7 +81,6 @@ public:
     }
 
     DECLARE_API(
-        (get_miner_queue)
         (get_active_witnesses)
         (get_witness_schedule)
         (get_witnesses)

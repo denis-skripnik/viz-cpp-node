@@ -99,7 +99,6 @@ void plugin::plugin_impl::on_applied_block(const protocol::signed_block &b) {
     info.average_block_size = dgpo.average_block_size;
     info.aslot = dgpo.current_aslot;
     info.last_irreversible_block_num = dgpo.last_irreversible_block_num;
-    info.num_pow_witnesses = dgpo.num_pow_witnesses;
     return;
 }
 

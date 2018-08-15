@@ -17,7 +17,6 @@ public:
 
     ~witness_plugin_impl() = default;
 
-    std::vector<account_name_type> get_miner_queue() const;
     std::vector<optional<witness_api_object>> get_witnesses(const std::vector<witness_object::id_type> &witness_ids) const;
     fc::optional<witness_api_object> get_witness_by_account(std::string account_name) const;
     std::vector<witness_api_object> get_witnesses_by_vote(std::string from, uint32_t limit) const;
@@ -26,27 +25,6 @@ public:
 
     golos::chain::database& database;
 };
-
-std::vector<account_name_type> plugin::witness_plugin_impl::get_miner_queue() const {
-    std::vector<account_name_type> result;
-    const auto &pow_idx = database.get_index<witness_index>().indices().get<by_pow>();
-
-    auto itr = pow_idx.upper_bound(0);
-    while (itr != pow_idx.end()) {
-        if (itr->pow_worker) {
-            result.push_back(itr->owner);
-        }
-        ++itr;
-    }
-    return result;
-}
-
-DEFINE_API(plugin, get_miner_queue) {
-    return my->database.with_weak_read_lock([&]() {
-        return my->get_miner_queue();
-    });
-}
-
 
 DEFINE_API(plugin, get_active_witnesses) {
     return my->database.with_weak_read_lock([&]() {

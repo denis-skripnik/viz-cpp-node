@@ -163,7 +163,6 @@ struct remote_private_message {
 * Class is used by wallet to send formatted API calls to witness_api plugin on remote node.
 */
 struct remote_witness_api {
-    vector< account_name_type > get_miner_queue();
     vector< account_name_type > get_active_witnesses();
     golos::chain::witness_schedule_object get_witness_schedule();
     vector< optional< witness_api::witness_api_object > > get_witnesses( vector< witness_id_type > );
@@ -286,7 +285,6 @@ FC_API( golos::wallet::remote_account_by_key,
  * Declaration of remote API formatter to witness_api plugin on remote node
  */
 FC_API( golos::wallet::remote_witness_api,
-        (get_miner_queue)
         (get_active_witnesses)
         (get_witness_schedule)
         (get_witnesses)

@@ -5,7 +5,6 @@
 #include <golos/protocol/asset.hpp>
 
 #include <fc/utf8.hpp>
-#include <fc/crypto/equihash.hpp>
 
 namespace golos { namespace protocol {
 
@@ -479,51 +478,6 @@ namespace golos { namespace protocol {
         };
 
 
-        struct pow2_input {
-            account_name_type worker_account;
-            block_id_type prev_block;
-            uint64_t nonce = 0;
-        };
-
-
-        struct pow2 {
-            pow2_input input;
-            uint32_t pow_summary = 0;
-
-            void create(const block_id_type &prev_block, const account_name_type &account_name, uint64_t nonce);
-
-            void validate() const;
-        };
-
-        struct equihash_pow {
-            pow2_input input;
-            fc::equihash::proof proof;
-            block_id_type prev_block;
-            uint32_t pow_summary = 0;
-
-            void create(const block_id_type &recent_block, const account_name_type &account_name, uint32_t nonce);
-
-            void validate() const;
-        };
-
-        typedef fc::static_variant<pow2, equihash_pow> pow2_work;
-
-        struct pow2_operation : public base_operation {
-            pow2_work work;
-            optional<public_key_type> new_owner_key;
-            chain_properties props;
-
-            void validate() const;
-
-            void get_required_active_authorities(flat_set<account_name_type> &a) const;
-
-            void get_required_authorities(vector<authority> &a) const {
-                if (new_owner_key) {
-                    a.push_back(authority(1, *new_owner_key, 1));
-                }
-            }
-        };
-
         /**
          * All account recovery requests come from a listed recovery account. This
          * is secure based on the assumption that only a trusted account should be
@@ -678,18 +632,11 @@ namespace golos { namespace protocol {
 } } // golos::protocol
 
 
-FC_REFLECT((golos::protocol::pow2), (input)(pow_summary))
-FC_REFLECT((golos::protocol::pow2_input), (worker_account)(prev_block)(nonce))
-FC_REFLECT((golos::protocol::equihash_pow), (input)(proof)(prev_block)(pow_summary))
-
 FC_REFLECT(
     (golos::protocol::chain_properties),
     (account_creation_fee)(maximum_block_size)
     (create_account_delegation_ratio)
     (create_account_delegation_time)(min_delegation))
-
-FC_REFLECT_TYPENAME((golos::protocol::pow2_work))
-FC_REFLECT((golos::protocol::pow2_operation), (work)(new_owner_key)(props))
 
 FC_REFLECT((golos::protocol::account_create_operation),
     (fee)(delegation)(creator)(new_account_name)(owner)(active)(posting)(memo_key)(json_metadata)(referrer)(extensions));

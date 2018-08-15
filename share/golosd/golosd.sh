@@ -32,15 +32,6 @@ if [[ ! -z "$STEEMD_WITNESS_NAME" ]]; then
     ARGS+=" --witness=\"$STEEMD_WITNESS_NAME\""
 fi
 
-if [[ ! -z "$STEEMD_MINER_NAME" ]]; then
-    ARGS+=" --miner=[\"$STEEMD_MINER_NAME\",\"$STEEMD_PRIVATE_KEY\"]"
-    if [[ ! -z "$STEEMD_MINING_THREADS" ]]; then
-        ARGS+=" --mining-threads=$STEEMD_MINING_THREADS"
-    else
-        ARGS+=" --mining-threads=$(nproc)"
-    fi
-fi
-
 if [[ ! -z "$STEEMD_PRIVATE_KEY" ]]; then
     ARGS+=" --private-key=$STEEMD_PRIVATE_KEY"
 fi

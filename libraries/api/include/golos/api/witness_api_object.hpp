@@ -19,7 +19,6 @@ namespace golos { namespace api {
         uint32_t total_missed;
         uint64_t last_aslot;
         uint64_t last_confirmed_block_num;
-        uint64_t pow_worker;
         public_key_type signing_key;
         api::chain_api_properties props;
         share_type votes;
@@ -38,5 +37,5 @@ namespace golos { namespace api {
 FC_REFLECT(
     (golos::api::witness_api_object),
     (id)(owner)(created)(url)(votes)(virtual_last_update)(virtual_position)(virtual_scheduled_time)
-    (total_missed)(last_aslot)(last_confirmed_block_num)(pow_worker)(signing_key)(props)
+    (total_missed)(last_aslot)(last_confirmed_block_num)(signing_key)(props)
     (last_work)(running_version)(hardfork_version_vote)(hardfork_time_vote))

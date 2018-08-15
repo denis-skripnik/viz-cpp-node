@@ -285,17 +285,6 @@ namespace mongo_db {
         return body;
     }
 
-    auto operation_writer::operator()(const pow2_operation& op) -> result_type {
-        result_type body;
-
-        format_chain_properties(body, op.props);
-        if (op.new_owner_key) {
-            format_value(body, "new_owner_key", (std::string)(*op.new_owner_key));
-        }
-
-        return body;
-    }
-
     auto operation_writer::operator()(const escrow_approve_operation& op) -> result_type {
         result_type body;
 

@@ -12,7 +12,6 @@ struct block_info {
     uint32_t average_block_size = 0;
     uint64_t aslot = 0;
     uint32_t last_irreversible_block_num = 0;
-    uint32_t num_pow_witnesses = 0;
 };
 
 struct block_with_info {
@@ -29,7 +28,6 @@ FC_REFLECT( (golos::plugins::block_info::block_info),
     (average_block_size)
     (aslot)
     (last_irreversible_block_num)
-    (num_pow_witnesses)
 )
 
 
