@@ -43,6 +43,7 @@ public:
     uint32_t comment_count = 0;
     uint32_t vote_count = 0;
     uint32_t post_count = 0;
+    uint64_t awarded_rshares = 0;
 
     uint16_t voting_power = STEEMIT_100_PERCENT;   ///< current voting power of this account, it falls after every vote
     time_point_sec last_vote_time; ///< used to increase the voting power of this account the longer it goes without voting.
@@ -430,9 +431,8 @@ FC_REFLECT((golos::chain::account_object),
         (id)(name)(memo_key)(proxy)(referrer)(last_account_update)
                 (created)(mined)
                 (recovery_account)(last_account_recovery)
-                (comment_count)(vote_count)(post_count)(voting_power)(last_vote_time)
-                (balance)
-                (vesting_shares)(delegated_vesting_shares)(received_vesting_shares)
+                (comment_count)(vote_count)(post_count)(awarded_rshares)(voting_power)(last_vote_time)
+                (balance)(vesting_shares)(delegated_vesting_shares)(received_vesting_shares)
                 (vesting_withdraw_rate)(next_vesting_withdrawal)(withdrawn)(to_withdraw)(withdraw_routes)
                 (curation_rewards)
                 (posting_rewards)

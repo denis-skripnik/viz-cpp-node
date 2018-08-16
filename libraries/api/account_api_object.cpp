@@ -11,7 +11,7 @@ account_api_object::account_api_object(const account_object& a, const golos::cha
         last_account_update(a.last_account_update), created(a.created), mined(a.mined),
         recovery_account(a.recovery_account), last_account_recovery(a.last_account_recovery),
         comment_count(a.comment_count), vote_count(a.vote_count), post_count(a.post_count),
-        voting_power(a.voting_power), last_vote_time(a.last_vote_time),
+        awarded_rshares(a.awarded_rshares), voting_power(a.voting_power), last_vote_time(a.last_vote_time),
         balance(a.balance), curation_rewards(a.curation_rewards), posting_rewards(a.posting_rewards),
         vesting_shares(a.vesting_shares),
         delegated_vesting_shares(a.delegated_vesting_shares), received_vesting_shares(a.received_vesting_shares),
