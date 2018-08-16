@@ -898,8 +898,8 @@ namespace golos { namespace chain {
                     (uint128_t(voter.effective_vesting_shares().amount.value) * used_power) /
                     (STEEMIT_100_PERCENT)).to_uint64();
 
-                FC_ASSERT(abs_rshares > 30000000 || o.weight ==
-                                                    0, "Voting weight is too small, please accumulate more voting power or steem power.");
+                FC_ASSERT(abs_rshares > 1000000 || o.weight ==
+                                                    0, "Voting weight is too small, please accumulate more Shares");
 
                 // Lazily delete vote
                 if (itr != comment_vote_idx.end() && itr->num_changes == -1) {
@@ -990,18 +990,7 @@ namespace golos { namespace chain {
                                      fc::uint128_t(comment.vote_rshares.value)) /
                                     (1 + comment.vote_rshares.value)).to_uint64();
                             cv.weight = new_weight - old_weight;
-
                             max_vote_weight = cv.weight;
-
-                            /// discount weight by time
-                            uint128_t w(max_vote_weight);
-                            uint64_t delta_t = std::min(uint64_t((
-                                    cv.last_update -
-                                    comment.created).to_seconds()), uint64_t(STEEMIT_REVERSE_AUCTION_WINDOW_SECONDS));
-
-                            w *= delta_t;
-                            w /= STEEMIT_REVERSE_AUCTION_WINDOW_SECONDS;
-                            cv.weight = w.to_uint64();
                         } else {
                             cv.weight = 0;
                         }

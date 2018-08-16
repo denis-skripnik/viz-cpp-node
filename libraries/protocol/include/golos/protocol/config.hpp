@@ -47,7 +47,6 @@
 #define STEEMIT_VOTE_REGENERATION_SECONDS       (5*60*60*24) // 5 days
 #define STEEMIT_MAX_VOTE_CHANGES                5
 #define STEEMIT_UPVOTE_LOCKOUT                  (fc::minutes(1))
-#define STEEMIT_REVERSE_AUCTION_WINDOW_SECONDS  (60*30) /// 30 minutes
 #define STEEMIT_MIN_VOTE_INTERVAL_SEC           1
 #define STEEMIT_MAX_COMMENT_BENEFICIARIES       64
 #define STEEMIT_VOTE_POWER_RATE					1
