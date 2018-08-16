@@ -599,7 +599,7 @@ namespace golos { namespace protocol {
          *
          * On account creation the recovery account is set either to the creator of
          * the account (The account that pays the creation fee and is a signer on the transaction)
-         * or to the empty string if the account was mined. An account with no recovery
+         * or to the empty string if the account was in snapshot. An account with no recovery
          * has the top voted witness as a recovery account, at the time the recover
          * request is created. Note: This does mean the effective recovery account
          * of an account with no listed recovery account can change at any time as

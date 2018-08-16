@@ -85,7 +85,6 @@ namespace golos { namespace chain {
                 acc.memo_key = o.memo_key;
                 acc.created = now;
                 acc.last_vote_time = now;
-                acc.mined = false;
                 acc.recovery_account = o.creator;
                 acc.received_vesting_shares = o.delegation;
                 if(o.referrer.size()){
@@ -611,7 +610,6 @@ namespace golos { namespace chain {
                         acc.created = _db.head_block_time();
                         acc.recovery_account = "";
                         acc.created = now;
-                        acc.mined = false;
                     });
                     _db.create<account_authority_object>([&](account_authority_object &auth) {
                     	auth.account = new_account_name;

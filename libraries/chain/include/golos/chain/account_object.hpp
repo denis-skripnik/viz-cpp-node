@@ -37,7 +37,6 @@ public:
     time_point_sec last_account_update;
 
     time_point_sec created;
-    bool mined = true;
     account_name_type recovery_account;
     time_point_sec last_account_recovery;
     uint32_t comment_count = 0;
@@ -429,7 +428,7 @@ change_recovery_account_request_index;
 
 FC_REFLECT((golos::chain::account_object),
         (id)(name)(memo_key)(proxy)(referrer)(last_account_update)
-                (created)(mined)
+                (created)
                 (recovery_account)(last_account_recovery)
                 (comment_count)(vote_count)(post_count)(awarded_rshares)(voting_power)(last_vote_time)
                 (balance)(vesting_shares)(delegated_vesting_shares)(received_vesting_shares)

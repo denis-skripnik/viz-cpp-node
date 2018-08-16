@@ -35,7 +35,6 @@ struct account_api_object {
     time_point_sec last_account_update;
 
     time_point_sec created;
-    bool mined;
     account_name_type recovery_account;
     time_point_sec last_account_recovery;
     uint32_t comment_count;
@@ -78,7 +77,7 @@ struct account_api_object {
 
 FC_REFLECT((golos::api::account_api_object),
     (id)(name)(owner)(active)(posting)(memo_key)(json_metadata)(proxy)(referrer)(last_owner_update)(last_account_update)
-    (created)(mined)
+    (created)
     (recovery_account)(last_account_recovery)(comment_count)(vote_count)
     (post_count)(awarded_rshares)(voting_power)(last_vote_time)(balance)
     (vesting_shares)(delegated_vesting_shares)(received_vesting_shares)

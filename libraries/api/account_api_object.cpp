@@ -8,7 +8,7 @@ using golos::chain::account_metadata_object;
 
 account_api_object::account_api_object(const account_object& a, const golos::chain::database& db)
     :   id(a.id), name(a.name), memo_key(a.memo_key), proxy(a.proxy), referrer(a.referrer),
-        last_account_update(a.last_account_update), created(a.created), mined(a.mined),
+        last_account_update(a.last_account_update), created(a.created),
         recovery_account(a.recovery_account), last_account_recovery(a.last_account_recovery),
         comment_count(a.comment_count), vote_count(a.vote_count), post_count(a.post_count),
         awarded_rshares(a.awarded_rshares), voting_power(a.voting_power), last_vote_time(a.last_vote_time),

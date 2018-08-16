@@ -2691,7 +2691,6 @@ namespace golos { namespace chain {
                             a.name = account.login;
                             a.memo_key = account_public_key;
                             a.recovery_account = STEEMIT_INITIATOR_NAME;
-                            a.mined = false;
                             a.created = STEEMIT_GENESIS_TIME;
                             a.last_vote_time = STEEMIT_GENESIS_TIME;
                          } );

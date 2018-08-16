@@ -151,7 +151,6 @@ namespace mongo_db {
             format_value(body, "last_account_update", account.last_account_update);
 
             format_value(body, "created", account.created);
-            format_value(body, "mined", account.mined);
             format_value(body, "recovery_account", account.recovery_account);
             format_value(body, "last_account_recovery", account.last_account_recovery);
             format_value(body, "comment_count", account.comment_count);
