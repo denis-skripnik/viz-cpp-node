@@ -1489,6 +1489,8 @@ namespace golos { namespace chain {
             calc_median(&chain_properties::create_account_delegation_ratio);
             calc_median(&chain_properties::create_account_delegation_time);
             calc_median(&chain_properties::min_delegation);
+            calc_median(&chain_properties::min_curation_percent);
+            calc_median(&chain_properties::max_curation_percent);
 
             modify(wso, [&](witness_schedule_object &_wso) {
                 _wso.median_props = median_props;
@@ -1917,8 +1919,11 @@ namespace golos { namespace chain {
 
                     asset total_payout;
                     if (reward_tokens > 0) {
+                        const witness_schedule_object &props = get_witness_schedule_object();
+                        auto consensus_curation_percent=std::min(comment.curation_percent,props.median_props.max_curation_percent);
+                        consensus_curation_percent=std::max(consensus_curation_percent,props.median_props.min_curation_percent);
                         share_type curation_tokens = ((reward_tokens *
-                                                       STEEMIT_REWARD_FUND_CURATOR_PERCENT) /
+                                                      consensus_curation_percent) /
                                                       STEEMIT_100_PERCENT).to_uint64();
 
                         share_type author_tokens = reward_tokens.to_uint64() - curation_tokens;
@@ -1961,6 +1966,7 @@ namespace golos { namespace chain {
 #ifndef IS_LOW_MEM
                         modify(comment, [&](comment_object &c) {
                             c.author_rewards += author_tokens;
+                            c.consensus_curation_percent = consensus_curation_percent;
                         });
 
                         modify(get_account(comment.author), [&](account_object &a) {
@@ -2031,7 +2037,7 @@ namespace golos { namespace chain {
         *  This method pays out vesting, reward shares and witnesses every block.
         */
         void database::process_funds() {
-        const auto &props = get_dynamic_global_properties();
+            const auto &props = get_dynamic_global_properties();
             share_type inflation_rate = int64_t( STEEMIT_FIXED_INFLATION );
             share_type new_supply = int64_t( STEEMIT_INIT_SUPPLY );
             share_type inflation_per_year = inflation_rate * int64_t( STEEMIT_INIT_SUPPLY ) / int64_t( STEEMIT_100_PERCENT );

@@ -95,6 +95,9 @@ namespace golos {
             time_point_sec cashout_time; /// 24 hours from the weighted average of vote time
             uint64_t total_vote_weight = 0; /// the total weight of voting rewards, used to calculate pro-rata share of curation payouts
 
+            int16_t curation_percent = 0;
+            int16_t consensus_curation_percent = 0;
+
             /** tracks the total payout this comment has received over time, measured in VIZ */
             asset total_payout_value = asset(0, STEEM_SYMBOL);
             asset curator_payout_value = asset(0, STEEM_SYMBOL);

@@ -100,6 +100,7 @@ namespace golos { namespace protocol {
 
             string title;
             string body;
+            int16_t curation_percent;
             string json_metadata;
             comment_extensions_type extensions;
 
@@ -379,6 +380,12 @@ namespace golos { namespace protocol {
              */
             asset min_delegation = asset(GOLOS_MIN_DELEGATION, STEEM_SYMBOL);
 
+            /**
+             *  Curation percent range, check median value on payout
+             */
+            int16_t min_curation_percent = STEEMIT_REWARD_FUND_CURATOR_PERCENT;
+            int16_t max_curation_percent = STEEMIT_REWARD_FUND_CURATOR_PERCENT;
+
             void validate() const {
                 FC_ASSERT(account_creation_fee.amount >= STEEMIT_MIN_ACCOUNT_CREATION_FEE);
                 FC_ASSERT(account_creation_fee.symbol == STEEM_SYMBOL);
@@ -387,6 +394,9 @@ namespace golos { namespace protocol {
                 FC_ASSERT(create_account_delegation_time >= 0);
                 FC_ASSERT(min_delegation.amount > 0);
                 FC_ASSERT(min_delegation.symbol == STEEM_SYMBOL);
+                FC_ASSERT(min_curation_percent >= 0);
+                FC_ASSERT(max_curation_percent <= STEEMIT_100_PERCENT);
+                FC_ASSERT(min_curation_percent <= max_curation_percent);
             }
 
             chain_properties& operator=(const chain_properties&) = default;
@@ -636,7 +646,8 @@ FC_REFLECT(
     (golos::protocol::chain_properties),
     (account_creation_fee)(maximum_block_size)
     (create_account_delegation_ratio)
-    (create_account_delegation_time)(min_delegation))
+    (create_account_delegation_time)(min_delegation)
+    (min_curation_percent)(max_curation_percent))
 
 FC_REFLECT((golos::protocol::account_create_operation),
     (fee)(delegation)(creator)(new_account_name)(owner)(active)(posting)(memo_key)(json_metadata)(referrer)(extensions));
@@ -658,7 +669,7 @@ FC_REFLECT((golos::protocol::set_withdraw_vesting_route_operation), (from_accoun
 FC_REFLECT((golos::protocol::witness_update_operation), (owner)(url)(block_signing_key))
 FC_REFLECT((golos::protocol::account_witness_vote_operation), (account)(witness)(approve))
 FC_REFLECT((golos::protocol::account_witness_proxy_operation), (account)(proxy))
-FC_REFLECT((golos::protocol::comment_operation), (parent_author)(parent_permlink)(author)(permlink)(title)(body)(json_metadata)(extensions))
+FC_REFLECT((golos::protocol::comment_operation), (parent_author)(parent_permlink)(author)(permlink)(title)(body)(curation_percent)(json_metadata)(extensions))
 FC_REFLECT((golos::protocol::vote_operation), (voter)(author)(permlink)(weight))
 FC_REFLECT((golos::protocol::custom_json_operation), (required_auths)(required_posting_auths)(id)(json))
 

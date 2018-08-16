@@ -326,6 +326,7 @@ namespace golos { namespace chain {
                         com.active = com.last_update;
                         com.last_payout = fc::time_point_sec::min();
                         com.cashout_time = com.created + STEEMIT_CASHOUT_WINDOW_SECONDS;
+                        com.curation_percent = o.curation_percent;
 
                         if (o.parent_author == STEEMIT_ROOT_POST_PARENT) {
                             com.parent_author = "";

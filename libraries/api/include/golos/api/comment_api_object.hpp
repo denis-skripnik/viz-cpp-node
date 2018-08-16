@@ -40,6 +40,8 @@ namespace golos { namespace api {
 
         time_point_sec cashout_time;
         uint64_t total_vote_weight;
+        int16_t curation_percent;
+        int16_t consensus_curation_percent;
 
         protocol::asset total_payout_value;
         protocol::asset curator_payout_value;
@@ -59,7 +61,7 @@ FC_REFLECT(
     (golos::api::comment_api_object),
     (id)(author)(permlink)(parent_author)(parent_permlink)(title)(body)(json_metadata)(last_update)
     (created)(active)(last_payout)(depth)(children)(children_rshares2)(net_rshares)(abs_rshares)
-    (vote_rshares)(cashout_time)(total_vote_weight)
+    (vote_rshares)(cashout_time)(total_vote_weight)(curation_percent)(consensus_curation_percent)
     (total_payout_value)(curator_payout_value)(author_rewards)(net_votes)
     (root_comment)(beneficiaries))
 

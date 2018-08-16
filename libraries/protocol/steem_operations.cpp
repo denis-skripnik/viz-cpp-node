@@ -118,6 +118,9 @@ namespace golos { namespace protocol {
             validate_permlink(parent_permlink);
             validate_permlink(permlink);
 
+            FC_ASSERT(curation_percent >= 0);
+            FC_ASSERT(curation_percent <= STEEMIT_100_PERCENT);
+
             if (json_metadata.size() > 0) {
                 FC_ASSERT(fc::json::is_valid(json_metadata), "JSON Metadata not valid JSON");
             }

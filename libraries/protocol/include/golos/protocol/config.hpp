@@ -33,9 +33,9 @@
 #define STEEMIT_MAX_WITNESS_MISSED_BLOCKS       200
 
 #define STEEMIT_INITIATOR_NAME                 "viz"
-#define STEEMIT_NUM_INITIATORS                 1
-#define STEEMIT_MAX_TOP_WITNESSES             10
-#define STEEMIT_MAX_SUPPORT_WITNESSES            11
+#define STEEMIT_NUM_INITIATORS                  1
+#define STEEMIT_MAX_TOP_WITNESSES               10
+#define STEEMIT_MAX_SUPPORT_WITNESSES           11
 #define STEEMIT_MAX_WITNESSES                   (STEEMIT_MAX_TOP_WITNESSES+STEEMIT_MAX_SUPPORT_WITNESSES) /// 21 is more than enough
 #define STEEMIT_HARDFORK_REQUIRED_WITNESSES     17 // 17 of the 20 dpos witnesses (19 elected and 1 virtual time) required for hardfork. This guarantees 75% participation on all subsequent rounds.
 #define STEEMIT_MAX_TIME_UNTIL_EXPIRATION       (60*60) // seconds,  aka: 1 hour

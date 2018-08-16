@@ -2020,7 +2020,7 @@ fc::ecc::private_key wallet_api::derive_private_key(const std::string& prefix_st
             return my->_remote_database_api->get_withdraw_routes( account, type );
         }
 
-        annotated_signed_transaction wallet_api::post_comment( string author, string permlink, string parent_author, string parent_permlink, string title, string body, string json, bool broadcast ) {
+        annotated_signed_transaction wallet_api::post_comment( string author, string permlink, string parent_author, string parent_permlink, string title, string body, int16_t curation_percent, string json, bool broadcast ) {
             FC_ASSERT( !is_locked() );
             comment_operation op;
             op.parent_author = parent_author;
@@ -2029,6 +2029,7 @@ fc::ecc::private_key wallet_api::derive_private_key(const std::string& prefix_st
             op.permlink = permlink;
             op.title = title;
             op.body = body;
+            op.curation_percent = curation_percent;
             op.json_metadata = json;
 
             signed_transaction tx;
