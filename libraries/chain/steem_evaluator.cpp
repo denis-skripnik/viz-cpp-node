@@ -88,9 +88,9 @@ namespace golos { namespace chain {
                 acc.recovery_account = o.creator;
                 acc.received_vesting_shares = o.delegation;
                 if(o.referrer.size()){
-                	const auto &referrer = _db.get_account(o.referrer);
-		            acc.referrer = referrer.name;
-	            }
+                    const auto &referrer = _db.get_account(o.referrer);
+                    acc.referrer = referrer.name;
+                }
             });
             store_account_json_metadata(_db, o.new_account_name, o.json_metadata);
 
@@ -591,18 +591,18 @@ namespace golos { namespace chain {
 
             //VIZ support anonymous account creation
             if(STEEMIT_ANONYMOUS_ACCOUNT==to_account.name){
-            	const auto& median_props = _db.get_witness_schedule_object().median_props;
-            	FC_ASSERT(o.amount >= median_props.account_creation_fee,
-            	    "Inssufficient amount ${f} required, ${p} provided.",
-            	    ("f", median_props.account_creation_fee)("p", o.amount));
-            	if(o.memo.size()){
-            		public_key_type key_from_memo(o.memo);
-            		const auto& meta = _db.get<account_metadata_object, by_account>(to_account.name);
-            		int anonymous_num=std::stoi(meta.json_metadata.c_str());
-            		anonymous_num++;
-            		store_account_json_metadata(_db, STEEMIT_ANONYMOUS_ACCOUNT,fc::to_string(anonymous_num));
-            		const auto now = _db.head_block_time();
-            		account_name_type new_account_name="n" + fc::to_string(anonymous_num) + "." + STEEMIT_ANONYMOUS_ACCOUNT;
+                const auto& median_props = _db.get_witness_schedule_object().median_props;
+                FC_ASSERT(o.amount >= median_props.account_creation_fee,
+                    "Inssufficient amount ${f} required, ${p} provided.",
+                    ("f", median_props.account_creation_fee)("p", o.amount));
+                if(o.memo.size()){
+                    public_key_type key_from_memo(o.memo);
+                    const auto& meta = _db.get<account_metadata_object, by_account>(to_account.name);
+                    int anonymous_num=std::stoi(meta.json_metadata.c_str());
+                    anonymous_num++;
+                    store_account_json_metadata(_db, STEEMIT_ANONYMOUS_ACCOUNT,fc::to_string(anonymous_num));
+                    const auto now = _db.head_block_time();
+                    account_name_type new_account_name="n" + fc::to_string(anonymous_num) + "." + STEEMIT_ANONYMOUS_ACCOUNT;
 
                     _db.create<account_object>([&](account_object &acc) {
                         acc.name = new_account_name;
@@ -612,11 +612,11 @@ namespace golos { namespace chain {
                         acc.created = now;
                     });
                     _db.create<account_authority_object>([&](account_authority_object &auth) {
-                    	auth.account = new_account_name;
-                    	auth.owner.add_authority(key_from_memo, 1);
-                    	auth.owner.weight_threshold = 1;
-                    	auth.active = auth.owner;
-                    	auth.posting = auth.active;
+                        auth.account = new_account_name;
+                        auth.owner.add_authority(key_from_memo, 1);
+                        auth.owner.weight_threshold = 1;
+                        auth.active = auth.owner;
+                        auth.posting = auth.active;
                     });
                     _db.create<account_metadata_object>([&](account_metadata_object& m) {
                         m.account = new_account_name;
@@ -624,7 +624,7 @@ namespace golos { namespace chain {
                     const auto &new_account = _db.get_account(new_account_name);
                     _db.adjust_balance(to_account, -o.amount);
                     _db.create_vesting(new_account, o.amount);
-	            }
+                }
             }
         }
 
@@ -835,28 +835,6 @@ namespace golos { namespace chain {
                 const auto &comment = _db.get_comment(o.author, o.permlink);
                 const auto &voter = _db.get_account(o.voter);
 
-                if (_db.calculate_discussion_payout_time(comment) ==
-                    fc::time_point_sec::maximum()) {
-                    if(!_db.clear_votes()) {
-                        const auto& comment_vote_idx = _db.get_index< comment_vote_index >().indices().get< by_comment_voter >();
-                        auto itr = comment_vote_idx.find( std::make_tuple( comment.id, voter.id ) );
-
-                        if( itr == comment_vote_idx.end() )
-                            _db.create< comment_vote_object >( [&]( comment_vote_object& cvo ) {
-                                cvo.voter = voter.id;
-                                cvo.comment = comment.id;
-                                cvo.vote_percent = o.weight;
-                                cvo.last_update = _db.head_block_time();
-                            });
-                        else
-                            _db.modify( *itr, [&]( comment_vote_object& cvo ) {
-                                cvo.vote_percent = o.weight;
-                                cvo.last_update = _db.head_block_time();
-                        });
-                    }
-                    return;
-                }
-
                 const auto &comment_vote_idx = _db.get_index<comment_vote_index>().indices().get<by_comment_voter>();
                 auto itr = comment_vote_idx.find(std::make_tuple(comment.id, voter.id));
 
@@ -919,89 +897,114 @@ namespace golos { namespace chain {
                                   "Cannot increase reward of post within the last minute before payout.");
                     }
 
-                    //used_power /= (50*7); /// a 100% vote means use .28% of voting power which should force users to spread their votes around over 50+ posts day for a week
-                    //if( used_power == 0 ) used_power = 1;
-
-                    _db.modify(voter, [&](account_object &a) {
-                        a.voting_power = current_power - used_power;
-                        a.last_vote_time = _db.head_block_time();
-                        a.vote_count++;
-                    });
-
-                    /// if the current net_rshares is less than 0, the post is getting 0 rewards so it is not factored into total rshares^2
-                    fc::uint128_t old_rshares = std::max(comment.net_rshares.value, int64_t(0));
-
                     FC_ASSERT(abs_rshares > 0, "Cannot vote with 0 rshares.");
 
-                    auto old_vote_rshares = comment.vote_rshares;
-
-                    _db.modify(comment, [&](comment_object &c) {
-                        c.net_rshares += rshares;
-                        c.abs_rshares += abs_rshares;
-                        if (rshares > 0) {
-                            c.vote_rshares += rshares;
-                        }
-                        if (rshares > 0) {
-                            c.net_votes++;
-                        } else {
-                            c.net_votes--;
-                        }
-                    });
-
-                    fc::uint128_t new_rshares = std::max(comment.net_rshares.value, int64_t(0));
-
-                    uint64_t max_vote_weight = 0;
-
-                   /** this verifies uniqueness of voter
-                    *
-                    *  cv.weight / c.total_vote_weight ==> % of rshares increase that is accounted for by the vote
-                    *
-                    *  W(R) = B * R / ( R + 2S )
-                    *  W(R) is bounded above by B. B is fixed at 2^64 - 1, so all weights fit in a 64 bit integer.
-                    *
-                    *  The equation for an individual vote is:
-                    *    W(R_N) - W(R_N-1), which is the delta increase of proportional weight
-                    *
-                    *  c.total_vote_weight =
-                    *    W(R_1) - W(R_0) +
-                    *    W(R_2) - W(R_1) + ...
-                    *    W(R_N) - W(R_N-1) = W(R_N) - W(R_0)
-                    *
-                    *  Since W(R_0) = 0, c.total_vote_weight is also bounded above by B and will always fit in a 64 bit integer.
-                    *
-                    **/
-
-                    _db.create<comment_vote_object>([&](comment_vote_object &cv) {
-                        cv.voter = voter.id;
-                        cv.comment = comment.id;
-                        cv.rshares = rshares;
-                        cv.vote_percent = o.weight;
-                        cv.last_update = _db.head_block_time();
-
-                        if (rshares > 0 && (comment.last_payout == fc::time_point_sec())) {
-                            uint64_t old_weight = (
-                                    (std::numeric_limits<uint64_t>::max() *
-                                     fc::uint128_t(old_vote_rshares.value)) /
-                                    (1 + old_vote_rshares.value)).to_uint64();
-                            uint64_t new_weight = (
-                                    (std::numeric_limits<uint64_t>::max() *
-                                     fc::uint128_t(comment.vote_rshares.value)) /
-                                    (1 + comment.vote_rshares.value)).to_uint64();
-                            cv.weight = new_weight - old_weight;
-                            max_vote_weight = cv.weight;
-                        } else {
-                            cv.weight = 0;
-                        }
-                    });
-
-                    if (max_vote_weight) // Optimization
-                    {
-                        _db.modify(comment, [&](comment_object &c) {
-                            c.total_vote_weight += max_vote_weight;
+                    if(voter.awarded_rshares>=abs_rshares){
+                        _db.modify(voter, [&](account_object &a) {
+                            a.awarded_rshares -= abs_rshares;
+                            a.last_vote_time = _db.head_block_time();
+                            a.vote_count++;
+                        });
+                    }
+                    else{
+                        _db.modify(voter, [&](account_object &a) {
+                            a.voting_power = current_power - used_power;
+                            a.last_vote_time = _db.head_block_time();
+                            a.vote_count++;
                         });
                     }
 
-                    _db.adjust_rshares2(comment, old_rshares, new_rshares);
+                    if (_db.calculate_discussion_payout_time(comment) ==
+                        fc::time_point_sec::maximum()) {
+                        // VIZ: if payout window closed then award author with rshares and create unchangable vote
+                        _db.modify(comment.autor, [&](account_object &a) {
+                            a.awarded_rshares +=abs_rshares;
+                        });
+                        _db.create<comment_vote_object>([&](comment_vote_object &cv) {
+                            cv.voter = voter.id;
+                            cv.comment = comment.id;
+                            cv.rshares = rshares;
+                            cv.vote_percent = o.weight;
+                            cv.last_update = _db.head_block_time();
+                            cv.weight = 0;
+                            cv.num_changes = -1;
+                        });
+                    }
+                    else{
+                        // VIZ: if payout window opened then create vote and calc new rshares for comment
+                        /// if the current net_rshares is less than 0, the post is getting 0 rewards so it is not factored into total rshares^2
+                        fc::uint128_t old_rshares = std::max(comment.net_rshares.value, int64_t(0));
+
+                        auto old_vote_rshares = comment.vote_rshares;
+
+                        _db.modify(comment, [&](comment_object &c) {
+                            c.net_rshares += rshares;
+                            c.abs_rshares += abs_rshares;
+                            if (rshares > 0) {
+                                c.vote_rshares += rshares;
+                            }
+                            if (rshares > 0) {
+                                c.net_votes++;
+                            } else {
+                                c.net_votes--;
+                            }
+                        });
+
+                        fc::uint128_t new_rshares = std::max(comment.net_rshares.value, int64_t(0));
+
+                        uint64_t max_vote_weight = 0;
+
+                       /** this verifies uniqueness of voter
+                        *
+                        *  cv.weight / c.total_vote_weight ==> % of rshares increase that is accounted for by the vote
+                        *
+                        *  W(R) = B * R / ( R + 2S )
+                        *  W(R) is bounded above by B. B is fixed at 2^64 - 1, so all weights fit in a 64 bit integer.
+                        *
+                        *  The equation for an individual vote is:
+                        *    W(R_N) - W(R_N-1), which is the delta increase of proportional weight
+                        *
+                        *  c.total_vote_weight =
+                        *    W(R_1) - W(R_0) +
+                        *    W(R_2) - W(R_1) + ...
+                        *    W(R_N) - W(R_N-1) = W(R_N) - W(R_0)
+                        *
+                        *  Since W(R_0) = 0, c.total_vote_weight is also bounded above by B and will always fit in a 64 bit integer.
+                        *
+                        **/
+
+                        _db.create<comment_vote_object>([&](comment_vote_object &cv) {
+                            cv.voter = voter.id;
+                            cv.comment = comment.id;
+                            cv.rshares = rshares;
+                            cv.vote_percent = o.weight;
+                            cv.last_update = _db.head_block_time();
+
+                            if (rshares > 0 && (comment.last_payout == fc::time_point_sec())) {
+                                uint64_t old_weight = (
+                                        (std::numeric_limits<uint64_t>::max() *
+                                         fc::uint128_t(old_vote_rshares.value)) /
+                                        (1 + old_vote_rshares.value)).to_uint64();
+                                uint64_t new_weight = (
+                                        (std::numeric_limits<uint64_t>::max() *
+                                         fc::uint128_t(comment.vote_rshares.value)) /
+                                        (1 + comment.vote_rshares.value)).to_uint64();
+                                cv.weight = new_weight - old_weight;
+                                max_vote_weight = cv.weight;
+                            } else {
+                                cv.weight = 0;
+                            }
+                        });
+
+                        if (max_vote_weight) // Optimization
+                        {
+                            _db.modify(comment, [&](comment_object &c) {
+                                c.total_vote_weight += max_vote_weight;
+                            });
+                        }
+
+                        _db.adjust_rshares2(comment, old_rshares, new_rshares);
+                    }
                 } else {
                     FC_ASSERT(itr->num_changes <
                               STEEMIT_MAX_VOTE_CHANGES, "Voter has used the maximum number of vote changes on this comment.");
