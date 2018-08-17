@@ -326,7 +326,7 @@ namespace golos { namespace chain {
 
             asset create_vesting(const account_object &to_account, asset steem);
 
-            void adjust_total_payout(const comment_object &a, const asset &payout, const asset &curator_value, const asset& beneficiary_value);
+            void adjust_total_payout(const comment_object &a, const asset &payout, const asset &shares_payout, const asset &curator_value, const asset& beneficiary_value);
 
             void update_witness_schedule();
 
@@ -366,8 +366,6 @@ namespace golos { namespace chain {
             void clear_witness_votes(const account_object &a);
 
             void process_vesting_withdrawals();
-
-            share_type pay_curators(const comment_object &c, share_type max_rewards);
 
             void cashout_comment_helper(const comment_object &comment);
 

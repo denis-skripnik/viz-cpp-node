@@ -1267,7 +1267,7 @@ namespace golos { namespace chain {
         }
 
         void database::update_witness_schedule() {
-        	if ((head_block_num() % STEEMIT_MAX_WITNESSES) != 0) return;
+            if ((head_block_num() % STEEMIT_MAX_WITNESSES) != 0) return;
             vector<account_name_type> active_witnesses;
             active_witnesses.reserve(STEEMIT_MAX_WITNESSES);
 
@@ -1611,14 +1611,14 @@ namespace golos { namespace chain {
                 auto converted_steem = null_account.vesting_shares *
                                        gpo.get_vesting_share_price();
 
-			modify(gpo, [&](dynamic_global_property_object &g) {
-			    g.total_vesting_shares -= null_account.vesting_shares;
-			    g.total_vesting_fund -= converted_steem;
-			});
+            modify(gpo, [&](dynamic_global_property_object &g) {
+                g.total_vesting_shares -= null_account.vesting_shares;
+                g.total_vesting_fund -= converted_steem;
+            });
 
-			modify(null_account, [&](account_object &a) {
-			    a.vesting_shares.amount = 0;
-			});
+            modify(null_account, [&](account_object &a) {
+                a.vesting_shares.amount = 0;
+            });
 
                 total_steem += converted_steem;
             }
@@ -1642,14 +1642,14 @@ namespace golos { namespace chain {
                 auto converted_steem = anonymous_account.vesting_shares *
                                        gpo.get_vesting_share_price();
 
-			modify(gpo, [&](dynamic_global_property_object &g) {
-			    g.total_vesting_shares -= anonymous_account.vesting_shares;
-			    g.total_vesting_fund -= converted_steem;
-			});
+            modify(gpo, [&](dynamic_global_property_object &g) {
+                g.total_vesting_shares -= anonymous_account.vesting_shares;
+                g.total_vesting_fund -= converted_steem;
+            });
 
-			modify(anonymous_account, [&](account_object &a) {
-			    a.vesting_shares.amount = 0;
-			});
+            modify(anonymous_account, [&](account_object &a) {
+                a.vesting_shares.amount = 0;
+            });
 
                 total_steem += converted_steem;
             }
@@ -1858,57 +1858,18 @@ namespace golos { namespace chain {
         void database::adjust_total_payout(
                 const comment_object &cur,
                 const asset &payout,
+                const asset &shares_payout,
                 const asset &curator_value,
                 const asset &beneficiary_value
         ) {
             modify(cur, [&](comment_object &c) {
-                if (c.total_payout_value.symbol == payout.symbol) {
-                    c.total_payout_value += payout;
-                    c.beneficiary_payout_value += beneficiary_value;
+                if (c.payout_value.symbol == payout.symbol) {
+                    c.payout_value += payout;
+                    c.shares_payout_value += shares_payout;
                     c.curator_payout_value += curator_value;
+                    c.beneficiary_payout_value += beneficiary_value;
                 }
             });
-            /// TODO: potentially modify author's total payout numbers as well
-        }
-
-/**
- *  This method will iterate through all comment_vote_objects and give them
- *  (max_rewards * weight) / c.total_vote_weight.
- *
- *  @returns unclaimed rewards.
- */
-        share_type database::pay_curators(const comment_object &c, share_type max_rewards) {
-            try {
-                uint128_t total_weight(c.total_vote_weight);
-                //edump( (total_weight)(max_rewards) );
-                share_type unclaimed_rewards = max_rewards;
-
-                if (c.total_vote_weight > 0) {
-                    const auto &cvidx = get_index<comment_vote_index>().indices().get<by_comment_weight_voter>();
-                    auto itr = cvidx.lower_bound(c.id);
-                    while (itr != cvidx.end() && itr->comment == c.id) {
-                        uint128_t weight(itr->weight);
-                        auto claim = ((max_rewards.value * weight) /
-                                      total_weight).to_uint64();
-                        if (claim > 0) // min_amt is non-zero satoshis
-                        {
-                            unclaimed_rewards -= claim;
-                            const auto &voter = get(itr->voter);
-                            auto reward = create_vesting(voter, asset(claim, STEEM_SYMBOL));
-
-                            push_virtual_operation(curation_reward_operation(voter.name, reward, c.author, to_string(c.permlink)));
-
-#ifndef IS_LOW_MEM
-                            modify(voter, [&](account_object &a) {
-                                a.curation_rewards += claim;
-                            });
-#endif
-                        }
-                        ++itr;
-                    }
-                }
-                return unclaimed_rewards;
-            } FC_CAPTURE_AND_RETHROW()
         }
 
         void database::cashout_comment_helper(const comment_object &comment) {
@@ -1928,39 +1889,70 @@ namespace golos { namespace chain {
 
                         share_type author_tokens = reward_tokens.to_uint64() - curation_tokens;
 
-                        author_tokens += pay_curators(comment, curation_tokens);
+                        // VIZ: pay_curators
+                        asset total_curation_shares = asset(0, VESTS_SYMBOL);
+                        uint128_t total_weight(comment.total_vote_weight);
+                        share_type unclaimed_rewards = curation_tokens;
+                        if (comment.total_vote_weight > 0) {
+                            const auto &cvidx = get_index<comment_vote_index>().indices().get<by_comment_weight_voter>();
+                            auto itr = cvidx.lower_bound(comment.id);
+                            while (itr != cvidx.end() && itr->comment == comment.id) {
+                                uint128_t weight(itr->weight);
+                                auto claim = ((curation_tokens.value * weight) /
+                                              total_weight).to_uint64();
+                                if (claim > 0) // min_amt is non-zero satoshis
+                                {
+                                    unclaimed_rewards -= claim;
+                                    const auto &voter = get(itr->voter);
+                                    auto reward = create_vesting(voter, asset(claim, STEEM_SYMBOL));
+                                    total_curation_shares += asset( reward.amount, VESTS_SYMBOL );
+                                    push_virtual_operation(curation_reward_operation(voter.name, reward, comment.author, to_string(comment.permlink)));
+#ifndef IS_LOW_MEM
+                                    modify(voter, [&](account_object &a) {
+                                        a.curation_rewards += claim;
+                                    });
+#endif
+                                }
+                                ++itr;
+                            }
+                        }
+
+                        author_tokens += unclaimed_rewards;
 
                         share_type total_beneficiary = 0;
+                        asset total_beneficiary_shares = asset(0, VESTS_SYMBOL);
 
                         for (auto &b : comment.beneficiaries) {
                             auto benefactor_tokens = (author_tokens * b.weight) / STEEMIT_100_PERCENT;
-                            auto vest_created = create_vesting(get_account(b.account), benefactor_tokens);
+                            auto shares_created = create_vesting(get_account(b.account), benefactor_tokens);
+                            total_beneficiary_shares += asset( shares_created.amount, VESTS_SYMBOL );
                             push_virtual_operation(
                                 comment_benefactor_reward_operation(
-                                    b.account, comment.author, to_string(comment.permlink), vest_created));
+                                    b.account, comment.author, to_string(comment.permlink), shares_created));
                             total_beneficiary += benefactor_tokens;
                         }
 
                         author_tokens -= total_beneficiary;
 
-                        auto payout_steem = author_tokens / 2;
-                        auto vesting_steem = author_tokens - payout_steem;
+                        auto payout_value = author_tokens / 2;
+                        auto shares_payout_value = author_tokens - payout_value;
 
                         const auto &author = get_account(comment.author);
-                        auto vest_created = create_vesting(author, vesting_steem);
-                        adjust_balance(author, payout_steem);
+                        auto shares_created = create_vesting(author, shares_payout_value);
+                        adjust_balance(author, payout_value);
 
                         adjust_total_payout(
                                 comment,
-                                asset(payout_steem, STEEM_SYMBOL),
-                                asset(curation_tokens, STEEM_SYMBOL),
-                                asset(total_beneficiary, STEEM_SYMBOL)
+                                asset(payout_value, STEEM_SYMBOL),
+                                shares_created,
+                                total_curation_shares,
+                                total_beneficiary_shares
                         );
 
                         // stats only.. TODO: Move to plugin...
                         total_payout = asset(reward_tokens.to_uint64(), STEEM_SYMBOL);
 
-                        push_virtual_operation(author_reward_operation(comment.author, to_string(comment.permlink), payout_steem, vest_created));
+                        push_virtual_operation(author_reward_operation(comment.author, to_string(comment.permlink), payout_value, shares_created));
                         push_virtual_operation(comment_reward_operation(comment.author, to_string(comment.permlink), total_payout));
 
 #ifndef IS_LOW_MEM
@@ -2680,7 +2672,7 @@ namespace golos { namespace chain {
 
                    if(fc::exists(snapshot_json))
                    {
-                   	  share_type init_supply = int64_t( STEEMIT_INIT_SUPPLY );
+                         share_type init_supply = int64_t( STEEMIT_INIT_SUPPLY );
                       ilog("Import snapshot.json");
                       snapshot_items snapshot=fc::json::from_file(snapshot_json).as<snapshot_items>();;
                       for(snapshot_account &account : snapshot.accounts)

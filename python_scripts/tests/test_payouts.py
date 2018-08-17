@@ -97,21 +97,6 @@ def run_steemd_tests( debug_node ):
          account_rewards[ acc_name ] = float( acc[0][ 'curation_rewards' ].split( ' ' )[0] )
          vote_count[ acc_name ] = int( acc[0][ 'vote_count' ] )
 
-
-
-      '''
-      print( "Done!" )
-      print( "Getting comment dump:" )
-      sys.stdout.flush()
-
-      ret = rpc.get_discussions_by_cashout_time( '', '', str( 0xFFFFFFFF ) );
-
-      print( 'author, url, total_payout_value, abs_rshares, num_active_votes' )
-
-      for comment in ret:
-         print( comment[ 'author' ] + ', ' + comment[ 'url' ] + ', ' + comment[ 'total_payout_value' ] + ', ' + comment[ 'cashout_time' ] )
-
-      '''
       print( "Printing account reward dump:" )
       sorted_rewards = sorted( account_rewards.items(), key=operator.itemgetter(1) )
       print( "account, curation_steem" )

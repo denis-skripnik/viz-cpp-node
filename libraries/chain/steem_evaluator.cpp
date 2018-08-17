@@ -899,9 +899,9 @@ namespace golos { namespace chain {
 
                     FC_ASSERT(abs_rshares > 0, "Cannot vote with 0 rshares.");
 
-                    if(voter.awarded_rshares>=abs_rshares){
+                    if(voter.awarded_rshares >= static_cast< uint64_t >(abs_rshares)){
                         _db.modify(voter, [&](account_object &a) {
-                            a.awarded_rshares -= abs_rshares;
+                            a.awarded_rshares -= static_cast< uint64_t >(abs_rshares);
                             a.last_vote_time = _db.head_block_time();
                             a.vote_count++;
                         });
@@ -917,8 +917,9 @@ namespace golos { namespace chain {
                     if (_db.calculate_discussion_payout_time(comment) ==
                         fc::time_point_sec::maximum()) {
                         // VIZ: if payout window closed then award author with rshares and create unchangable vote
-                        _db.modify(comment.autor, [&](account_object &a) {
-                            a.awarded_rshares +=abs_rshares;
+                        const auto &comment_author = _db.get_account(comment.author);
+                        _db.modify(comment_author, [&](account_object &a) {
+                            a.awarded_rshares += static_cast< uint64_t >(abs_rshares);
                         });
                         _db.create<comment_vote_object>([&](comment_vote_object &cv) {
                             cv.voter = voter.id;
@@ -934,8 +935,6 @@ namespace golos { namespace chain {
                         // VIZ: if payout window opened then create vote and calc new rshares for comment
                         /// if the current net_rshares is less than 0, the post is getting 0 rewards so it is not factored into total rshares^2
                         fc::uint128_t old_rshares = std::max(comment.net_rshares.value, int64_t(0));
-
-                        auto old_vote_rshares = comment.vote_rshares;
 
                         _db.modify(comment, [&](comment_object &c) {
                             c.net_rshares += rshares;
@@ -954,25 +953,6 @@ namespace golos { namespace chain {
 
                         uint64_t max_vote_weight = 0;
 
-                       /** this verifies uniqueness of voter
-                        *
-                        *  cv.weight / c.total_vote_weight ==> % of rshares increase that is accounted for by the vote
-                        *
-                        *  W(R) = B * R / ( R + 2S )
-                        *  W(R) is bounded above by B. B is fixed at 2^64 - 1, so all weights fit in a 64 bit integer.
-                        *
-                        *  The equation for an individual vote is:
-                        *    W(R_N) - W(R_N-1), which is the delta increase of proportional weight
-                        *
-                        *  c.total_vote_weight =
-                        *    W(R_1) - W(R_0) +
-                        *    W(R_2) - W(R_1) + ...
-                        *    W(R_N) - W(R_N-1) = W(R_N) - W(R_0)
-                        *
-                        *  Since W(R_0) = 0, c.total_vote_weight is also bounded above by B and will always fit in a 64 bit integer.
-                        *
-                        **/
-
                         _db.create<comment_vote_object>([&](comment_vote_object &cv) {
                             cv.voter = voter.id;
                             cv.comment = comment.id;
@@ -981,15 +961,7 @@ namespace golos { namespace chain {
                             cv.last_update = _db.head_block_time();
 
                             if (rshares > 0 && (comment.last_payout == fc::time_point_sec())) {
-                                uint64_t old_weight = (
-                                        (std::numeric_limits<uint64_t>::max() *
-                                         fc::uint128_t(old_vote_rshares.value)) /
-                                        (1 + old_vote_rshares.value)).to_uint64();
-                                uint64_t new_weight = (
-                                        (std::numeric_limits<uint64_t>::max() *
-                                         fc::uint128_t(comment.vote_rshares.value)) /
-                                        (1 + comment.vote_rshares.value)).to_uint64();
-                                cv.weight = new_weight - old_weight;
+                                cv.weight = static_cast< uint64_t >(rshares);
                                 max_vote_weight = cv.weight;
                             } else {
                                 cv.weight = 0;
@@ -1022,7 +994,9 @@ namespace golos { namespace chain {
                     }
 
                     _db.modify(voter, [&](account_object &a) {
-                        a.voting_power = current_power - used_power;
+                    	if(itr->vote_percent < o.weight){
+	                        a.voting_power = current_power - used_power;
+	                    }
                         a.last_vote_time = _db.head_block_time();
                     });
 
