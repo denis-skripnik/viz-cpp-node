@@ -206,7 +206,7 @@ namespace golos {
                 int64_t ntp_microseconds = golos::time::now().time_since_epoch().count();
                 int64_t next_microseconds = 1000000 - (ntp_microseconds % 1000000);
                 if (next_microseconds < 50000) { // we must sleep for at least 50ms
-                    next_microseconds += 1000000;
+                    next_microseconds += 500000;
                 }
 
                 production_timer_.expires_from_now( posix_time::microseconds(next_microseconds) );
@@ -283,7 +283,7 @@ namespace golos {
             block_production_condition::block_production_condition_enum witness_plugin::impl::maybe_produce_block(fc::mutable_variant_object &capture) {
                 auto &db = database();
                 fc::time_point now_fine = golos::time::now();
-                fc::time_point_sec now = now_fine + fc::microseconds(500000);
+                fc::time_point_sec now = now_fine + fc::microseconds(1100000);
 
                 // If the next block production opportunity is in the present or future, we're synced.
                 if (!_production_enabled) {

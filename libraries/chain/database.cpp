@@ -1269,7 +1269,7 @@ namespace golos { namespace chain {
         }
 
         void database::update_witness_schedule() {
-            if ((head_block_num() % STEEMIT_MAX_WITNESSES) != 0) return;
+            if ((head_block_num() % ( STEEMIT_MAX_WITNESSES * STEEMIT_BLOCK_WITNESS_REPEAT ) ) != 0) return;
             vector<account_name_type> active_witnesses;
             active_witnesses.reserve(STEEMIT_MAX_WITNESSES);
 
@@ -1347,7 +1347,7 @@ namespace golos { namespace chain {
             flat_map<version, uint32_t, std::greater<version>> witness_versions;
             flat_map<std::tuple<hardfork_version, time_point_sec>, uint32_t> hardfork_version_votes;
 
-            for (uint32_t i = 0; i < wso.num_scheduled_witnesses; i++) {
+            for (uint32_t i = 0; i < wso.num_scheduled_witnesses; i+=3) {
                 auto witness = get_witness(wso.current_shuffled_witnesses[i]);
                 if (witness_versions.find(witness.running_version) ==
                     witness_versions.end()) {
@@ -1417,23 +1417,27 @@ namespace golos { namespace chain {
                 for( size_t i = 0; i < sum_witnesses_count; i++ )
                 {
                     if(active_witnesses_count > 0){
-                        _wso.current_shuffled_witnesses[j] = active_witnesses[i];
                         --active_witnesses_count;
-                        ++j;
+                        for(int repeat=0; repeat < STEEMIT_BLOCK_WITNESS_REPEAT; ++repeat){
+	                        _wso.current_shuffled_witnesses[j] = active_witnesses[i];
+	                        ++j;
+	                    }
                     }
                     if(support_witnesses_count > 0){
-                        _wso.current_shuffled_witnesses[j] = support_witnesses[i];
                         --support_witnesses_count;
-                        ++j;
+	                    for(int repeat=0; repeat < STEEMIT_BLOCK_WITNESS_REPEAT; ++repeat){
+	                        _wso.current_shuffled_witnesses[j] = support_witnesses[i];
+	                        ++j;
+	                    }
                     }
                 }
 
-                for (size_t i = sum_witnesses_count;
-                     i < STEEMIT_MAX_WITNESSES; i++) {
+                for (size_t i = sum_witnesses_count * STEEMIT_BLOCK_WITNESS_REPEAT;
+                     i < ( STEEMIT_MAX_WITNESSES * STEEMIT_BLOCK_WITNESS_REPEAT ); i++) {
                     _wso.current_shuffled_witnesses[i] = account_name_type();
                 }
 
-                _wso.num_scheduled_witnesses = std::max<uint8_t>(sum_witnesses_count , 1);
+                _wso.num_scheduled_witnesses = std::max<uint8_t>(sum_witnesses_count * STEEMIT_BLOCK_WITNESS_REPEAT , 1);
 
                 /* // VIZ remove randomization
                 /// shuffle current shuffled witnesses
@@ -1470,7 +1474,7 @@ namespace golos { namespace chain {
             /// fetch all witness objects
             vector<const witness_object *> active;
             active.reserve(wso.num_scheduled_witnesses);
-            for (int i = 0; i < wso.num_scheduled_witnesses; i++) {
+            for (int i = 0; i < wso.num_scheduled_witnesses; i+=3) {
                 active.push_back(&get_witness(wso.current_shuffled_witnesses[i]));
             }
 
@@ -3029,7 +3033,7 @@ namespace golos { namespace chain {
 
                 vector<const witness_object *> wit_objs;
                 wit_objs.reserve(wso.num_scheduled_witnesses);
-                for (int i = 0; i < wso.num_scheduled_witnesses; i++) {
+                for (int i = 0; i < wso.num_scheduled_witnesses; i+=3) {
                     wit_objs.push_back(&get_witness(wso.current_shuffled_witnesses[i]));
                 }
 

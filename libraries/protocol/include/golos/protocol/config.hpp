@@ -27,7 +27,8 @@
 #define STEEMIT_ACCOUNT_RECOVERY_REQUEST_EXPIRATION_PERIOD  fc::days(1)
 #define STEEMIT_OWNER_UPDATE_LIMIT                          fc::minutes(60)
 
-#define STEEMIT_BLOCK_INTERVAL                  3
+#define STEEMIT_BLOCK_INTERVAL                  1
+#define STEEMIT_BLOCK_WITNESS_REPEAT            3
 #define STEEMIT_BLOCKS_PER_YEAR                 (365*24*60*60/STEEMIT_BLOCK_INTERVAL)
 #define STEEMIT_BLOCKS_PER_DAY                  (24*60*60/STEEMIT_BLOCK_INTERVAL)
 #define STEEMIT_MAX_WITNESS_MISSED_BLOCKS       200
