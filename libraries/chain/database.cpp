@@ -1072,6 +1072,8 @@ namespace golos { namespace chain {
             }
 
             const auto &hfp = get_hardfork_property_object();
+            //ilog("hfp.current_hardfork_version=${q}, BLOCKCHAIN_HARDFORK_VERSION=${y}, hfp.last_hardfork=${r}, hpo.next_hardfork=${i}, hpo.next_hardfork_time=${o}, witness.running_version=${t}, witness.hardfork_version_vote=${w}, _hardfork_versions[hfp.last_hardfork + 1]=${u}, witness.hardfork_time_vote=${e}",
+            //    ("q",hfp.current_hardfork_version)("y",BLOCKCHAIN_HARDFORK_VERSION)("r",hfp.last_hardfork)("i",hfp.next_hardfork)("o",hfp.next_hardfork_time)("t",witness.running_version)("w",witness.hardfork_version_vote)("u",_hardfork_versions[hfp.last_hardfork + 1])("e",witness.hardfork_time_vote));
 
             if (hfp.current_hardfork_version <
                 BLOCKCHAIN_HARDFORK_VERSION // Binary is newer hardfork than has been applied
@@ -2412,6 +2414,7 @@ namespace golos { namespace chain {
                 }
                 create<hardfork_property_object>([&](hardfork_property_object &hpo) {
                     hpo.processed_hardforks.push_back(STEEMIT_GENESIS_TIME);
+                    hpo.current_hardfork_version=BLOCKCHAIN_HARDFORK_VERSION;
                 });
 
                 // Create witness scheduler
@@ -2644,7 +2647,7 @@ namespace golos { namespace chain {
                          break;
                    }
 
-                   if( n > 0 )
+                   if( n >= 0 )
                    {
                       ilog( "Processing ${n} genesis hardforks", ("n", n) );
                       set_hardfork( n, true );
@@ -3152,7 +3155,7 @@ namespace golos { namespace chain {
 
         void database::init_hardforks() {
             _hardfork_times[0] = fc::time_point_sec(STEEMIT_GENESIS_TIME);
-            _hardfork_versions[0] = hardfork_version(1, 0);
+            _hardfork_versions[0] = hardfork_version(BLOCKCHAIN_VERSION);
 
             const auto &hardforks = get_hardfork_property_object();
             FC_ASSERT(
