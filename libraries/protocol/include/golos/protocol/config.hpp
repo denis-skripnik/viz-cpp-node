@@ -13,8 +13,6 @@
 #define VESTS_SYMBOL  (uint64_t(6) | (uint64_t('S') << 8) | (uint64_t('H') << 16) | (uint64_t('A') << 24) | (uint64_t('R') << 32) | (uint64_t('E') << 40) | (uint64_t('S') << 48)) ///< GESTS with 6 digits of precision
 #define STEEM_SYMBOL  (uint64_t(3) | (uint64_t('V') << 8) | (uint64_t('I') << 16) | (uint64_t('Z') << 24)) ///< GOLOS with 3 digits of precision
 
-#define STEEMIT_INIT_PUBLIC_KEY_STR             "VIZ6MyX5QiXAXRZk7SYCiqpi6Mtm8UbHWDFSV8HPpt7FJyahCnc2T"
-
 #define STEEMIT_GENESIS_TIME                    (fc::time_point_sec(1476788400))
 #define STEEMIT_CASHOUT_WINDOW_SECONDS          (60*60*24)  // 1 day
 
@@ -34,7 +32,9 @@
 #define STEEMIT_MAX_WITNESS_MISSED_BLOCKS       200
 
 #define STEEMIT_INITIATOR_NAME                 "viz"
-#define STEEMIT_NUM_INITIATORS                  1
+#define STEEMIT_INITIATOR_PUBLIC_KEY_STR       "VIZ6MyX5QiXAXRZk7SYCiqpi6Mtm8UbHWDFSV8HPpt7FJyahCnc2T"
+#define STEEMIT_INITIATOR_PUBLIC_KEY            (golos::protocol::public_key_type(STEEMIT_INITIATOR_PUBLIC_KEY_STR))
+#define STEEMIT_NUM_INITIATORS                  0
 #define STEEMIT_MAX_TOP_WITNESSES               10
 #define STEEMIT_MAX_SUPPORT_WITNESSES           11
 #define STEEMIT_MAX_WITNESSES                   (STEEMIT_MAX_TOP_WITNESSES+STEEMIT_MAX_SUPPORT_WITNESSES) /// 21 is more than enough
@@ -110,6 +110,10 @@
 #define STEEMIT_NULL_ACCOUNT                    "null"
 /// Represents the canonical account with NO authority (nobody can access funds in committee account, all income transfers going to committee fund)
 #define STEEMIT_COMMITTEE_ACCOUNT               "committee"
+/// Private key 5Hw9YPABaFxa2LooiANLrhUK5TPryy8f7v9Y1rk923PuYqbYdfC (committee viz sign)
+#define STEEMIT_COMMITTEE_PUBLIC_KEY_STR        "VIZ6Yt7d6LsngBoXQr47aLv97bJVs7jyr7esZTM4UUSpLUf3nbRKS"
+#define STEEMIT_COMMITTEE_PUBLIC_KEY            (golos::protocol::public_key_type(STEEMIT_COMMITTEE_PUBLIC_KEY_STR))
+
 /// Represents the canonical account with WILDCARD authority (anybody can access funds in temp account)
 #define STEEMIT_TEMP_ACCOUNT                    "temp"
 /// Represents the canonical account with NO authority (nobody can access funds in committee account, all income transfers going to new anonymous sub-account)

@@ -1419,16 +1419,16 @@ namespace golos { namespace chain {
                     if(active_witnesses_count > 0){
                         --active_witnesses_count;
                         for(int repeat=0; repeat < STEEMIT_BLOCK_WITNESS_REPEAT; ++repeat){
-	                        _wso.current_shuffled_witnesses[j] = active_witnesses[i];
-	                        ++j;
-	                    }
+                            _wso.current_shuffled_witnesses[j] = active_witnesses[i];
+                            ++j;
+                        }
                     }
                     if(support_witnesses_count > 0){
                         --support_witnesses_count;
-	                    for(int repeat=0; repeat < STEEMIT_BLOCK_WITNESS_REPEAT; ++repeat){
-	                        _wso.current_shuffled_witnesses[j] = support_witnesses[i];
-	                        ++j;
-	                    }
+                        for(int repeat=0; repeat < STEEMIT_BLOCK_WITNESS_REPEAT; ++repeat){
+                            _wso.current_shuffled_witnesses[j] = support_witnesses[i];
+                            ++j;
+                        }
                     }
                 }
 
@@ -2315,7 +2315,8 @@ namespace golos { namespace chain {
         void database::init_genesis(uint64_t init_supply) {
             try {
                 // Create blockchain accounts
-                public_key_type init_public_key(STEEMIT_INIT_PUBLIC_KEY);
+                public_key_type initiator_public_key(STEEMIT_INITIATOR_PUBLIC_KEY);
+                public_key_type committee_public_key(STEEMIT_COMMITTEE_PUBLIC_KEY);
 
                 create<account_object>([&](account_object &a) {
                     a.name = STEEMIT_NULL_ACCOUNT;
@@ -2345,6 +2346,11 @@ namespace golos { namespace chain {
                     auth.owner.weight_threshold = 1;
                     auth.active.weight_threshold = 1;
                     auth.posting.weight_threshold = 1;
+                });
+                create<witness_object>([&](witness_object &w) {
+                    w.owner = STEEMIT_COMMITTEE_ACCOUNT;
+                    w.signing_key = committee_public_key;
+                    w.schedule = witness_object::top;
                 });
 
                 create<account_object>([&](account_object &a) {
@@ -2378,34 +2384,55 @@ namespace golos { namespace chain {
                     auth.posting.weight_threshold = 1;
                 });
 
-                for (int i = 0; i < STEEMIT_NUM_INITIATORS; ++i) {
-                    const auto& name = STEEMIT_INITIATOR_NAME + (i ? fc::to_string(i) : std::string());
+                if(STEEMIT_NUM_INITIATORS>0){
+                    for (int i = 0; i < STEEMIT_NUM_INITIATORS; ++i) {
+                        const auto& name = STEEMIT_INITIATOR_NAME + (i ? fc::to_string(i) : std::string());
+                        create<account_object>([&](account_object &a) {
+                            a.name = name;
+                            a.memo_key = initiator_public_key;
+                            a.balance = asset(i ? 0 : init_supply, STEEM_SYMBOL);
+                        });
+    #ifndef IS_LOW_MEM
+                        create<account_metadata_object>([&](account_metadata_object& m) {
+                            m.account = name;
+                        });
+    #endif
+                        create<account_authority_object>([&](account_authority_object &auth) {
+                            auth.account = name;
+                            auth.owner.add_authority(initiator_public_key, 1);
+                            auth.owner.weight_threshold = 1;
+                            auth.active = auth.owner;
+                            auth.posting = auth.active;
+                        });
+                        create<witness_object>([&](witness_object &w) {
+                            w.owner = name;
+                            w.signing_key = initiator_public_key;
+                            w.schedule = witness_object::top;
+                        });
+                    }
+                }
+                else{
                     create<account_object>([&](account_object &a) {
-                        a.name = name;
-                        a.memo_key = init_public_key;
-                        a.balance = asset(i ? 0 : init_supply, STEEM_SYMBOL);
+                        a.name = STEEMIT_INITIATOR_NAME;
+                        a.memo_key = initiator_public_key;
+                        a.balance = asset(init_supply, STEEM_SYMBOL);
                     });
 #ifndef IS_LOW_MEM
                     create<account_metadata_object>([&](account_metadata_object& m) {
-                        m.account = name;
+                        m.account = STEEMIT_INITIATOR_NAME;
                     });
 #endif
                     create<account_authority_object>([&](account_authority_object &auth) {
-                        auth.account = name;
-                        auth.owner.add_authority(init_public_key, 1);
+                        auth.account = STEEMIT_INITIATOR_NAME;
+                        auth.owner.add_authority(initiator_public_key, 1);
                         auth.owner.weight_threshold = 1;
                         auth.active = auth.owner;
                         auth.posting = auth.active;
                     });
-                    create<witness_object>([&](witness_object &w) {
-                        w.owner = name;
-                        w.signing_key = init_public_key;
-                        w.schedule = witness_object::top;
-                    });
                 }
 
                 create<dynamic_global_property_object>([&](dynamic_global_property_object &p) {
-                    p.current_witness = STEEMIT_INITIATOR_NAME;
+                    p.current_witness = STEEMIT_COMMITTEE_ACCOUNT;
                     p.time = STEEMIT_GENESIS_TIME;
                     p.recent_slots_filled = fc::uint128_t::max_value();
                     p.participation_count = 128;
@@ -2424,7 +2451,7 @@ namespace golos { namespace chain {
 
                 // Create witness scheduler
                 create<witness_schedule_object>([&](witness_schedule_object &wso) {
-                    wso.current_shuffled_witnesses[0] = STEEMIT_INITIATOR_NAME;
+                    wso.current_shuffled_witnesses[0] = STEEMIT_COMMITTEE_ACCOUNT;
                 });
             }
             FC_CAPTURE_AND_RETHROW()
@@ -2759,15 +2786,16 @@ namespace golos { namespace chain {
                 clear_expired_delegations();
                 update_witness_schedule();
 
-                clear_null_account_balance();
-                clear_anonymous_account_balance();
-                claim_committee_account_balance();
                 process_funds();
                 process_comment_cashout();
                 process_vesting_withdrawals();
 
                 account_recovery_processing();
                 expire_escrow_ratification();
+
+                clear_null_account_balance();
+                clear_anonymous_account_balance();
+                claim_committee_account_balance();
 
                 process_hardforks();
 
