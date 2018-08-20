@@ -1496,7 +1496,8 @@ namespace golos { namespace chain {
             calc_median(&chain_properties::create_account_delegation_time);
             calc_median(&chain_properties::min_delegation);
             calc_median(&chain_properties::min_curation_percent);
-            calc_median(&chain_properties::max_curation_percent);
+            calc_median(&chain_properties::bandwidth_reserve_percent);
+            calc_median(&chain_properties::bandwidth_reserve_below);
 
             modify(wso, [&](witness_schedule_object &_wso) {
                 _wso.median_props = median_props;

@@ -11,7 +11,9 @@ namespace golos { namespace api {
         create_account_delegation_time(src.create_account_delegation_time),
         min_delegation(src.min_delegation),
         min_curation_percent(src.min_curation_percent),
-        max_curation_percent(src.max_curation_percent)
+        max_curation_percent(src.max_curation_percent),
+        bandwidth_reserve_percent(src.bandwidth_reserve_percent),
+        bandwidth_reserve_below(src.bandwidth_reserve_below)
     {
         create_account_delegation_ratio = src.create_account_delegation_ratio;
         create_account_delegation_time = src.create_account_delegation_time;

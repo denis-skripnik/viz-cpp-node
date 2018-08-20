@@ -386,6 +386,12 @@ namespace golos { namespace protocol {
             int16_t min_curation_percent = STEEMIT_REWARD_FUND_CURATOR_PERCENT;
             int16_t max_curation_percent = STEEMIT_REWARD_FUND_CURATOR_PERCENT;
 
+            /**
+             *  Consensus - bandwidth reserve percent for account below X shares
+             */
+            int16_t bandwidth_reserve_percent = CONSENSUS_BANDWIDTH_RESERVE_PERCENT;
+            asset bandwidth_reserve_below = asset(CONSENSUS_BANDWIDTH_RESERVE_BELOW, VESTS_SYMBOL);
+
             void validate() const {
                 FC_ASSERT(account_creation_fee.amount >= STEEMIT_MIN_ACCOUNT_CREATION_FEE);
                 FC_ASSERT(account_creation_fee.symbol == STEEM_SYMBOL);
@@ -397,6 +403,10 @@ namespace golos { namespace protocol {
                 FC_ASSERT(min_curation_percent >= 0);
                 FC_ASSERT(max_curation_percent <= STEEMIT_100_PERCENT);
                 FC_ASSERT(min_curation_percent <= max_curation_percent);
+                FC_ASSERT(bandwidth_reserve_percent >= 0);
+                FC_ASSERT(bandwidth_reserve_percent <= STEEMIT_100_PERCENT);
+                FC_ASSERT(bandwidth_reserve_below.amount >= 0);
+                FC_ASSERT(bandwidth_reserve_below.symbol == VESTS_SYMBOL);
             }
 
             chain_properties& operator=(const chain_properties&) = default;

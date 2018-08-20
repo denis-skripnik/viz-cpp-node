@@ -20,6 +20,8 @@ namespace golos { namespace api {
         asset min_delegation;
         int16_t min_curation_percent;
         int16_t max_curation_percent;
+        int16_t bandwidth_reserve_percent;
+        asset bandwidth_reserve_below;
     };
 
 } } // golos::api
@@ -28,4 +30,4 @@ FC_REFLECT(
     (golos::api::chain_api_properties),
     (account_creation_fee)(maximum_block_size)(maximum_block_size)
     (create_account_delegation_ratio)(create_account_delegation_time)(min_delegation)
-    (min_curation_percent)(max_curation_percent))
+    (min_curation_percent)(max_curation_percent)(bandwidth_reserve_percent)(bandwidth_reserve_below))
