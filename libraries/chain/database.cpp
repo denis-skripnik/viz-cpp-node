@@ -2050,9 +2050,10 @@ namespace golos { namespace chain {
                }
             }
             share_type inflation_per_block = inflation_per_year / int64_t( STEEMIT_BLOCKS_PER_YEAR );
-            elog( "Inflation status: props.head_block_number=${h1}, inflation_per_year=${h2}, new_supply=${h3}, inflation_per_block=${h4}",
+
+            /*ilog( "Inflation status: props.head_block_number=${h1}, inflation_per_year=${h2}, new_supply=${h3}, inflation_per_block=${h4}",
                ("h1",props.head_block_number)("h2", inflation_per_year)("h3",new_supply)("h4",inflation_per_block)
-            );
+            );*/
             auto content_reward = ( inflation_per_block * STEEMIT_CONTENT_REWARD_PERCENT ) / STEEMIT_100_PERCENT;
             auto vesting_reward = ( inflation_per_block * STEEMIT_VESTING_FUND_PERCENT ) / STEEMIT_100_PERCENT; /// 15% to vesting fund
             auto committee_reward = ( inflation_per_block * STEEMIT_COMMITTEE_FUND_PERCENT ) / STEEMIT_100_PERCENT;
