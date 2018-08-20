@@ -668,6 +668,7 @@ namespace golos { namespace chain {
         bool database::update_account_bandwidth(const account_object &a, uint32_t trx_size) {
             const auto &props = get_dynamic_global_properties();
             bool has_bandwidth = true;
+            const witness_schedule_object &consensus = get_witness_schedule_object();
 
             if (props.total_vesting_shares.amount > 0) {
                 share_type new_bandwidth;
@@ -695,6 +696,13 @@ namespace golos { namespace chain {
                 fc::uint128_t total_vshares(props.total_vesting_shares.amount.value);
                 fc::uint128_t account_average_bandwidth(a.average_bandwidth.value);
                 fc::uint128_t max_virtual_bandwidth(props.max_virtual_bandwidth);
+
+                if(account_vshares < consensus.median_props.bandwidth_reserve_below.amount.value){
+                    account_vshares = total_vshares * consensus.median_props.bandwidth_reserve_percent / STEEMIT_100_PERCENT / props.bandwidth_reserve_candidates;
+                }
+                else{
+                    account_vshares = account_vshares * (STEEMIT_100_PERCENT - consensus.median_props.bandwidth_reserve_percent) / STEEMIT_100_PERCENT;
+                }
 
                 has_bandwidth = (account_vshares * max_virtual_bandwidth) > (account_average_bandwidth * total_vshares);
 
@@ -1266,6 +1274,23 @@ namespace golos { namespace chain {
                 return new_vesting;
             }
             FC_CAPTURE_AND_RETHROW((to_account.name)(steem))
+        }
+
+        void database::update_bandwidth_reserve_candidates() {
+            if ((head_block_num() % STEEMIT_BLOCKS_PER_HOUR ) != 0) return;
+            uint32_t bandwidth_reserve_candidates = 1;
+            const auto &gprops = get_dynamic_global_properties();
+            const witness_schedule_object &consensus = get_witness_schedule_object();
+
+            const auto &widx = get_index<account_index>().indices().get<by_id>();
+            for (auto itr = widx.begin(); itr != widx.end(); ++itr) {
+                if(itr->effective_vesting_shares().amount.value < consensus.median_props.bandwidth_reserve_below.amount.value){
+                    ++bandwidth_reserve_candidates;
+                }
+            }
+            modify(gprops, [&](dynamic_global_property_object &dgp) {
+                dgp.bandwidth_reserve_candidates = bandwidth_reserve_candidates;
+            });
         }
 
         void database::update_witness_schedule() {
@@ -2318,6 +2343,7 @@ namespace golos { namespace chain {
                 // Create blockchain accounts
                 public_key_type initiator_public_key(STEEMIT_INITIATOR_PUBLIC_KEY);
                 public_key_type committee_public_key(STEEMIT_COMMITTEE_PUBLIC_KEY);
+                uint32_t bandwidth_reserve_candidates = 1;
 
                 create<account_object>([&](account_object &a) {
                     a.name = STEEMIT_NULL_ACCOUNT;
@@ -2393,6 +2419,7 @@ namespace golos { namespace chain {
                             a.memo_key = initiator_public_key;
                             a.balance = asset(i ? 0 : init_supply, STEEM_SYMBOL);
                         });
+                        ++bandwidth_reserve_candidates;
     #ifndef IS_LOW_MEM
                         create<account_metadata_object>([&](account_metadata_object& m) {
                             m.account = name;
@@ -2418,6 +2445,7 @@ namespace golos { namespace chain {
                         a.memo_key = initiator_public_key;
                         a.balance = asset(init_supply, STEEM_SYMBOL);
                     });
+                    ++bandwidth_reserve_candidates;
 #ifndef IS_LOW_MEM
                     create<account_metadata_object>([&](account_metadata_object& m) {
                         m.account = STEEMIT_INITIATOR_NAME;
@@ -2440,6 +2468,7 @@ namespace golos { namespace chain {
                     p.committee_supply = asset(0, STEEM_SYMBOL);
                     p.current_supply = asset(init_supply, STEEM_SYMBOL);
                     p.maximum_block_size = STEEMIT_MAX_BLOCK_SIZE;
+                    p.bandwidth_reserve_candidates = bandwidth_reserve_candidates;
                 });
 
                 for (int i = 0; i < 0x10000; i++) {
@@ -2653,6 +2682,7 @@ namespace golos { namespace chain {
             try {
                 uint32_t next_block_num = next_block.block_num();
                 const auto &gprops = get_dynamic_global_properties();
+                uint32_t bandwidth_reserve_candidates = gprops.bandwidth_reserve_candidates;
                 //block_id_type next_block_id = next_block.id();
 
                 _validate_block(next_block, skip);
@@ -2722,6 +2752,7 @@ namespace golos { namespace chain {
                             a.created = STEEMIT_GENESIS_TIME;
                             a.last_vote_time = STEEMIT_GENESIS_TIME;
                          } );
+                         ++bandwidth_reserve_candidates;
 
                          create< account_authority_object >( [&]( account_authority_object& auth )
                          {
@@ -2748,6 +2779,9 @@ namespace golos { namespace chain {
                          a.balance  = asset( init_supply, STEEM_SYMBOL );
                       } );
                       ilog( "Modify initiator account ${a}, remaining balance: ${i}", ("a", STEEMIT_INITIATOR_NAME)("i", init_supply) );
+                        modify(gprops, [&](dynamic_global_property_object &dgp) {
+                            dgp.bandwidth_reserve_candidates = bandwidth_reserve_candidates;
+                        });
                    }
                 }
 
@@ -2785,6 +2819,7 @@ namespace golos { namespace chain {
                 clear_expired_proposals();
                 clear_expired_transactions();
                 clear_expired_delegations();
+                update_bandwidth_reserve_candidates();
                 update_witness_schedule();
 
                 process_funds();

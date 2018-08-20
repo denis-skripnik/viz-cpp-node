@@ -116,6 +116,11 @@ namespace golos {
              * their votes reduced.
              */
             uint32_t vote_regeneration_per_day = STEEMIT_VOTE_POWER_RATE;
+
+            /**
+             * The number of accounts who can use bandwidth reserve assigned by witnesses consensus
+             */
+            uint32_t bandwidth_reserve_candidates = 1;
         };
 
         typedef multi_index_container <
@@ -153,5 +158,6 @@ FC_REFLECT((golos::chain::dynamic_global_property_object),
                 (max_virtual_bandwidth)
                 (current_reserve_ratio)
                 (vote_regeneration_per_day)
+                (bandwidth_reserve_candidates)
 )
 CHAINBASE_SET_INDEX_TYPE(golos::chain::dynamic_global_property_object, golos::chain::dynamic_global_property_index)

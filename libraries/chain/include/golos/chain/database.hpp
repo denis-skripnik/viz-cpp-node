@@ -328,6 +328,8 @@ namespace golos { namespace chain {
 
             void adjust_total_payout(const comment_object &a, const asset &payout, const asset &shares_payout, const asset &curator_value, const asset& beneficiary_value);
 
+            void update_bandwidth_reserve_candidates();
+
             void update_witness_schedule();
 
             void adjust_balance(const account_object &a, const asset &delta);
