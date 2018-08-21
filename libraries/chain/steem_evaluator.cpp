@@ -853,8 +853,7 @@ namespace golos { namespace chain {
                           0, "Account currently does not have voting power.");
 
                 int64_t abs_weight = abs(o.weight);
-                int64_t used_power =
-                        (current_power * abs_weight) / STEEMIT_100_PERCENT;
+                int64_t used_power = abs_weight;
 
                 const dynamic_global_property_object &dgpo = _db.get_dynamic_global_properties();
 
@@ -862,11 +861,11 @@ namespace golos { namespace chain {
                 // The second multiplication is rounded up as of HF 259
                 int64_t max_vote_denom = dgpo.vote_regeneration_per_day *
                                          STEEMIT_VOTE_REGENERATION_SECONDS /
-                                         (60 * 60 * 24);
+                                         (60 * 60 * 24);//5
                 FC_ASSERT(max_vote_denom > 0);
 
 
-                used_power = (used_power + max_vote_denom - 1) / max_vote_denom;
+                used_power = used_power / max_vote_denom;
                 FC_ASSERT(used_power <=
                           current_power, "Account does not have enough power to vote.");
 
