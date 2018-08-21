@@ -1372,7 +1372,7 @@ namespace golos { namespace chain {
             flat_map<version, uint32_t, std::greater<version>> witness_versions;
             flat_map<std::tuple<hardfork_version, time_point_sec>, uint32_t> hardfork_version_votes;
 
-            for (uint32_t i = 0; i < wso.num_scheduled_witnesses; i+=3) {
+            for (uint32_t i = 0; i < wso.num_scheduled_witnesses; i+=STEEMIT_BLOCK_WITNESS_REPEAT) {
                 auto witness = get_witness(wso.current_shuffled_witnesses[i]);
                 if (witness_versions.find(witness.running_version) ==
                     witness_versions.end()) {
@@ -1499,7 +1499,7 @@ namespace golos { namespace chain {
             /// fetch all witness objects
             vector<const witness_object *> active;
             active.reserve(wso.num_scheduled_witnesses);
-            for (int i = 0; i < wso.num_scheduled_witnesses; i+=3) {
+            for (int i = 0; i < wso.num_scheduled_witnesses; i+=STEEMIT_BLOCK_WITNESS_REPEAT) {
                 active.push_back(&get_witness(wso.current_shuffled_witnesses[i]));
             }
 
@@ -3098,7 +3098,7 @@ namespace golos { namespace chain {
 
                 vector<const witness_object *> wit_objs;
                 wit_objs.reserve(wso.num_scheduled_witnesses);
-                for (int i = 0; i < wso.num_scheduled_witnesses; i+=3) {
+                for (int i = 0; i < wso.num_scheduled_witnesses; i+=STEEMIT_BLOCK_WITNESS_REPEAT) {
                     wit_objs.push_back(&get_witness(wso.current_shuffled_witnesses[i]));
                 }
 
