@@ -18,9 +18,9 @@ namespace golos {
                 c(*this);
             }
 
-            id_type id;
+            uint32_t id;
 
-            shared_string url;
+            string url;
             account_name_type creator;
             account_name_type worker;
 
@@ -49,7 +49,7 @@ namespace golos {
                 c(*this);
             }
 
-            id_type id;
+            uint32_t id;
             committee_request_object_id_type request_id;
 
             account_name_type voter;

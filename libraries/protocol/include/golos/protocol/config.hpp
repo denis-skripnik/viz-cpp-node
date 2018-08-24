@@ -104,6 +104,9 @@
 #define STEEMIT_MAX_UNDO_HISTORY                10000
 
 #define STEEMIT_IRREVERSIBLE_THRESHOLD          (75 * STEEMIT_1_PERCENT)
+#define COMMITTEE_MIN_DURATION                  (60*60*24*5)
+#define COMMITTEE_MAX_DURATION                  (60*60*24*30)
+#define COMMITTEE_MAX_REQUIRED_AMOUNT           int64_t(STEEMIT_INIT_SUPPLY/100)
 
 /**
  *  Reserved Account IDs with special meaning

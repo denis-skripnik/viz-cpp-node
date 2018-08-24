@@ -650,6 +650,59 @@ namespace golos { namespace protocol {
                 a.insert(delegator);
             }
         };
+
+        struct committee_worker_create_request_operation : public base_operation {
+            account_name_type creator;
+            string url;
+            account_name_type worker;
+            asset required_amount_min;
+            asset required_amount_max;
+            uint32_t duration;
+
+            void validate() const {
+            	FC_ASSERT(url.size() > 0, "URL size must be greater than 0");
+            	FC_ASSERT(url.size() < 256, "URL size must be lesser than 256");
+                FC_ASSERT(required_amount_min.amount >= 0);
+                FC_ASSERT(required_amount_min.symbol == STEEM_SYMBOL);
+                FC_ASSERT(required_amount_max.amount > required_amount_min.amount);
+                FC_ASSERT(required_amount_max.symbol == STEEM_SYMBOL);
+                FC_ASSERT(duration >= COMMITTEE_MIN_DURATION);
+                FC_ASSERT(duration <= COMMITTEE_MAX_DURATION);
+                FC_ASSERT(required_amount_max.amount <= COMMITTEE_MAX_REQUIRED_AMOUNT);
+            }
+
+            void get_required_posting_authorities(flat_set<account_name_type> &a) const {
+                a.insert(creator);
+            }
+        };
+
+
+        struct committee_worker_cancel_request_operation : public base_operation {
+            account_name_type creator;
+            uint32_t request_id;
+
+            void validate() const;
+
+            void get_required_posting_authorities(flat_set<account_name_type> &a) const {
+                a.insert(creator);
+            }
+        };
+
+
+        struct committee_vote_request_operation : public base_operation {
+            account_name_type voter;
+            uint32_t request_id;
+            int16_t weight;
+
+            void validate() const {
+                FC_ASSERT(weight >= -STEEMIT_100_PERCENT);
+                FC_ASSERT(weight <= STEEMIT_100_PERCENT);
+            }
+
+            void get_required_posting_authorities(flat_set<account_name_type> &a) const {
+                a.insert(voter);
+            }
+        };
 } } // golos::protocol
 
 
@@ -699,3 +752,6 @@ FC_REFLECT((golos::protocol::recover_account_operation), (account_to_recover)(ne
 FC_REFLECT((golos::protocol::change_recovery_account_operation), (account_to_recover)(new_recovery_account)(extensions));
 FC_REFLECT((golos::protocol::delegate_vesting_shares_operation), (delegator)(delegatee)(vesting_shares));
 FC_REFLECT((golos::protocol::chain_properties_update_operation), (owner)(props));
+FC_REFLECT((golos::protocol::committee_worker_create_request_operation), (creator)(url)(worker)(required_amount_min)(required_amount_max)(duration));
+FC_REFLECT((golos::protocol::committee_worker_cancel_request_operation), (creator)(request_id));
+FC_REFLECT((golos::protocol::committee_vote_request_operation), (voter)(request_id)(weight));

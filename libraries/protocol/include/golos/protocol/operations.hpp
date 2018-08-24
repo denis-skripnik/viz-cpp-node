@@ -42,7 +42,7 @@ namespace golos { namespace protocol {
                 proposal_delete_operation,
                 chain_properties_update_operation,
 
-                /// virtual operations below this point
+                // virtual operations:
                 author_reward_operation,
                 curation_reward_operation,
                 comment_reward_operation,
@@ -51,7 +51,17 @@ namespace golos { namespace protocol {
                 hardfork_operation,
                 comment_payout_update_operation,
                 comment_benefactor_reward_operation,
-                return_vesting_delegation_operation
+                return_vesting_delegation_operation,
+
+                // VIZ Committee operations:
+                committee_worker_create_request_operation,
+                committee_worker_cancel_request_operation,
+                committee_vote_request_operation,
+                // virtual operations:
+                committee_cancel_request_operation,
+                committee_approve_request_operation,
+                committee_pay_request_operation,
+                committee_payout_request_operation
         > operation;
 
         /*void operation_get_required_authorities( const operation& op,
