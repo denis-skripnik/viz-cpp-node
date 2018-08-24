@@ -324,6 +324,8 @@ namespace golos { namespace chain {
              */
             uint32_t get_slot_at_time(fc::time_point_sec when) const;
 
+            void shares_sender_recalc_energy(const account_object &receiver, asset tokens);
+
             asset create_vesting(const account_object &to_account, asset steem);
 
             void adjust_total_payout(const comment_object &a, const asset &payout, const asset &shares_payout, const asset &curator_value, const asset& beneficiary_value);

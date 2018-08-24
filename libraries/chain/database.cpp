@@ -1237,6 +1237,24 @@ namespace golos { namespace chain {
                    STEEMIT_BLOCK_INTERVAL + 1;
         }
 
+        void database::shares_sender_recalc_energy(const account_object &sender, asset tokens) {
+            try {
+            	asset shares = tokens;
+            	if(tokens.symbol != VESTS_SYMBOL){
+            		const auto &cprops = get_dynamic_global_properties();
+	                asset shares = shares * cprops.get_vesting_share_price();
+	            }
+                modify(sender, [&](account_object &s) {
+                    int64_t elapsed_seconds = (head_block_time() - s.last_vote_time).to_seconds();
+                    int64_t regenerated_power = (STEEMIT_100_PERCENT * elapsed_seconds) / STEEMIT_VOTE_REGENERATION_SECONDS;
+                    int64_t current_power = std::min(int64_t(s.voting_power + regenerated_power), int64_t(STEEMIT_100_PERCENT));
+                    int64_t new_power = std::max(int64_t(current_power - ((STEEMIT_100_PERCENT * shares.amount.value) / s.effective_vesting_shares().amount.value)), int64_t(-STEEMIT_100_PERCENT));
+                    s.voting_power = new_power;
+                    s.last_vote_time = head_block_time();
+                });
+            }
+            FC_CAPTURE_AND_RETHROW((sender.name)(tokens))
+        }
 /**
  * @param to_account - the account to receive the new vesting shares
  * @param STEEM - STEEM to be converted to vesting shares
@@ -1860,6 +1878,7 @@ namespace golos { namespace chain {
 
                 auto converted_steem = asset(to_convert, VESTS_SYMBOL) *
                                        cprops.get_vesting_share_price();
+                shares_sender_recalc_energy(from_account,asset(vests_deposited_as_vests, VESTS_SYMBOL) + asset(vests_deposited_as_steem, VESTS_SYMBOL) * cprops.get_vesting_share_price());
 
                 modify(from_account, [&](account_object &a) {
                     a.vesting_shares.amount -= to_withdraw;

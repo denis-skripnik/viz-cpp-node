@@ -44,7 +44,7 @@ public:
     uint32_t post_count = 0;
     uint64_t awarded_rshares = 0;
 
-    uint16_t voting_power = STEEMIT_100_PERCENT;   ///< current voting power of this account, it falls after every vote
+    int16_t voting_power = STEEMIT_100_PERCENT;   ///< current voting power of this account, it falls after every vote
     time_point_sec last_vote_time; ///< used to increase the voting power of this account the longer it goes without voting.
 
     asset balance = asset(0, STEEM_SYMBOL);  ///< total liquid shares held by this account

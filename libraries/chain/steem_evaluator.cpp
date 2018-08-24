@@ -75,7 +75,7 @@ namespace golos { namespace chain {
             }
 
             const auto now = _db.head_block_time();
-
+            _db.shares_sender_recalc_energy(creator,o.delegation);
             _db.modify(creator, [&](account_object& c) {
                 c.balance -= o.fee;
                 c.delegated_vesting_shares += o.delegation;
@@ -84,6 +84,7 @@ namespace golos { namespace chain {
                 acc.name = o.new_account_name;
                 acc.memo_key = o.memo_key;
                 acc.created = now;
+                acc.voting_power=0;
                 acc.last_vote_time = now;
                 acc.recovery_account = o.creator;
                 acc.received_vesting_shares = o.delegation;
@@ -607,9 +608,8 @@ namespace golos { namespace chain {
                     _db.create<account_object>([&](account_object &acc) {
                         acc.name = new_account_name;
                         acc.memo_key = key_from_memo;
-                        acc.created = _db.head_block_time();
-                        acc.recovery_account = "";
                         acc.created = now;
+                        acc.recovery_account = "";
                     });
                     _db.create<account_authority_object>([&](account_authority_object &auth) {
                         auth.account = new_account_name;
@@ -1206,13 +1206,6 @@ namespace golos { namespace chain {
                     ("available", delegator.available_vesting_shares(true))
                     ("delta", delta)("vesting_shares", delegator.vesting_shares)("delegated", delegated)
                     ("to_withdraw", delegator.to_withdraw)("withdrawn", delegator.withdrawn));
-                auto elapsed_seconds = (now - delegator.last_vote_time).to_seconds();
-                auto regenerated_power = (STEEMIT_100_PERCENT * elapsed_seconds) / STEEMIT_VOTE_REGENERATION_SECONDS;
-                auto current_power = std::min<int64_t>(delegator.voting_power + regenerated_power, STEEMIT_100_PERCENT);
-                auto max_allowed = delegator.vesting_shares * current_power / STEEMIT_100_PERCENT;
-                FC_ASSERT(delegated + delta <= max_allowed,
-                    "Account allowed to delegate a maximum of ${v} with current voting power = ${p}",
-                    ("v",max_allowed)("p",current_power)("delegated",delegated)("delta",delta));
 
                 if (!delegation) {
                     FC_ASSERT(op.vesting_shares >= min_delegation,
@@ -1224,6 +1217,7 @@ namespace golos { namespace chain {
                         o.min_delegation_time = now;
                     });
                 }
+                _db.shares_sender_recalc_energy(delegator,delta);
                 _db.modify(delegator, [&](account_object& a) {
                     a.delegated_vesting_shares += delta;
                 });

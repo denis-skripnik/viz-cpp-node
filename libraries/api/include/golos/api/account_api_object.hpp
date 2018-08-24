@@ -42,7 +42,7 @@ struct account_api_object {
     uint32_t post_count;
     uint64_t awarded_rshares;
 
-    uint16_t voting_power;
+    int16_t voting_power;
     time_point_sec last_vote_time;
 
     asset balance;
