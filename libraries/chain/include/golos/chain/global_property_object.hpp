@@ -40,6 +40,7 @@ namespace golos {
             account_name_type current_witness;
 
             asset committee_supply = asset(0, STEEM_SYMBOL);
+            uint32_t committee_requests = 0;
             asset current_supply = asset(0, STEEM_SYMBOL);
             asset confidential_supply = asset(0, STEEM_SYMBOL); ///< total asset held in confidential balances
             asset total_vesting_fund = asset(0, STEEM_SYMBOL);
@@ -143,6 +144,7 @@ FC_REFLECT((golos::chain::dynamic_global_property_object),
                 (time)
                 (current_witness)
                 (committee_supply)
+                (committee_requests)
                 (current_supply)
                 (confidential_supply)
                 (total_vesting_fund)
