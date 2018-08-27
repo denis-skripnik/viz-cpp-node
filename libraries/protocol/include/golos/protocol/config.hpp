@@ -107,6 +107,8 @@
 #define COMMITTEE_MIN_DURATION                  (60*60*24*5)
 #define COMMITTEE_MAX_DURATION                  (60*60*24*30)
 #define COMMITTEE_MAX_REQUIRED_AMOUNT           int64_t(STEEMIT_INIT_SUPPLY/100)
+#define COMMITTEE_REQUEST_PER_TIME              (60*60*24)
+#define COMMITTEE_REQUEST_PROCESSING            (STEEMIT_BLOCKS_PER_HOUR/6) //every 10 minutes
 
 /**
  *  Reserved Account IDs with special meaning

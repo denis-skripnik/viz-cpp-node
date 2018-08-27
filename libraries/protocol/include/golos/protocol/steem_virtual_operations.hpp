@@ -127,6 +127,52 @@ namespace golos { namespace protocol {
             account_name_type account;
             asset vesting_shares;
         };
+
+        struct committee_cancel_request_operation : public virtual_operation {
+            committee_cancel_request_operation() {
+            }
+
+            committee_cancel_request_operation(const uint32_t &a)
+                    : request_id(a) {
+            }
+
+            uint32_t request_id;
+        };
+
+        struct committee_approve_request_operation : public virtual_operation {
+            committee_approve_request_operation() {
+            }
+
+            committee_approve_request_operation(const uint32_t &a)
+                    : request_id(a) {
+            }
+
+            uint32_t request_id;
+        };
+
+        struct committee_payout_request_operation : public virtual_operation {
+            committee_payout_request_operation() {
+            }
+
+            committee_payout_request_operation(const uint32_t &a)
+                    : request_id(a) {
+            }
+
+            uint32_t request_id;
+        };
+
+        struct committee_pay_request_operation : public virtual_operation {
+            committee_pay_request_operation() {
+            }
+
+            committee_pay_request_operation(const account_name_type& w, const uint32_t &a, const asset& t)
+                    : worker(w), request_id(a), tokens(t) {
+            }
+
+            account_name_type worker;
+            uint32_t request_id;
+            asset tokens;
+        };
 } } //golos::protocol
 
 FC_REFLECT((golos::protocol::author_reward_operation), (author)(permlink)(steem_payout)(vesting_payout))
@@ -138,3 +184,7 @@ FC_REFLECT((golos::protocol::hardfork_operation), (hardfork_id))
 FC_REFLECT((golos::protocol::comment_payout_update_operation), (author)(permlink))
 FC_REFLECT((golos::protocol::comment_benefactor_reward_operation), (benefactor)(author)(permlink)(reward))
 FC_REFLECT((golos::protocol::return_vesting_delegation_operation), (account)(vesting_shares))
+FC_REFLECT((golos::protocol::committee_cancel_request_operation), (request_id))
+FC_REFLECT((golos::protocol::committee_approve_request_operation), (request_id))
+FC_REFLECT((golos::protocol::committee_payout_request_operation), (request_id))
+FC_REFLECT((golos::protocol::committee_pay_request_operation), (worker)(request_id)(tokens))

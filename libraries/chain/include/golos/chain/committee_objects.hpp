@@ -4,21 +4,24 @@
 #include <golos/protocol/steem_operations.hpp>
 
 #include <golos/chain/steem_object_types.hpp>
+#include <golos/chain/shared_authority.hpp>
 
 #include <boost/multi_index/composite_key.hpp>
-
 
 namespace golos {
     namespace chain {
         class committee_request_object
                 : public object<committee_request_object_type, committee_request_object> {
         public:
+            committee_request_object() = delete;
+
             template<typename Constructor, typename Allocator>
             committee_request_object(Constructor &&c, allocator <Allocator> a) {
                 c(*this);
             }
 
-            uint32_t id;
+            id_type id;
+            uint32_t request_id;
 
             string url;
             account_name_type creator;
@@ -40,78 +43,70 @@ namespace golos {
             time_point_sec payout_time;
         };
 
+        struct by_request_id;
+        struct by_status;
+        typedef multi_index_container <
+            committee_request_object,
+            indexed_by<
+                ordered_unique<
+                	tag<by_id>,
+                    member<committee_request_object, committee_request_object_id_type, &committee_request_object::id>
+                >,
+                ordered_unique<tag<by_request_id>,
+                    member<committee_request_object, uint32_t, &committee_request_object::request_id>
+                >,
+                ordered_unique<tag<by_status>,
+                    member<committee_request_object, uint16_t, &committee_request_object::status>
+                >
+            >,
+            allocator <committee_request_object>
+        >
+        committee_request_index;
+
 
         class committee_vote_object
                 : public object<committee_vote_object_type, committee_vote_object> {
         public:
+            committee_vote_object() = delete;
+
             template<typename Constructor, typename Allocator>
             committee_vote_object(Constructor &&c, allocator <Allocator> a) {
                 c(*this);
             }
 
-            uint32_t id;
-            committee_request_object_id_type request_id;
+            id_type id;
+            uint32_t request_id;
 
             account_name_type voter;
             int16_t vote_percent = 0;
             time_point_sec last_update;
         };
 
-        struct by_request;
+        struct by_request_id;
         typedef multi_index_container <
             committee_vote_object,
             indexed_by<
-                ordered_unique <tag<by_voter_last_update>,
-                    composite_key<committee_vote_object,
-                        member <committee_vote_object, committee_request_object_id_type, &committee_vote_object::request_id>,
-                        member <committee_vote_object, time_point_sec, &committee_vote_object::last_update>
-                    >,
-                composite_key_compare <std::less<committee_request_object_id_type>, std::greater<time_point_sec>>
-            >
+                ordered_unique<tag<by_id>,
+                    member<committee_vote_object, committee_vote_object_id_type, &committee_vote_object::id>
+                >,
+                ordered_unique<tag<by_request_id>,
+                    member<committee_vote_object, uint32_t, &committee_vote_object::request_id>
+                >
             >,
             allocator <committee_vote_object>
         >
         committee_vote_index;
-
-
-        struct by_status;
-
-        /**
-         * @ingroup object_index
-         */
-        typedef multi_index_container <
-            committee_request_object,
-            indexed_by<
-                ordered_unique <tag<by_id>,
-                    member<committee_request_object, committee_request_object_id_type, &committee_request_object::id>
-                >,
-                ordered_unique <tag<by_status>,
-                    composite_key<committee_request_object,
-                        member <committee_request_object, uint16_t, &committee_request_object::status>,
-                        member <committee_request_object, committee_request_object_id_type, &committee_request_object::id>
-                    >
-                >,
-                composite_key_compare <std::less<uint16_t>, std::less<committee_request_object_id_type>>
-            >
-            >,
-            allocator <committee_request_object>
-        >
-        committee_request_index;
-
     }
 } // golos::chain
 
 FC_REFLECT((golos::chain::committee_request_object),
-        (id)(url)(creator)(worker)
-            (required_amount_min)(required_amount_max)
-            (start_time(duration)(end_time)
-            (status)(votes_count)(conclusion_time)
-            (conclusion_payout_amount)(payout_amount)(remain_payout_amount)
-            (last_payout_time)(payout_time)
-
+(id)(request_id)(url)(creator)(worker)
+(required_amount_min)(required_amount_max)
+(start_time)(duration)(end_time)
+(status)(votes_count)(conclusion_time)
+(conclusion_payout_amount)(payout_amount)(remain_payout_amount)
+(last_payout_time)(payout_time))
 CHAINBASE_SET_INDEX_TYPE(golos::chain::committee_request_object, golos::chain::committee_request_index)
 
-FC_REFLECT((golos::chain::committee_vote_object),
-        (id)(request_id)(voter)(vote_percent)(last_update)
-
-CHAINBASE_SET_INDEX_TYPE(golos::chain::committee_vote_object, golos::chain::comment_vote_index)
+FC_REFLECT((golos::chain::committee_vote_object),(id)(request_id)(voter)(vote_percent)(last_update))
+CHAINBASE_SET_INDEX_TYPE(golos::chain::committee_vote_object, golos::chain::committee_vote_index)

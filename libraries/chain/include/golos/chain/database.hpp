@@ -376,6 +376,7 @@ namespace golos { namespace chain {
             void process_comment_cashout();
 
             void process_funds();
+            void committee_processing();
 
             void account_recovery_processing();
 

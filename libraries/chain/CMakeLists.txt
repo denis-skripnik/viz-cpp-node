@@ -30,6 +30,7 @@ if(BUILD_SHARED_LIBRARIES)
             proposal_evaluator.cpp
             database_proposal_object.cpp
             chain_properties_evaluators.cpp
+            committee_evaluator.cpp
 
             include/golos/chain/account_object.hpp
             include/golos/chain/block_log.hpp
@@ -79,6 +80,7 @@ else()
             proposal_evaluator.cpp
             database_proposal_object.cpp
             chain_properties_evaluators.cpp
+            committee_evaluator.cpp
 
             include/golos/chain/account_object.hpp
             include/golos/chain/block_log.hpp

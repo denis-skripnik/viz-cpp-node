@@ -681,7 +681,7 @@ namespace golos { namespace protocol {
             account_name_type creator;
             uint32_t request_id;
 
-            void validate() const;
+            void validate() const {}
 
             void get_required_posting_authorities(flat_set<account_name_type> &a) const {
                 a.insert(creator);
@@ -692,11 +692,11 @@ namespace golos { namespace protocol {
         struct committee_vote_request_operation : public base_operation {
             account_name_type voter;
             uint32_t request_id;
-            int16_t weight;
+            int16_t vote_percent;
 
             void validate() const {
-                FC_ASSERT(weight >= -STEEMIT_100_PERCENT);
-                FC_ASSERT(weight <= STEEMIT_100_PERCENT);
+                FC_ASSERT(vote_percent >= -STEEMIT_100_PERCENT);
+                FC_ASSERT(vote_percent <= STEEMIT_100_PERCENT);
             }
 
             void get_required_posting_authorities(flat_set<account_name_type> &a) const {
@@ -754,4 +754,4 @@ FC_REFLECT((golos::protocol::delegate_vesting_shares_operation), (delegator)(del
 FC_REFLECT((golos::protocol::chain_properties_update_operation), (owner)(props));
 FC_REFLECT((golos::protocol::committee_worker_create_request_operation), (creator)(url)(worker)(required_amount_min)(required_amount_max)(duration));
 FC_REFLECT((golos::protocol::committee_worker_cancel_request_operation), (creator)(request_id));
-FC_REFLECT((golos::protocol::committee_vote_request_operation), (voter)(request_id)(weight));
+FC_REFLECT((golos::protocol::committee_vote_request_operation), (voter)(request_id)(vote_percent));

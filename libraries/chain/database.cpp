@@ -18,6 +18,7 @@
 #include <golos/chain/shared_db_merkle.hpp>
 #include <golos/chain/operation_notification.hpp>
 #include <golos/chain/proposal_object.hpp>
+#include <golos/chain/committee_objects.hpp>
 
 #include <fc/smart_ref_impl.hpp>
 
@@ -1239,11 +1240,11 @@ namespace golos { namespace chain {
 
         void database::shares_sender_recalc_energy(const account_object &sender, asset tokens) {
             try {
-            	asset shares = tokens;
-            	if(tokens.symbol != VESTS_SYMBOL){
-            		const auto &cprops = get_dynamic_global_properties();
-	                asset shares = shares * cprops.get_vesting_share_price();
-	            }
+                asset shares = tokens;
+                if(tokens.symbol != VESTS_SYMBOL){
+                    const auto &cprops = get_dynamic_global_properties();
+                    asset shares = shares * cprops.get_vesting_share_price();
+                }
                 modify(sender, [&](account_object &s) {
                     int64_t elapsed_seconds = (head_block_time() - s.last_vote_time).to_seconds();
                     int64_t regenerated_power = (STEEMIT_100_PERCENT * elapsed_seconds) / STEEMIT_VOTE_REGENERATION_SECONDS;
@@ -1309,6 +1310,89 @@ namespace golos { namespace chain {
             modify(gprops, [&](dynamic_global_property_object &dgp) {
                 dgp.bandwidth_reserve_candidates = bandwidth_reserve_candidates;
             });
+        }
+
+        void database::committee_processing() {
+            const auto &idx0 = get_index<committee_request_index>().indices().get<by_status>();
+            auto itr0 = idx0.lower_bound(0);
+            while (itr0 != idx0.end() &&
+                   itr0->status == 0) {
+                const auto &cur_request = *itr0;
+                ++itr0;
+                if(cur_request.end_time <= head_block_time()){
+                    share_type max_rshares = 0;
+                    share_type actual_rshares = 0;
+                    share_type calculated_payment = 0;
+                    const auto &vote_idx = get_index<committee_vote_index>().indices().get<by_request_id>();
+                    auto vote_itr = vote_idx.lower_bound(cur_request.request_id);
+                    while (vote_itr != vote_idx.end() &&
+                           vote_itr->request_id == cur_request.request_id) {
+                        const auto &cur_vote = *vote_itr;
+                        ++vote_itr;
+                        const auto &voter_account = get_account(cur_vote.voter);
+                        max_rshares+=voter_account.effective_vesting_shares().amount.value;
+                        actual_rshares+=voter_account.effective_vesting_shares().amount.value*cur_vote.vote_percent/STEEMIT_100_PERCENT;
+                    }
+                    calculated_payment=cur_request.required_amount_max.amount*actual_rshares/max_rshares;
+                    asset conclusion_payout_amount = asset(calculated_payment, STEEM_SYMBOL);
+                    if(cur_request.required_amount_min.amount < conclusion_payout_amount.amount){
+                        modify(cur_request, [&](committee_request_object &c) {
+                            c.conclusion_payout_amount=conclusion_payout_amount;
+                            c.conclusion_time = head_block_time();
+                            c.status = 2;
+                        });
+                        push_virtual_operation(committee_cancel_request_operation(cur_request.request_id));
+                    }
+                    else{
+                        modify(cur_request, [&](committee_request_object &c) {
+                            c.conclusion_payout_amount=conclusion_payout_amount;
+                            c.conclusion_time = head_block_time();
+                            c.remain_payout_amount=conclusion_payout_amount;
+                            c.status = 3;
+                        });
+                        push_virtual_operation(committee_approve_request_operation(cur_request.request_id));
+                    }
+                }
+            }
+            if ((head_block_num() % COMMITTEE_REQUEST_PROCESSING ) != 0) return;
+            uint32_t committee_payment_request_count = 1;
+            const auto &idx3_count = get_index<committee_request_index>().indices().get<by_status>();
+            auto itr3 = idx3_count.lower_bound(3);
+            while (itr3 != idx3_count.end() &&
+                   itr3->status == 3) {
+                committee_payment_request_count++;
+                ++itr3;
+            }
+
+            const auto &dgp = get_dynamic_global_properties();
+            asset max_payment_per_request=asset(dgp.committee_supply.amount/committee_payment_request_count, STEEM_SYMBOL);
+
+            const auto &idx3 = get_index<committee_request_index>().indices().get<by_status>();
+            auto itr = idx3.lower_bound(3);
+            while (itr != idx3.end() &&
+                   itr->status == 3) {
+                const auto &cur_request = *itr;
+                ++itr;
+                share_type current_payment=std::min(max_payment_per_request.amount, cur_request.remain_payout_amount.amount).value;//int64
+                const auto &worker_account = get_account(cur_request.worker);
+                modify(worker_account, [&](account_object& w) {
+                    w.balance += current_payment;
+                });
+                modify(dgp, [&](dynamic_global_property_object& dgpo) {
+                    dgpo.committee_supply.amount -= current_payment;
+                });
+                push_virtual_operation(committee_pay_request_operation(cur_request.worker, cur_request.request_id, asset(current_payment, STEEM_SYMBOL)));
+                modify(cur_request, [&](committee_request_object& c) {
+                    c.payout_amount.amount += current_payment;
+                    c.remain_payout_amount.amount -= current_payment;
+                    c.last_payout_time = head_block_time();
+                    if(c.remain_payout_amount.amount.value<=0){
+                        c.status = 4;
+                        c.payout_time = head_block_time();
+                        push_virtual_operation(committee_payout_request_operation(cur_request.request_id));
+                    }
+                });
+            }
         }
 
         void database::update_witness_schedule() {
@@ -2250,6 +2334,9 @@ namespace golos { namespace chain {
             _my->_evaluator_registry.register_evaluator<proposal_update_evaluator>();
             _my->_evaluator_registry.register_evaluator<proposal_delete_evaluator>();
             _my->_evaluator_registry.register_evaluator<chain_properties_update_evaluator>();
+            _my->_evaluator_registry.register_evaluator<committee_worker_create_request_evaluator>();
+            _my->_evaluator_registry.register_evaluator<committee_worker_cancel_request_evaluator>();
+            _my->_evaluator_registry.register_evaluator<committee_vote_request_evaluator>();
         }
 
         void database::set_custom_operation_interpreter(const std::string &id, std::shared_ptr<custom_operation_interpreter> registry) {
@@ -2289,6 +2376,8 @@ namespace golos { namespace chain {
             add_core_index<account_metadata_index>(*this);
             add_core_index<proposal_index>(*this);
             add_core_index<required_approval_index>(*this);
+            add_core_index<committee_request_index>(*this);
+            add_core_index<committee_vote_index>(*this);
 
             _plugin_index_signal();
         }
@@ -2852,6 +2941,7 @@ namespace golos { namespace chain {
                 clear_anonymous_account_balance();
                 claim_committee_account_balance();
 
+                committee_processing();
                 process_hardforks();
 
                 // notify observers that the block has been applied

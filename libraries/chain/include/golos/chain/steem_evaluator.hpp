@@ -34,6 +34,9 @@ namespace golos { namespace chain {
         DEFINE_EVALUATOR(delegate_vesting_shares)
         DEFINE_EVALUATOR(proposal_delete)
         DEFINE_EVALUATOR(chain_properties_update)
+        DEFINE_EVALUATOR(committee_worker_create_request)
+        DEFINE_EVALUATOR(committee_worker_cancel_request)
+        DEFINE_EVALUATOR(committee_vote_request)
 
         class proposal_create_evaluator: public evaluator_impl<proposal_create_evaluator> {
         public:
