@@ -5,6 +5,7 @@
 
 #include <golos/chain/steem_object_types.hpp>
 #include <golos/chain/shared_authority.hpp>
+#include <golos/chain/witness_objects.hpp>
 
 #include <boost/multi_index/composite_key.hpp>
 
@@ -49,13 +50,13 @@ namespace golos {
             committee_request_object,
             indexed_by<
                 ordered_unique<
-                	tag<by_id>,
+                    tag<by_id>,
                     member<committee_request_object, committee_request_object_id_type, &committee_request_object::id>
                 >,
-                ordered_unique<tag<by_request_id>,
+                ordered_non_unique<tag<by_request_id>,
                     member<committee_request_object, uint32_t, &committee_request_object::request_id>
                 >,
-                ordered_unique<tag<by_status>,
+                ordered_non_unique<tag<by_status>,
                     member<committee_request_object, uint16_t, &committee_request_object::status>
                 >
             >,
@@ -89,7 +90,7 @@ namespace golos {
                 ordered_unique<tag<by_id>,
                     member<committee_vote_object, committee_vote_object_id_type, &committee_vote_object::id>
                 >,
-                ordered_unique<tag<by_request_id>,
+                ordered_non_unique<tag<by_request_id>,
                     member<committee_vote_object, uint32_t, &committee_vote_object::request_id>
                 >
             >,

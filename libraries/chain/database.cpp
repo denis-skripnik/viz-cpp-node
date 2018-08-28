@@ -1335,7 +1335,7 @@ namespace golos { namespace chain {
                     }
                     calculated_payment=cur_request.required_amount_max.amount*actual_rshares/max_rshares;
                     asset conclusion_payout_amount = asset(calculated_payment, STEEM_SYMBOL);
-                    if(cur_request.required_amount_min.amount < conclusion_payout_amount.amount){
+                    if(cur_request.required_amount_min.amount > conclusion_payout_amount.amount){
                         modify(cur_request, [&](committee_request_object &c) {
                             c.conclusion_payout_amount=conclusion_payout_amount;
                             c.conclusion_time = head_block_time();

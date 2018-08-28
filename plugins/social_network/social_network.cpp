@@ -4,6 +4,9 @@
 #include <golos/api/vote_state.hpp>
 #include <golos/chain/steem_objects.hpp>
 #include <golos/api/discussion_helper.hpp>
+#include <golos/chain/committee_objects.hpp>
+#include <golos/api/committee_api_object.hpp>
+
 // These visitors creates additional tables, we don't really need them in LOW_MEM mode
 #include <golos/plugins/tags/plugin.hpp>
 
@@ -221,6 +224,74 @@ namespace golos { namespace plugins { namespace social_network {
             return get_discussion(*itr, limit);
         }
         return discussion();
+    }
+
+    DEFINE_API(social_network, get_committee_request) {
+        CHECK_ARG_MIN_SIZE(1, 2)
+        auto request_id = args.args->at(0).as<uint32_t>();
+        auto votes_count = GET_OPTIONAL_ARG(1, int32_t, 0);
+        auto& db = pimpl->database();
+        return db.with_weak_read_lock([&]() {
+            const auto &idx = db.get_index<committee_request_index>().indices().get<by_request_id>();
+            auto itr = idx.find(request_id);
+            FC_ASSERT(itr != idx.end(), "Committee request id not found.");
+            committee_api_object result = committee_api_object(*itr);
+            if(0!=votes_count){
+                const auto &vote_idx = db.get_index<committee_vote_index>().indices().get<by_request_id>();
+                auto vote_itr = vote_idx.lower_bound(request_id);
+                int32_t num = 0;
+                while (vote_itr != vote_idx.end() &&
+                       vote_itr->request_id == request_id) {
+                    const auto &cur_vote = *vote_itr;
+                    ++vote_itr;
+                    committee_vote_state vote=committee_vote_state(cur_vote);
+                    result.votes.emplace_back(vote);
+                    if(-1!=votes_count){
+                        ++num;
+                        if(num>=votes_count){
+                            vote_itr=vote_idx.end();
+                        }
+                    }
+                }
+            }
+            return result;
+        });
+    }
+
+    DEFINE_API(social_network, get_committee_request_votes) {
+        CHECK_ARG_MIN_SIZE(1, 1)
+        auto request_id = args.args->at(0).as<uint32_t>();
+        auto& db = pimpl->database();
+        return db.with_weak_read_lock([&]() {
+            const auto &vote_idx = db.get_index<committee_vote_index>().indices().get<by_request_id>();
+            auto vote_itr = vote_idx.lower_bound(request_id);
+            std::vector<committee_vote_state> votes;
+            while (vote_itr != vote_idx.end() &&
+                   vote_itr->request_id == request_id) {
+                const auto &cur_vote = *vote_itr;
+                ++vote_itr;
+                committee_vote_state vote=committee_vote_state(cur_vote);
+                votes.emplace_back(vote);
+            }
+            return votes;
+        });
+    }
+
+    DEFINE_API(social_network, get_committee_requests_list) {
+        CHECK_ARG_MIN_SIZE(1, 1)
+        auto status = args.args->at(0).as<uint16_t>();
+        auto& db = pimpl->database();
+        return db.with_weak_read_lock([&]() {
+            const auto &idx = db.get_index<committee_request_index>().indices().get<by_status>();
+            std::vector<uint16_t> requests_list;
+            auto itr = idx.lower_bound(status);
+            while (itr != idx.end() &&
+                   itr->status == status) {
+                requests_list.emplace_back(itr->request_id);
+                ++itr;
+            }
+            return requests_list;
+        });
     }
 
     DEFINE_API(social_network, get_content) {

@@ -6,6 +6,7 @@
 #include <golos/plugins/follow/plugin.hpp>
 #include <golos/api/account_vote.hpp>
 #include <golos/api/vote_state.hpp>
+#include <golos/api/committee_api_object.hpp>
 
 namespace golos { namespace plugins { namespace social_network {
     using plugins::json_rpc::msg_pack;
@@ -13,6 +14,8 @@ namespace golos { namespace plugins { namespace social_network {
     using golos::api::account_vote;
     using golos::api::vote_state;
     using golos::api::comment_api_object;
+    using golos::api::committee_api_object;
+    using golos::api::committee_vote_state;
     using namespace golos::chain;
 
     DEFINE_API_ARGS(get_content,                msg_pack, discussion)
@@ -21,6 +24,9 @@ namespace golos { namespace plugins { namespace social_network {
     DEFINE_API_ARGS(get_account_votes,          msg_pack, std::vector<account_vote>)
     DEFINE_API_ARGS(get_active_votes,           msg_pack, std::vector<vote_state>)
     DEFINE_API_ARGS(get_replies_by_last_update, msg_pack, std::vector<discussion>)
+    DEFINE_API_ARGS(get_committee_request,      msg_pack, committee_api_object)
+    DEFINE_API_ARGS(get_committee_request_votes,msg_pack, std::vector<committee_vote_state>)
+    DEFINE_API_ARGS(get_committee_requests_list,msg_pack, std::vector<uint16_t>)
 
     class social_network final: public appbase::plugin<social_network> {
     public:
@@ -36,6 +42,9 @@ namespace golos { namespace plugins { namespace social_network {
             (get_account_votes)
             (get_active_votes)
             (get_replies_by_last_update)
+            (get_committee_request)
+            (get_committee_request_votes)
+            (get_committee_requests_list)
         )
 
         social_network();
