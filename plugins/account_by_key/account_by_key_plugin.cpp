@@ -1,10 +1,10 @@
-#include <golos/plugins/account_by_key/account_by_key_plugin.hpp>
+#include <graphene/plugins/account_by_key/account_by_key_plugin.hpp>
 
-#include <golos/chain/account_object.hpp>
-#include <golos/chain/index.hpp>
-#include <golos/chain/operation_notification.hpp>
+#include <graphene/chain/account_object.hpp>
+#include <graphene/chain/index.hpp>
+#include <graphene/chain/operation_notification.hpp>
 
-namespace golos { namespace plugins { namespace account_by_key {
+namespace graphene { namespace plugins { namespace account_by_key {
 
             namespace detail {
 
@@ -187,7 +187,7 @@ namespace golos { namespace plugins { namespace account_by_key {
                 try {
                     ilog("Initializing account_by_key plugin");
                     my.reset(new account_by_key_plugin_impl(*this));
-                    golos::chain::database &db = appbase::app().get_plugin<golos::plugins::chain::plugin>().db();
+                    graphene::chain::database &db = appbase::app().get_plugin<graphene::plugins::chain::plugin>().db();
 
                     db.pre_apply_operation.connect([&](operation_notification &o) { my->pre_operation(o); });
                     db.post_apply_operation.connect([&](const operation_notification &o) { my->post_operation(o); });
@@ -218,4 +218,4 @@ namespace golos { namespace plugins { namespace account_by_key {
                     return my->get_key_references(tmp);
                 });
             }
-} } } // golos::plugins::account_by_key
+} } } // graphene::plugins::account_by_key

@@ -1,9 +1,9 @@
-#include <golos/chain/steem_evaluator.hpp>
-#include <golos/chain/database.hpp>
-#include <golos/chain/steem_objects.hpp>
-#include <golos/chain/committee_objects.hpp>
+#include <graphene/chain/steem_evaluator.hpp>
+#include <graphene/chain/database.hpp>
+#include <graphene/chain/steem_objects.hpp>
+#include <graphene/chain/committee_objects.hpp>
 
-namespace golos { namespace chain {
+namespace graphene { namespace chain {
 
      void committee_worker_create_request_evaluator::do_apply(const committee_worker_create_request_operation& o) {
         _db.get_account(o.creator);
@@ -108,4 +108,4 @@ namespace golos { namespace chain {
         }
     }
 
-} } // golos::chain
+} } // graphene::chain

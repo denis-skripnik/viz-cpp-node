@@ -1,10 +1,10 @@
-#include <golos/plugins/raw_block/plugin.hpp>
-#include <golos/chain/database.hpp>
-#include <golos/protocol/types.hpp>
-#include <golos/plugins/json_rpc/utility.hpp>
-#include <golos/plugins/json_rpc/plugin.hpp>
+#include <graphene/plugins/raw_block/plugin.hpp>
+#include <graphene/chain/database.hpp>
+#include <graphene/protocol/types.hpp>
+#include <graphene/plugins/json_rpc/utility.hpp>
+#include <graphene/plugins/json_rpc/plugin.hpp>
 
-namespace golos {
+namespace graphene {
 namespace plugins {
 namespace raw_block {
 
@@ -16,11 +16,11 @@ public:
     get_raw_block_r get_raw_block(uint32_t block_num = 0);
 
     // HELPING METHODS
-    golos::chain::database &database() {
+    graphene::chain::database &database() {
         return db_;
     }
 private:
-    golos::chain::database & db_;
+    graphene::chain::database & db_;
 };
 
 get_raw_block_r plugin::plugin_impl::get_raw_block(uint32_t block_num) {
@@ -69,4 +69,4 @@ void plugin::plugin_startup() {
 void plugin::plugin_shutdown() {
 }
 
-} } } // golos::plugin::raw_block
+} } } // graphene::plugin::raw_block

@@ -1,9 +1,9 @@
-#include <golos/protocol/config.hpp>
-#include <golos/protocol/types.hpp>
+#include <graphene/protocol/config.hpp>
+#include <graphene/protocol/types.hpp>
 
 #include <fc/crypto/base58.hpp>
 
-namespace golos {
+namespace graphene {
     namespace protocol {
 
         public_key_type::public_key_type() : key_data() {
@@ -171,32 +171,32 @@ namespace golos {
         }
 
     }
-} // golos::protocol
+} // graphene::protocol
 
 namespace fc {
     using namespace std;
 
-    void to_variant(const golos::protocol::public_key_type &var, fc::variant &vo) {
+    void to_variant(const graphene::protocol::public_key_type &var, fc::variant &vo) {
         vo = std::string(var);
     }
 
-    void from_variant(const fc::variant &var, golos::protocol::public_key_type &vo) {
-        vo = golos::protocol::public_key_type(var.as_string());
+    void from_variant(const fc::variant &var, graphene::protocol::public_key_type &vo) {
+        vo = graphene::protocol::public_key_type(var.as_string());
     }
 
-    void to_variant(const golos::protocol::extended_public_key_type &var, fc::variant &vo) {
+    void to_variant(const graphene::protocol::extended_public_key_type &var, fc::variant &vo) {
         vo = std::string(var);
     }
 
-    void from_variant(const fc::variant &var, golos::protocol::extended_public_key_type &vo) {
-        vo = golos::protocol::extended_public_key_type(var.as_string());
+    void from_variant(const fc::variant &var, graphene::protocol::extended_public_key_type &vo) {
+        vo = graphene::protocol::extended_public_key_type(var.as_string());
     }
 
-    void to_variant(const golos::protocol::extended_private_key_type &var, fc::variant &vo) {
+    void to_variant(const graphene::protocol::extended_private_key_type &var, fc::variant &vo) {
         vo = std::string(var);
     }
 
-    void from_variant(const fc::variant &var, golos::protocol::extended_private_key_type &vo) {
-        vo = golos::protocol::extended_private_key_type(var.as_string());
+    void from_variant(const fc::variant &var, graphene::protocol::extended_private_key_type &vo) {
+        vo = graphene::protocol::extended_private_key_type(var.as_string());
     }
 } // fc

@@ -1,8 +1,8 @@
-#include <golos/plugins/test_api/test_api_plugin.hpp>
+#include <graphene/plugins/test_api/test_api_plugin.hpp>
 
 #include <fc/log/logger_config.hpp>
 
-namespace golos {
+namespace graphene {
     namespace plugins {
         namespace test_api {
 

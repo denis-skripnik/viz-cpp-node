@@ -1,14 +1,14 @@
-#include <golos/plugins/witness_api/plugin.hpp>
-#include <golos/chain/operation_notification.hpp>
+#include <graphene/plugins/witness_api/plugin.hpp>
+#include <graphene/chain/operation_notification.hpp>
 
 
 #define CHECK_ARG_SIZE(s) \
    FC_ASSERT( args.args->size() == s, "Expected #s argument(s), was ${n}", ("n", args.args->size()) );
 
-namespace golos { namespace plugins { namespace witness_api {
+namespace graphene { namespace plugins { namespace witness_api {
 
-using namespace golos::protocol;
-using namespace golos::chain;
+using namespace graphene::protocol;
+using namespace graphene::chain;
 
 struct plugin::witness_plugin_impl {
 public:
@@ -23,7 +23,7 @@ public:
     uint64_t get_witness_count() const;
     std::set<account_name_type> lookup_witness_accounts(const std::string &lower_bound_name, uint32_t limit) const;
 
-    golos::chain::database& database;
+    graphene::chain::database& database;
 };
 
 DEFINE_API(plugin, get_active_witnesses) {
@@ -196,4 +196,4 @@ void plugin::plugin_startup() {
 }
 
 
-} } } // golos::plugins::witness_api
+} } } // graphene::plugins::witness_api

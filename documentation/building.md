@@ -1,4 +1,4 @@
-# Building Golos
+# Building VIZ
 
 ## Compile-Time Options (cmake)
 
@@ -10,7 +10,7 @@ running tests, it is recommended to build as release.
 
 ### LOW_MEMORY_NODE=[FALSE/TRUE]
 
-Builds golosd to be a consensus-only low memory node. Data and fields not
+Builds vizd to be a consensus-only low memory node. Data and fields not
 needed for consensus are not stored in the object database.  This option is
 recommended for witnesses and seed-nodes.
 
@@ -18,13 +18,13 @@ recommended for witnesses and seed-nodes.
 
 We ship a Dockerfile.  This builds both common node type binaries.
 
-    git clone https://github.com/goloschain/golos
-    cd golos
-    docker build -t goloschain/golos .
+    git clone https://github.com/viz-world/viz-world
+    cd viz-world
+    docker build -t viz-world/viz-world .
 
 ## Building on Ubuntu 16.04
 
-For Ubuntu 16.04 users, after installing the right packages with `apt` Golos
+For Ubuntu 16.04 users, after installing the right packages with `apt` VIZ
 will build out of the box without further effort:
 
     # Required packages
@@ -62,13 +62,13 @@ will build out of the box without further effort:
         libreadline-dev \
         perl
 
-    git clone https://github.com/goloschain/golos
-    cd golos
+    git clone https://github.com/viz-world/viz-world
+    cd viz-world
     git submodule update --init --recursive
     mkdir build
     cd build
     cmake -DCMAKE_BUILD_TYPE=Release ..
-    make -j$(nproc) golosd
+    make -j$(nproc) vizd
     make -j$(nproc) cli_wallet
     # optional
     make install  # defaults to /usr/local
@@ -100,14 +100,14 @@ Here are the required packages:
         libreadline-dev \
         perl
 
-Golos requires Boost 1.57 or later. The Boost provided in the Ubuntu 14.04
-package manager (Boost 1.55) is too old. So building Golos on Ubuntu 14.04
+VIZ requires Boost 1.57 or later. The Boost provided in the Ubuntu 14.04
+package manager (Boost 1.55) is too old. So building VIZ on Ubuntu 14.04
 requires downloading and installing a more recent version of Boost.
 
 According to [this mailing list
 post](http://boost.2283326.n4.nabble.com/1-58-1-bugfix-release-necessary-td4674686.html),
 Boost 1.58 is not compatible with gcc 4.8 (the default C++ compiler for
-Ubuntu 14.04) when compiling in C++11 mode (which Golos does). So we will
+Ubuntu 14.04) when compiling in C++11 mode (which VIZ does). So we will
 use Boost 1.57; if you try to build with any other version, you will
 probably have a bad time.
 
@@ -125,14 +125,14 @@ Here is how to build and install Boost 1.57 into your user's home directory
     ./bootstrap.sh "--prefix=$BOOST_ROOT"
     ./b2 install
 
-Then the instructions are the same as for golos:
+Then the instructions are the same as for VIZ:
 
-    git clone https://github.com/golosit/golos
-    cd golos
+    git clone https://github.com/viz-world/viz-world
+    cd viz-world
     git submodule update --init --recursive
     mkdir build && cd build
     cmake -DCMAKE_BUILD_TYPE=Release ..
-    make -j$(nproc) golosd
+    make -j$(nproc) vizd
     make -j$(nproc) cli_wallet
 
 ## Building on macOS X
@@ -154,7 +154,7 @@ Install Homebrew by following the instructions here: http://brew.sh/
    brew update
    brew tap homebrew/versions
 
-### Install golos dependencies:
+### Install VIZ dependencies:
 
     brew install \
         autoconf \
@@ -167,7 +167,7 @@ Install Homebrew by following the instructions here: http://brew.sh/
         python3
 
 Note: brew recently updated to boost 1.61.0, which is not yet supported by
-golos. Until then, this will allow you to install boost 1.60.0.
+VIZ. Until then, this will allow you to install boost 1.60.0.
 
 *Optional.* To use TCMalloc in LevelDB:
 
@@ -175,8 +175,8 @@ golos. Until then, this will allow you to install boost 1.60.0.
 
 ### Clone the Repository
 
-    git clone https://github.com/golosit/golos.git
-    cd golos
+    git clone https://github.com/viz-world/viz-world.git
+    cd viz-world
 
 ### Compile
 
@@ -189,15 +189,15 @@ golos. Until then, this will allow you to install boost 1.60.0.
 
 Also, some useful build targets for `make` are:
 
-    golosd
+    vizd
     chain_test
     cli_wallet
 
 e.g.:
 
-    make -j$(sysctl -n hw.logicalcpu) golosd
+    make -j$(sysctl -n hw.logicalcpu) vizd
 
-This will only build `golosd`.
+This will only build `vizd`.
 
 ## Building on Other Platforms
 

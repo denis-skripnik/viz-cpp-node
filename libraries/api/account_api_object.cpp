@@ -1,12 +1,12 @@
-#include <golos/api/account_api_object.hpp>
+#include <graphene/api/account_api_object.hpp>
 
-namespace golos { namespace api {
+namespace graphene { namespace api {
 
-using golos::chain::by_account;
-using golos::chain::account_authority_object;
-using golos::chain::account_metadata_object;
+using graphene::chain::by_account;
+using graphene::chain::account_authority_object;
+using graphene::chain::account_metadata_object;
 
-account_api_object::account_api_object(const account_object& a, const golos::chain::database& db)
+account_api_object::account_api_object(const account_object& a, const graphene::chain::database& db)
     :   id(a.id), name(a.name), memo_key(a.memo_key), proxy(a.proxy), referrer(a.referrer),
         last_account_update(a.last_account_update), created(a.created),
         recovery_account(a.recovery_account), last_account_recovery(a.last_account_recovery),
@@ -33,11 +33,11 @@ account_api_object::account_api_object(const account_object& a, const golos::cha
 
 #ifndef IS_LOW_MEM
     const auto& meta = db.get<account_metadata_object, by_account>(name);
-    json_metadata = golos::chain::to_string(meta.json_metadata);
+    json_metadata = graphene::chain::to_string(meta.json_metadata);
 #endif
 
 }
 
 account_api_object::account_api_object() {}
 
-} } // golos::api
+} } // graphene::api

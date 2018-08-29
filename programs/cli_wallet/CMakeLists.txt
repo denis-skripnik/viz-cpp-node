@@ -17,22 +17,22 @@ FIND_PACKAGE(Boost  REQUIRED COMPONENTS
     regex
 )
 
-# I don't know why golos_app is required twice in the following line, I just know the linker breaks if it isn't.
+# I don't know why graphene_app is required twice in the following line, I just know the linker breaks if it isn't.
 target_link_libraries(
         cli_wallet
         PRIVATE
-        golos_network
-        golos_chain
-        golos_protocol
+        graphene_network
+        graphene_chain
+        graphene_protocol
         graphene_utilities
-        golos_wallet
-        golos::database_api
-        golos::account_history
-        golos::social_network
-        golos::private_message
-        golos::follow
-        golos::network_broadcast_api
-        golos::witness_api
+        graphene_wallet
+        graphene::database_api
+        graphene::account_history
+        graphene::social_network
+        graphene::private_message
+        graphene::follow
+        graphene::network_broadcast_api
+        graphene::witness_api
         fc
         ${readline_libraries}
         ${CMAKE_DL_LIBS}

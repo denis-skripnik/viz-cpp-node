@@ -1,9 +1,8 @@
-# Introducing Golos (beta)
+# Introducing VIZ
 
-[![Build Status](https://travis-ci.org/GolosChain/golos.svg?branch=master)](https://travis-ci.org/GolosChain/golos)
+[![Build Status](https://travis-ci.org/VIZ-World/viz-world.svg?branch=master)](https://travis-ci.org/VIZ-World/viz-world)
 
-Golos is an experimental Proof of Work blockchain with an unproven consensus
-algorithm.
+VIZ is an DPOS blockchain with an unproven consensus algorithm.
 
 # No Support & No Warranty
 
@@ -30,10 +29,10 @@ dockerized container.  Both common binary types are included.
 To run a p2p node (ca. 2GB of memory is required at the moment):
 
     docker run \
-        -d -p 2001:2001 -p 8090:8090 --name golos-default \
-        goloschain/golos
+        -d -p 2001:2001 -p 8090:8090 --name viz-default \
+        viz-world/viz-world
 
-    docker logs -f golos-default  # follow along
+    docker logs -f viz-default  # follow along
 
 ## Dockerized Full Node
 
@@ -42,10 +41,10 @@ that uses ca. 14GB of memory and growing:
 
     docker run \
         --env USE_WAY_TOO_MUCH_RAM=1 \
-        -d -p 2001:2001 -p 8090:8090 --name golos-full \
-        goloschain/golos
+        -d -p 2001:2001 -p 8090:8090 --name viz-full \
+        viz-world/viz-world
 
-    docker logs -f golos-full
+    docker logs -f viz-full
 
 # Seed Nodes
 
@@ -61,7 +60,7 @@ time to a whitespace delimited list of seed nodes (with port).
 The produce blocks algorithm used by VIZ requires the owner to have access to the
 private key used by the account.
 
-    ./golosd --witness="accountname" --seed-node="95.85.13.229:2225"
+    ./vizd --witness="accountname" --seed-node="95.85.13.229:2225"
 
 # Building
 

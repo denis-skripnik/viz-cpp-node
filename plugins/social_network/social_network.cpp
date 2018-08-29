@@ -1,14 +1,14 @@
 #include <boost/program_options/options_description.hpp>
-#include <golos/plugins/social_network/social_network.hpp>
-#include <golos/chain/index.hpp>
-#include <golos/api/vote_state.hpp>
-#include <golos/chain/steem_objects.hpp>
-#include <golos/api/discussion_helper.hpp>
-#include <golos/chain/committee_objects.hpp>
-#include <golos/api/committee_api_object.hpp>
+#include <graphene/plugins/social_network/social_network.hpp>
+#include <graphene/chain/index.hpp>
+#include <graphene/api/vote_state.hpp>
+#include <graphene/chain/steem_objects.hpp>
+#include <graphene/api/discussion_helper.hpp>
+#include <graphene/chain/committee_objects.hpp>
+#include <graphene/api/committee_api_object.hpp>
 
 // These visitors creates additional tables, we don't really need them in LOW_MEM mode
-#include <golos/plugins/tags/plugin.hpp>
+#include <graphene/plugins/tags/plugin.hpp>
 
 #define CHECK_ARG_SIZE(_S)                                 \
    FC_ASSERT(                                              \
@@ -31,8 +31,8 @@
 #  define DEFAULT_VOTE_LIMIT 10000
 #endif
 
-namespace golos { namespace plugins { namespace social_network {
-    using golos::api::discussion_helper;
+namespace graphene { namespace plugins { namespace social_network {
+    using graphene::api::discussion_helper;
 
     struct social_network::impl final {
         impl(): database_(appbase::app().get_plugin<chain::plugin>().db()) {
@@ -41,11 +41,11 @@ namespace golos { namespace plugins { namespace social_network {
 
         ~impl() = default;
 
-        golos::chain::database& database() {
+        graphene::chain::database& database() {
             return database_;
         }
 
-        golos::chain::database& database() const {
+        graphene::chain::database& database() const {
             return database_;
         }
 
@@ -76,7 +76,7 @@ namespace golos { namespace plugins { namespace social_network {
         discussion get_discussion(const comment_object& c, uint32_t vote_limit) const ;
 
     private:
-        golos::chain::database& database_;
+        graphene::chain::database& database_;
         std::unique_ptr<discussion_helper> helper;
     };
 
@@ -366,4 +366,4 @@ namespace golos { namespace plugins { namespace social_network {
         });
     }
 
-} } } // golos::plugins::social_network
+} } } // graphene::plugins::social_network

@@ -1,9 +1,9 @@
-#include <golos/plugins/p2p/p2p_plugin.hpp>
+#include <graphene/plugins/p2p/p2p_plugin.hpp>
 
-#include <golos/network/node.hpp>
-#include <golos/network/exceptions.hpp>
+#include <graphene/network/node.hpp>
+#include <graphene/network/exceptions.hpp>
 
-#include <golos/chain/database_exceptions.hpp>
+#include <graphene/chain/database_exceptions.hpp>
 
 #include <fc/network/resolve.hpp>
 
@@ -13,28 +13,28 @@
 using std::string;
 using std::vector;
 
-namespace golos {
+namespace graphene {
     namespace plugins {
         namespace p2p {
 
             using appbase::app;
 
-            using golos::network::item_hash_t;
-            using golos::network::item_id;
-            using golos::network::message;
-            using golos::network::block_message;
-            using golos::network::trx_message;
+            using graphene::network::item_hash_t;
+            using graphene::network::item_id;
+            using graphene::network::message;
+            using graphene::network::block_message;
+            using graphene::network::trx_message;
 
-            using golos::protocol::block_header;
-            using golos::protocol::signed_block_header;
-            using golos::protocol::signed_block;
-            using golos::protocol::block_id_type;
-            using golos::chain::database;
-            using golos::chain::chain_id_type;
+            using graphene::protocol::block_header;
+            using graphene::protocol::signed_block_header;
+            using graphene::protocol::signed_block;
+            using graphene::protocol::block_id_type;
+            using graphene::chain::database;
+            using graphene::chain::chain_id_type;
 
             namespace detail {
 
-                class p2p_plugin_impl : public golos::network::node_delegate {
+                class p2p_plugin_impl : public graphene::network::node_delegate {
                 public:
 
                     p2p_plugin_impl(chain::plugin &c) : chain(c) {
@@ -91,7 +91,7 @@ namespace golos {
                     bool force_validate = false;
                     bool block_producer = false;
 
-                    std::unique_ptr<golos::network::node> node;
+                    std::unique_ptr<graphene::network::node> node;
 
                     chain::plugin &chain;
 
@@ -144,11 +144,11 @@ namespace golos {
                             }
 
                             return result;
-                        } catch (const golos::network::unlinkable_block_exception &e) {
-                            // translate to a golos::network exception
+                        } catch (const graphene::network::unlinkable_block_exception &e) {
+                            // translate to a graphene::network exception
                             fc_elog(fc::logger::get("sync"), "Error when pushing block, current head block is ${head}:\n${e}", ("e", e.to_detail_string())("head", head_block_num));
                             elog("Error when pushing block:\n${e}", ("e", e.to_detail_string()));
-                            FC_THROW_EXCEPTION(golos::network::unlinkable_block_exception, "Error when pushing block:\n${e}", ("e", e.to_detail_string()));
+                            FC_THROW_EXCEPTION(graphene::network::unlinkable_block_exception, "Error when pushing block:\n${e}", ("e", e.to_detail_string()));
                         } catch (const fc::exception &e) {
                             fc_elog(fc::logger::get("sync"), "Error when pushing block, current head block is ${head}:\n${e}", ("e", e.to_detail_string())("head", head_block_num));
                             elog("Error when pushing block:\n${e}", ("e", e.to_detail_string()));
@@ -205,7 +205,7 @@ namespace golos {
                                 }
 
                                 if (!found_a_block_in_synopsis)
-                                    FC_THROW_EXCEPTION(golos::network::peer_is_on_an_unreachable_fork, "Unable to provide a list of blocks starting at any of the blocks in peer's synopsis");
+                                    FC_THROW_EXCEPTION(graphene::network::peer_is_on_an_unreachable_fork, "Unable to provide a list of blocks starting at any of the blocks in peer's synopsis");
                             }
 
                             for (uint32_t num = block_header::num_from_id(last_known_block_id);
@@ -302,7 +302,7 @@ namespace golos {
                                         boost::reverse(fork_history);
 
                                         if (last_non_fork_block ==
-                                            block_id_type()) { // if the fork goes all the way back to genesis (does golos's fork db allow this?)
+                                            block_id_type()) { // if the fork goes all the way back to genesis (does viz's fork db allow this?)
                                             non_fork_high_block_num = 0;
                                         } else {
                                             non_fork_high_block_num = block_header::num_from_id(last_non_fork_block);
@@ -322,7 +322,7 @@ namespace golos {
                                                      "(our chains diverge after block #${non_fork_high_block_num} but only undoable to block #${low_block_num})",
                                              ("low_block_num", low_block_num)("non_fork_high_block_num",
                                                                               non_fork_high_block_num));
-                                        FC_THROW_EXCEPTION(golos::network::block_older_than_undo_history, "Peer is are on a fork I'm unable to switch to");
+                                        FC_THROW_EXCEPTION(graphene::network::block_older_than_undo_history, "Peer is are on a fork I'm unable to switch to");
                                     }
                                 }
                             } else {
@@ -401,7 +401,7 @@ namespace golos {
                 }
 
                 uint32_t p2p_plugin_impl::estimate_last_known_fork_from_git_revision_timestamp(uint32_t) const {
-                    return 0; // there are no forks in golos
+                    return 0; // there are no forks in viz
                 }
 
                 void p2p_plugin_impl::error_encountered(const string &message, const fc::oexception &error) {
@@ -500,7 +500,7 @@ namespace golos {
 
             void p2p_plugin::plugin_startup() {
                 my->p2p_thread.async([this] {
-                    my->node.reset(new golos::network::node(my->user_agent));
+                    my->node.reset(new graphene::network::node(my->user_agent));
                     my->node->load_configuration(app().data_dir() / "p2p");
                     my->node->set_node_delegate(&(*my));
 
@@ -528,7 +528,7 @@ namespace golos {
                     my->chain.db().with_weak_read_lock([&]() {
                         block_id = my->chain.db().head_block_id();
                     });
-                    my->node->sync_from(item_id(golos::network::block_message_type, block_id),
+                    my->node->sync_from(item_id(graphene::network::block_message_type, block_id),
                                         std::vector<uint32_t>());
                     ilog("P2P node listening at ${ep}", ("ep", my->node->get_actual_listening_endpoint()));
                 }).wait();

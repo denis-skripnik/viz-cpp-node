@@ -24,10 +24,10 @@ else()
 endif()
 
 list(APPEND ${CURRENT_TARGET}_HEADERS
-        include/golos/wallet/api_documentation.hpp
-        include/golos/wallet/reflect_util.hpp
-        include/golos/wallet/remote_node_api.hpp
-        include/golos/wallet/wallet.hpp
+        include/graphene/wallet/api_documentation.hpp
+        include/graphene/wallet/reflect_util.hpp
+        include/graphene/wallet/remote_node_api.hpp
+        include/graphene/wallet/wallet.hpp
 )
 
 list(APPEND ${CURRENT_TARGET}_SOURCES
@@ -36,49 +36,49 @@ list(APPEND ${CURRENT_TARGET}_SOURCES
         )
 
 if(BUILD_SHARED_LIBRARIES)
-    add_library(golos_${CURRENT_TARGET} SHARED
+    add_library(graphene_${CURRENT_TARGET} SHARED
             ${${CURRENT_TARGET}_HEADERS}
             ${${CURRENT_TARGET}_SOURCES}
             )
 else()
-    add_library(golos_${CURRENT_TARGET} STATIC
+    add_library(graphene_${CURRENT_TARGET} STATIC
             ${${CURRENT_TARGET}_HEADERS}
             ${${CURRENT_TARGET}_SOURCES}
             )
 endif()
-# I don't know why golos_app is required twice in the following line, I just know the linker breaks if it isn't.
+# I don't know why graphene_app is required twice in the following line, I just know the linker breaks if it isn't.
 target_link_libraries(
-        golos_${CURRENT_TARGET}
+        graphene_${CURRENT_TARGET}
         PRIVATE
-        golos_network
-        golos_chain
-        golos::network_broadcast_api
-        golos::database_api
-        golos::account_history
-        golos::operation_history
-        golos::social_network
-        golos::tags
-        golos::private_message
-        golos::follow
-        golos::account_by_key
-        golos::witness_api
-        golos_protocol
+        graphene_network
+        graphene_chain
+        graphene::network_broadcast_api
+        graphene::database_api
+        graphene::account_history
+        graphene::operation_history
+        graphene::social_network
+        graphene::tags
+        graphene::private_message
+        graphene::follow
+        graphene::account_by_key
+        graphene::witness_api
+        graphene_protocol
         graphene_utilities
         fc
         ${CMAKE_DL_LIBS}
         ${PLATFORM_SPECIFIC_LIBS}
 )
-target_include_directories( golos_${CURRENT_TARGET} PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include")
+target_include_directories( graphene_${CURRENT_TARGET} PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include")
 
 if(MSVC)
     set_source_files_properties(wallet.cpp PROPERTIES COMPILE_FLAGS "/bigobj")
 endif(MSVC)
 
 install(TARGETS
-        golos_${CURRENT_TARGET}
+        graphene_${CURRENT_TARGET}
 
         RUNTIME DESTINATION bin
         LIBRARY DESTINATION lib
         ARCHIVE DESTINATION lib
         )
-install(FILES ${HEADERS} DESTINATION "include/golos/wallet")
+install(FILES ${HEADERS} DESTINATION "include/graphene/wallet")

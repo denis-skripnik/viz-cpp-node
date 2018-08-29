@@ -4,7 +4,7 @@ if(UNIX AND NOT APPLE)
 endif()
 
 target_link_libraries(size_checker
-        PRIVATE golos_chain golos_protocol fc ${CMAKE_DL_LIBS} ${PLATFORM_SPECIFIC_LIBS})
+        PRIVATE graphene_chain graphene_protocol fc ${CMAKE_DL_LIBS} ${PLATFORM_SPECIFIC_LIBS})
 
 install(TARGETS
         size_checker

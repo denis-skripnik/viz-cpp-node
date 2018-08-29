@@ -14,10 +14,10 @@ from time import sleep
 from steemapi.steemnoderpc import GolosNodeRPC
 
 class DebugNode( object ):
-   """ Wraps the golosd debug node plugin for easier automated testing of the Golos Network"""
+   """ Wraps the vizd debug node plugin for easier automated testing of the VIZ Network"""
 
    def __init__( self, steemd, data_dir, args='', plugins=[], apis=[], steemd_out=None, steemd_err=None ):
-      """ Creates a golosd debug node.
+      """ Creates a vizd debug node.
 
       It can be ran by using 'with debug_node:'
       While in the context of 'with' the debug node will continue to run.
@@ -26,14 +26,14 @@ class DebugNode( object ):
       For all other requests, the python-steem library should be used.
 
       args:
-         golosd -- The string path to the location of the golosd binary
-         data_dir -- The string path to an existing golosd data directory which will be used to pull blocks from.
-         args -- Other string args to pass to golosd.
+         vizd -- The string path to the location of the vizd binary
+         data_dir -- The string path to an existing vizd data directory which will be used to pull blocks from.
+         args -- Other string args to pass to vizd.
          plugins -- Any additional plugins to start with the debug node. Modify plugins DebugNode.plugins
          apis -- Any additional APIs to have available. APIs will retain this order for accesibility starting at id 3.
             database_api is 0, login_api is 1, and debug_node_api is 2. Modify apis with DebugNode.api
-         steemd_stdout -- A stream for golosd's stdout. Default is to pipe to /dev/null
-         steemd_stderr -- A stream for golosd's stderr. Default is to pipe to /dev/null
+         steemd_stdout -- A stream for vizd's stdout. Default is to pipe to /dev/null
+         steemd_stderr -- A stream for vizd's stderr. Default is to pipe to /dev/null
       """
       self._data_dir = None
       self._debug_key = None
@@ -46,9 +46,9 @@ class DebugNode( object ):
 
       self._steemd_bin = Path( steemd )
       if( not self._steemd_bin.exists() ):
-         raise ValueError( 'golosd does not exist' )
+         raise ValueError( 'vizd does not exist' )
       if( not self._steemd_bin.is_file() ):
-         raise ValueError( 'golosd is not a file' )
+         raise ValueError( 'vizd is not a file' )
 
       self._data_dir = Path( data_dir )
       if( not self._data_dir.exists() ):
@@ -106,7 +106,7 @@ class DebugNode( object ):
       if( not self._steemd_process.returncode ):
          self._rpc = GolosNodeRPC( 'ws://127.0.0.1:8095', '', '' )
       else:
-         raise Exception( "golosd did not start properly..." )
+         raise Exception( "vizd did not start properly..." )
 
    def __exit__( self, exc, value, tb ):
       self._rpc = None
@@ -127,7 +127,7 @@ class DebugNode( object ):
                self._steemd_process.poll()
 
                if( self._steemd_process.returncode ):
-                  loggin.error( 'golosd did not properly shut down after SIGINT and SIGTERM. User intervention may be required.' )
+                  loggin.error( 'vizd did not properly shut down after SIGINT and SIGTERM. User intervention may be required.' )
 
       self._steemd_process = None
       self._temp_data_dir.cleanup()
@@ -233,7 +233,7 @@ if __name__=="__main__":
    def main():
       global WAITING
       """
-      This example contains a simple parser to obtain the locations of both golosd and the data directory,
+      This example contains a simple parser to obtain the locations of both vizd and the data directory,
       creates and runs a new debug node, replays all of the blocks in the data directory, and finally waits
       for the user to interface with it outside of the script. Sending SIGINT succesfully and cleanly terminates
       the program.
@@ -248,7 +248,7 @@ if __name__=="__main__":
       parser = ArgumentParser( description='Run a Debug Node on an existing chain. This simply replays all blocks ' + \
                                  'and then waits indefinitely to allow user interaction through RPC calls and ' + \
                                  'the CLI wallet' )
-      parser.add_argument( '--golosd', '-s', type=str, required=True, help='The location of a golosd binary to run the debug node' )
+      parser.add_argument( '--vizd', '-s', type=str, required=True, help='The location of a vizd binary to run the debug node' )
       parser.add_argument( '--data-dir', '-d', type=str, required=True, help='The location of an existing data directory. ' + \
                            'The debug node will pull blocks from this directory when replaying the chain. The directory ' + \
                            'will not be changed.' )
@@ -257,17 +257,17 @@ if __name__=="__main__":
 
       steemd = Path( args.steemd )
       if( not steemd.exists() ):
-         print( 'Error: golosd does not exist.' )
+         print( 'Error: vizd does not exist.' )
          return
 
       steemd = steemd.resolve()
       if( not steemd.is_file() ):
-         print( 'Error: golosd is not a file.' )
+         print( 'Error: vizd is not a file.' )
          return
 
       data_dir = Path( args.data_dir )
       if( not data_dir.exists() ):
-         print( 'Error: data_dir does not exist or is not a properly constructed golosd data directory' )
+         print( 'Error: data_dir does not exist or is not a properly constructed vizd data directory' )
 
       data_dir = data_dir.resolve()
       if( not data_dir.is_dir() ):

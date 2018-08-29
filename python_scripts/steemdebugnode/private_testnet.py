@@ -19,7 +19,7 @@ WAITING = True
 def main( ):
    global WAITING
    """
-   This example contains a simple parser to obtain the locations of both golosd and the data directory,
+   This example contains a simple parser to obtain the locations of both vizd and the data directory,
    creates and runs a new debug node, replays all of the blocks in the data directory, and finally waits
    for the user to interface with it outside of the script. Sending SIGINT succesfully and cleanly terminates
    the program.
@@ -34,7 +34,7 @@ def main( ):
    parser = ArgumentParser( description='Run a Debug Node on an existing chain. This simply replays all blocks ' + \
                               'and then waits indefinitely to allow user interaction through RPC calls and ' + \
                               'the CLI wallet' )
-   parser.add_argument( '--golosd', '-s', type=str, required=True, help='The location of a golosd binary to run the debug node' )
+   parser.add_argument( '--vizd', '-s', type=str, required=True, help='The location of a vizd binary to run the debug node' )
    parser.add_argument( '--data-dir', '-d', type=str, required=True, help='The location of an existing data directory. ' + \
                         'The debug node will pull blocks from this directory when replaying the chain. The directory ' + \
                         'will not be changed.' )
@@ -47,17 +47,17 @@ def main( ):
 
    steemd = Path( args.steemd )
    if( not steemd.exists() ):
-      print( 'Error: golosd does not exist.' )
+      print( 'Error: vizd does not exist.' )
       return
 
    steemd = steemd.resolve()
    if( not steemd.is_file() ):
-      print( 'Error: golosd is not a file.' )
+      print( 'Error: vizd is not a file.' )
       return
 
    data_dir = Path( args.data_dir )
    if( not data_dir.exists() ):
-      print( 'Error: data_dir does not exist or is not a properly constructed golosd data directory' )
+      print( 'Error: data_dir does not exist or is not a properly constructed vizd data directory' )
 
    data_dir = data_dir.resolve()
    if( not data_dir.is_dir() ):

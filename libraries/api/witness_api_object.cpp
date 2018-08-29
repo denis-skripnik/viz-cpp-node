@@ -1,6 +1,6 @@
-#include <golos/api/witness_api_object.hpp>
+#include <graphene/api/witness_api_object.hpp>
 
-namespace golos { namespace api {
+namespace graphene { namespace api {
     witness_api_object::witness_api_object(const witness_object &w, const database& db)
         : id(w.id), owner(w.owner), created(w.created),
           url(to_string(w.url)), total_missed(w.total_missed), last_aslot(w.last_aslot),
@@ -11,4 +11,4 @@ namespace golos { namespace api {
           running_version(w.running_version), hardfork_version_vote(w.hardfork_version_vote),
           hardfork_time_vote(w.hardfork_time_vote) {
     }
-} } // golos::api
+} } // graphene::api

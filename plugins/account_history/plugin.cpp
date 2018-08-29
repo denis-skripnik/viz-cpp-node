@@ -1,23 +1,23 @@
-#include <golos/plugins/account_history/plugin.hpp>
-#include <golos/plugins/account_history/history_object.hpp>
+#include <graphene/plugins/account_history/plugin.hpp>
+#include <graphene/plugins/account_history/history_object.hpp>
 
-#include <golos/plugins/operation_history/history_object.hpp>
+#include <graphene/plugins/operation_history/history_object.hpp>
 
-#include <golos/chain/operation_notification.hpp>
+#include <graphene/chain/operation_notification.hpp>
 
 #include <boost/algorithm/string.hpp>
-#define STEEM_NAMESPACE_PREFIX "golos::protocol::"
+#define STEEM_NAMESPACE_PREFIX "graphene::protocol::"
 
 #define CHECK_ARG_SIZE(s) \
    FC_ASSERT( args.args->size() == s, "Expected #s argument(s), was ${n}", ("n", args.args->size()) );
 
-namespace golos { namespace plugins { namespace account_history {
+namespace graphene { namespace plugins { namespace account_history {
 
     struct operation_visitor_filter;
-    void operation_get_impacted_accounts(const operation &op, flat_set<golos::chain::account_name_type> &result);
+    void operation_get_impacted_accounts(const operation &op, flat_set<graphene::chain::account_name_type> &result);
 
-using namespace golos::protocol;
-using namespace golos::chain;
+using namespace graphene::protocol;
+using namespace graphene::chain;
 //
 template<typename T>
 T dejsonify(const string &s) {
@@ -34,8 +34,8 @@ if( options.count(name) ) { \
 
     struct operation_visitor final {
         operation_visitor(
-            golos::chain::database& db,
-            const golos::chain::operation_notification& op_note,
+            graphene::chain::database& db,
+            const graphene::chain::operation_notification& op_note,
             std::string op_account)
             : database(db),
               note(op_note),
@@ -44,8 +44,8 @@ if( options.count(name) ) { \
 
         using result_type = void;
 
-        golos::chain::database& database;
-        const golos::chain::operation_notification& note;
+        graphene::chain::database& database;
+        const graphene::chain::operation_notification& note;
         std::string account;
 
         template<typename Op>
@@ -74,12 +74,12 @@ if( options.count(name) ) { \
 
         ~plugin_impl() = default;
 
-        void on_operation(const golos::chain::operation_notification& note) {
+        void on_operation(const graphene::chain::operation_notification& note) {
             if (!note.stored_in_db) {
                 return;
             }
 
-            fc::flat_set<golos::chain::account_name_type> impacted;
+            fc::flat_set<graphene::chain::account_name_type> impacted;
             operation_get_impacted_accounts(note.op, impacted);
 
             for (const auto& item : impacted) {
@@ -114,7 +114,7 @@ if( options.count(name) ) { \
         }
 
         fc::flat_map<std::string, std::string> tracked_accounts;
-        golos::chain::database& database;
+        graphene::chain::database& database;
     };
 
     DEFINE_API(plugin, get_account_history) {
@@ -129,9 +129,9 @@ if( options.count(name) ) { \
     }
 
     struct get_impacted_account_visitor final {
-        fc::flat_set<golos::chain::account_name_type>& impacted;
+        fc::flat_set<graphene::chain::account_name_type>& impacted;
 
-        get_impacted_account_visitor(fc::flat_set<golos::chain::account_name_type>& impact)
+        get_impacted_account_visitor(fc::flat_set<graphene::chain::account_name_type>& impact)
             : impacted(impact) {
         }
 
@@ -189,7 +189,7 @@ if( options.count(name) ) { \
         void operator()(const transfer_to_vesting_operation& op) {
             impacted.insert(op.from);
 
-            if (op.to != golos::chain::account_name_type() && op.to != op.from) {
+            if (op.to != graphene::chain::account_name_type() && op.to != op.from) {
                 impacted.insert(op.to);
             }
         }
@@ -291,7 +291,7 @@ if( options.count(name) ) { \
     };
 
     void operation_get_impacted_accounts(
-        const operation& op, fc::flat_set<golos::chain::account_name_type>& result
+        const operation& op, fc::flat_set<graphene::chain::account_name_type>& result
     ) {
         get_impacted_account_visitor vtor = get_impacted_account_visitor(result);
         op.visit(vtor);
@@ -314,11 +314,11 @@ if( options.count(name) ) { \
         ilog("account_history plugin: plugin_initialize() begin");
         pimpl = std::make_unique<plugin_impl>();
         // this is worked, because the appbase initialize required plugins at first
-        pimpl->database.pre_apply_operation.connect([&](golos::chain::operation_notification& note){
+        pimpl->database.pre_apply_operation.connect([&](graphene::chain::operation_notification& note){
             pimpl->on_operation(note);
         });
 
-        golos::chain::add_plugin_index<account_history_index>(pimpl->database);
+        graphene::chain::add_plugin_index<account_history_index>(pimpl->database);
 
         using pairstring = std::pair<std::string, std::string>;
         LOAD_VALUE_SET(options, "track-account-range", pimpl->tracked_accounts, pairstring);
@@ -350,4 +350,4 @@ if( options.count(name) ) { \
         return pimpl->tracked_accounts;
     }
 
-} } } // golos::plugins::account_history
+} } } // graphene::plugins::account_history

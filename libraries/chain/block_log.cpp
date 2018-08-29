@@ -1,11 +1,11 @@
 #include <algorithm>
 #include <fstream>
-#include <golos/chain/block_log.hpp>
+#include <graphene/chain/block_log.hpp>
 #include <boost/iostreams/device/mapped_file.hpp>
 #include <boost/filesystem.hpp>
 #include <boost/thread/shared_mutex.hpp>
 
-namespace golos { namespace chain {
+namespace graphene { namespace chain {
     namespace detail {
         using read_write_mutex = boost::shared_mutex;
         using read_lock = boost::shared_lock<read_write_mutex>;
@@ -298,4 +298,4 @@ namespace golos { namespace chain {
         detail::read_lock lock(my->mutex);
         return my->head;
     }
-} } // golos::chain
+} } // graphene::chain

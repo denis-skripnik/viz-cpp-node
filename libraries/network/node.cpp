@@ -61,9 +61,9 @@
 #include <fc/network/ip.hpp>
 #include <fc/smart_ref_impl.hpp>
 
-#include <golos/network/node.hpp>
-#include <golos/network/peer_connection.hpp>
-#include <golos/network/exceptions.hpp>
+#include <graphene/network/node.hpp>
+#include <graphene/network/peer_connection.hpp>
+#include <graphene/network/exceptions.hpp>
 
 #include <fc/git_revision.hpp>
 
@@ -103,7 +103,7 @@
 #define testnetlog(...) do {} while (0)
 #endif
 
-namespace golos {
+namespace graphene {
     namespace network {
 
         namespace detail {
@@ -241,13 +241,13 @@ namespace golos {
 
         }
     }
-} // end namespace golos::network::detail
-FC_REFLECT((golos::network::detail::node_configuration), (listen_endpoint)
+} // end namespace graphene::network::detail
+FC_REFLECT((graphene::network::detail::node_configuration), (listen_endpoint)
         (accept_incoming_connections)
         (wait_if_endpoint_is_busy)
         (private_key));
 
-namespace golos {
+namespace graphene {
     namespace network {
         namespace detail {
 
@@ -266,7 +266,7 @@ namespace golos {
                 }
 
                 bool operator<(const prioritized_item_id &rhs) const {
-                    static_assert(golos::network::block_message_type > golos::network::trx_message_type, "block_message_type must be greater than trx_message_type for prioritized_item_ids to sort correctly");
+                    static_assert(graphene::network::block_message_type > graphene::network::trx_message_type, "block_message_type must be greater than trx_message_type for prioritized_item_ids to sort correctly");
                     if (item.item_type != rhs.item.item_type) {
                         return item.item_type > rhs.item.item_type;
                     }
@@ -389,9 +389,9 @@ namespace golos {
 
                 void handle_message(const message &) override;
 
-                bool handle_block(const golos::network::block_message &block_message, bool sync_mode, std::vector<fc::uint160_t> &contained_transaction_message_ids) override;
+                bool handle_block(const graphene::network::block_message &block_message, bool sync_mode, std::vector<fc::uint160_t> &contained_transaction_message_ids) override;
 
-                void handle_transaction(const golos::network::trx_message &transaction_message) override;
+                void handle_transaction(const graphene::network::trx_message &transaction_message) override;
 
                 std::vector<item_hash_t> get_block_ids(const std::vector<item_hash_t> &blockchain_synopsis,
                         uint32_t &remaining_item_count,
@@ -460,11 +460,11 @@ namespace golos {
                 bool _sync_items_to_fetch_updated;
                 fc::future<void> _fetch_sync_items_loop_done;
 
-                typedef std::unordered_map<golos::network::block_id_type, fc::time_point> active_sync_requests_map;
+                typedef std::unordered_map<graphene::network::block_id_type, fc::time_point> active_sync_requests_map;
 
                 active_sync_requests_map _active_sync_requests; /// list of sync blocks we've asked for from peers but have not yet received
-                std::list<golos::network::block_message> _new_received_sync_items; /// list of sync blocks we've just received but haven't yet tried to process
-                std::list<golos::network::block_message> _received_sync_items; /// list of sync blocks we've received, but can't yet process because we are still missing blocks that come earlier in the chain
+                std::list<graphene::network::block_message> _new_received_sync_items; /// list of sync blocks we've just received but haven't yet tried to process
+                std::list<graphene::network::block_message> _received_sync_items; /// list of sync blocks we've received, but can't yet process because we are still missing blocks that come earlier in the chain
                 // @}
 
                 fc::future<void> _process_backlog_of_sync_blocks_done;
@@ -717,15 +717,15 @@ namespace golos {
 
                 void on_connection_closed(peer_connection *originating_peer) override;
 
-                void send_sync_block_to_node_delegate(const golos::network::block_message &block_message_to_send);
+                void send_sync_block_to_node_delegate(const graphene::network::block_message &block_message_to_send);
 
                 void process_backlog_of_sync_blocks();
 
                 void trigger_process_backlog_of_sync_blocks();
 
-                void process_block_during_sync(peer_connection *originating_peer, const golos::network::block_message &block_message, const message_hash_type &message_hash);
+                void process_block_during_sync(peer_connection *originating_peer, const graphene::network::block_message &block_message, const message_hash_type &message_hash);
 
-                void process_block_during_normal_operation(peer_connection *originating_peer, const golos::network::block_message &block_message, const message_hash_type &message_hash);
+                void process_block_during_normal_operation(peer_connection *originating_peer, const graphene::network::block_message &block_message, const message_hash_type &message_hash);
 
                 void process_block_message(peer_connection *originating_peer, const message &message_to_process, const message_hash_type &message_hash);
 
@@ -809,9 +809,9 @@ namespace golos {
 
                 fc::variant_object get_advanced_node_parameters();
 
-                message_propagation_data get_transaction_propagation_data(const golos::network::transaction_id_type &transaction_id);
+                message_propagation_data get_transaction_propagation_data(const graphene::network::transaction_id_type &transaction_id);
 
-                message_propagation_data get_block_propagation_data(const golos::network::block_id_type &block_id);
+                message_propagation_data get_block_propagation_data(const graphene::network::block_id_type &block_id);
 
                 node_id_t get_node_id() const;
 
@@ -1015,7 +1015,7 @@ namespace golos {
 #if 0
                                                                                                                                                 try
           {
-            _retrigger_connect_loop_promise = fc::promise<void>::ptr( new fc::promise<void>("golos::network::retrigger_connect_loop") );
+            _retrigger_connect_loop_promise = fc::promise<void>::ptr( new fc::promise<void>("graphene::network::retrigger_connect_loop") );
             if( is_wanting_new_connections() || !_add_once_node_list.empty() )
             {
               if( is_wanting_new_connections() )
@@ -1057,11 +1057,11 @@ namespace golos {
             bool node_impl::have_already_received_sync_item(const item_hash_t &item_hash) {
                 VERIFY_CORRECT_THREAD();
                 return std::find_if(_received_sync_items.begin(), _received_sync_items.end(),
-                        [&item_hash](const golos::network::block_message &message) {
+                        [&item_hash](const graphene::network::block_message &message) {
                             return message.block_id == item_hash;
                         }) != _received_sync_items.end() ||
                        std::find_if(_new_received_sync_items.begin(), _new_received_sync_items.end(),
-                               [&item_hash](const golos::network::block_message &message) {
+                               [&item_hash](const graphene::network::block_message &message) {
                                    return message.block_id == item_hash;
                                }) != _new_received_sync_items.end();;
             }
@@ -1069,7 +1069,7 @@ namespace golos {
             void node_impl::request_sync_item_from_peer(const peer_connection_ptr &peer, const item_hash_t &item_to_request) {
                 VERIFY_CORRECT_THREAD();
                 dlog("requesting item ${item_hash} from peer ${endpoint}", ("item_hash", item_to_request)("endpoint", peer->get_remote_endpoint()));
-                item_id item_id_to_request(golos::network::block_message_type, item_to_request);
+                item_id item_id_to_request(graphene::network::block_message_type, item_to_request);
                 _active_sync_requests.insert(active_sync_requests_map::value_type(item_to_request, fc::time_point::now()));
                 peer->last_sync_item_received_time = fc::time_point::now();
                 peer->sync_items_requested_from_peer.insert(item_to_request);
@@ -1087,7 +1087,7 @@ namespace golos {
                     peer->last_sync_item_received_time = fc::time_point::now();
                     peer->sync_items_requested_from_peer.insert(item_to_request);
                 }
-                peer->send_message(fetch_items_message(golos::network::block_message_type, items_to_request));
+                peer->send_message(fetch_items_message(graphene::network::block_message_type, items_to_request));
             }
 
             void node_impl::fetch_sync_items_loop() {
@@ -1148,7 +1148,7 @@ namespace golos {
 
                     if (!_sync_items_to_fetch_updated) {
                         dlog("no sync items to fetch right now, going to sleep");
-                        _retrigger_fetch_sync_items_loop_promise = fc::promise<void>::ptr(new fc::promise<void>("golos::network::retrigger_fetch_sync_items_loop"));
+                        _retrigger_fetch_sync_items_loop_promise = fc::promise<void>::ptr(new fc::promise<void>("graphene::network::retrigger_fetch_sync_items_loop"));
                         _retrigger_fetch_sync_items_loop_promise->wait();
                         _retrigger_fetch_sync_items_loop_promise.reset();
                     }
@@ -1243,7 +1243,7 @@ namespace golos {
                                     peer->inventory_peer_advertised_to_us.find(item_iter->item) !=
                                     peer->inventory_peer_advertised_to_us.end()) {
                                     if (item_iter->item.item_type ==
-                                        golos::network::trx_message_type &&
+                                        graphene::network::trx_message_type &&
                                         peer->is_transaction_fetching_inhibited()) {
                                             next_peer_unblocked_time = std::min(peer->transaction_fetching_inhibited_until, next_peer_unblocked_time);
                                     } else {
@@ -1295,7 +1295,7 @@ namespace golos {
                     items_by_peer.clear();
 
                     if (!_items_to_fetch_updated) {
-                        _retrigger_fetch_item_loop_promise = fc::promise<void>::ptr(new fc::promise<void>("golos::network::retrigger_fetch_item_loop"));
+                        _retrigger_fetch_item_loop_promise = fc::promise<void>::ptr(new fc::promise<void>("graphene::network::retrigger_fetch_item_loop"));
                         fc::microseconds time_until_retrigger = fc::microseconds::maximum();
                         if (next_peer_unblocked_time !=
                             fc::time_point::maximum()) {
@@ -1383,7 +1383,7 @@ namespace golos {
                     inventory_messages_to_send.clear();
 
                     if (_new_inventory.empty()) {
-                        _retrigger_advertise_inventory_loop_promise = fc::promise<void>::ptr(new fc::promise<void>("golos::network::retrigger_advertise_inventory_loop"));
+                        _retrigger_advertise_inventory_loop_promise = fc::promise<void>::ptr(new fc::promise<void>("graphene::network::retrigger_advertise_inventory_loop"));
                         _retrigger_advertise_inventory_loop_promise->wait();
                         _retrigger_advertise_inventory_loop_promise.reset();
                     }
@@ -1846,7 +1846,7 @@ namespace golos {
                 bool new_information_received = false;
                 for (const address_info &address : addresses) {
                     if (address.firewalled ==
-                        golos::network::firewalled_state::not_firewalled) {
+                        graphene::network::firewalled_state::not_firewalled) {
                         potential_peer_record updated_peer_record = _potential_peer_db.lookup_or_create_entry_for_endpoint(address.remote_endpoint);
                         if (address.last_seen_time >
                             updated_peer_record.last_seen_time) {
@@ -1885,7 +1885,7 @@ namespace golos {
                 VERIFY_CORRECT_THREAD();
                 message_hash_type message_hash = received_message.id();
                 dlog("handling message ${type} ${hash} size ${size} from peer ${endpoint}",
-                        ("type", golos::network::core_message_type_enum(received_message.msg_type))("hash", message_hash)
+                        ("type", graphene::network::core_message_type_enum(received_message.msg_type))("hash", message_hash)
                                 ("size", received_message.size)
                                 ("endpoint", originating_peer->get_remote_endpoint()));
                 switch (received_message.msg_type) {
@@ -2022,7 +2022,7 @@ namespace golos {
                     originating_peer->last_known_fork_block_number = user_data["last_known_fork_block_number"].as<uint32_t>();
                 }
                 if (user_data.contains("chain_id")) {
-                    originating_peer->chain_id = user_data["chain_id"].as<golos::protocol::chain_id_type>();
+                    originating_peer->chain_id = user_data["chain_id"].as<graphene::protocol::chain_id_type>();
                 }
             }
 
@@ -2310,7 +2310,7 @@ namespace golos {
                 for (const address_info &address : address_message_received.addresses) {
                     dlog("    ${endpoint} last seen ${time}", ("endpoint", address.remote_endpoint)("time", address.last_seen_time));
                 }
-                std::vector<golos::network::address_info> updated_addresses = address_message_received.addresses;
+                std::vector<graphene::network::address_info> updated_addresses = address_message_received.addresses;
                 for (address_info &address : updated_addresses) {
                     address.last_seen_time = fc::time_point_sec(fc::time_point::now());
                 }
@@ -2877,14 +2877,14 @@ namespace golos {
 
                 // if we sent them a block, update our record of the last block they've seen accordingly
                 if (last_block_message_sent) {
-                    golos::network::block_message block = last_block_message_sent->as<golos::network::block_message>();
+                    graphene::network::block_message block = last_block_message_sent->as<graphene::network::block_message>();
                     originating_peer->last_block_delegate_has_seen = block.block_id;
                     originating_peer->last_block_time_delegate_has_seen = _delegate->get_block_time(block.block_id);
                 }
 
                 for (const message &reply : reply_messages) {
                     if (reply.msg_type == block_message_type) {
-                        originating_peer->send_item(item_id(block_message_type, reply.as<golos::network::block_message>().block_id));
+                        originating_peer->send_item(item_id(block_message_type, reply.as<graphene::network::block_message>().block_id));
                     } else {
                         originating_peer->send_message(reply);
                     }
@@ -2969,7 +2969,7 @@ namespace golos {
                         // inventory list from growing without bound.  We try to allow fetching blocks even when
                         // we've stopped fetching transactions.
                         if ((item_ids_inventory_message_received.item_type ==
-                             golos::network::trx_message_type &&
+                             graphene::network::trx_message_type &&
                              originating_peer->is_inventory_advertised_to_us_list_full_for_transactions()) ||
                             originating_peer->is_inventory_advertised_to_us_list_full()) {
                                 break;
@@ -3114,7 +3114,7 @@ namespace golos {
                 schedule_peer_for_deletion(originating_peer_ptr);
             }
 
-            void node_impl::send_sync_block_to_node_delegate(const golos::network::block_message &block_message_to_send) {
+            void node_impl::send_sync_block_to_node_delegate(const graphene::network::block_message &block_message_to_send) {
                 dlog("in send_sync_block_to_node_delegate()");
                 bool client_accepted_block = false;
                 bool discontinue_fetching_blocks_from_peer = false;
@@ -3366,7 +3366,7 @@ namespace golos {
                             if (std::find(_most_recent_blocks_accepted.begin(), _most_recent_blocks_accepted.end(),
                                     received_block_iter->block_id) ==
                                 _most_recent_blocks_accepted.end()) {
-                                golos::network::block_message block_message_to_process = *received_block_iter;
+                                graphene::network::block_message block_message_to_process = *received_block_iter;
                                 _received_sync_items.erase(received_block_iter);
                                 _handle_message_calls_in_progress.emplace_back(fc::async([this, block_message_to_process]() {
                                     send_sync_block_to_node_delegate(block_message_to_process);
@@ -3410,7 +3410,7 @@ namespace golos {
             }
 
             void node_impl::process_block_during_sync(peer_connection *originating_peer,
-                    const golos::network::block_message &block_message_to_process, const message_hash_type &message_hash) {
+                    const graphene::network::block_message &block_message_to_process, const message_hash_type &message_hash) {
                 VERIFY_CORRECT_THREAD();
                 dlog("received a sync block from peer ${endpoint}", ("endpoint", originating_peer->get_remote_endpoint()));
 
@@ -3421,7 +3421,7 @@ namespace golos {
             }
 
             void node_impl::process_block_during_normal_operation(peer_connection *originating_peer,
-                    const golos::network::block_message &block_message_to_process,
+                    const graphene::network::block_message &block_message_to_process,
                     const message_hash_type &message_hash) {
                 fc::time_point message_receive_time = fc::time_point::now();
 
@@ -3583,8 +3583,8 @@ namespace golos {
                 // (it's possible that we request an item during normal operation and then get kicked into sync
                 // mode before we receive and process the item.  In that case, we should process the item as a normal
                 // item to avoid confusing the sync code)
-                golos::network::block_message block_message_to_process(message_to_process.as<golos::network::block_message>());
-                auto item_iter = originating_peer->items_requested_from_peer.find(item_id(golos::network::block_message_type, message_hash));
+                graphene::network::block_message block_message_to_process(message_to_process.as<graphene::network::block_message>());
+                auto item_iter = originating_peer->items_requested_from_peer.find(item_id(graphene::network::block_message_type, message_hash));
                 if (item_iter !=
                     originating_peer->items_requested_from_peer.end()) {
                     originating_peer->items_requested_from_peer.erase(item_iter);
@@ -4907,13 +4907,13 @@ namespace golos {
                 VERIFY_CORRECT_THREAD();
                 fc::uint160_t hash_of_message_contents;
                 if (item_to_broadcast.msg_type ==
-                    golos::network::block_message_type) {
-                    golos::network::block_message block_message_to_broadcast = item_to_broadcast.as<golos::network::block_message>();
+                    graphene::network::block_message_type) {
+                    graphene::network::block_message block_message_to_broadcast = item_to_broadcast.as<graphene::network::block_message>();
                     hash_of_message_contents = block_message_to_broadcast.block_id; // for debugging
                     _most_recent_blocks_accepted.push_back(block_message_to_broadcast.block_id);
                 } else if (item_to_broadcast.msg_type ==
-                           golos::network::trx_message_type) {
-                    golos::network::trx_message transaction_message_to_broadcast = item_to_broadcast.as<golos::network::trx_message>();
+                           graphene::network::trx_message_type) {
+                    graphene::network::trx_message transaction_message_to_broadcast = item_to_broadcast.as<graphene::network::trx_message>();
                     hash_of_message_contents = transaction_message_to_broadcast.trx.id(); // for debugging
                     dlog("broadcasting trx: ${trx}", ("trx", transaction_message_to_broadcast));
                 }
@@ -5001,12 +5001,12 @@ namespace golos {
                 return result;
             }
 
-            message_propagation_data node_impl::get_transaction_propagation_data(const golos::network::transaction_id_type &transaction_id) {
+            message_propagation_data node_impl::get_transaction_propagation_data(const graphene::network::transaction_id_type &transaction_id) {
                 VERIFY_CORRECT_THREAD();
                 return _message_cache.get_message_propagation_data(transaction_id);
             }
 
-            message_propagation_data node_impl::get_block_propagation_data(const golos::network::block_id_type &block_id) {
+            message_propagation_data node_impl::get_block_propagation_data(const graphene::network::block_id_type &block_id) {
                 VERIFY_CORRECT_THREAD();
                 return _message_cache.get_message_propagation_data(block_id);
             }
@@ -5202,11 +5202,11 @@ namespace golos {
             INVOKE_IN_IMPL(get_advanced_node_parameters);
         }
 
-        message_propagation_data node::get_transaction_propagation_data(const golos::network::transaction_id_type &transaction_id) {
+        message_propagation_data node::get_transaction_propagation_data(const graphene::network::transaction_id_type &transaction_id) {
             INVOKE_IN_IMPL(get_transaction_propagation_data, transaction_id);
         }
 
-        message_propagation_data node::get_block_propagation_data(const golos::network::block_id_type &block_id) {
+        message_propagation_data node::get_block_propagation_data(const graphene::network::block_id_type &block_id) {
             INVOKE_IN_IMPL(get_block_propagation_data, block_id);
         }
 
@@ -5408,11 +5408,11 @@ namespace golos {
                 INVOKE_AND_COLLECT_STATISTICS(handle_message, message_to_handle);
             }
 
-            bool statistics_gathering_node_delegate_wrapper::handle_block(const golos::network::block_message &block_message, bool sync_mode, std::vector<fc::uint160_t> &contained_transaction_message_ids) {
+            bool statistics_gathering_node_delegate_wrapper::handle_block(const graphene::network::block_message &block_message, bool sync_mode, std::vector<fc::uint160_t> &contained_transaction_message_ids) {
                 INVOKE_AND_COLLECT_STATISTICS(handle_block, block_message, sync_mode, contained_transaction_message_ids);
             }
 
-            void statistics_gathering_node_delegate_wrapper::handle_transaction(const golos::network::trx_message &transaction_message) {
+            void statistics_gathering_node_delegate_wrapper::handle_transaction(const graphene::network::trx_message &transaction_message) {
                 INVOKE_AND_COLLECT_STATISTICS(handle_transaction, transaction_message);
             }
 
@@ -5472,4 +5472,4 @@ namespace golos {
         } // end namespace detail
 
     }
-} // end namespace golos::network
+} // end namespace graphene::network

@@ -1,35 +1,35 @@
-#include <golos/plugins/follow/follow_objects.hpp>
-#include <golos/plugins/follow/follow_operations.hpp>
-#include <golos/plugins/follow/follow_evaluators.hpp>
-#include <golos/protocol/config.hpp>
-#include <golos/chain/database.hpp>
-#include <golos/chain/generic_custom_operation_interpreter.hpp>
-#include <golos/chain/operation_notification.hpp>
-#include <golos/chain/account_object.hpp>
-#include <golos/chain/comment_object.hpp>
+#include <graphene/plugins/follow/follow_objects.hpp>
+#include <graphene/plugins/follow/follow_operations.hpp>
+#include <graphene/plugins/follow/follow_evaluators.hpp>
+#include <graphene/protocol/config.hpp>
+#include <graphene/chain/database.hpp>
+#include <graphene/chain/generic_custom_operation_interpreter.hpp>
+#include <graphene/chain/operation_notification.hpp>
+#include <graphene/chain/account_object.hpp>
+#include <graphene/chain/comment_object.hpp>
 #include <memory>
-#include <golos/plugins/json_rpc/plugin.hpp>
-#include <golos/chain/index.hpp>
+#include <graphene/plugins/json_rpc/plugin.hpp>
+#include <graphene/chain/index.hpp>
 
 #define CHECK_ARG_SIZE(s) \
    FC_ASSERT( args.args->size() == s, "Expected #s argument(s), was ${n}", ("n", args.args->size()) );
 
-namespace golos {
+namespace graphene {
     namespace plugins {
         namespace follow {
-            using namespace golos::protocol;
-            using golos::chain::generic_custom_operation_interpreter;
-            using golos::chain::custom_operation_interpreter;
-            using golos::chain::operation_notification;
-            using golos::chain::to_string;
-            using golos::chain::account_index;
-            using golos::chain::by_name;
+            using namespace graphene::protocol;
+            using graphene::chain::generic_custom_operation_interpreter;
+            using graphene::chain::custom_operation_interpreter;
+            using graphene::chain::operation_notification;
+            using graphene::chain::to_string;
+            using graphene::chain::account_index;
+            using graphene::chain::by_name;
 
             struct pre_operation_visitor {
                 plugin &_plugin;
-                golos::chain::database &db;
+                graphene::chain::database &db;
 
-                pre_operation_visitor(plugin &plugin, golos::chain::database &db) : _plugin(plugin), db(db) {
+                pre_operation_visitor(plugin &plugin, graphene::chain::database &db) : _plugin(plugin), db(db) {
                 }
 
                 typedef void result_type;
@@ -214,7 +214,7 @@ namespace golos {
                     database().set_custom_operation_interpreter(plugin_name, _custom_operation_interpreter);
                 }
 
-                golos::chain::database &database() {
+                graphene::chain::database &database() {
                     return database_;
                 }
 
@@ -279,7 +279,7 @@ namespace golos {
 
                 blog_authors_r get_blog_authors(account_name_type );
 
-                golos::chain::database &database_;
+                graphene::chain::database &database_;
 
                 uint32_t max_feed_size_ = 500;
 
@@ -312,11 +312,11 @@ namespace golos {
                     db.post_apply_operation.connect([&](const operation_notification &o) {
                         pimpl->post_operation(o, *this);
                     });
-                    golos::chain::add_plugin_index<follow_index>(db);
-                    golos::chain::add_plugin_index<feed_index>(db);
-                    golos::chain::add_plugin_index<blog_index>(db);
-                    golos::chain::add_plugin_index<follow_count_index>(db);
-                    golos::chain::add_plugin_index<blog_author_stats_index>(db);
+                    graphene::chain::add_plugin_index<follow_index>(db);
+                    graphene::chain::add_plugin_index<feed_index>(db);
+                    graphene::chain::add_plugin_index<blog_index>(db);
+                    graphene::chain::add_plugin_index<follow_count_index>(db);
+                    graphene::chain::add_plugin_index<blog_author_stats_index>(db);
 
                     if (options.count("follow-max-feed-size")) {
                         uint32_t feed_size = options["follow-max-feed-size"].as<uint32_t>();
@@ -661,4 +661,4 @@ namespace golos {
             }
         }
     }
-} // golos::follow
+} // graphene::follow

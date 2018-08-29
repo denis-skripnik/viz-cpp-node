@@ -1,11 +1,11 @@
 
-#include <golos/protocol/transaction.hpp>
-#include <golos/protocol/exceptions.hpp>
+#include <graphene/protocol/transaction.hpp>
+#include <graphene/protocol/exceptions.hpp>
 
 #include <fc/bitutil.hpp>
 #include <fc/smart_ref_impl.hpp>
 
-namespace golos {
+namespace graphene {
     namespace protocol {
 
         digest_type signed_transaction::merkle_digest() const {
@@ -35,20 +35,20 @@ namespace golos {
             }
         }
 
-        golos::protocol::transaction_id_type golos::protocol::transaction::id() const {
+        graphene::protocol::transaction_id_type graphene::protocol::transaction::id() const {
             auto h = digest();
             transaction_id_type result;
             memcpy(result._hash, h._hash, std::min(sizeof(result), sizeof(h)));
             return result;
         }
 
-        const signature_type &golos::protocol::signed_transaction::sign(const private_key_type &key, const chain_id_type &chain_id) {
+        const signature_type &graphene::protocol::signed_transaction::sign(const private_key_type &key, const chain_id_type &chain_id) {
             digest_type h = sig_digest(chain_id);
             signatures.push_back(key.sign_compact(h));
             return signatures.back();
         }
 
-        signature_type golos::protocol::signed_transaction::sign(const private_key_type &key, const chain_id_type &chain_id) const {
+        signature_type graphene::protocol::signed_transaction::sign(const private_key_type &key, const chain_id_type &chain_id) const {
             digest_type::encoder enc;
             fc::raw::pack(enc, chain_id);
             fc::raw::pack(enc, *this);
@@ -317,7 +317,7 @@ namespace golos {
             for (const public_key_type &k : s) {
                 result.erase(k);
                 try {
-                    golos::protocol::verify_authority(operations, result, get_active, get_owner, get_posting, max_recursion);
+                    graphene::protocol::verify_authority(operations, result, get_active, get_owner, get_posting, max_recursion);
                     continue;  // element stays erased if verify_authority is ok
                 }
                 catch (const tx_missing_owner_auth &e) {
@@ -340,9 +340,9 @@ namespace golos {
                 const authority_getter &get_posting,
                 uint32_t max_recursion) const {
             try {
-                golos::protocol::verify_authority(operations, get_signature_keys(chain_id), get_active, get_owner, get_posting, max_recursion);
+                graphene::protocol::verify_authority(operations, get_signature_keys(chain_id), get_active, get_owner, get_posting, max_recursion);
             } FC_CAPTURE_AND_RETHROW((*this))
         }
 
     }
-} // golos::protocol
+} // graphene::protocol

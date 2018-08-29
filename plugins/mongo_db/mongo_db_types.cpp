@@ -1,6 +1,6 @@
-#include <golos/plugins/mongo_db/mongo_db_types.hpp>
+#include <graphene/plugins/mongo_db/mongo_db_types.hpp>
 
-namespace golos {
+namespace graphene {
 namespace plugins {
 namespace mongo_db {
 

@@ -2,23 +2,23 @@
 
 #include <boost/iostreams/device/mapped_file.hpp>
 
-#include <golos/protocol/steem_operations.hpp>
+#include <graphene/protocol/steem_operations.hpp>
 
-#include <golos/chain/block_summary_object.hpp>
-#include <golos/chain/compound.hpp>
-#include <golos/chain/custom_operation_interpreter.hpp>
-#include <golos/chain/database.hpp>
-#include <golos/chain/database_exceptions.hpp>
-#include <golos/chain/db_with.hpp>
-#include <golos/chain/evaluator_registry.hpp>
-#include <golos/chain/index.hpp>
-#include <golos/chain/steem_evaluator.hpp>
-#include <golos/chain/steem_objects.hpp>
-#include <golos/chain/transaction_object.hpp>
-#include <golos/chain/shared_db_merkle.hpp>
-#include <golos/chain/operation_notification.hpp>
-#include <golos/chain/proposal_object.hpp>
-#include <golos/chain/committee_objects.hpp>
+#include <graphene/chain/block_summary_object.hpp>
+#include <graphene/chain/compound.hpp>
+#include <graphene/chain/custom_operation_interpreter.hpp>
+#include <graphene/chain/database.hpp>
+#include <graphene/chain/database_exceptions.hpp>
+#include <graphene/chain/db_with.hpp>
+#include <graphene/chain/evaluator_registry.hpp>
+#include <graphene/chain/index.hpp>
+#include <graphene/chain/steem_evaluator.hpp>
+#include <graphene/chain/steem_objects.hpp>
+#include <graphene/chain/transaction_object.hpp>
+#include <graphene/chain/shared_db_merkle.hpp>
+#include <graphene/chain/operation_notification.hpp>
+#include <graphene/chain/proposal_object.hpp>
+#include <graphene/chain/committee_objects.hpp>
 
 #include <fc/smart_ref_impl.hpp>
 
@@ -34,7 +34,7 @@
 
 #define VIRTUAL_SCHEDULE_LAP_LENGTH2 ( fc::uint128_t::max_value() )
 
-namespace golos { namespace chain {
+namespace graphene { namespace chain {
 
 struct object_schema_repr {
     std::pair<uint16_t, uint16_t> space_type;
@@ -65,17 +65,17 @@ struct snapshot_items
     vector <snapshot_account> accounts;
 };
 
-} } // golos::chain
+} } // graphene::chain
 
-FC_REFLECT((golos::chain::object_schema_repr), (space_type)(type))
-FC_REFLECT((golos::chain::operation_schema_repr), (id)(type))
-FC_REFLECT((golos::chain::db_schema), (types)(object_types)(operation_type)(custom_operation_types))
-FC_REFLECT((golos::chain::snapshot_account), (login)(public_key)(shares_ammount))
-FC_REFLECT((golos::chain::snapshot_items), (accounts))
+FC_REFLECT((graphene::chain::object_schema_repr), (space_type)(type))
+FC_REFLECT((graphene::chain::operation_schema_repr), (id)(type))
+FC_REFLECT((graphene::chain::db_schema), (types)(object_types)(operation_type)(custom_operation_types))
+FC_REFLECT((graphene::chain::snapshot_account), (login)(public_key)(shares_ammount))
+FC_REFLECT((graphene::chain::snapshot_items), (accounts))
 
 
 
-namespace golos { namespace chain {
+namespace graphene { namespace chain {
 
         using std::sig_atomic_t;
         using boost::container::flat_set;
@@ -2154,15 +2154,6 @@ namespace golos { namespace chain {
             }
         }
 
-       /**
-        *  At a start overall the network has an inflation rate of 15.15% of virtual golos per year.
-        *  Each year the inflation rate is reduced by 0.42% and stops at 0.95% of virtual golos per year in 33 years.
-        *  66.67% of inflation is directed to content reward pool
-        *  26.67% of inflation is directed to vesting fund
-        *  6.66% of inflation is directed to witness pay
-        *
-        *  This method pays out vesting, reward shares and witnesses every block.
-        */
         void database::process_funds() {
             const auto &props = get_dynamic_global_properties();
             share_type inflation_rate = int64_t( STEEMIT_FIXED_INFLATION );
@@ -2417,7 +2408,7 @@ namespace golos { namespace chain {
       schema_list.back()->get_name( ds.custom_operation_types.back().type );
    }
 
-   golos::db::add_dependent_schemas( schema_list );
+   graphene::db::add_dependent_schemas( schema_list );
    std::sort( schema_list.begin(), schema_list.end(),
       []( const std::shared_ptr< abstract_schema >& a,
           const std::shared_ptr< abstract_schema >& b )
@@ -2693,7 +2684,7 @@ namespace golos { namespace chain {
 
         void database::notify_changed_objects() {
             try {
-                /*vector< golos::chainbase::generic_id > ids;
+                /*vector< graphene::chainbase::generic_id > ids;
       get_changed_ids( ids );
       STEEMIT_TRY_NOTIFY( changed_objects, ids )*/
                 /*
@@ -3429,4 +3420,4 @@ namespace golos { namespace chain {
             push_virtual_operation(hardfork_operation(hardfork), true);
         }
 
-} } //golos::chain
+} } //graphene::chain

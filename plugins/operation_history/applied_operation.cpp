@@ -1,6 +1,6 @@
-#include <golos/plugins/operation_history/applied_operation.hpp>
+#include <graphene/plugins/operation_history/applied_operation.hpp>
 
-namespace golos { namespace plugins { namespace operation_history {
+namespace graphene { namespace plugins { namespace operation_history {
 
     applied_operation::applied_operation() = default;
 
@@ -14,4 +14,4 @@ namespace golos { namespace plugins { namespace operation_history {
           op(fc::raw::unpack<protocol::operation>(op_obj.serialized_op)) {
     }
 
-} } } // golos::plugins::operation_history
+} } } // graphene::plugins::operation_history

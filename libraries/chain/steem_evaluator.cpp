@@ -1,10 +1,10 @@
-#include <golos/chain/steem_evaluator.hpp>
-#include <golos/chain/database.hpp>
-#include <golos/chain/custom_operation_interpreter.hpp>
-#include <golos/chain/steem_objects.hpp>
-#include <golos/chain/block_summary_object.hpp>
+#include <graphene/chain/steem_evaluator.hpp>
+#include <graphene/chain/database.hpp>
+#include <graphene/chain/custom_operation_interpreter.hpp>
+#include <graphene/chain/steem_objects.hpp>
+#include <graphene/chain/block_summary_object.hpp>
 
-namespace golos { namespace chain {
+namespace graphene { namespace chain {
         using fc::uint128_t;
 
         inline void validate_permlink(const string &permlink) {
@@ -1246,4 +1246,4 @@ namespace golos { namespace chain {
             }
         }
 
-} } // golos::chain
+} } // graphene::chain

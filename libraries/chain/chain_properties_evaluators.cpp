@@ -1,8 +1,8 @@
-#include <golos/chain/steem_evaluator.hpp>
-#include <golos/chain/database.hpp>
-#include <golos/chain/steem_objects.hpp>
+#include <graphene/chain/steem_evaluator.hpp>
+#include <graphene/chain/database.hpp>
+#include <graphene/chain/steem_objects.hpp>
 
-namespace golos { namespace chain {
+namespace graphene { namespace chain {
 
     void witness_update_evaluator::do_apply(const witness_update_operation& o) {
         _db.get_account(o.owner); // verify owner exists
@@ -42,4 +42,4 @@ namespace golos { namespace chain {
         }
     }
 
-} } // golos::chain
+} } // graphene::chain

@@ -1,7 +1,7 @@
-#include <golos/protocol/steem_operations.hpp>
+#include <graphene/protocol/steem_operations.hpp>
 #include <fc/io/json.hpp>
 
-namespace golos { namespace protocol {
+namespace graphene { namespace protocol {
 
         /// TODO: after the hardfork, we can rename this method validate_permlink because it is strictily less restrictive than before
         ///  Issue #56 contains the justificiation for allowing any UTF-8 string to serve as a permlink, content will be grouped by tags
@@ -41,8 +41,8 @@ namespace golos { namespace protocol {
             validate_account_name(new_account_name);
             validate_account_name(creator);
             validate_domain_name(new_account_name, creator);
-            FC_ASSERT(is_asset_type(fee, STEEM_SYMBOL), "Account creation fee must be GOLOS");
-            FC_ASSERT(is_asset_type(delegation, VESTS_SYMBOL), "Delegation must be GESTS");
+            FC_ASSERT(is_asset_type(fee, STEEM_SYMBOL), "Account creation fee must be VIZ");
+            FC_ASSERT(is_asset_type(delegation, VESTS_SYMBOL), "Delegation must be SHARES");
             FC_ASSERT(fee.amount >= 0, "Account creation fee cannot be negative");
             FC_ASSERT(delegation.amount >= 0, "Delegation cannot be negative");
             owner.validate();
@@ -148,7 +148,7 @@ namespace golos { namespace protocol {
                 validate_account_name(from);
                 validate_account_name(to);
                 FC_ASSERT(amount.symbol !=
-                          VESTS_SYMBOL, "transferring of Golos Power (STMP) is not allowed.");
+                          VESTS_SYMBOL, "transferring of SHARES is not allowed.");
                 FC_ASSERT(amount.amount >
                           0, "Cannot transfer a negative amount (aka: stealing)");
                 FC_ASSERT(memo.size() <
@@ -159,7 +159,7 @@ namespace golos { namespace protocol {
 
         void transfer_to_vesting_operation::validate() const {
             validate_account_name(from);
-            FC_ASSERT(is_asset_type(amount, STEEM_SYMBOL), "Amount must be GOLOS");
+            FC_ASSERT(is_asset_type(amount, STEEM_SYMBOL), "Amount must be VIZ");
             if (to != account_name_type()) {
                 validate_account_name(to);
             }
@@ -177,7 +177,7 @@ namespace golos { namespace protocol {
             validate_account_name(from_account);
             validate_account_name(to_account);
             FC_ASSERT(0 <= percent && percent <=
-                                      STEEMIT_100_PERCENT, "Percent must be valid golos percent");
+                                      STEEMIT_100_PERCENT, "Percent must be valid percent");
         }
 
         void witness_update_operation::validate() const {
@@ -223,9 +223,9 @@ namespace golos { namespace protocol {
                       0, "steem amount cannot be negative");
             FC_ASSERT(from != agent &&
                       to != agent, "agent must be a third party");
-            FC_ASSERT(fee.symbol == STEEM_SYMBOL, "fee must be GOLOS");
+            FC_ASSERT(fee.symbol == STEEM_SYMBOL, "fee must be VIZ");
             FC_ASSERT(steem_amount.symbol ==
-                      STEEM_SYMBOL, "golos amount must contain GOLOS");
+                      STEEM_SYMBOL, "amount must contain VIZ");
             FC_ASSERT(ratification_deadline <
                       escrow_expiration, "ratification deadline must be before escrow expiration");
             if (json_meta.size() > 0) {
@@ -262,10 +262,10 @@ namespace golos { namespace protocol {
             FC_ASSERT(receiver == from ||
                       receiver == to, "receiver must be from or to");
             FC_ASSERT(steem_amount.amount >=
-                      0, "golos amount cannot be negative");
+                      0, "amount cannot be negative");
             FC_ASSERT(steem_amount.amount > 0, "escrow must release a non-zero amount");
             FC_ASSERT(steem_amount.symbol ==
-                      STEEM_SYMBOL, "golos amount must contain GOLOS");
+                      STEEM_SYMBOL, "amount must contain VIZ");
         }
 
         void request_account_recovery_operation::validate() const {
@@ -298,4 +298,4 @@ namespace golos { namespace protocol {
             FC_ASSERT(vesting_shares.amount >= 0, "Delegation cannot be negative");
         }
 
-} } // golos::protocol
+} } // graphene::protocol

@@ -1,12 +1,12 @@
-#include <golos/api/discussion_helper.hpp>
-#include <golos/chain/account_object.hpp>
-// #include <golos/plugins/follow/follow_objects.hpp>
-#include <golos/chain/steem_objects.hpp>
+#include <graphene/api/discussion_helper.hpp>
+#include <graphene/chain/account_object.hpp>
+// #include <graphene/plugins/follow/follow_objects.hpp>
+#include <graphene/chain/steem_objects.hpp>
 #include <fc/io/json.hpp>
 #include <boost/algorithm/string.hpp>
 
 
-namespace golos { namespace api {
+namespace graphene { namespace api {
 
     comment_metadata get_metadata(const comment_api_object &c) {
 
@@ -54,7 +54,7 @@ namespace golos { namespace api {
     struct discussion_helper::impl final {
     public:
         impl() = delete;
-        impl(golos::chain::database& db):database_(db){}
+        impl(graphene::chain::database& db):database_(db){}
         ~impl() = default;
 
         discussion create_discussion(const comment_object& o) const ;
@@ -68,18 +68,18 @@ namespace golos { namespace api {
 
         void set_url(discussion& d) const;
 
-        golos::chain::database& database() {
+        graphene::chain::database& database() {
             return database_;
         }
 
-        golos::chain::database& database() const {
+        graphene::chain::database& database() const {
             return database_;
         }
 
         discussion get_discussion(const comment_object& c, uint32_t vote_limit) const;
 
     private:
-        golos::chain::database& database_;
+        graphene::chain::database& database_;
     };
 
 // get_discussion
@@ -195,7 +195,7 @@ namespace golos { namespace api {
     }
 
     discussion_helper::discussion_helper(
-        golos::chain::database& db
+        graphene::chain::database& db
     ) {
         pimpl = std::make_unique<impl>(db);
     }
@@ -203,4 +203,4 @@ namespace golos { namespace api {
     discussion_helper::~discussion_helper() = default;
 
 //
-} } // golos::api
+} } // graphene::api

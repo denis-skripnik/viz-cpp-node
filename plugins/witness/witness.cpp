@@ -1,11 +1,11 @@
 
-#include <golos/plugins/witness/witness.hpp>
+#include <graphene/plugins/witness/witness.hpp>
 
-#include <golos/chain/database_exceptions.hpp>
-#include <golos/chain/account_object.hpp>
-#include <golos/chain/steem_objects.hpp>
-#include <golos/chain/witness_objects.hpp>
-#include <golos/time/time.hpp>
+#include <graphene/chain/database_exceptions.hpp>
+#include <graphene/chain/account_object.hpp>
+#include <graphene/chain/steem_objects.hpp>
+#include <graphene/chain/witness_objects.hpp>
+#include <graphene/time/time.hpp>
 
 #include <graphene/utilities/key_conversion.hpp>
 
@@ -22,7 +22,7 @@ using std::vector;
 
 namespace bpo = boost::program_options;
 
-void new_chain_banner(const golos::chain::database &db) {
+void new_chain_banner(const graphene::chain::database &db) {
     std::cerr << "\n"
             "********************************\n"
             "*                              *\n"
@@ -47,7 +47,7 @@ T dejsonify(const string &s) {
                   std::transform(ops.begin(), ops.end(), std::inserter(container, container.end()), &dejsonify<type>); \
             }
 
-namespace golos {
+namespace graphene {
     namespace plugins {
         namespace witness_plugin {
 
@@ -57,40 +57,40 @@ namespace golos {
 
             struct witness_plugin::impl final {
                 impl():
-                    p2p_(appbase::app().get_plugin<golos::plugins::p2p::p2p_plugin>()),
-                    chain_(appbase::app().get_plugin<golos::plugins::chain::plugin>()),
+                    p2p_(appbase::app().get_plugin<graphene::plugins::p2p::p2p_plugin>()),
+                    chain_(appbase::app().get_plugin<graphene::plugins::chain::plugin>()),
                     production_timer_(appbase::app().get_io_service()) {
                 }
 
                 ~impl(){}
 
-                golos::chain::database& database() {
+                graphene::chain::database& database() {
                     return chain_.db();
                 }
 
-                golos::chain::database& database() const {
+                graphene::chain::database& database() const {
                     return chain_.db();
                 }
 
-                golos::plugins::chain::plugin& chain() {
+                graphene::plugins::chain::plugin& chain() {
                     return chain_;
                 }
 
-                golos::plugins::chain::plugin& chain() const {
+                graphene::plugins::chain::plugin& chain() const {
                     return chain_;
                 }
 
-                golos::plugins::p2p::p2p_plugin& p2p(){
+                graphene::plugins::p2p::p2p_plugin& p2p(){
                     return p2p_;
                 };
 
-                golos::plugins::p2p::p2p_plugin& p2p() const {
+                graphene::plugins::p2p::p2p_plugin& p2p() const {
                     return p2p_;
                 };
 
-                golos::plugins::p2p::p2p_plugin& p2p_;
+                graphene::plugins::p2p::p2p_plugin& p2p_;
 
-                golos::plugins::chain::plugin& chain_;
+                graphene::plugins::chain::plugin& chain_;
 
                 void schedule_production_loop();
 
@@ -106,7 +106,7 @@ namespace golos {
                 std::atomic<uint64_t> total_hashes_;
                 fc::time_point hash_start_time_;
 
-                uint32_t _production_skip_flags = golos::chain::database::skip_nothing;
+                uint32_t _production_skip_flags = graphene::chain::database::skip_nothing;
                 bool _production_enabled = false;
                 asio::deadline_timer production_timer_;
 
@@ -155,7 +155,7 @@ namespace golos {
                     if (options.count("private-key")) {
                         const std::vector<std::string> keys = options["private-key"].as<std::vector<std::string>>();
                         for (const std::string &wif_key : keys) {
-                            fc::optional<fc::ecc::private_key> private_key = golos::utilities::wif_to_key(wif_key);
+                            fc::optional<fc::ecc::private_key> private_key = graphene::utilities::wif_to_key(wif_key);
                             FC_ASSERT(private_key.valid(), "unable to parse private key");
                             pimpl->_private_keys[private_key->get_public_key()] = *private_key;
                         }
@@ -170,7 +170,7 @@ namespace golos {
                     ilog("witness plugin:  plugin_startup() begin");
                     auto &d = pimpl->database();
                     //Start NTP time client
-                    golos::time::now();
+                    graphene::time::now();
 
                     if (!pimpl->_witnesses.empty()) {
                         ilog("Launching block production for ${n} witnesses.", ("n", pimpl->_witnesses.size()));
@@ -179,7 +179,7 @@ namespace golos {
                             if (d.head_block_num() == 0) {
                                 new_chain_banner(d);
                             }
-                            pimpl->_production_skip_flags |= golos::chain::database::skip_undo_history_check;
+                            pimpl->_production_skip_flags |= graphene::chain::database::skip_undo_history_check;
                         }
                         pimpl->schedule_production_loop();
                     } else
@@ -189,7 +189,7 @@ namespace golos {
             }
 
             void witness_plugin::plugin_shutdown() {
-                golos::time::shutdown_ntp_time();
+                graphene::time::shutdown_ntp_time();
                 if (!pimpl->_witnesses.empty()) {
                     ilog("shutting downing production timer");
                     pimpl->production_timer_.cancel();
@@ -203,7 +203,7 @@ namespace golos {
             void witness_plugin::impl::schedule_production_loop() {
                 //Schedule for the next second's tick regardless of chain state
                 // If we would wait less than 50ms, wait for the whole second.
-                int64_t ntp_microseconds = golos::time::now().time_since_epoch().count();
+                int64_t ntp_microseconds = graphene::time::now().time_since_epoch().count();
                 int64_t next_microseconds = 1000000 - (ntp_microseconds % 1000000);
                 if (next_microseconds < 50000) { // we must sleep for at least 50ms
                     next_microseconds += 500000;
@@ -229,7 +229,7 @@ namespace golos {
                     //We're trying to exit. Go ahead and let this one out.
                     throw;
                 }
-                catch (const golos::chain::unknown_hardfork_exception &e) {
+                catch (const graphene::chain::unknown_hardfork_exception &e) {
                     // Hit a hardfork that the current node know nothing about, stop production and inform user
                     elog("${e}\nNode may be out of date...", ("e", e.to_detail_string()));
                     throw;
@@ -282,7 +282,7 @@ namespace golos {
 
             block_production_condition::block_production_condition_enum witness_plugin::impl::maybe_produce_block(fc::mutable_variant_object &capture) {
                 auto &db = database();
-                fc::time_point now_fine = golos::time::now();
+                fc::time_point now_fine = graphene::time::now();
                 fc::time_point_sec now = now_fine + fc::microseconds(1100000);
 
                 // If the next block production opportunity is in the present or future, we're synced.
@@ -318,11 +318,11 @@ namespace golos {
                     return block_production_condition::not_my_turn;
                 }
 
-                const auto &witness_by_name = db.get_index<golos::chain::witness_index>().indices().get<golos::chain::by_name>();
+                const auto &witness_by_name = db.get_index<graphene::chain::witness_index>().indices().get<graphene::chain::by_name>();
                 auto itr = witness_by_name.find(scheduled_witness);
 
                 fc::time_point_sec scheduled_time = db.get_slot_time(slot);
-                golos::protocol::public_key_type scheduled_key = itr->signing_key;
+                graphene::protocol::public_key_type scheduled_key = itr->signing_key;
                 auto private_key_itr = _private_keys.find(scheduled_key);
 
                 if (private_key_itr == _private_keys.end()) {

@@ -20,15 +20,15 @@
 
 #include <graphene/utilities/key_conversion.hpp>
 
-#include <golos/protocol/protocol.hpp>
-#include <golos/wallet/remote_node_api.hpp>
-#include <golos/wallet/wallet.hpp>
+#include <graphene/protocol/protocol.hpp>
+#include <graphene/wallet/remote_node_api.hpp>
+#include <graphene/wallet/wallet.hpp>
 
 #include <boost/algorithm/string.hpp>
 #include <boost/algorithm/string/regex.hpp>
 #include <boost/program_options.hpp>
 #include <boost/algorithm/string.hpp>
-#include <golos/plugins/operation_history/applied_operation.hpp>
+#include <graphene/plugins/operation_history/applied_operation.hpp>
 
 #include <map>
 
@@ -40,9 +40,9 @@
 #endif
 
 
-using namespace golos::utilities;
-using namespace golos::chain;
-using namespace golos::wallet;
+using namespace graphene::utilities;
+using namespace graphene::chain;
+using namespace graphene::wallet;
 using namespace std;
 
 void daemon_mode();
@@ -117,7 +117,7 @@ int unsafe_main(int argc, char** argv) {
     bool interactive = true;
     parse_commands(options, commands, interactive);
 
-    golos::protocol::chain_id_type _steem_chain_id = STEEMIT_CHAIN_ID;
+    graphene::protocol::chain_id_type _steem_chain_id = STEEMIT_CHAIN_ID;
 
     // Note: each logging option have default value, no need to check options.count()
     auto ll_default = fc::variant(options["logger.default.level"].as<string>()).as<fc::log_level>();

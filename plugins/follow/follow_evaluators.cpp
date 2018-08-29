@@ -1,10 +1,10 @@
-#include <golos/plugins/follow/follow_operations.hpp>
-#include <golos/plugins/follow/follow_objects.hpp>
-#include <golos/plugins/follow/follow_evaluators.hpp>
-#include <golos/chain/account_object.hpp>
-#include <golos/chain/comment_object.hpp>
+#include <graphene/plugins/follow/follow_operations.hpp>
+#include <graphene/plugins/follow/follow_objects.hpp>
+#include <graphene/plugins/follow/follow_evaluators.hpp>
+#include <graphene/chain/account_object.hpp>
+#include <graphene/chain/comment_object.hpp>
 
-namespace golos {
+namespace graphene {
     namespace plugins {
         namespace follow {
 
@@ -195,4 +195,4 @@ namespace golos {
 
         }
     }
-} // golos::follow
+} // graphene::follow

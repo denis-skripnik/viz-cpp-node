@@ -1,16 +1,16 @@
-#include <golos/chain/database.hpp>
+#include <graphene/chain/database.hpp>
 
-#include <golos/plugins/block_info/plugin.hpp>
+#include <graphene/plugins/block_info/plugin.hpp>
 
-#include <golos/protocol/types.hpp>
-#include <golos/plugins/json_rpc/utility.hpp>
-#include <golos/plugins/json_rpc/plugin.hpp>
+#include <graphene/protocol/types.hpp>
+#include <graphene/plugins/json_rpc/utility.hpp>
+#include <graphene/plugins/json_rpc/plugin.hpp>
 
-namespace golos {
+namespace graphene {
 namespace plugins {
 namespace block_info {
 
-using namespace golos::chain;
+using namespace graphene::chain;
 
 struct plugin::plugin_impl  {
 public:
@@ -29,7 +29,7 @@ public:
     void on_applied_block(const protocol::signed_block &b);
 
     // HELPING METHODS
-    golos::chain::database &database() {
+    graphene::chain::database &database() {
         return db_;
     }
 // protected:
@@ -37,7 +37,7 @@ public:
 private:
     std::vector<block_info> block_info_;
 
-    golos::chain::database & db_;
+    graphene::chain::database & db_;
 };
 
 std::vector<block_info> plugin::plugin_impl::get_block_info(uint32_t start_block_num, uint32_t count) {
@@ -150,4 +150,4 @@ void plugin::plugin_startup() {
 void plugin::plugin_shutdown() {
 }
 
-} } } // golos::plugin::block_info
+} } } // graphene::plugin::block_info

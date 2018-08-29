@@ -1,7 +1,7 @@
 #include <boost/algorithm/string.hpp>
-#include <golos/plugins/tags/tag_visitor.hpp>
+#include <graphene/plugins/tags/tag_visitor.hpp>
 
-namespace golos { namespace plugins { namespace tags {
+namespace graphene { namespace plugins { namespace tags {
 
     operation_visitor::operation_visitor(database& db)
         : db_(db) {
@@ -332,4 +332,4 @@ namespace golos { namespace plugins { namespace tags {
         }
     }
 
-} } } // golos::plugins::tags
+} } } // graphene::plugins::tags

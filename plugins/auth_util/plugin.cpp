@@ -1,11 +1,11 @@
-#include <golos/plugins/auth_util/plugin.hpp>
-#include <golos/chain/database.hpp>
-#include <golos/chain/account_object.hpp>
-#include <golos/protocol/types.hpp>
-#include <golos/plugins/json_rpc/utility.hpp>
-#include <golos/plugins/json_rpc/plugin.hpp>
+#include <graphene/plugins/auth_util/plugin.hpp>
+#include <graphene/chain/database.hpp>
+#include <graphene/chain/account_object.hpp>
+#include <graphene/protocol/types.hpp>
+#include <graphene/plugins/json_rpc/utility.hpp>
+#include <graphene/plugins/json_rpc/plugin.hpp>
 
-namespace golos {
+namespace graphene {
 namespace plugins {
 namespace auth_util {
 
@@ -21,11 +21,11 @@ public:
              const std::vector<protocol::signature_type>& sigs);
 
     // HELPING METHODS
-    golos::chain::database &database() {
+    graphene::chain::database &database() {
         return db_;
     }
 private:
-    golos::chain::database & db_;
+    graphene::chain::database & db_;
 };
 
     std::vector<protocol::public_key_type> plugin::plugin_impl::check_authority_signature(
@@ -36,8 +36,8 @@ private:
     auto & db = database();
     std::vector<protocol::public_key_type> result;
 
-    const golos::chain::account_authority_object &acct =
-            db.get<golos::chain::account_authority_object, golos::chain::by_account>(account_name);
+    const graphene::chain::account_authority_object &acct =
+            db.get<graphene::chain::account_authority_object, graphene::chain::by_account>(account_name);
     protocol::authority auth;
     if ((level == "posting") || (level == "p")) {
         auth = protocol::authority(acct.posting);
@@ -57,7 +57,7 @@ private:
 
     flat_set<protocol::public_key_type> avail;
     protocol::sign_state ss(signing_keys, [&db](const std::string &account_name) -> const protocol::authority {
-        return protocol::authority(db.get<golos::chain::account_authority_object, golos::chain::by_account>(account_name).active);
+        return protocol::authority(db.get<graphene::chain::account_authority_object, graphene::chain::by_account>(account_name).active);
     }, avail);
 
     bool has_authority = ss.check_authority(auth);
@@ -95,4 +95,4 @@ void plugin::set_program_options(boost::program_options::options_description &cl
                              boost::program_options::options_description &cfg) {
 }
 
-} } } // golos::plugin::auth_util
+} } } // graphene::plugin::auth_util

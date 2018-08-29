@@ -1,9 +1,9 @@
-#include <golos/protocol/get_config.hpp>
-#include <golos/protocol/config.hpp>
-#include <golos/protocol/asset.hpp>
-#include <golos/protocol/version.hpp>
+#include <graphene/protocol/get_config.hpp>
+#include <graphene/protocol/config.hpp>
+#include <graphene/protocol/asset.hpp>
+#include <graphene/protocol/version.hpp>
 
-namespace golos {
+namespace graphene {
     namespace protocol {
 
         fc::variant_object get_config() {
@@ -70,4 +70,4 @@ namespace golos {
         }
 
     }
-} // golos::protocol
+} // graphene::protocol

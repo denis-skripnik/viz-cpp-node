@@ -1,6 +1,6 @@
-#include <golos/api/chain_api_properties.hpp>
+#include <graphene/api/chain_api_properties.hpp>
 
-namespace golos { namespace api {
+namespace graphene { namespace api {
 
     chain_api_properties::chain_api_properties(
         const chain_properties& src,
@@ -22,4 +22,4 @@ namespace golos { namespace api {
         max_curation_percent = src.max_curation_percent;
     }
 
-} } // golos::api
+} } // graphene::api

@@ -1,34 +1,34 @@
-#include <golos/plugins/operation_history/plugin.hpp>
-#include <golos/plugins/operation_history/history_object.hpp>
+#include <graphene/plugins/operation_history/plugin.hpp>
+#include <graphene/plugins/operation_history/history_object.hpp>
 
-#include <golos/chain/operation_notification.hpp>
+#include <graphene/chain/operation_notification.hpp>
 
 #include <boost/algorithm/string.hpp>
 
-#define STEEM_NAMESPACE_PREFIX "golos::protocol::"
+#define STEEM_NAMESPACE_PREFIX "graphene::protocol::"
 
 #define CHECK_ARG_SIZE(s) \
    FC_ASSERT( args.args->size() == s, "Expected #s argument(s), was ${n}", ("n", args.args->size()) );
 
-namespace golos { namespace plugins { namespace operation_history {
+namespace graphene { namespace plugins { namespace operation_history {
 
     struct operation_visitor_filter;
 
-    using namespace golos::protocol;
-    using namespace golos::chain;
+    using namespace graphene::protocol;
+    using namespace graphene::chain;
 
     struct operation_visitor {
         operation_visitor(
-            golos::chain::database& db,
-            golos::chain::operation_notification& op_note)
+            graphene::chain::database& db,
+            graphene::chain::operation_notification& op_note)
             : database(db),
               note(op_note) {
         }
 
         using result_type = void;
 
-        golos::chain::database& database;
-        golos::chain::operation_notification& note;
+        graphene::chain::database& database;
+        graphene::chain::operation_notification& note;
 
         template<typename Op>
         void operator()(Op&&) const {
@@ -55,8 +55,8 @@ namespace golos { namespace plugins { namespace operation_history {
     struct operation_visitor_filter final : operation_visitor {
 
         operation_visitor_filter(
-            golos::chain::database& db,
-            golos::chain::operation_notification& note,
+            graphene::chain::database& db,
+            graphene::chain::operation_notification& note,
             const fc::flat_set<std::string>& ops_list,
             bool is_blacklist,
             uint32_t block)
@@ -94,7 +94,7 @@ namespace golos { namespace plugins { namespace operation_history {
 
         ~plugin_impl() = default;
 
-        void on_operation(golos::chain::operation_notification& note) {
+        void on_operation(graphene::chain::operation_notification& note) {
             if (filter_content) {
                 note.op.visit(operation_visitor_filter(database, note, ops_list, blacklist, start_block));
             } else {
@@ -137,7 +137,7 @@ namespace golos { namespace plugins { namespace operation_history {
         uint32_t start_block = 0;
         bool blacklist = false;
         fc::flat_set<std::string> ops_list;
-        golos::chain::database& database;
+        graphene::chain::database& database;
     };
 
     DEFINE_API(plugin, get_ops_in_block) {
@@ -183,11 +183,11 @@ namespace golos { namespace plugins { namespace operation_history {
 
         pimpl = std::make_unique<plugin_impl>();
 
-        pimpl->database.pre_apply_operation.connect([&](golos::chain::operation_notification& note){
+        pimpl->database.pre_apply_operation.connect([&](graphene::chain::operation_notification& note){
             pimpl->on_operation(note);
         });
 
-        golos::chain::add_plugin_index<operation_index>(pimpl->database);
+        graphene::chain::add_plugin_index<operation_index>(pimpl->database);
 
         auto split_list = [&](const std::vector<std::string>& ops_list) {
             for (const auto& raw: ops_list) {
@@ -246,4 +246,4 @@ namespace golos { namespace plugins { namespace operation_history {
     void plugin::plugin_shutdown() {
     }
 
-} } } // golos::plugins::operation_history
+} } } // graphene::plugins::operation_history

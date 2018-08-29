@@ -23,7 +23,7 @@
  */
 #pragma once
 
-namespace golos {
+namespace graphene {
     namespace utilities {
 
         template<size_t BlockSize = 16, char PaddingChar = ' '>
@@ -63,5 +63,5 @@ namespace golos {
         };
 
     }
-} //golos::utilities
+} //graphene::utilities
 

@@ -1,8 +1,8 @@
-#include <golos/protocol/operations.hpp>
+#include <graphene/protocol/operations.hpp>
 
-#include <golos/protocol/operation_util_impl.hpp>
+#include <graphene/protocol/operation_util_impl.hpp>
 
-namespace golos {
+namespace graphene {
     namespace protocol {
 
         struct is_vop_visitor {
@@ -19,6 +19,6 @@ namespace golos {
         }
 
     }
-} // golos::protocol
+} // graphene::protocol
 
-DEFINE_OPERATION_TYPE(golos::protocol::operation)
+DEFINE_OPERATION_TYPE(graphene::protocol::operation)

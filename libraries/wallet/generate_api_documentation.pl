@@ -13,10 +13,10 @@ my $outFile = new IO::File($outputFileName, "w")
 my $fileHeader = <<'END';
 /** GENERATED FILE **/
 #include <set>
-#include <golos/wallet/api_documentation.hpp>
-#include <golos/wallet/wallet.hpp>
+#include <graphene/wallet/api_documentation.hpp>
+#include <graphene/wallet/wallet.hpp>
 
-namespace golos { namespace wallet {
+namespace graphene { namespace wallet {
    namespace detail
    {
       struct api_method_name_collector_visitor
@@ -38,7 +38,7 @@ $outFile->print($fileHeader);
 
 for my $class (@{$doxydocs->{classes}})
 {
-  if ($class->{name} eq 'golos::wallet::wallet_api')
+  if ($class->{name} eq 'graphene::wallet::wallet_api')
   {
     for my $member (@{$class->{public_methods}->{members}})
     {
@@ -84,7 +84,7 @@ my $fileFooter = <<'END';
           ++iter;
    }
 
-} } // end namespace golos::wallet
+} } // end namespace graphene::wallet
 END
 $outFile->print($fileFooter);
 $outFile->close();

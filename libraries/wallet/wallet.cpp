@@ -2,13 +2,13 @@
 #include <graphene/utilities/key_conversion.hpp>
 #include <graphene/utilities/words.hpp>
 
-#include <golos/protocol/base.hpp>
-#include <golos/wallet/wallet.hpp>
-#include <golos/wallet/api_documentation.hpp>
-#include <golos/wallet/reflect_util.hpp>
-#include <golos/wallet/remote_node_api.hpp>
-#include <golos/protocol/config.hpp>
-#include <golos/plugins/follow/follow_operations.hpp>
+#include <graphene/protocol/base.hpp>
+#include <graphene/wallet/wallet.hpp>
+#include <graphene/wallet/api_documentation.hpp>
+#include <graphene/wallet/reflect_util.hpp>
+#include <graphene/wallet/remote_node_api.hpp>
+#include <graphene/protocol/config.hpp>
+#include <graphene/plugins/follow/follow_operations.hpp>
 
 #include <algorithm>
 #include <cctype>
@@ -59,7 +59,7 @@
 
 #define BRAIN_KEY_WORD_COUNT 16
 
-namespace golos { namespace wallet {
+namespace graphene { namespace wallet {
 
         namespace detail {
 
@@ -206,7 +206,7 @@ namespace golos { namespace wallet {
 
             public:
                 wallet_api& self;
-                wallet_api_impl( wallet_api& s, const wallet_data& initial_data, const golos::protocol::chain_id_type& _steem_chain_id, fc::api_connection& con ):
+                wallet_api_impl( wallet_api& s, const wallet_data& initial_data, const graphene::protocol::chain_id_type& _steem_chain_id, fc::api_connection& con ):
                     self( s ),
                     _remote_database_api( con.get_remote_api< remote_database_api >( 0, "database_api" ) ),
                     _remote_operation_history( con.get_remote_api< remote_operation_history >( 0, "operation_history" ) ),
@@ -323,7 +323,7 @@ namespace golos { namespace wallet {
                 }
 
                 variant_object about() const {
-                    string client_version( golos::utilities::git_revision_description );
+                    string client_version( graphene::utilities::git_revision_description );
                     const size_t pos = client_version.find( '/' );
                     if( pos != string::npos && client_version.size() > pos )
                         client_version = client_version.substr( pos + 1 );
@@ -331,8 +331,8 @@ namespace golos { namespace wallet {
                     fc::mutable_variant_object result;
                     //result["blockchain_version"]       = STEEM_BLOCKCHAIN_VERSION;
                     result["client_version"]           = client_version;
-                    result["steem_revision"]           = golos::utilities::git_revision_sha;
-                    result["steem_revision_age"]       = fc::get_approximate_relative_time_string( fc::time_point_sec( golos::utilities::git_revision_unix_timestamp ) );
+                    result["steem_revision"]           = graphene::utilities::git_revision_sha;
+                    result["steem_revision_age"]       = fc::get_approximate_relative_time_string( fc::time_point_sec( graphene::utilities::git_revision_unix_timestamp ) );
                     result["fc_revision"]              = fc::git_revision_sha;
                     result["fc_revision_age"]          = fc::get_approximate_relative_time_string( fc::time_point_sec( fc::git_revision_unix_timestamp ) );
                     result["compile_date"]             = "compiled on " __DATE__ " at " __TIME__;
@@ -488,7 +488,7 @@ namespace golos { namespace wallet {
                     return _remote_database_api->get_proposed_transactions(account, from, limit);
                 }
 
-                golos::api::account_api_object get_account( string account_name ) const {
+                graphene::api::account_api_object get_account( string account_name ) const {
                     auto accounts = _remote_database_api->get_accounts( { account_name } );
                     FC_ASSERT( !accounts.empty(), "Unknown account" );
                     return accounts.front();
@@ -510,7 +510,7 @@ namespace golos { namespace wallet {
                 }
 
 
-                fc::ecc::private_key get_private_key_for_account(const golos::api::account_api_object& account)const {
+                fc::ecc::private_key get_private_key_for_account(const graphene::api::account_api_object& account)const {
                     vector<public_key_type> active_keys = account.active.get_keys();
                     if (active_keys.size() != 1)
                         FC_THROW("Expecting a simple authority with one active key");
@@ -525,7 +525,7 @@ namespace golos { namespace wallet {
                     fc::optional<fc::ecc::private_key> optional_private_key = wif_to_key(wif_key);
                     if (!optional_private_key)
                         FC_THROW("Invalid private key");
-                    golos::chain::public_key_type wif_pub_key = optional_private_key->get_public_key();
+                    graphene::chain::public_key_type wif_pub_key = optional_private_key->get_public_key();
 
                     _keys[wif_pub_key] = wif_key;
                     return true;
@@ -588,7 +588,7 @@ namespace golos { namespace wallet {
                     int number_of_consecutive_unused_keys = 0;
                     for (int key_index = 0; ; ++key_index) {
                         fc::ecc::private_key derived_private_key = derive_private_key(key_to_wif(parent_key), key_index);
-                        golos::chain::public_key_type derived_public_key = derived_private_key.get_public_key();
+                        graphene::chain::public_key_type derived_public_key = derived_private_key.get_public_key();
                         if( _keys.find(derived_public_key) == _keys.end() ) {
                             if (number_of_consecutive_unused_keys) {
                                 ++number_of_consecutive_unused_keys;
@@ -618,9 +618,9 @@ namespace golos { namespace wallet {
                         int memo_key_index = find_first_unused_derived_key_index(active_privkey);
                         fc::ecc::private_key memo_privkey = derive_private_key( key_to_wif(active_privkey), memo_key_index);
 
-                        golos::chain::public_key_type owner_pubkey = owner_privkey.get_public_key();
-                        golos::chain::public_key_type active_pubkey = active_privkey.get_public_key();
-                        golos::chain::public_key_type memo_pubkey = memo_privkey.get_public_key();
+                        graphene::chain::public_key_type owner_pubkey = owner_privkey.get_public_key();
+                        graphene::chain::public_key_type active_pubkey = active_privkey.get_public_key();
+                        graphene::chain::public_key_type memo_pubkey = memo_privkey.get_public_key();
 
                         account_create_operation account_create_op;
 
@@ -700,9 +700,9 @@ namespace golos { namespace wallet {
 
                     FC_ASSERT( approving_account_objects.size() == v_approving_account_names.size(), "", ("aco.size:", approving_account_objects.size())("acn",v_approving_account_names.size()) );
 
-                    flat_map< string, golos::api::account_api_object > approving_account_lut;
+                    flat_map< string, graphene::api::account_api_object > approving_account_lut;
                     size_t i = 0;
-                    for( const optional< golos::api::account_api_object >& approving_acct : approving_account_objects ) {
+                    for( const optional< graphene::api::account_api_object >& approving_acct : approving_account_objects ) {
                         if( !approving_acct.valid() ) {
                             wlog( "operation_get_required_auths said approval of non-existing account ${name} was needed",
                                   ("name", v_approving_account_names[i]) );
@@ -712,7 +712,7 @@ namespace golos { namespace wallet {
                         approving_account_lut[ approving_acct->name ] = *approving_acct;
                         i++;
                     }
-                    auto get_account_from_lut = [&]( const std::string& name ) -> const golos::api::account_api_object& {
+                    auto get_account_from_lut = [&]( const std::string& name ) -> const graphene::api::account_api_object& {
                         auto it = approving_account_lut.find( name );
                         FC_ASSERT( it != approving_account_lut.end() );
                         return it->second;
@@ -723,7 +723,7 @@ namespace golos { namespace wallet {
                         const auto it = approving_account_lut.find( acct_name );
                         if( it == approving_account_lut.end() )
                             continue;
-                        const golos::api::account_api_object& acct = it->second;
+                        const graphene::api::account_api_object& acct = it->second;
                         vector<public_key_type> v_approving_keys = acct.active.get_keys();
                         wdump((v_approving_keys));
                         for( const public_key_type& approving_key : v_approving_keys ) {
@@ -736,7 +736,7 @@ namespace golos { namespace wallet {
                         const auto it = approving_account_lut.find( acct_name );
                         if( it == approving_account_lut.end() )
                             continue;
-                        const golos::api::account_api_object& acct = it->second;
+                        const graphene::api::account_api_object& acct = it->second;
                         vector<public_key_type> v_approving_keys = acct.posting.get_keys();
                         wdump((v_approving_keys));
                         for( const public_key_type& approving_key : v_approving_keys )
@@ -750,7 +750,7 @@ namespace golos { namespace wallet {
                         const auto it = approving_account_lut.find( acct_name );
                         if( it == approving_account_lut.end() )
                             continue;
-                        const golos::api::account_api_object& acct = it->second;
+                        const graphene::api::account_api_object& acct = it->second;
                         vector<public_key_type> v_approving_keys = acct.owner.get_keys();
                         for( const public_key_type& approving_key : v_approving_keys ) {
                             wdump((approving_key));
@@ -830,7 +830,7 @@ namespace golos { namespace wallet {
                     m["list_my_accounts"] = [](variant result, const fc::variants& a ) {
                         std::stringstream out;
 
-                        auto accounts = result.as<vector<golos::api::account_api_object>>();
+                        auto accounts = result.as<vector<graphene::api::account_api_object>>();
                         asset total_steem;
                         asset total_vest(0, VESTS_SYMBOL );
                         for( const auto& a : accounts ) {
@@ -878,7 +878,7 @@ namespace golos { namespace wallet {
 
                 string                                  _wallet_filename;
                 wallet_data                             _wallet;
-                golos::protocol::chain_id_type          steem_chain_id;
+                graphene::protocol::chain_id_type          steem_chain_id;
 
                 map<public_key_type,string>             _keys;
                 fc::sha512                              _checksum;
@@ -903,13 +903,13 @@ namespace golos { namespace wallet {
                 const string _wallet_filename_extension = ".wallet";
             };
 
-        } } } // golos::wallet::detail
+        } } } // graphene::wallet::detail
 
 
 
-namespace golos { namespace wallet {
+namespace graphene { namespace wallet {
 
-        wallet_api::wallet_api(const wallet_data& initial_data, const golos::protocol::chain_id_type& _steem_chain_id, fc::api_connection& con)
+        wallet_api::wallet_api(const wallet_data& initial_data, const graphene::protocol::chain_id_type& _steem_chain_id, fc::api_connection& con)
                 : my(new detail::wallet_api_impl(*this, initial_data, _steem_chain_id, con))
         {}
 
@@ -924,13 +924,13 @@ namespace golos { namespace wallet {
             return my->_remote_database_api->get_block( num );
         }
 
-        vector< golos::plugins::operation_history::applied_operation > wallet_api::get_ops_in_block(uint32_t block_num, bool only_virtual) {
+        vector< graphene::plugins::operation_history::applied_operation > wallet_api::get_ops_in_block(uint32_t block_num, bool only_virtual) {
             return my->_remote_operation_history->get_ops_in_block( block_num, only_virtual );
         }
 
-        vector< golos::api::account_api_object > wallet_api::list_my_accounts() {
+        vector< graphene::api::account_api_object > wallet_api::list_my_accounts() {
             FC_ASSERT( !is_locked(), "Wallet must be unlocked to list accounts" );
-            vector<golos::api::account_api_object> result;
+            vector<graphene::api::account_api_object> result;
 
             vector<public_key_type> pub_keys;
             pub_keys.reserve( my->_keys.size() );
@@ -973,11 +973,11 @@ namespace golos { namespace wallet {
             string brain_key = "";
 
             for( int i=0; i<BRAIN_KEY_WORD_COUNT; i++ ) {
-                fc::bigint choice = entropy % golos::words::word_list_size;
-                entropy /= golos::words::word_list_size;
+                fc::bigint choice = entropy % graphene::words::word_list_size;
+                entropy /= graphene::words::word_list_size;
                 if( i > 0 )
                     brain_key += " ";
-                brain_key += golos::words::word_list[ choice.to_int64() ];
+                brain_key += graphene::words::word_list[ choice.to_int64() ];
             }
 
             brain_key = normalize_brain_key(brain_key);
@@ -997,7 +997,7 @@ namespace golos { namespace wallet {
         }
 
 
-        golos::api::account_api_object wallet_api::get_account( string account_name ) const {
+        graphene::api::account_api_object wallet_api::get_account( string account_name ) const {
             return my->get_account( account_name );
         }
 
@@ -1716,7 +1716,7 @@ fc::ecc::private_key wallet_api::derive_private_key(const std::string& prefix_st
                 return my->sign_transaction( tx, broadcast );
             } FC_CAPTURE_AND_RETHROW( (voting_account)(witness_to_vote_for)(approve)(broadcast) ) }
 
-        void wallet_api::check_memo( const string& memo, const golos::api::account_api_object& account )const
+        void wallet_api::check_memo( const string& memo, const graphene::api::account_api_object& account )const
         {
             vector< public_key_type > keys;
 
@@ -2003,7 +2003,7 @@ fc::ecc::private_key wallet_api::derive_private_key(const std::string& prefix_st
             return encrypted_memo;
         }
 
-        map< uint32_t, golos::plugins::operation_history::applied_operation> wallet_api::get_account_history( string account, uint32_t from, uint32_t limit ) {
+        map< uint32_t, graphene::plugins::operation_history::applied_operation> wallet_api::get_account_history( string account, uint32_t from, uint32_t limit ) {
             auto result = my->_remote_account_history->get_account_history( account, from, limit );
             if( !is_locked() ) {
                 for( auto& item : result ) {

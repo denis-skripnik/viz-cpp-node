@@ -24,11 +24,11 @@ if(ENABLE_MONGO_PLUGIN)
     set(CURRENT_TARGET mongo_db)
   
     list(APPEND CURRENT_TARGET_HEADERS
-      include/golos/plugins/mongo_db/mongo_db_plugin.hpp
-      include/golos/plugins/mongo_db/mongo_db_writer.hpp
-      include/golos/plugins/mongo_db/mongo_db_operations.hpp
-      include/golos/plugins/mongo_db/mongo_db_state.hpp
-      include/golos/plugins/mongo_db/mongo_db_types.hpp
+      include/graphene/plugins/mongo_db/mongo_db_plugin.hpp
+      include/graphene/plugins/mongo_db/mongo_db_writer.hpp
+      include/graphene/plugins/mongo_db/mongo_db_operations.hpp
+      include/graphene/plugins/mongo_db/mongo_db_state.hpp
+      include/graphene/plugins/mongo_db/mongo_db_types.hpp
       )
 
     list(APPEND CURRENT_TARGET_SOURCES
@@ -40,41 +40,41 @@ if(ENABLE_MONGO_PLUGIN)
       )
 
     if(BUILD_SHARED_LIBRARIES)
-    add_library(golos_${CURRENT_TARGET} SHARED
+    add_library(graphene_${CURRENT_TARGET} SHARED
         ${CURRENT_TARGET_HEADERS}
         ${CURRENT_TARGET_SOURCES}
         )
     else()
-    add_library(golos_${CURRENT_TARGET} STATIC
+    add_library(graphene_${CURRENT_TARGET} STATIC
         ${CURRENT_TARGET_HEADERS}
         ${CURRENT_TARGET_SOURCES}
       )
     endif()
   
-    add_library(golos::${CURRENT_TARGET} ALIAS golos_${CURRENT_TARGET})
-    set_property(TARGET golos_${CURRENT_TARGET} PROPERTY EXPORT_NAME ${CURRENT_TARGET})
+    add_library(graphene::${CURRENT_TARGET} ALIAS graphene_${CURRENT_TARGET})
+    set_property(TARGET graphene_${CURRENT_TARGET} PROPERTY EXPORT_NAME ${CURRENT_TARGET})
     
     target_link_libraries(
-      golos_${CURRENT_TARGET}
-      golos::json_rpc
-      golos_chain
-      golos::chain_plugin
-      golos::follow
+      graphene_${CURRENT_TARGET}
+      graphene::json_rpc
+      graphene_chain
+      graphene::chain_plugin
+      graphene::follow
       appbase
       fc
       ${LIBBSONCXX_LIBRARIES}
       ${LIBMONGOCXX_LIBRARIES}
     )
-    target_include_directories(golos_${CURRENT_TARGET} PUBLIC "include" ${LIBMONGOCXX_INCLUDE_DIRS} ${LIBBSONCXX_INCLUDE_DIRS})
+    target_include_directories(graphene_${CURRENT_TARGET} PUBLIC "include" ${LIBMONGOCXX_INCLUDE_DIRS} ${LIBBSONCXX_INCLUDE_DIRS})
   
     install(TARGETS
-      golos_${CURRENT_TARGET}
+      graphene_${CURRENT_TARGET}
   
       RUNTIME DESTINATION bin
       LIBRARY DESTINATION lib
       ARCHIVE DESTINATION lib
     )
-    install( FILES ${HEADERS} DESTINATION "include/golos/plugins/mongo_db" )
+    install( FILES ${HEADERS} DESTINATION "include/graphene/plugins/mongo_db" )
   else()
     message("Mongo drivers NOT found. Use proper Dockerfile")
   endif()

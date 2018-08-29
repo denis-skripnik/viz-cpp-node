@@ -24,7 +24,7 @@
 #include <graphene/utilities/key_conversion.hpp>
 #include <fc/crypto/base58.hpp>
 
-namespace golos {
+namespace graphene {
     namespace utilities {
 
         std::string key_to_wif(const fc::sha256 &secret) {
@@ -73,4 +73,4 @@ namespace golos {
         }
 
     }
-} // end namespace golos::utilities
+} // end namespace graphene::utilities

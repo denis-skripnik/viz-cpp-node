@@ -1,16 +1,16 @@
-#include <golos/chain/database_exceptions.hpp>
-#include <golos/chain/database.hpp>
-#include <golos/plugins/chain/plugin.hpp>
+#include <graphene/chain/database_exceptions.hpp>
+#include <graphene/chain/database.hpp>
+#include <graphene/plugins/chain/plugin.hpp>
 
 #include <fc/io/json.hpp>
 #include <fc/string.hpp>
 
 #include <iostream>
-#include <golos/protocol/protocol.hpp>
-#include <golos/protocol/types.hpp>
+#include <graphene/protocol/protocol.hpp>
+#include <graphene/protocol/types.hpp>
 #include <future>
 
-namespace golos {
+namespace graphene {
 namespace plugins {
 namespace chain {
 
@@ -50,7 +50,7 @@ namespace chain {
 
         bool skip_virtual_ops = false;
 
-        golos::chain::database db;
+        graphene::chain::database db;
 
         bool single_write_thread = false;
 
@@ -64,7 +64,7 @@ namespace chain {
         }
 
         // HELPERS
-        golos::chain::database &database() {
+        graphene::chain::database &database() {
             return db;
         }
 
@@ -171,11 +171,11 @@ namespace chain {
     plugin::~plugin() {
     }
 
-    golos::chain::database &plugin::db() {
+    graphene::chain::database &plugin::db() {
         return my->db;
     }
 
-    const golos::chain::database &plugin::db() const {
+    const graphene::chain::database &plugin::db() const {
         return my->db;
     }
 
@@ -351,13 +351,13 @@ namespace chain {
             if (my->replay) {
                 my->replay_db(data_dir, my->force_replay);
             }
-        } catch (const golos::chain::database_revision_exception &) {
+        } catch (const graphene::chain::database_revision_exception &) {
             wlog("Error opening database, attempting to replay blockchain.");
             my->force_replay |= my->db.revision() >= my->db.head_block_num();
 
             try {
                 my->replay_db(data_dir, my->force_replay);
-            } catch (const golos::chain::block_log_exception &) {
+            } catch (const graphene::chain::block_log_exception &) {
                 wlog("Error opening block log. Having to resync from network...");
                 my->wipe_db(data_dir, true);
             }
@@ -366,7 +366,7 @@ namespace chain {
 
             try {
                 my->replay_db(data_dir, true);
-            } catch (const golos::chain::block_log_exception &) {
+            } catch (const graphene::chain::block_log_exception &) {
                 wlog("Error opening block log. Having to resync from network...");
                 my->wipe_db(data_dir, true);
             }

@@ -1,4 +1,4 @@
-#include <golos/plugins/mongo_db/mongo_db_operations.hpp>
+#include <graphene/plugins/mongo_db/mongo_db_operations.hpp>
 
 #include <bsoncxx/builder/stream/array.hpp>
 #include <bsoncxx/builder/stream/value_context.hpp>
@@ -6,7 +6,7 @@
 #include <appbase/plugin.hpp>
 
 
-namespace golos {
+namespace graphene {
 namespace plugins {
 namespace mongo_db {
 

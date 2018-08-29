@@ -1,12 +1,12 @@
-#include <golos/plugins/network_broadcast_api/network_broadcast_api_plugin.hpp>
-#include <golos/plugins/json_rpc/utility.hpp>
+#include <graphene/plugins/network_broadcast_api/network_broadcast_api_plugin.hpp>
+#include <graphene/plugins/json_rpc/utility.hpp>
 
 #include <appbase/application.hpp>
 
 #include <boost/thread/future.hpp>
 #include <boost/thread/lock_guard.hpp>
 
-namespace golos {
+namespace graphene {
     namespace plugins {
         namespace network_broadcast_api {
 

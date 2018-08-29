@@ -1,8 +1,8 @@
-#include <golos/chain/fork_database.hpp>
+#include <graphene/chain/fork_database.hpp>
 
-#include <golos/chain/database_exceptions.hpp>
+#include <graphene/chain/database_exceptions.hpp>
 
-namespace golos {
+namespace graphene {
     namespace chain {
 
         fork_database::fork_database() {
@@ -241,4 +241,4 @@ namespace golos {
         }
 
     }
-} // golos::chain
+} // graphene::chain

@@ -7,19 +7,19 @@
 
 #include <graphene/utilities/key_conversion.hpp>
 
-#include <golos/protocol/transaction.hpp>
+#include <graphene/protocol/transaction.hpp>
 
 struct tx_signing_request {
-    golos::protocol::transaction tx;
+    graphene::protocol::transaction tx;
     std::string wif;
 };
 
 struct tx_signing_result {
-    golos::protocol::transaction tx;
+    graphene::protocol::transaction tx;
     fc::sha256 digest;
     fc::sha256 sig_digest;
-    golos::protocol::public_key_type key;
-    golos::protocol::signature_type sig;
+    graphene::protocol::public_key_type key;
+    graphene::protocol::signature_type sig;
 };
 
 FC_REFLECT((tx_signing_request), (tx)(wif))
@@ -44,9 +44,9 @@ int main(int argc, char **argv, char **envp) {
         sres.digest = sreq.tx.digest();
         sres.sig_digest = sreq.tx.sig_digest(STEEMIT_CHAIN_ID);
 
-        fc::ecc::private_key priv_key = *golos::utilities::wif_to_key(sreq.wif);
+        fc::ecc::private_key priv_key = *graphene::utilities::wif_to_key(sreq.wif);
         sres.sig = priv_key.sign_compact(sres.sig_digest);
-        sres.key = golos::protocol::public_key_type(priv_key.get_public_key());
+        sres.key = graphene::protocol::public_key_type(priv_key.get_public_key());
         std::cout << fc::json::to_string(sres) << std::endl;
     }
     return 0;

@@ -1,6 +1,6 @@
-#include <golos/chain/shared_authority.hpp>
+#include <graphene/chain/shared_authority.hpp>
 
-namespace golos {
+namespace graphene {
     namespace chain {
 
         shared_authority::operator authority() const {
@@ -95,4 +95,4 @@ namespace golos {
         }
 
     }
-} // golos::chain
+} // graphene::chain

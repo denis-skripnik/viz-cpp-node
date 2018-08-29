@@ -1,7 +1,7 @@
-#include <golos/plugins/private_message/private_message_objects.hpp>
-#include <golos/protocol/operation_util_impl.hpp>
+#include <graphene/plugins/private_message/private_message_objects.hpp>
+#include <graphene/protocol/operation_util_impl.hpp>
 
-namespace golos {
+namespace graphene {
     namespace plugins {
         namespace private_message {
 
@@ -12,4 +12,4 @@ namespace golos {
     }
 }
 
-DEFINE_OPERATION_TYPE(golos::plugins::private_message::private_message_plugin_operation);
+DEFINE_OPERATION_TYPE(graphene::plugins::private_message::private_message_plugin_operation);

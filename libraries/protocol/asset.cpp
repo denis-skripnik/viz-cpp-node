@@ -1,4 +1,4 @@
-#include <golos/protocol/asset.hpp>
+#include <graphene/protocol/asset.hpp>
 
 /*
 
@@ -10,7 +10,7 @@ index : field
    7  : \0
 */
 
-namespace golos {
+namespace graphene {
     namespace protocol {
         typedef boost::multiprecision::int128_t int128_t;
 
@@ -200,6 +200,5 @@ namespace golos {
             } FC_CAPTURE_AND_RETHROW((base)(quote))
         }
 
-
     }
-} // golos::protocol
+} // graphene::protocol

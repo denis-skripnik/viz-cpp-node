@@ -1,12 +1,12 @@
 #include <fc/io/datastream.hpp>
 
-#include <golos/protocol/proposal_operations.hpp>
-#include <golos/chain/steem_evaluator.hpp>
-#include <golos/chain/database.hpp>
-#include <golos/chain/steem_objects.hpp>
-#include <golos/chain/proposal_object.hpp>
+#include <graphene/protocol/proposal_operations.hpp>
+#include <graphene/chain/steem_evaluator.hpp>
+#include <graphene/chain/database.hpp>
+#include <graphene/chain/steem_objects.hpp>
+#include <graphene/chain/proposal_object.hpp>
 
-namespace golos { namespace chain {
+namespace graphene { namespace chain {
     namespace {
         template <typename F, typename S>
         void remove_existing(F& first, const S& second) {
@@ -163,10 +163,10 @@ namespace golos { namespace chain {
         trx.set_expiration(_db.head_block_time() + STEEMIT_MAX_TIME_UNTIL_EXPIRATION);
 
         const uint32_t skip_steps =
-            golos::chain::database::skip_authority_check |
-            golos::chain::database::skip_transaction_signatures |
-            golos::chain::database::skip_tapos_check |
-            golos::chain::database::skip_database_locking;
+            graphene::chain::database::skip_authority_check |
+            graphene::chain::database::skip_transaction_signatures |
+            graphene::chain::database::skip_tapos_check |
+            graphene::chain::database::skip_database_locking;
 
         _db.validate_transaction(trx, skip_steps);
 
@@ -301,4 +301,4 @@ namespace golos { namespace chain {
 
     } FC_CAPTURE_AND_RETHROW((o)) }
 
-} } // golos::chain
+} } // graphene::chain

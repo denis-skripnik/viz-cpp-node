@@ -1,6 +1,6 @@
-#include <golos/plugins/debug_node/plugin.hpp>
+#include <graphene/plugins/debug_node/plugin.hpp>
 
-#include <golos/chain/witness_objects.hpp>
+#include <graphene/chain/witness_objects.hpp>
 
 #include <fc/io/buffered_iostream.hpp>
 #include <fc/io/fstream.hpp>
@@ -18,9 +18,9 @@
 #include <sstream>
 #include <string>
 
-namespace golos { namespace plugins { namespace debug_node {
+namespace graphene { namespace plugins { namespace debug_node {
 
-using namespace golos::chain;
+using namespace graphene::chain;
 
 struct plugin::plugin_impl {
 public:
@@ -31,7 +31,7 @@ public:
     uint32_t debug_generate_blocks(
         std::string debug_key,
         uint32_t count = 0,
-        uint32_t skip = golos::chain::database::skip_nothing,
+        uint32_t skip = graphene::chain::database::skip_nothing,
         uint32_t miss_blocks = 0,
         bool edit_if_needed = true
     );
@@ -44,7 +44,7 @@ public:
     uint32_t debug_push_json_blocks(
         std::string json_filename,
         uint32_t count,
-        uint32_t skip_flags = golos::chain::database::skip_nothing
+        uint32_t skip_flags = graphene::chain::database::skip_nothing
     );
 
     uint32_t debug_generate_blocks_until(
@@ -59,13 +59,13 @@ public:
     void debug_set_hardfork( uint32_t hardfork_id );
     bool debug_has_hardfork( uint32_t hardfork_id );
     //
-    golos::chain::database &database() {
+    graphene::chain::database &database() {
       return db_;
     }
 
     void debug_update(
-        std::function< void( golos::chain::database& ) > callback,
-        uint32_t skip = golos::chain::database::skip_nothing
+        std::function< void( graphene::chain::database& ) > callback,
+        uint32_t skip = graphene::chain::database::skip_nothing
     );
 
     void disconnect_signal( boost::signals2::connection& signal );
@@ -88,9 +88,9 @@ public:
     bool logging = true;
 
     boost::signals2::connection applied_block_connection;
-    std::map< protocol::block_id_type, std::vector< std::function< void( golos::chain::database& ) > > > _debug_updates;
+    std::map< protocol::block_id_type, std::vector< std::function< void( graphene::chain::database& ) > > > _debug_updates;
 private:
-    golos::chain::database & db_;
+    graphene::chain::database & db_;
 };
 
 plugin::plugin() {
@@ -128,7 +128,7 @@ void plugin::plugin_initialize( const boost::program_options::variables_map& opt
     }
 
     // connect needed signals
-    my->applied_block_connection = my->database().applied_block.connect( [this](const golos::chain::signed_block& b){
+    my->applied_block_connection = my->database().applied_block.connect( [this](const graphene::chain::signed_block& b){
         my->on_applied_block(b);
     });
 
@@ -155,7 +155,7 @@ void plugin::plugin_shutdown() {
    return;
 }
 void plugin::debug_update (
-        std::function< void( golos::chain::database& ) > callback,
+        std::function< void( graphene::chain::database& ) > callback,
         uint32_t skip
 ) {
     my->debug_update(callback, skip);
@@ -169,19 +169,19 @@ inline void plugin::plugin_impl::disconnect_signal( boost::signals2::connection&
 }
 
 void plugin::plugin_impl::debug_update (
-        std::function< void( golos::chain::database& ) > callback,
+        std::function< void( graphene::chain::database& ) > callback,
         uint32_t skip
     ) {
     // this was a method on database in Graphene
-    golos::chain::database& db = database();
-    golos::chain::block_id_type head_id = db.head_block_id();
+    graphene::chain::database& db = database();
+    graphene::chain::block_id_type head_id = db.head_block_id();
     auto it = _debug_updates.find( head_id );
     if( it == _debug_updates.end() ) {
-        it = _debug_updates.emplace( head_id, std::vector< std::function< void( golos::chain::database& ) > >() ).first;
+        it = _debug_updates.emplace( head_id, std::vector< std::function< void( graphene::chain::database& ) > >() ).first;
     }
     it->second.emplace_back( callback );
 
-    fc::optional<golos::chain::signed_block> head_block = db.fetch_block_by_id( head_id );
+    fc::optional<graphene::chain::signed_block> head_block = db.fetch_block_by_id( head_id );
     FC_ASSERT( head_block.valid() );
 
     // What the last block does has been changed by adding to node_property_object, so we have to re-apply it
@@ -197,7 +197,7 @@ void plugin::set_logging(const bool islogging)
 void plugin::plugin_impl::apply_debug_updates() {
     // this was a method on database in Graphene
     auto & db = database();
-    golos::chain::block_id_type head_id = db.head_block_id();
+    graphene::chain::block_id_type head_id = db.head_block_id();
     auto it = _debug_updates.find( head_id );
     if( it == _debug_updates.end() ) {
         return;
@@ -233,10 +233,10 @@ uint32_t plugin::plugin_impl::debug_generate_blocks(
     }
 
     fc::optional<fc::ecc::private_key> debug_private_key;
-    golos::chain::public_key_type debug_public_key;
+    graphene::chain::public_key_type debug_public_key;
 
     if( debug_key != "" ) {
-        debug_private_key = golos::utilities::wif_to_key( debug_key );
+        debug_private_key = graphene::utilities::wif_to_key( debug_key );
         FC_ASSERT( debug_private_key.valid() );
         debug_public_key = debug_private_key->get_public_key();
     }
@@ -248,14 +248,14 @@ uint32_t plugin::plugin_impl::debug_generate_blocks(
         return ret;
     }
 
-    golos::chain::database& db = database();
+    graphene::chain::database& db = database();
     uint32_t slot = miss_blocks + 1, produced = 0;
     while( produced < count ) {
         uint32_t new_slot = miss_blocks + 1;
         std::string scheduled_witness_name = db.get_scheduled_witness( slot );
         fc::time_point_sec scheduled_time = db.get_slot_time( slot );
-        const golos::chain::witness_object& scheduled_witness = db.get_witness( scheduled_witness_name );
-        golos::chain::public_key_type scheduled_key = scheduled_witness.signing_key;
+        const graphene::chain::witness_object& scheduled_witness = db.get_witness( scheduled_witness_name );
+        graphene::chain::public_key_type scheduled_key = scheduled_witness.signing_key;
         if( logging ) {
             wlog( "slot: ${sl}   time: ${t}   scheduled key is: ${sk}   dbg key is: ${dk}",
             ("sk", scheduled_key)("dk", debug_public_key)("sl", slot)("t", scheduled_time) );
@@ -265,9 +265,9 @@ uint32_t plugin::plugin_impl::debug_generate_blocks(
                 if( logging ) {
                     wlog( "Modified key for witness ${w}", ("w", scheduled_witness_name) );
                 }
-                debug_update( [=]( golos::chain::database& db )
+                debug_update( [=]( graphene::chain::database& db )
                 {
-                   db.modify( db.get_witness( scheduled_witness_name ), [&]( golos::chain::witness_object& w )
+                   db.modify( db.get_witness( scheduled_witness_name ), [&]( graphene::chain::witness_object& w )
                    {
                       w.signing_key = debug_public_key;
                    });
@@ -294,7 +294,7 @@ uint32_t plugin::plugin_impl::debug_generate_blocks_until(
     bool generate_sparsely,
     uint32_t skip
 ) {
-    golos::chain::database& db = database();
+    graphene::chain::database& db = database();
 
     if( db.head_block_time() >= head_block_time ) {
         return 0;
@@ -334,15 +334,15 @@ uint32_t plugin::plugin_impl::debug_push_blocks(
     ) {
         ilog( "Loading ${n} from block_log ${fn}", ("n", count)("fn", src_filename) );
         idump( (src_filename)(count) );
-        golos::chain::block_log log;
+        graphene::chain::block_log log;
         log.open( src_path );
         uint32_t first_block = database().head_block_num()+1;
-        uint32_t skip_flags = golos::chain::database::skip_nothing;
+        uint32_t skip_flags = graphene::chain::database::skip_nothing;
 
         for( uint32_t i=0; i<count; i++ ) {
             //fc::optional< chain::signed_block > block = log.read_block( log.get_block_pos( first_block + i ) );
             uint64_t block_pos = log.get_block_pos( first_block + i );
-            if( block_pos == golos::chain::block_log::npos ) {
+            if( block_pos == graphene::chain::block_log::npos ) {
                 wlog( "Block database ${fn} only contained ${i} of ${n} requested blocks", ("i", i)("n", count)("fn", src_filename) );
                 return i ;
             }
@@ -426,11 +426,11 @@ fc::optional< protocol::signed_block > plugin::plugin_impl::debug_pop_block() {
 
 witness_schedule_object plugin::plugin_impl::debug_get_witness_schedule( ) {
     auto & db = database();
-    return db.get( golos::chain::witness_schedule_id_type() );
+    return db.get( graphene::chain::witness_schedule_id_type() );
 }
 
 // TODO: Figure out does debug_nod need this method or not.
-// Now it's commented because there is no api_hardfork_property_object in golos, as it is in steem.
+// Now it's commented because there is no api_hardfork_property_object in viz, as it is in steem.
 // The only similar thing we have: hardfork_property_object.
 
 // debug_get_hardfork_property_object_r plugin::plugin_impl::debug_get_hardfork_property_object(debug_get_hardfork_property_object_a & args) {
@@ -450,7 +450,7 @@ void plugin::plugin_impl::debug_set_hardfork( uint32_t hardfork_id ) {
 
 bool plugin::plugin_impl::debug_has_hardfork( uint32_t hardfork_id ) {
     auto & db = database();
-    return db.get( golos::chain::hardfork_property_id_type() ).last_hardfork >= hardfork_id;
+    return db.get( graphene::chain::hardfork_property_id_type() ).last_hardfork >= hardfork_id;
 }
 
 
@@ -472,7 +472,7 @@ bool plugin::plugin_impl::debug_has_hardfork( uint32_t hardfork_id ) {
 //
 
 
-#include <golos/plugins/debug_node/api_helper.hpp>
+#include <graphene/plugins/debug_node/api_helper.hpp>
 
 #define DEFINE_PLUGIN_API(name) DEFINE_API(plugin, name)
 
@@ -480,7 +480,7 @@ DEFINE_PLUGIN_API ( debug_generate_blocks ) {
     PLUGIN_API_VALIDATE_ARGS(
         (std::string,   debug_key)
         (uint32_t,      count, 0)
-        (uint32_t,      skip, golos::chain::database::skip_nothing)
+        (uint32_t,      skip, graphene::chain::database::skip_nothing)
         (uint32_t,      miss_blocks, 0)
         (bool,          edit_if_needed, true)
     )
@@ -499,7 +499,7 @@ DEFINE_PLUGIN_API ( debug_push_json_blocks ) {
     PLUGIN_API_VALIDATE_ARGS(
         (std::string,   json_filename)
         (uint32_t,      count)
-        (uint32_t,      skip_flags, golos::chain::database::skip_nothing)
+        (uint32_t,      skip_flags, graphene::chain::database::skip_nothing)
     )
     // `skip_flags` can be set to 577 if loading mainnet blocks
     // 577 = skip_witness_signature | skip_authority_check | skip_witness_schedule_check
@@ -515,7 +515,7 @@ DEFINE_PLUGIN_API ( debug_generate_blocks_until ) {
         (std::string,       debug_key)
         (fc::time_point_sec,head_block_time)
         (bool,              generate_sparsely, true)
-        (uint32_t,          skip, golos::chain::database::skip_nothing)
+        (uint32_t,          skip, graphene::chain::database::skip_nothing)
     )
 
     return my->debug_generate_blocks_until( debug_key, head_block_time, generate_sparsely, skip );
@@ -664,4 +664,4 @@ void debug_apply_update( chain::database& db, const fc::variant_object& vo, bool
    }
 }
 */
-} } } // golos::plugins::debug_node
+} } } // graphene::plugins::debug_node

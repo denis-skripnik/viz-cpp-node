@@ -1,10 +1,10 @@
-# Defines Golos library target.
-project(Golos)
+# Defines VIZ library target.
+project(VIZ)
 cmake_minimum_required(VERSION 2.8.12)
 
-set(BLOCKCHAIN_NAME "Golos")
+set(BLOCKCHAIN_NAME "VIZ")
 
-set(GUI_CLIENT_EXECUTABLE_NAME Golos)
+set(GUI_CLIENT_EXECUTABLE_NAME VIZ)
 set(CUSTOM_URL_SCHEME "gcs")
 set(INSTALLER_APP_ID "68ad7005-8eee-49c9-95ce-9eed97e5b347")
 
@@ -72,7 +72,7 @@ endif()
 
 option(ENABLE_MONGO_PLUGIN "Build with mongodb plugin" FALSE)
 if(ENABLE_MONGO_PLUGIN)
-  set(MONGO_LIB golos::mongo_db)
+  set(MONGO_LIB graphene::mongo_db)
 
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DMONGODB_PLUGIN_BUILT")
   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DMONGODB_PLUGIN_BUILT")
@@ -101,7 +101,7 @@ endif(CCACHE_FOUND)
 
 if(WIN32)
 
-    message(STATUS "Configuring Golos on WIN32")
+    message(STATUS "Configuring VIZ on WIN32")
     set(DB_VERSION 60)
     set(BDB_STATIC_LIBS 1)
 
@@ -155,11 +155,11 @@ else(WIN32) # Apple AND Linux
 
     if(APPLE)
         # Apple Specific Options Here
-        message(STATUS "Configuring Golos on OS X")
+        message(STATUS "Configuring VIZ on OS X")
         set(CMAKE_CXX_FLAGS "${CMAKE_C_FLAGS} -std=c++14 -stdlib=libc++ -Wall -Wno-conversion -Wno-deprecated-declarations")
     else(APPLE)
         # Linux Specific Options Here
-        message(STATUS "Configuring Golos on Linux")
+        message(STATUS "Configuring VIZ on Linux")
         set(CMAKE_CXX_FLAGS "${CMAKE_C_FLAGS} -std=c++14 -Wall")
         set(rt_library rt)
         set(pthread_library pthread)
@@ -191,13 +191,12 @@ else(WIN32) # Apple AND Linux
 
 endif(WIN32)
 
-set(ENABLE_COVERAGE_TESTING FALSE CACHE BOOL "Build Golos for code coverage analysis")
+set(ENABLE_COVERAGE_TESTING FALSE CACHE BOOL "Build VIZ for code coverage analysis")
 
 if(ENABLE_COVERAGE_TESTING)
     set(CMAKE_CXX_FLAGS "--coverage ${CMAKE_CXX_FLAGS}")
 endif()
 
-# external_plugins needs to be compiled first because libraries/app depends on GOLOSIT_EXTERNAL_PLUGINS being fully populated
 add_subdirectory(thirdparty)
 add_subdirectory(libraries)
 add_subdirectory(plugins)
@@ -216,24 +215,24 @@ if(ENABLE_INSTALLER)
     set(CMAKE_INSTALL_PREFIX ${CMAKE_BINARY_DIR}/install)
 
     set(CPACK_PACKAGE_DIRECTORY "${CMAKE_INSTALL_PREFIX}")
-    set(CPACK_PACKAGE_NAME "golos")
-    set(CPACK_PACKAGE_VENDOR "Golos, Inc.")
+    set(CPACK_PACKAGE_NAME "viz")
+    set(CPACK_PACKAGE_VENDOR "VIZ-World")
     set(CPACK_PACKAGE_VERSION_MAJOR "${VERSION_MAJOR}")
     set(CPACK_PACKAGE_VERSION_MINOR "${VERSION_MINOR}")
     set(CPACK_PACKAGE_VERSION_PATCH "${VERSION_PATCH}")
     set(CPACK_PACKAGE_VERSION "${CPACK_PACKAGE_VERSION_MAJOR}.${CPACK_PACKAGE_VERSION_MINOR}.${CPACK_PACKAGE_VERSION_PATCH}")
-    set(CPACK_PACKAGE_DESCRIPTION "A client for the Golos network")
-    set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "A client for the Golos network")
+    set(CPACK_PACKAGE_DESCRIPTION "A client for the VIZ network")
+    set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "A client for the VIZ network")
     set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/LICENSE.md")
-    set(CPACK_PACKAGE_INSTALL_DIRECTORY "Golos ${CPACK_PACKAGE_VERSION}")
+    set(CPACK_PACKAGE_INSTALL_DIRECTORY "VIZ ${CPACK_PACKAGE_VERSION}")
 
     if(WIN32)
         set(CPACK_GENERATOR "ZIP;NSIS")
-        set(CPACK_PACKAGE_NAME "Golos") # override above
+        set(CPACK_PACKAGE_NAME "VIZ") # override above
         set(CPACK_NSIS_EXECUTABLES_DIRECTORY .)
-        set(CPACK_NSIS_PACKAGE_NAME "Golos v${CPACK_PACKAGE_VERSION}")
+        set(CPACK_NSIS_PACKAGE_NAME "VIZ v${CPACK_PACKAGE_VERSION}")
         set(CPACK_NSIS_DISPLAY_NAME "${CPACK_NSIS_PACKAGE_NAME}")
-        set(CPACK_NSIS_DEFINES "  !define MUI_STARTMENUPAGE_DEFAULTFOLDER \\\"Golos\\\"")
+        set(CPACK_NSIS_DEFINES "  !define MUI_STARTMENUPAGE_DEFAULTFOLDER \\\"VIZ\\\"")
         # it seems like windows zip files usually don't have a single directory inside them, unix tgz frequently do
         set(CPACK_INCLUDE_TOPLEVEL_DIRECTORY 0)
 
@@ -252,7 +251,7 @@ if(ENABLE_INSTALLER)
     include(CPack)
 endif(ENABLE_INSTALLER)
 
-message(STATUS "\n\n             CONFIGURED FOR GOLOS NETWORK             \n\n")
+message(STATUS "\n\n             CONFIGURED FOR VIZ NETWORK             \n\n")
 
 if(LOW_MEMORY_NODE)
     message(STATUS "\n\n             CONFIGURED FOR LOW MEMORY NODE          \n\n")

@@ -1,6 +1,6 @@
-#include <golos/protocol/authority.hpp>
+#include <graphene/protocol/authority.hpp>
 
-namespace golos {
+namespace graphene {
     namespace protocol {
 
 // authority methods
@@ -224,4 +224,4 @@ namespace golos {
         }
 
     }
-} // golos::protocol
+} // graphene::protocol

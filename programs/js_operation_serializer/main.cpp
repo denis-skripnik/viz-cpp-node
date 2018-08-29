@@ -1,9 +1,9 @@
-#include <golos/protocol/protocol.hpp>
-#include <golos/chain/steem_objects.hpp>
+#include <graphene/protocol/protocol.hpp>
+#include <graphene/chain/steem_objects.hpp>
 #include <fc/smart_ref_impl.hpp>
 
-using namespace golos::chain;
-using namespace golos::protocol;
+using namespace graphene::chain;
+using namespace graphene::protocol;
 
 using std::string;
 using std::map;
@@ -34,7 +34,7 @@ namespace detail_ns {
         str = remove_tail_if(str, '_', "t");
         str = remove_tail_if(str, '_', "object");
         str = remove_tail_if(str, '_', "type");
-        str = remove_namespace_if(str, "golos::chain");
+        str = remove_namespace_if(str, "graphene::chain");
         str = remove_namespace_if(str, "chainbase");
         str = remove_namespace_if(str, "std");
         str = remove_namespace_if(str, "fc");
@@ -54,7 +54,7 @@ namespace detail_ns {
 
 
     map<string, size_t> st;
-    golos::vector<std::function<void()>> serializers;
+    graphene::vector<std::function<void()>> serializers;
 
     bool register_serializer(const string &name, std::function<void()> sr) {
         if (st.find(name) == st.end()) {

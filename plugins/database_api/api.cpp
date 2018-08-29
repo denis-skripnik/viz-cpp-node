@@ -1,8 +1,8 @@
-#include <golos/plugins/database_api/plugin.hpp>
+#include <graphene/plugins/database_api/plugin.hpp>
 
-#include <golos/plugins/follow/plugin.hpp>
+#include <graphene/plugins/follow/plugin.hpp>
 
-#include <golos/protocol/get_config.hpp>
+#include <graphene/protocol/get_config.hpp>
 
 #include <fc/bloom_filter.hpp>
 #include <fc/smart_ref_impl.hpp>
@@ -10,7 +10,7 @@
 #include <boost/range/iterator_range.hpp>
 #include <boost/algorithm/string.hpp>
 #include <memory>
-#include <golos/plugins/json_rpc/plugin.hpp>
+#include <graphene/plugins/json_rpc/plugin.hpp>
 
 #define GET_REQUIRED_FEES_MAX_RECURSION 4
 
@@ -20,7 +20,7 @@
    FC_ASSERT(n_args >= min && n_args <= max, "Expected #min-#max arguments, got ${n}", ("n", n_args));
 
 
-namespace golos { namespace plugins { namespace database_api {
+namespace graphene { namespace plugins { namespace database_api {
 
 using protocol::share_type;
 
@@ -117,7 +117,7 @@ public:
     std::function<void(const fc::variant &)> _pending_trx_callback;
 
 
-    golos::chain::database &database() const {
+    graphene::chain::database &database() const {
         return _db;
     }
 
@@ -126,7 +126,7 @@ public:
 
 private:
 
-    golos::chain::database &_db;
+    graphene::chain::database &_db;
 };
 
 
@@ -284,7 +284,7 @@ DEFINE_API(plugin, get_config) {
 }
 
 fc::variant_object plugin::api_impl::get_config() const {
-    return golos::protocol::get_config();
+    return graphene::protocol::get_config();
 }
 
 DEFINE_API(plugin, get_dynamic_global_properties) {
@@ -796,4 +796,4 @@ void plugin::plugin_startup() {
     my->startup();
 }
 
-} } } // golos::plugins::database_api
+} } } // graphene::plugins::database_api

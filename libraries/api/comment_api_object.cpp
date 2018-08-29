@@ -1,10 +1,10 @@
-#include <golos/api/comment_api_object.hpp>
+#include <graphene/api/comment_api_object.hpp>
 
-namespace golos { namespace api {
+namespace graphene { namespace api {
 
-    using namespace golos::chain;
+    using namespace graphene::chain;
 
-    comment_api_object::comment_api_object(const golos::chain::comment_object &o, const golos::chain::database &db)
+    comment_api_object::comment_api_object(const graphene::chain::comment_object &o, const graphene::chain::database &db)
         : id(o.id),
           parent_author(o.parent_author),
           parent_permlink(to_string(o.parent_permlink)),
@@ -46,4 +46,4 @@ namespace golos { namespace api {
 
     comment_api_object::comment_api_object() = default;
 
-} } // golos::api
+} } // graphene::api

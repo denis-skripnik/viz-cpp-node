@@ -27,10 +27,10 @@
 
 #include <fc/filesystem.hpp>
 
-namespace golos {
+namespace graphene {
     namespace utilities {
 
         fc::path temp_directory_path();
 
     }
-} // golos::utilities
+} // graphene::utilities

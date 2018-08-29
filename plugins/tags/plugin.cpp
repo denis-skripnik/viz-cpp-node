@@ -1,15 +1,15 @@
 #include <boost/program_options/options_description.hpp>
-#include <golos/plugins/tags/plugin.hpp>
-#include <golos/plugins/tags/tags_object.hpp>
-#include <golos/chain/index.hpp>
-#include <golos/api/discussion.hpp>
-#include <golos/plugins/tags/discussion_query.hpp>
-#include <golos/api/vote_state.hpp>
-#include <golos/chain/steem_objects.hpp>
-#include <golos/api/discussion_helper.hpp>
+#include <graphene/plugins/tags/plugin.hpp>
+#include <graphene/plugins/tags/tags_object.hpp>
+#include <graphene/chain/index.hpp>
+#include <graphene/api/discussion.hpp>
+#include <graphene/plugins/tags/discussion_query.hpp>
+#include <graphene/api/vote_state.hpp>
+#include <graphene/chain/steem_objects.hpp>
+#include <graphene/api/discussion_helper.hpp>
 // These visitors creates additional tables, we don't really need them in LOW_MEM mode
-#include <golos/plugins/tags/tag_visitor.hpp>
-#include <golos/chain/operation_notification.hpp>
+#include <graphene/plugins/tags/tag_visitor.hpp>
+#include <graphene/chain/operation_notification.hpp>
 
 #define CHECK_ARG_SIZE(_S)                                 \
    FC_ASSERT(                                              \
@@ -28,9 +28,9 @@
    (args.args->at(_I).as<_T>()) :      \
    static_cast<_T>(_D)
 
-namespace golos { namespace plugins { namespace tags {
+namespace graphene { namespace plugins { namespace tags {
 
-    using golos::api::discussion_helper;
+    using graphene::api::discussion_helper;
 
     struct tags_plugin::impl final {
         impl(): database_(appbase::app().get_plugin<chain::plugin>().db()) {
@@ -52,11 +52,11 @@ namespace golos { namespace plugins { namespace tags {
 #endif
         }
 
-        golos::chain::database& database() {
+        graphene::chain::database& database() {
             return database_;
         }
 
-        golos::chain::database& database() const {
+        graphene::chain::database& database() const {
             return database_;
         }
 
@@ -114,7 +114,7 @@ namespace golos { namespace plugins { namespace tags {
         get_languages_result get_languages();
 
     private:
-        golos::chain::database& database_;
+        graphene::chain::database& database_;
         std::unique_ptr<discussion_helper> helper;
     };
 
@@ -874,4 +874,4 @@ namespace golos { namespace plugins { namespace tags {
         return result;
     }
 
-} } } // golos::plugins::tags
+} } } // graphene::plugins::tags

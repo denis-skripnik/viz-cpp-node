@@ -1,9 +1,9 @@
-#include <golos/plugins/mongo_db/mongo_db_state.hpp>
-#include <golos/plugins/follow/follow_objects.hpp>
-#include <golos/plugins/follow/plugin.hpp>
-#include <golos/plugins/chain/plugin.hpp>
-#include <golos/chain/comment_object.hpp>
-#include <golos/chain/account_object.hpp>
+#include <graphene/plugins/mongo_db/mongo_db_state.hpp>
+#include <graphene/plugins/follow/follow_objects.hpp>
+#include <graphene/plugins/follow/plugin.hpp>
+#include <graphene/plugins/chain/plugin.hpp>
+#include <graphene/chain/comment_object.hpp>
+#include <graphene/chain/account_object.hpp>
 
 #include <bsoncxx/builder/stream/array.hpp>
 #include <bsoncxx/builder/stream/value_context.hpp>
@@ -12,7 +12,7 @@
 
 #include <boost/algorithm/string.hpp>
 
-namespace golos {
+namespace graphene {
 namespace plugins {
 namespace mongo_db {
 
@@ -20,10 +20,10 @@ namespace mongo_db {
     using bsoncxx::builder::stream::document;
     using bsoncxx::builder::stream::open_document;
     using bsoncxx::builder::stream::close_document;
-    using namespace golos::plugins::follow;
+    using namespace graphene::plugins::follow;
 
     state_writer::state_writer(db_map& bmi_to_add, const signed_block& block) :
-        db_(appbase::app().get_plugin<golos::plugins::chain::plugin>().db()),
+        db_(appbase::app().get_plugin<graphene::plugins::chain::plugin>().db()),
         state_block(block),
         all_docs(bmi_to_add) {
     }

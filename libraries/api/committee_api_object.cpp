@@ -1,12 +1,12 @@
-#include <golos/api/committee_api_object.hpp>
+#include <graphene/api/committee_api_object.hpp>
 
-namespace golos { namespace api {
+namespace graphene { namespace api {
 
-    using namespace golos::chain;
-    using golos::chain::committee_request_object;
-    using golos::chain::committee_vote_object;
+    using namespace graphene::chain;
+    using graphene::chain::committee_request_object;
+    using graphene::chain::committee_vote_object;
 
-    committee_vote_state::committee_vote_state(const golos::chain::committee_vote_object &o)
+    committee_vote_state::committee_vote_state(const graphene::chain::committee_vote_object &o)
         :  voter(o.voter),
            vote_percent(o.vote_percent),
            last_update(o.last_update) {
@@ -14,7 +14,7 @@ namespace golos { namespace api {
 
     committee_vote_state::committee_vote_state() = default;
 
-    committee_api_object::committee_api_object(const golos::chain::committee_request_object &o/*, const golos::chain::database &db*/)
+    committee_api_object::committee_api_object(const graphene::chain::committee_request_object &o/*, const graphene::chain::database &db*/)
         : id(o.id),
           request_id(o.request_id),
           url(o.url),
@@ -37,4 +37,4 @@ namespace golos { namespace api {
 
     committee_api_object::committee_api_object() = default;
 
-} } // golos::api
+} } // graphene::api

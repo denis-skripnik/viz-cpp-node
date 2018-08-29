@@ -1,5 +1,5 @@
-#include <golos/plugins/json_rpc/plugin.hpp>
-#include <golos/plugins/json_rpc/utility.hpp>
+#include <graphene/plugins/json_rpc/plugin.hpp>
+#include <graphene/plugins/json_rpc/utility.hpp>
 
 #include <boost/algorithm/string.hpp>
 
@@ -8,7 +8,7 @@
 #include <thirdparty/fc/vendor/websocketpp/websocketpp/error.hpp>
 #include <thirdparty/fc/include/fc/time.hpp>
 
-namespace golos {
+namespace graphene {
     namespace plugins {
         namespace json_rpc {
             struct json_rpc_error {
@@ -423,7 +423,7 @@ namespace golos {
             }
         }
     }
-} // golos::plugins::json_rpc
+} // graphene::plugins::json_rpc
 
-FC_REFLECT((golos::plugins::json_rpc::json_rpc_error), (code)(message)(data))
-FC_REFLECT((golos::plugins::json_rpc::json_rpc_response), (jsonrpc)(result)(error)(id))
+FC_REFLECT((graphene::plugins::json_rpc::json_rpc_error), (code)(message)(data))
+FC_REFLECT((graphene::plugins::json_rpc::json_rpc_response), (jsonrpc)(result)(error)(id))
