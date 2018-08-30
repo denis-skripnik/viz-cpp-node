@@ -1,9 +1,9 @@
 #include <fc/io/datastream.hpp>
 
 #include <graphene/protocol/proposal_operations.hpp>
-#include <graphene/chain/steem_evaluator.hpp>
+#include <graphene/chain/chain_evaluator.hpp>
 #include <graphene/chain/database.hpp>
-#include <graphene/chain/steem_objects.hpp>
+#include <graphene/chain/chain_objects.hpp>
 #include <graphene/chain/proposal_object.hpp>
 
 namespace graphene { namespace chain {

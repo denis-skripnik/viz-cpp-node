@@ -1,6 +1,6 @@
-#include <graphene/chain/steem_evaluator.hpp>
+#include <graphene/chain/chain_evaluator.hpp>
 #include <graphene/chain/database.hpp>
-#include <graphene/chain/steem_objects.hpp>
+#include <graphene/chain/chain_objects.hpp>
 
 namespace graphene { namespace chain {
 

@@ -141,7 +141,7 @@ namespace graphene { namespace protocol {
         /**
          * @ingroup operations
          *
-         * @brief Transfers STEEM from one account to another.
+         * @brief Transfers tokens from one account to another.
          */
         struct transfer_operation : public base_operation {
             account_name_type from;
@@ -282,7 +282,7 @@ namespace graphene { namespace protocol {
 
 
         /**
-         *  This operation converts STEEM into VFS (Vesting Fund Shares) at
+         *  This operation converts tokens into SHARES at
          *  the current exchange rate. With this operation it is possible to
          *  give another account vesting shares so that faucets can
          *  pre-fund new accounts with vesting shares.
@@ -290,7 +290,7 @@ namespace graphene { namespace protocol {
         struct transfer_to_vesting_operation : public base_operation {
             account_name_type from;
             account_name_type to; ///< if null, then same as from
-            asset amount; ///< must be STEEM
+            asset amount; ///< must be token
 
             void validate() const;
 
@@ -328,7 +328,7 @@ namespace graphene { namespace protocol {
          * request for the funds to be transferred directly to another account's
          * balance rather than the withdrawing account. In addition, those funds
          * can be immediately vested again, circumventing the conversion from
-         * vests to steem and back, guaranteeing they maintain their value.
+         * SHARES to token and back, guaranteeing they maintain their value.
          */
         struct set_withdraw_vesting_route_operation : public base_operation {
             account_name_type from_account;
@@ -350,7 +350,7 @@ namespace graphene { namespace protocol {
          */
         struct chain_properties {
             /**
-             *  This fee, paid in STEEM, is converted into VESTING SHARES for the new account. Accounts
+             *  This fee, paid in token, is converted into SHARES for the new account. Accounts
              *  without vesting shares cannot earn usage rations and therefore are powerless. This minimum
              *  fee requires all accounts to have some kind of commitment to the network that includes the
              *  ability to vote and make transactions.

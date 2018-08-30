@@ -1,6 +1,6 @@
 #pragma once
 
-#include <graphene/chain/steem_object_types.hpp>
+#include <graphene/chain/chain_object_types.hpp>
 #include <graphene/protocol/types.hpp>
 #include <graphene/plugins/json_rpc/utility.hpp>
 #include <graphene/plugins/json_rpc/plugin.hpp>

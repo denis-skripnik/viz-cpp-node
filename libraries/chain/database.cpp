@@ -2,7 +2,7 @@
 
 #include <boost/iostreams/device/mapped_file.hpp>
 
-#include <graphene/protocol/steem_operations.hpp>
+#include <graphene/protocol/chain_operations.hpp>
 
 #include <graphene/chain/block_summary_object.hpp>
 #include <graphene/chain/compound.hpp>
@@ -12,8 +12,8 @@
 #include <graphene/chain/db_with.hpp>
 #include <graphene/chain/evaluator_registry.hpp>
 #include <graphene/chain/index.hpp>
-#include <graphene/chain/steem_evaluator.hpp>
-#include <graphene/chain/steem_objects.hpp>
+#include <graphene/chain/chain_evaluator.hpp>
+#include <graphene/chain/chain_objects.hpp>
 #include <graphene/chain/transaction_object.hpp>
 #include <graphene/chain/shared_db_merkle.hpp>
 #include <graphene/chain/operation_notification.hpp>

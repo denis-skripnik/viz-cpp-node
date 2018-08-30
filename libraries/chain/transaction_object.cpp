@@ -1,6 +1,6 @@
-#include <steemit/chain/transaction_object.hpp>
+#include <graphene/chain/transaction_object.hpp>
 
-namespace steemit {
+namespace graphene {
     namespace chain {
 
         const object *transaction_index::create(const std::function<void(object *)> &constructor, object_id_type) {

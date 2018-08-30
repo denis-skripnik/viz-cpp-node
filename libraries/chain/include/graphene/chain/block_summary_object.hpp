@@ -1,6 +1,6 @@
 #pragma once
 
-#include <graphene/chain/steem_object_types.hpp>
+#include <graphene/chain/chain_object_types.hpp>
 
 namespace graphene {
     namespace chain {

@@ -1,7 +1,7 @@
 #pragma once
 
 #include <graphene/chain/witness_objects.hpp>
-#include <graphene/chain/steem_object_types.hpp>
+#include <graphene/chain/chain_object_types.hpp>
 #include <graphene/api/chain_api_properties.hpp>
 
 namespace graphene { namespace api {

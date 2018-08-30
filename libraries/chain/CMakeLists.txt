@@ -20,9 +20,9 @@ if(BUILD_SHARED_LIBRARIES)
             database.cpp
             fork_database.cpp
 
-            steem_evaluator.cpp
+            chain_evaluator.cpp
 
-            steem_objects.cpp
+            chain_objects.cpp
             shared_authority.cpp
             #        transaction_object.cpp
             block_log.cpp
@@ -53,15 +53,15 @@ if(BUILD_SHARED_LIBRARIES)
             include/graphene/chain/operation_notification.hpp
             include/graphene/chain/shared_authority.hpp
             include/graphene/chain/shared_db_merkle.hpp
-            include/graphene/chain/steem_evaluator.hpp
-            include/graphene/chain/steem_object_types.hpp
-            include/graphene/chain/steem_objects.hpp
+            include/graphene/chain/chain_evaluator.hpp
+            include/graphene/chain/chain_object_types.hpp
+            include/graphene/chain/chain_objects.hpp
             include/graphene/chain/transaction_object.hpp
             include/graphene/chain/witness_objects.hpp
             include/graphene/chain/committee_objects.hpp
 
             ${hardfork_hpp_file}
-            "${CMAKE_CURRENT_BINARY_DIR}/include/steemit/chain/hardfork.hpp"
+            "${CMAKE_CURRENT_BINARY_DIR}/include/graphene/chain/hardfork.hpp"
             )
 else()
     add_library(graphene_chain STATIC
@@ -70,9 +70,9 @@ else()
             database.cpp
             fork_database.cpp
 
-            steem_evaluator.cpp
+            chain_evaluator.cpp
 
-            steem_objects.cpp
+            chain_objects.cpp
             shared_authority.cpp
             #        transaction_object.cpp
             block_log.cpp
@@ -103,9 +103,9 @@ else()
             include/graphene/chain/operation_notification.hpp
             include/graphene/chain/shared_authority.hpp
             include/graphene/chain/shared_db_merkle.hpp
-            include/graphene/chain/steem_evaluator.hpp
-            include/graphene/chain/steem_object_types.hpp
-            include/graphene/chain/steem_objects.hpp
+            include/graphene/chain/chain_evaluator.hpp
+            include/graphene/chain/chain_object_types.hpp
+            include/graphene/chain/chain_objects.hpp
             include/graphene/chain/transaction_object.hpp
             include/graphene/chain/witness_objects.hpp
             include/graphene/chain/committee_objects.hpp

@@ -2,7 +2,7 @@
 
 #include <graphene/protocol/base.hpp>
 #include <graphene/protocol/types.hpp>
-#include <graphene/chain/steem_object_types.hpp>
+#include <graphene/chain/chain_object_types.hpp>
 #include <chainbase/chainbase.hpp>
 #include <graphene/protocol/operation_util.hpp>
 

@@ -4,7 +4,7 @@
 
 #include <graphene/protocol/types.hpp>
 
-#include <graphene/chain/steem_object_types.hpp>
+#include <graphene/chain/chain_object_types.hpp>
 
 namespace graphene { namespace plugins { namespace database_api {
 

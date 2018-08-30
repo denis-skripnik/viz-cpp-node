@@ -2,7 +2,7 @@
 #include <graphene/plugins/social_network/social_network.hpp>
 #include <graphene/chain/index.hpp>
 #include <graphene/api/vote_state.hpp>
-#include <graphene/chain/steem_objects.hpp>
+#include <graphene/chain/chain_objects.hpp>
 #include <graphene/api/discussion_helper.hpp>
 #include <graphene/chain/committee_objects.hpp>
 #include <graphene/api/committee_api_object.hpp>

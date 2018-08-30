@@ -1,7 +1,7 @@
 #ifndef GOLOS_FORWARD_HPP
 #define GOLOS_FORWARD_HPP
 
-#include <graphene/chain/steem_objects.hpp>
+#include <graphene/chain/chain_objects.hpp>
 
 namespace graphene { namespace plugins { namespace database_api {
 			using protocol::share_type;

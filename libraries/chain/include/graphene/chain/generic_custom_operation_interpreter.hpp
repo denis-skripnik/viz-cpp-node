@@ -1,7 +1,7 @@
 
 #pragma once
 
-#include <graphene/protocol/steem_operations.hpp>
+#include <graphene/protocol/chain_operations.hpp>
 #include <graphene/protocol/operation_util_impl.hpp>
 
 #include <graphene/chain/evaluator.hpp>

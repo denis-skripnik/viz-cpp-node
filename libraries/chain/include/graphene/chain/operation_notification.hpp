@@ -2,7 +2,7 @@
 
 #include <graphene/protocol/operations.hpp>
 
-#include <graphene/chain/steem_object_types.hpp>
+#include <graphene/chain/chain_object_types.hpp>
 
 namespace graphene {
     using protocol::operation;

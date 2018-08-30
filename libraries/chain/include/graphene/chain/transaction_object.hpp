@@ -2,7 +2,7 @@
 
 #include <graphene/protocol/transaction.hpp>
 
-#include <graphene/chain/steem_object_types.hpp>
+#include <graphene/chain/chain_object_types.hpp>
 
 #include <boost/multi_index/hashed_index.hpp>
 

@@ -1,7 +1,7 @@
 #pragma once
 
 #include <graphene/protocol/operations.hpp>
-#include <graphene/chain/steem_object_types.hpp>
+#include <graphene/chain/chain_object_types.hpp>
 #include <graphene/plugins/operation_history/history_object.hpp>
 
 namespace graphene { namespace plugins { namespace operation_history {

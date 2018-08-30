@@ -1,5 +1,4 @@
 
-
 namespace graphene {
     namespace chain {
 

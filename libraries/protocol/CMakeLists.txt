@@ -15,8 +15,8 @@ list(APPEND ${CURRENT_TARGET}_HEADERS
         include/graphene/protocol/proposal_operations.hpp
         include/graphene/protocol/protocol.hpp
         include/graphene/protocol/sign_state.hpp
-        include/graphene/protocol/steem_operations.hpp
-        include/graphene/protocol/steem_virtual_operations.hpp
+        include/graphene/protocol/chain_operations.hpp
+        include/graphene/protocol/chain_virtual_operations.hpp
         include/graphene/protocol/transaction.hpp
         include/graphene/protocol/types.hpp
         include/graphene/protocol/version.hpp
@@ -31,7 +31,7 @@ list(APPEND ${CURRENT_TARGET}_SOURCES
         operations.cpp
         proposal_operations.cpp
         sign_state.cpp
-        steem_operations.cpp
+        chain_operations.cpp
         transaction.cpp
         types.cpp
         version.cpp

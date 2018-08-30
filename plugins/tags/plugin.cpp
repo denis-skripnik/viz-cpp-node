@@ -5,7 +5,7 @@
 #include <graphene/api/discussion.hpp>
 #include <graphene/plugins/tags/discussion_query.hpp>
 #include <graphene/api/vote_state.hpp>
-#include <graphene/chain/steem_objects.hpp>
+#include <graphene/chain/chain_objects.hpp>
 #include <graphene/api/discussion_helper.hpp>
 // These visitors creates additional tables, we don't really need them in LOW_MEM mode
 #include <graphene/plugins/tags/tag_visitor.hpp>

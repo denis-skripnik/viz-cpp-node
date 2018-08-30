@@ -3,7 +3,7 @@
 
 #include <graphene/chain/database_exceptions.hpp>
 #include <graphene/chain/account_object.hpp>
-#include <graphene/chain/steem_objects.hpp>
+#include <graphene/chain/chain_objects.hpp>
 #include <graphene/chain/witness_objects.hpp>
 #include <graphene/time/time.hpp>
 

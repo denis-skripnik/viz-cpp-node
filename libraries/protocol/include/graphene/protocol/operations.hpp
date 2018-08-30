@@ -2,8 +2,8 @@
 
 #include <graphene/protocol/operation_util.hpp>
 #include <graphene/protocol/proposal_operations.hpp>
-#include <graphene/protocol/steem_operations.hpp>
-#include <graphene/protocol/steem_virtual_operations.hpp>
+#include <graphene/protocol/chain_operations.hpp>
+#include <graphene/protocol/chain_virtual_operations.hpp>
 
 namespace graphene { namespace protocol {
 

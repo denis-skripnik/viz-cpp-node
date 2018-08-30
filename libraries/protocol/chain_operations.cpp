@@ -1,4 +1,4 @@
-#include <graphene/protocol/steem_operations.hpp>
+#include <graphene/protocol/chain_operations.hpp>
 #include <fc/io/json.hpp>
 
 namespace graphene { namespace protocol {

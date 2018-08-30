@@ -1,7 +1,7 @@
-#include <graphene/chain/steem_evaluator.hpp>
+#include <graphene/chain/chain_evaluator.hpp>
 #include <graphene/chain/database.hpp>
 #include <graphene/chain/custom_operation_interpreter.hpp>
-#include <graphene/chain/steem_objects.hpp>
+#include <graphene/chain/chain_objects.hpp>
 #include <graphene/chain/block_summary_object.hpp>
 
 namespace graphene { namespace chain {

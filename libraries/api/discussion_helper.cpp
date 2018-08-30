@@ -1,7 +1,7 @@
 #include <graphene/api/discussion_helper.hpp>
 #include <graphene/chain/account_object.hpp>
 // #include <graphene/plugins/follow/follow_objects.hpp>
-#include <graphene/chain/steem_objects.hpp>
+#include <graphene/chain/chain_objects.hpp>
 #include <fc/io/json.hpp>
 #include <boost/algorithm/string.hpp>
 

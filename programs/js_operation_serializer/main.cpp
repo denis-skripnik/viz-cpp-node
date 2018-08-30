@@ -1,5 +1,5 @@
 #include <graphene/protocol/protocol.hpp>
-#include <graphene/chain/steem_objects.hpp>
+#include <graphene/chain/chain_objects.hpp>
 #include <fc/smart_ref_impl.hpp>
 
 using namespace graphene::chain;

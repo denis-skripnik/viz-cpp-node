@@ -2,7 +2,7 @@
 #define GOLOS_WITNESS_API_OBJ_HPP
 
 #include <graphene/chain/witness_objects.hpp>
-#include <graphene/chain/steem_object_types.hpp>
+#include <graphene/chain/chain_object_types.hpp>
 
 namespace graphene { namespace plugins { namespace witness_api {
 

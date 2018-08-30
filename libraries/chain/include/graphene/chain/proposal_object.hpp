@@ -1,11 +1,11 @@
 #pragma once
 
-#include <graphene/chain/steem_object_types.hpp>
+#include <graphene/chain/chain_object_types.hpp>
 
 #include <chainbase/chainbase.hpp>
 
 #include <graphene/protocol/transaction.hpp>
-#include <graphene/protocol/steem_operations.hpp>
+#include <graphene/protocol/chain_operations.hpp>
 #include <graphene/protocol/sign_state.hpp>
 #include <graphene/protocol/operations.hpp>
 
