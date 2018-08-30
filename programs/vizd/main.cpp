@@ -39,7 +39,7 @@ using graphene::protocol::version;
 
 std::string& version_string() {
     static std::string v_str =
-            "blockchain_version: " + std::string( BLOCKCHAIN_VERSION ) + "\n" +
+            "blockchain_version: " + std::string( CHAIN_VERSION ) + "\n" +
             "git_revision:       " + std::string( graphene::utilities::git_revision_sha )       + "\n" +
             "fc_git_revision:          " + std::string( fc::git_revision_sha )       + "\n";
     return v_str;
@@ -88,10 +88,10 @@ void logo(){
     std::cerr << "------------------------------------------------------\n\n";
     std::cerr << "            STARTING VIZ NETWORK\n\n";
     std::cerr << "------------------------------------------------------\n";
-    std::cerr << "initiator public key: " << STEEMIT_INITIATOR_PUBLIC_KEY_STR << "\n";
-    std::cerr << "committee public key: " << STEEMIT_COMMITTEE_PUBLIC_KEY_STR << "\n";
-    std::cerr << "chain id: " << std::string( STEEMIT_CHAIN_ID ) << "\n";
-    std::cerr << "blockchain version: " << std::string( BLOCKCHAIN_VERSION ) << "\n";
+    std::cerr << "initiator public key: " << CHAIN_INITIATOR_PUBLIC_KEY_STR << "\n";
+    std::cerr << "committee public key: " << CHAIN_COMMITTEE_PUBLIC_KEY_STR << "\n";
+    std::cerr << "chain id: " << std::string( CHAIN_ID ) << "\n";
+    std::cerr << "blockchain version: " << std::string( CHAIN_VERSION ) << "\n";
     std::cerr << "------------------------------------------------------\n";
 }
 

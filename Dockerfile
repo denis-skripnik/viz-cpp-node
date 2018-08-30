@@ -103,7 +103,7 @@ RUN mkdir /var/cache/vizd && \
     chown vizd:vizd -R /var/cache/vizd
 
 # add blockchain cache to image
-#ADD $STEEMD_BLOCKCHAIN /var/cache/vizd/blocks.tbz2
+#ADD $VIZD_BLOCKCHAIN /var/cache/vizd/blocks.tbz2
 
 ENV HOME /var/lib/vizd
 RUN chown vizd:vizd -R /var/lib/vizd

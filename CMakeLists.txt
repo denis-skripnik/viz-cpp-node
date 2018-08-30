@@ -2,7 +2,7 @@
 project(VIZ)
 cmake_minimum_required(VERSION 2.8.12)
 
-set(BLOCKCHAIN_NAME "VIZ")
+set(CHAIN_NAME "VIZ")
 
 set(GUI_CLIENT_EXECUTABLE_NAME VIZ)
 set(CUSTOM_URL_SCHEME "gcs")

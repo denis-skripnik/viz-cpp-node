@@ -44,25 +44,25 @@ public:
     uint32_t post_count = 0;
     uint64_t awarded_rshares = 0;
 
-    int16_t voting_power = STEEMIT_100_PERCENT;   ///< current voting power of this account, it falls after every vote
+    int16_t voting_power = CHAIN_100_PERCENT;   ///< current voting power of this account, it falls after every vote
     time_point_sec last_vote_time; ///< used to increase the voting power of this account the longer it goes without voting.
 
-    asset balance = asset(0, STEEM_SYMBOL);  ///< total liquid shares held by this account
+    asset balance = asset(0, TOKEN_SYMBOL);  ///< total liquid shares held by this account
 
     share_type curation_rewards = 0;
     share_type posting_rewards = 0;
 
-    asset vesting_shares = asset(0, VESTS_SYMBOL); ///< total vesting shares held by this account, controls its voting power
-    asset delegated_vesting_shares = asset(0, VESTS_SYMBOL); ///<
-    asset received_vesting_shares = asset(0, VESTS_SYMBOL); ///<
+    asset vesting_shares = asset(0, SHARES_SYMBOL); ///< total vesting shares held by this account, controls its voting power
+    asset delegated_vesting_shares = asset(0, SHARES_SYMBOL); ///<
+    asset received_vesting_shares = asset(0, SHARES_SYMBOL); ///<
 
-    asset vesting_withdraw_rate = asset(0, VESTS_SYMBOL); ///< at the time this is updated it can be at most vesting_shares/104
+    asset vesting_withdraw_rate = asset(0, SHARES_SYMBOL); ///< at the time this is updated it can be at most vesting_shares/104
     time_point_sec next_vesting_withdrawal = fc::time_point_sec::maximum(); ///< after every withdrawal this is incremented by 1 week
     share_type withdrawn = 0; /// Track how many shares have been withdrawn
     share_type to_withdraw = 0; /// Might be able to look this up with operation history.
     uint16_t withdraw_routes = 0;
 
-    fc::array<share_type, STEEMIT_MAX_PROXY_RECURSION_DEPTH> proxied_vsf_votes;// = std::vector<share_type>( STEEMIT_MAX_PROXY_RECURSION_DEPTH, 0 ); ///< the total VFS votes proxied to this account
+    fc::array<share_type, CHAIN_MAX_PROXY_RECURSION_DEPTH> proxied_vsf_votes;// = std::vector<share_type>( CHAIN_MAX_PROXY_RECURSION_DEPTH, 0 ); ///< the total VFS votes proxied to this account
 
     uint16_t witnesses_voted_for = 0;
 
@@ -94,7 +94,7 @@ public:
     /// vesting shares, which can be used for delegation (incl. create account) and withdraw operations
     asset available_vesting_shares(bool consider_withdrawal = false) const {
         auto have = vesting_shares - delegated_vesting_shares;
-        return consider_withdrawal ? have - asset(to_withdraw - withdrawn, VESTS_SYMBOL) : have;
+        return consider_withdrawal ? have - asset(to_withdraw - withdrawn, SHARES_SYMBOL) : have;
     }
 };
 

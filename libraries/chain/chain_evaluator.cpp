@@ -8,7 +8,7 @@ namespace graphene { namespace chain {
         using fc::uint128_t;
 
         inline void validate_permlink(const string &permlink) {
-            FC_ASSERT(permlink.size() < STEEMIT_MAX_PERMLINK_LENGTH, "permlink is too long");
+            FC_ASSERT(permlink.size() < CHAIN_MAX_PERMLINK_LENGTH, "permlink is too long");
             FC_ASSERT(fc::is_utf8(permlink), "permlink not formatted in UTF8");
         }
 
@@ -117,7 +117,7 @@ namespace graphene { namespace chain {
 
         void account_update_evaluator::do_apply(const account_update_operation &o) {
             database &_db = db();
-            FC_ASSERT(o.account != STEEMIT_TEMP_ACCOUNT, "Cannot update temp account.");
+            FC_ASSERT(o.account != CHAIN_TEMP_ACCOUNT, "Cannot update temp account.");
 
             if (o.posting) {
                      o.posting->validate();
@@ -129,7 +129,7 @@ namespace graphene { namespace chain {
             if (o.owner) {
                 FC_ASSERT(_db.head_block_time() -
                           account_auth.last_owner_update >
-                          STEEMIT_OWNER_UPDATE_LIMIT, "Owner authority can only be updated once an hour.");
+                          CHAIN_OWNER_UPDATE_LIMIT, "Owner authority can only be updated once an hour.");
                 for (auto a: o.owner->account_auths) {
                     _db.get_account(a.first);
                 }
@@ -209,7 +209,7 @@ namespace graphene { namespace chain {
 
             const auto &auth = _db.get_account(comment.author); /// prove it exists
             db().modify(auth, [&](account_object &a) {
-                if( comment.parent_author == STEEMIT_ROOT_POST_PARENT ) {
+                if( comment.parent_author == CHAIN_ROOT_POST_PARENT ) {
                     a.post_count--;
                 }
                 else{
@@ -218,7 +218,7 @@ namespace graphene { namespace chain {
             });
 
             /// this loop can be skiped for validate-only nodes as it is merely gathering stats for indicies
-            if (comment.parent_author != STEEMIT_ROOT_POST_PARENT) {
+            if (comment.parent_author != CHAIN_ROOT_POST_PARENT) {
                 auto parent = &_db.get_comment(comment.parent_author, comment.parent_permlink);
                 auto now = _db.head_block_time();
                 while (parent) {
@@ -227,7 +227,7 @@ namespace graphene { namespace chain {
                         p.active = now;
                     });
 #ifndef IS_LOW_MEM
-                    if (parent->parent_author != STEEMIT_ROOT_POST_PARENT) {
+                    if (parent->parent_author != CHAIN_ROOT_POST_PARENT) {
                         parent = &_db.get_comment(parent->parent_author, parent->parent_permlink);
                     } else
 #endif
@@ -255,8 +255,8 @@ namespace graphene { namespace chain {
 
             void operator()(const comment_payout_beneficiaries &cpb) const {
                 if (_db.is_producing()) {
-                    FC_ASSERT(cpb.beneficiaries.size() <= STEEMIT_MAX_COMMENT_BENEFICIARIES,
-                              "Cannot specify more than ${m} beneficiaries.", ("m", STEEMIT_MAX_COMMENT_BENEFICIARIES));
+                    FC_ASSERT(cpb.beneficiaries.size() <= CHAIN_MAX_COMMENT_BENEFICIARIES,
+                              "Cannot specify more than ${m} beneficiaries.", ("m", CHAIN_MAX_COMMENT_BENEFICIARIES));
                 }
 
                 FC_ASSERT(_c.beneficiaries.size() == 0, "Comment already has beneficiaries specified.");
@@ -287,9 +287,9 @@ namespace graphene { namespace chain {
                 comment_id_type id;
 
                 const comment_object *parent = nullptr;
-                if (o.parent_author != STEEMIT_ROOT_POST_PARENT) {
+                if (o.parent_author != CHAIN_ROOT_POST_PARENT) {
                     parent = &_db.get_comment(o.parent_author, o.parent_permlink);
-                    auto max_depth = STEEMIT_MAX_COMMENT_DEPTH;
+                    auto max_depth = CHAIN_MAX_COMMENT_DEPTH;
                     FC_ASSERT(parent->depth < max_depth,
                               "Comment is nested ${x} posts deep, maximum depth is ${y}.",
                               ("x", parent->depth)("y", max_depth));
@@ -297,16 +297,16 @@ namespace graphene { namespace chain {
                 auto now = _db.head_block_time();
 
                 if (itr == by_permlink_idx.end()) {
-                    if (o.parent_author == STEEMIT_ROOT_POST_PARENT)
+                    if (o.parent_author == CHAIN_ROOT_POST_PARENT)
                         FC_ASSERT((now - auth.last_root_post) >
-                                  STEEMIT_MIN_ROOT_COMMENT_INTERVAL, "You may only post once every 1 second.", ("now", now)("last_root_post", auth.last_root_post));
+                                  CHAIN_MIN_ROOT_COMMENT_INTERVAL, "You may only post once every 1 second.", ("now", now)("last_root_post", auth.last_root_post));
                     else
                         FC_ASSERT((now - auth.last_post) >
-                                  STEEMIT_MIN_REPLY_INTERVAL, "You may only comment once every 1 second.", ("now", now)("auth.last_post", auth.last_post));
+                                  CHAIN_MIN_REPLY_INTERVAL, "You may only comment once every 1 second.", ("now", now)("auth.last_post", auth.last_post));
 
                     db().modify(auth, [&](account_object &a) {
                         a.last_post = now;
-                        if( o.parent_author == STEEMIT_ROOT_POST_PARENT ) {
+                        if( o.parent_author == CHAIN_ROOT_POST_PARENT ) {
                             a.last_root_post = now;
                             a.post_count++;
                         }
@@ -325,10 +325,10 @@ namespace graphene { namespace chain {
                         com.created = com.last_update;
                         com.active = com.last_update;
                         com.last_payout = fc::time_point_sec::min();
-                        com.cashout_time = com.created + STEEMIT_CASHOUT_WINDOW_SECONDS;
+                        com.cashout_time = com.created + CHAIN_CASHOUT_WINDOW_SECONDS;
                         com.curation_percent = o.curation_percent;
 
-                        if (o.parent_author == STEEMIT_ROOT_POST_PARENT) {
+                        if (o.parent_author == CHAIN_ROOT_POST_PARENT) {
                             com.parent_author = "";
                             from_string(com.parent_permlink, o.parent_permlink);
                             com.root_comment = com.id;
@@ -369,7 +369,7 @@ namespace graphene { namespace chain {
                             p.active = now;
                         });
 #ifndef IS_LOW_MEM
-                        if (parent->parent_author != STEEMIT_ROOT_POST_PARENT) {
+                        if (parent->parent_author != CHAIN_ROOT_POST_PARENT) {
                             parent = &_db.get_comment(parent->parent_author, parent->parent_permlink);
                         } else
 #endif
@@ -431,7 +431,7 @@ namespace graphene { namespace chain {
                           _db.head_block_time(), "The escrow expiration must be after head block time.");
 
                 asset steem_spent = o.steem_amount;
-                if (o.fee.symbol == STEEM_SYMBOL) {
+                if (o.fee.symbol == TOKEN_SYMBOL) {
                     steem_spent += o.fee;
                 }
 
@@ -591,7 +591,7 @@ namespace graphene { namespace chain {
             _db.adjust_balance(to_account, o.amount);
 
             //VIZ support anonymous account creation
-            if(STEEMIT_ANONYMOUS_ACCOUNT==to_account.name){
+            if(CHAIN_ANONYMOUS_ACCOUNT==to_account.name){
                 const auto& median_props = _db.get_witness_schedule_object().median_props;
                 FC_ASSERT(o.amount >= median_props.account_creation_fee,
                     "Inssufficient amount ${f} required, ${p} provided.",
@@ -601,9 +601,9 @@ namespace graphene { namespace chain {
                     const auto& meta = _db.get<account_metadata_object, by_account>(to_account.name);
                     int anonymous_num=std::stoi(meta.json_metadata.c_str());
                     anonymous_num++;
-                    store_account_json_metadata(_db, STEEMIT_ANONYMOUS_ACCOUNT,fc::to_string(anonymous_num));
+                    store_account_json_metadata(_db, CHAIN_ANONYMOUS_ACCOUNT,fc::to_string(anonymous_num));
                     const auto now = _db.head_block_time();
-                    account_name_type new_account_name="n" + fc::to_string(anonymous_num) + "." + STEEMIT_ANONYMOUS_ACCOUNT;
+                    account_name_type new_account_name="n" + fc::to_string(anonymous_num) + "." + CHAIN_ANONYMOUS_ACCOUNT;
 
                     _db.create<account_object>([&](account_object &acc) {
                         acc.name = new_account_name;
@@ -635,7 +635,7 @@ namespace graphene { namespace chain {
             const auto &to_account = o.to.size() ? _db.get_account(o.to)
                                                  : from_account;
 
-            FC_ASSERT(_db.get_balance(from_account, STEEM_SYMBOL) >=
+            FC_ASSERT(_db.get_balance(from_account, TOKEN_SYMBOL) >=
                       o.amount, "Account does not have sufficient GOLOS for transfer.");
             _db.adjust_balance(from_account, -o.amount);
             _db.create_vesting(to_account, o.amount);
@@ -650,26 +650,26 @@ namespace graphene { namespace chain {
                 "Account does not have sufficient Golos Power for withdraw.");
             FC_ASSERT(account.available_vesting_shares() >= o.vesting_shares,
                 "Account does not have sufficient Golos Power for withdraw.");
-            FC_ASSERT(o.vesting_shares.amount >= 0, "Cannot withdraw negative VESTS.");
+            FC_ASSERT(o.vesting_shares.amount >= 0, "Cannot withdraw negative SHARES.");
 
             if (o.vesting_shares.amount == 0) {
                 FC_ASSERT(account.vesting_withdraw_rate.amount !=
                           0, "This operation would not change the vesting withdraw rate.");
 
                 _db.modify(account, [&](account_object &a) {
-                    a.vesting_withdraw_rate = asset(0, VESTS_SYMBOL);
+                    a.vesting_withdraw_rate = asset(0, SHARES_SYMBOL);
                     a.next_vesting_withdrawal = time_point_sec::maximum();
                     a.to_withdraw = 0;
                     a.withdrawn = 0;
                 });
             }
             else {
-                int vesting_withdraw_intervals = STEEMIT_VESTING_WITHDRAW_INTERVALS;
+                int vesting_withdraw_intervals = CHAIN_VESTING_WITHDRAW_INTERVALS;
 
                 _db.modify(account, [&](account_object &a) {
                     auto new_vesting_withdraw_rate = asset(
                             o.vesting_shares.amount /
-                            vesting_withdraw_intervals, VESTS_SYMBOL);
+                            vesting_withdraw_intervals, SHARES_SYMBOL);
 
                     if (new_vesting_withdraw_rate.amount == 0)
                         new_vesting_withdraw_rate.amount = 1;
@@ -679,7 +679,7 @@ namespace graphene { namespace chain {
 
                     a.vesting_withdraw_rate = new_vesting_withdraw_rate;
                     a.next_vesting_withdrawal = _db.head_block_time() +
-                                                fc::seconds(STEEMIT_VESTING_WITHDRAW_INTERVAL_SECONDS);
+                                                fc::seconds(CHAIN_VESTING_WITHDRAW_INTERVAL_SECONDS);
                     a.to_withdraw = o.vesting_shares.amount;
                     a.withdrawn = 0;
                 });
@@ -698,7 +698,7 @@ namespace graphene { namespace chain {
                     FC_ASSERT(
                             o.percent != 0, "Cannot create a 0% destination.");
                     FC_ASSERT(from_account.withdraw_routes <
-                              STEEMIT_MAX_WITHDRAW_ROUTES, "Account already has the maximum number of routes.");
+                              CHAIN_MAX_WITHDRAW_ROUTES, "Account already has the maximum number of routes.");
 
                     _db.create<withdraw_vesting_route_object>([&](withdraw_vesting_route_object &wvdo) {
                         wvdo.from_account = from_account.id;
@@ -735,7 +735,7 @@ namespace graphene { namespace chain {
                 }
 
                 FC_ASSERT(total_percent <=
-                          STEEMIT_100_PERCENT, "More than 100% of vesting withdrawals allocated to destinations.");
+                          CHAIN_100_PERCENT, "More than 100% of vesting withdrawals allocated to destinations.");
             }
             FC_CAPTURE_AND_RETHROW()
         }
@@ -746,9 +746,9 @@ namespace graphene { namespace chain {
             FC_ASSERT(account.proxy != o.proxy, "Proxy must change.");
 
             /// remove all current votes
-            std::array<share_type, STEEMIT_MAX_PROXY_RECURSION_DEPTH + 1> delta;
+            std::array<share_type, CHAIN_MAX_PROXY_RECURSION_DEPTH + 1> delta;
             delta[0] = -account.vesting_shares.amount;
-            for (int i = 0; i < STEEMIT_MAX_PROXY_RECURSION_DEPTH; ++i) {
+            for (int i = 0; i < CHAIN_MAX_PROXY_RECURSION_DEPTH; ++i) {
                 delta[i + 1] = -account.proxied_vsf_votes[i];
             }
             _db.adjust_proxied_witness_votes(account, delta);
@@ -757,7 +757,7 @@ namespace graphene { namespace chain {
                 const auto &new_proxy = _db.get_account(o.proxy);
                 flat_set<account_id_type> proxy_chain({account.id, new_proxy.id
                 });
-                proxy_chain.reserve(STEEMIT_MAX_PROXY_RECURSION_DEPTH + 1);
+                proxy_chain.reserve(CHAIN_MAX_PROXY_RECURSION_DEPTH + 1);
 
                 /// check for proxy loops and fail to update the proxy if it would create a loop
                 auto cprox = &new_proxy;
@@ -766,7 +766,7 @@ namespace graphene { namespace chain {
                     FC_ASSERT(proxy_chain.insert(next_proxy.id).second, "This proxy would create a proxy loop.");
                     cprox = &next_proxy;
                     FC_ASSERT(proxy_chain.size() <=
-                              STEEMIT_MAX_PROXY_RECURSION_DEPTH, "Proxy chain is too long.");
+                              CHAIN_MAX_PROXY_RECURSION_DEPTH, "Proxy chain is too long.");
                 }
 
                 /// clear all individual vote records
@@ -777,7 +777,7 @@ namespace graphene { namespace chain {
                 });
 
                 /// add all new votes
-                for (int i = 0; i <= STEEMIT_MAX_PROXY_RECURSION_DEPTH; ++i) {
+                for (int i = 0; i <= CHAIN_MAX_PROXY_RECURSION_DEPTH; ++i) {
                     delta[i] = -delta[i];
                 }
                 _db.adjust_proxied_witness_votes(account, delta);
@@ -804,7 +804,7 @@ namespace graphene { namespace chain {
                 FC_ASSERT(o.approve, "Vote doesn't exist, user must indicate a desire to approve witness.");
 
                 FC_ASSERT(voter.witnesses_voted_for <
-                          STEEMIT_MAX_ACCOUNT_WITNESS_VOTES, "Account has voted for too many witnesses."); // TODO: Remove after hardfork 2
+                          CHAIN_MAX_ACCOUNT_WITNESS_VOTES, "Account has voted for too many witnesses."); // TODO: Remove after hardfork 2
 
                 _db.create<witness_vote_object>([&](witness_vote_object &v) {
                     v.witness = witness.id;
@@ -842,13 +842,13 @@ namespace graphene { namespace chain {
                                            voter.last_vote_time).to_seconds();
 
                 FC_ASSERT(elapsed_seconds >=
-                          STEEMIT_MIN_VOTE_INTERVAL_SEC, "Can only vote once every 1 second.");
+                          CHAIN_MIN_VOTE_INTERVAL_SEC, "Can only vote once every 1 second.");
 
                 int64_t regenerated_power =
-                        (STEEMIT_100_PERCENT * elapsed_seconds) /
-                        STEEMIT_VOTE_REGENERATION_SECONDS;
+                        (CHAIN_100_PERCENT * elapsed_seconds) /
+                        CHAIN_VOTE_REGENERATION_SECONDS;
                 int64_t current_power = std::min(int64_t(voter.voting_power +
-                                                         regenerated_power), int64_t(STEEMIT_100_PERCENT));
+                                                         regenerated_power), int64_t(CHAIN_100_PERCENT));
                 FC_ASSERT(current_power >
                           0, "Account currently does not have voting power.");
 
@@ -857,10 +857,10 @@ namespace graphene { namespace chain {
 
                 const dynamic_global_property_object &dgpo = _db.get_dynamic_global_properties();
 
-                // used_power = (current_power * abs_weight / STEEMIT_100_PERCENT) * (reserve / max_vote_denom)
+                // used_power = (current_power * abs_weight / CHAIN_100_PERCENT) * (reserve / max_vote_denom)
                 // The second multiplication is rounded up as of HF 259
                 int64_t max_vote_denom = dgpo.vote_regeneration_per_day *
-                                         STEEMIT_VOTE_REGENERATION_SECONDS /
+                                         CHAIN_VOTE_REGENERATION_SECONDS /
                                          (60 * 60 * 24);//5
                 FC_ASSERT(max_vote_denom > 0);
 
@@ -871,7 +871,7 @@ namespace graphene { namespace chain {
 
                 int64_t abs_rshares = (
                     (uint128_t(voter.effective_vesting_shares().amount.value) * used_power) /
-                    (STEEMIT_100_PERCENT)).to_uint64();
+                    (CHAIN_100_PERCENT)).to_uint64();
 
                 FC_ASSERT(abs_rshares > 1000000 || o.weight ==
                                                     0, "Voting weight is too small, please accumulate more Shares");
@@ -892,7 +892,7 @@ namespace graphene { namespace chain {
 
                     if (rshares > 0) {
                         FC_ASSERT(_db.head_block_time() <
-                                  _db.calculate_discussion_payout_time(comment) - STEEMIT_UPVOTE_LOCKOUT,
+                                  _db.calculate_discussion_payout_time(comment) - CHAIN_UPVOTE_LOCKOUT,
                                   "Cannot increase reward of post within the last minute before payout.");
                     }
 
@@ -978,7 +978,7 @@ namespace graphene { namespace chain {
                     }
                 } else {
                     FC_ASSERT(itr->num_changes <
-                              STEEMIT_MAX_VOTE_CHANGES, "Voter has used the maximum number of vote changes on this comment.");
+                              CHAIN_MAX_VOTE_CHANGES, "Voter has used the maximum number of vote changes on this comment.");
 
                     FC_ASSERT(itr->vote_percent !=
                               o.weight, "You have already voted in a similar way.");
@@ -988,7 +988,7 @@ namespace graphene { namespace chain {
 
                     if (itr->rshares < rshares) {
                         FC_ASSERT(_db.head_block_time() <
-                                  _db.calculate_discussion_payout_time(comment) - STEEMIT_UPVOTE_LOCKOUT,
+                                  _db.calculate_discussion_payout_time(comment) - CHAIN_UPVOTE_LOCKOUT,
                                   "Cannot increase reward of post within the last minute before payout.");
                     }
 
@@ -1092,7 +1092,7 @@ namespace graphene { namespace chain {
                     req.account_to_recover = o.account_to_recover;
                     req.new_owner_authority = o.new_owner_authority;
                     req.expires = _db.head_block_time() +
-                                  STEEMIT_ACCOUNT_RECOVERY_REQUEST_EXPIRATION_PERIOD;
+                                  CHAIN_ACCOUNT_RECOVERY_REQUEST_EXPIRATION_PERIOD;
                 });
             } else if (o.new_owner_authority.weight_threshold ==
                        0) // Cancel Request if authority is open
@@ -1110,7 +1110,7 @@ namespace graphene { namespace chain {
                 _db.modify(*request, [&](account_recovery_request_object &req) {
                     req.new_owner_authority = o.new_owner_authority;
                     req.expires = _db.head_block_time() +
-                                  STEEMIT_ACCOUNT_RECOVERY_REQUEST_EXPIRATION_PERIOD;
+                                  CHAIN_ACCOUNT_RECOVERY_REQUEST_EXPIRATION_PERIOD;
                 });
             }
         }
@@ -1121,7 +1121,7 @@ namespace graphene { namespace chain {
 
             FC_ASSERT(
                     _db.head_block_time() - account.last_account_recovery >
-                    STEEMIT_OWNER_UPDATE_LIMIT, "Owner authority can only be updated once an hour.");
+                    CHAIN_OWNER_UPDATE_LIMIT, "Owner authority can only be updated once an hour.");
 
             const auto &recovery_request_idx = _db.get_index<account_recovery_request_index>().indices().get<by_account>();
             auto request = recovery_request_idx.find(o.account_to_recover);
@@ -1168,7 +1168,7 @@ namespace graphene { namespace chain {
                     req.account_to_recover = o.account_to_recover;
                     req.recovery_account = o.new_recovery_account;
                     req.effective_on = _db.head_block_time() +
-                                       STEEMIT_OWNER_AUTH_RECOVERY_PERIOD;
+                                       CHAIN_OWNER_AUTH_RECOVERY_PERIOD;
                 });
             } else if (account_to_recover.recovery_account !=
                        o.new_recovery_account) // Change existing request
@@ -1176,7 +1176,7 @@ namespace graphene { namespace chain {
                 _db.modify(*request, [&](change_recovery_account_request_object &req) {
                     req.recovery_account = o.new_recovery_account;
                     req.effective_on = _db.head_block_time() +
-                                       STEEMIT_OWNER_AUTH_RECOVERY_PERIOD;
+                                       CHAIN_OWNER_AUTH_RECOVERY_PERIOD;
                 });
             } else // Request exists and changing back to current recovery account
             {
@@ -1228,7 +1228,7 @@ namespace graphene { namespace chain {
                 _db.create<vesting_delegation_expiration_object>([&](vesting_delegation_expiration_object& o) {
                     o.delegator = op.delegator;
                     o.vesting_shares = -delta;
-                    o.expiration = std::max(now + STEEMIT_CASHOUT_WINDOW_SECONDS, delegation->min_delegation_time);
+                    o.expiration = std::max(now + CHAIN_CASHOUT_WINDOW_SECONDS, delegation->min_delegation_time);
                 });
             }
 

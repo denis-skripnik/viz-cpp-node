@@ -180,12 +180,12 @@ namespace graphene {
         }
 
         price price::max(asset_symbol_type base, asset_symbol_type quote) {
-            return asset(share_type(STEEMIT_MAX_SHARE_SUPPLY), base) /
+            return asset(share_type(CHAIN_MAX_SHARE_SUPPLY), base) /
                    asset(share_type(1), quote);
         }
 
         price price::min(asset_symbol_type base, asset_symbol_type quote) {
-            return asset(1, base) / asset(STEEMIT_MAX_SHARE_SUPPLY, quote);
+            return asset(1, base) / asset(CHAIN_MAX_SHARE_SUPPLY, quote);
         }
 
         bool price::is_null() const {

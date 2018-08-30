@@ -8,7 +8,7 @@
 #include <boost/container/vector.hpp>
 
 
-#define STEEM_WEBSERVER_PLUGIN_NAME "webserver"
+#define WEBSERVER_PLUGIN_NAME "webserver"
 
 namespace graphene {
     namespace plugins {
@@ -38,7 +38,7 @@ namespace graphene {
                 APPBASE_PLUGIN_REQUIRES((json_rpc::plugin));
 
                 static const std::string &name() {
-                    static std::string name = STEEM_WEBSERVER_PLUGIN_NAME;
+                    static std::string name = WEBSERVER_PLUGIN_NAME;
                     return name;
                 }
 

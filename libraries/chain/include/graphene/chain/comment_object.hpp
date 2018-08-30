@@ -99,10 +99,10 @@ namespace graphene {
             int16_t consensus_curation_percent = 0;
 
             /** tracks the total payout this comment has received over time, measured in VIZ */
-            asset payout_value = asset(0, STEEM_SYMBOL);
-            asset shares_payout_value = asset(0, VESTS_SYMBOL);
-            asset curator_payout_value = asset(0, VESTS_SYMBOL);
-            asset beneficiary_payout_value = asset(0, VESTS_SYMBOL);
+            asset payout_value = asset(0, TOKEN_SYMBOL);
+            asset shares_payout_value = asset(0, SHARES_SYMBOL);
+            asset curator_payout_value = asset(0, SHARES_SYMBOL);
+            asset beneficiary_payout_value = asset(0, SHARES_SYMBOL);
 
             share_type author_rewards = 0;
 

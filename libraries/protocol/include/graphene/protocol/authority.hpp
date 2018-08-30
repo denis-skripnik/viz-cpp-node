@@ -94,7 +94,7 @@ namespace graphene {
  * In addition we require the following:
  *
  * - All letters are lowercase
- * - Length is between (inclusive) STEEMIT_MIN_ACCOUNT_NAME_LENGTH and STEEMIT_MAX_ACCOUNT_NAME_LENGTH
+ * - Length is between (inclusive) CHAIN_MIN_ACCOUNT_NAME_LENGTH and CHAIN_MAX_ACCOUNT_NAME_LENGTH
  */
         bool is_valid_domain_name( const string& name , const string& creator );
 

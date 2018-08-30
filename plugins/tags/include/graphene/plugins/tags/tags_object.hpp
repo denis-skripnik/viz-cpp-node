@@ -250,7 +250,7 @@ namespace graphene { namespace plugins { namespace tags {
         tag_name_type name;
         tag_type type;
         fc::uint128_t total_children_rshares2;
-        asset total_payout = asset(0, STEEM_SYMBOL);
+        asset total_payout = asset(0, TOKEN_SYMBOL);
         int32_t net_votes = 0;
         uint32_t top_posts = 0;
         uint32_t comments = 0;
@@ -305,7 +305,7 @@ namespace graphene { namespace plugins { namespace tags {
         account_object::id_type author;
         tag_name_type name;
         tag_type type;
-        asset total_rewards = asset(0, STEEM_SYMBOL);
+        asset total_rewards = asset(0, TOKEN_SYMBOL);
         uint32_t total_posts = 0;
     };
 

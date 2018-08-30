@@ -439,7 +439,7 @@ witness_schedule_object plugin::plugin_impl::debug_get_witness_schedule( ) {
 // }
 
 void plugin::plugin_impl::debug_set_hardfork( uint32_t hardfork_id ) {
-    if( hardfork_id > STEEMIT_NUM_HARDFORKS ) {
+    if( hardfork_id > CHAIN_NUM_HARDFORKS ) {
         return;
     }
 

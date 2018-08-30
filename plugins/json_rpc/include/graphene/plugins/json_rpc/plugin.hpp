@@ -35,7 +35,7 @@
  * as the argument type.
  */
 
-#define STEEM_JSON_RPC_PLUGIN_NAME "json_rpc"
+#define JSON_RPC_PLUGIN_NAME "json_rpc"
 
 #define JSON_RPC_REGISTER_API(API_NAME)                                                       \
 {                                                                                               \
@@ -96,7 +96,7 @@ namespace graphene {
                 }
 
                 static const std::string &name() {
-                    static std::string name = STEEM_JSON_RPC_PLUGIN_NAME;
+                    static std::string name = JSON_RPC_PLUGIN_NAME;
                     return name;
                 }
 

@@ -99,7 +99,7 @@ namespace graphene {
                 block_production_condition::block_production_condition_enum maybe_produce_block(fc::mutable_variant_object &capture);
 
                 boost::program_options::variables_map _options;
-                uint32_t _required_witness_participation = 33 * STEEMIT_1_PERCENT;
+                uint32_t _required_witness_participation = 33 * CHAIN_1_PERCENT;
 
                 std::atomic<uint64_t> head_block_num_;
                 block_id_type head_block_id_ = block_id_type();
@@ -121,7 +121,7 @@ namespace graphene {
 
                 command_line_options.add_options()
                         ("enable-stale-production", bpo::value<bool>()->implicit_value(false) , "Enable block production, even if the chain is stale.")
-                        ("required-participation", bpo::value<int>()->implicit_value(uint32_t(3 * STEEMIT_1_PERCENT)), "Percent of witnesses (0-99) that must be participating in order to produce blocks")
+                        ("required-participation", bpo::value<int>()->implicit_value(uint32_t(3 * CHAIN_1_PERCENT)), "Percent of witnesses (0-99) that must be participating in order to produce blocks")
                         ("witness,w", bpo::value<vector<string>>()->composing()->multitoken(), ("name of witness controlled by this node (e.g. " + witness_id_example + " )").c_str())
                         ("private-key", bpo::value<vector<string>>()->composing()->multitoken(), "WIF PRIVATE KEY to be used by one or more witnesses")
                         ;
@@ -149,7 +149,7 @@ namespace graphene {
 
                     if(options.count("required-participation")){
                         int e = static_cast<int>(options["required-participation"].as<int>());
-                        pimpl->_required_witness_participation = uint32_t(e * STEEMIT_1_PERCENT);
+                        pimpl->_required_witness_participation = uint32_t(e * CHAIN_1_PERCENT);
                     }
 
                     if (options.count("private-key")) {
@@ -214,8 +214,8 @@ namespace graphene {
             }
 
             block_production_condition::block_production_condition_enum witness_plugin::impl::block_production_loop() {
-                if (fc::time_point::now() < fc::time_point(STEEMIT_GENESIS_TIME)) {
-                    wlog("waiting until genesis time to produce block: ${t}", ("t", STEEMIT_GENESIS_TIME));
+                if (fc::time_point::now() < fc::time_point(CHAIN_GENESIS_TIME)) {
+                    wlog("waiting until genesis time to produce block: ${t}", ("t", CHAIN_GENESIS_TIME));
                     schedule_production_loop();
                     return block_production_condition::wait_for_genesis;
                 }
@@ -333,7 +333,7 @@ namespace graphene {
 
                 uint32_t prate = db.witness_participation_rate();
                 if (prate < _required_witness_participation) {
-                    capture("pct", uint32_t(100 * uint64_t(prate) / STEEMIT_1_PERCENT));
+                    capture("pct", uint32_t(100 * uint64_t(prate) / CHAIN_1_PERCENT));
                     return block_production_condition::low_participation;
                 }
 

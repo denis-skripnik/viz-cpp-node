@@ -6,7 +6,7 @@
 #include <graphene/chain/operation_notification.hpp>
 
 #include <boost/algorithm/string.hpp>
-#define STEEM_NAMESPACE_PREFIX "graphene::protocol::"
+#define NAMESPACE_PREFIX "graphene::protocol::"
 
 #define CHECK_ARG_SIZE(s) \
    FC_ASSERT( args.args->size() == s, "Expected #s argument(s), was ${n}", ("n", args.args->size()) );

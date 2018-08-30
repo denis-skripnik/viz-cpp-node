@@ -329,7 +329,6 @@ namespace graphene { namespace wallet {
                         client_version = client_version.substr( pos + 1 );
 
                     fc::mutable_variant_object result;
-                    //result["blockchain_version"]       = STEEM_BLOCKCHAIN_VERSION;
                     result["client_version"]           = client_version;
                     result["steem_revision"]           = graphene::utilities::git_revision_sha;
                     result["steem_revision_age"]       = fc::get_approximate_relative_time_string( fc::time_point_sec( graphene::utilities::git_revision_unix_timestamp ) );
@@ -630,7 +629,7 @@ namespace graphene { namespace wallet {
                         account_create_op.owner = authority(1, owner_pubkey, 1);
                         account_create_op.active = authority(1, active_pubkey, 1);
                         account_create_op.memo_key = memo_pubkey;
-                        account_create_op.delegation = asset(0, VESTS_SYMBOL );
+                        account_create_op.delegation = asset(0, SHARES_SYMBOL );
 
                         signed_transaction tx;
 
@@ -664,7 +663,7 @@ namespace graphene { namespace wallet {
                 }
 
                 void set_transaction_expiration( uint32_t tx_expiration_seconds ) {
-                    FC_ASSERT( tx_expiration_seconds < STEEMIT_MAX_TIME_UNTIL_EXPIRATION );
+                    FC_ASSERT( tx_expiration_seconds < CHAIN_MAX_TIME_UNTIL_EXPIRATION );
                     _tx_expiration_seconds = tx_expiration_seconds;
                 }
 
@@ -793,7 +792,7 @@ namespace graphene { namespace wallet {
                             { return (get_account_from_lut( account_name ).owner); },
                             [&]( const string& account_name ) -> const authority&
                             { return (get_account_from_lut( account_name ).posting); },
-                            STEEMIT_MAX_SIG_CHECK_DEPTH
+                            CHAIN_MAX_SIG_CHECK_DEPTH
                     );
 
                     for( const public_key_type& k : minimal_signing_keys ) {
@@ -832,7 +831,7 @@ namespace graphene { namespace wallet {
 
                         auto accounts = result.as<vector<graphene::api::account_api_object>>();
                         asset total_steem;
-                        asset total_vest(0, VESTS_SYMBOL );
+                        asset total_vest(0, SHARES_SYMBOL );
                         for( const auto& a : accounts ) {
                             total_steem += a.balance;
                             total_vest  += a.vesting_shares;
@@ -2047,7 +2046,7 @@ fc::ecc::private_key wallet_api::derive_private_key(const std::string& prefix_st
             op.voter = voter;
             op.author = author;
             op.permlink = permlink;
-            op.weight = weight * STEEMIT_1_PERCENT;
+            op.weight = weight * CHAIN_1_PERCENT;
 
             signed_transaction tx;
             tx.operations.push_back( op );

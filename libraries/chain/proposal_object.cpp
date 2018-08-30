@@ -72,7 +72,7 @@ namespace graphene { namespace chain {
 
         graphene::protocol::verify_authority(
             ops, key_approvals,
-            get_active, get_owner, get_posting, STEEMIT_MAX_SIG_CHECK_DEPTH, false, /* allow committeee */
+            get_active, get_owner, get_posting, CHAIN_MAX_SIG_CHECK_DEPTH, false, /* allow committeee */
             active_approvals, owner_approvals, posting_approvals);
     }
 

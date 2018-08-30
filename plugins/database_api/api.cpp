@@ -559,7 +559,7 @@ std::set<public_key_type> plugin::api_impl::get_required_signatures(
 ) const {
     //   wdump((trx)(available_keys));
     auto result = trx.get_required_signatures(
-        STEEMIT_CHAIN_ID, available_keys,
+        CHAIN_ID, available_keys,
         [&](std::string account_name) {
             return authority(database().get<account_authority_object, by_account>(account_name).active);
         },
@@ -569,7 +569,7 @@ std::set<public_key_type> plugin::api_impl::get_required_signatures(
         [&](std::string account_name) {
             return authority(database().get<account_authority_object, by_account>(account_name).posting);
         },
-        STEEMIT_MAX_SIG_CHECK_DEPTH
+        CHAIN_MAX_SIG_CHECK_DEPTH
     );
     //   wdump((result));
     return result;
@@ -585,7 +585,7 @@ DEFINE_API(plugin, get_potential_signatures) {
 std::set<public_key_type> plugin::api_impl::get_potential_signatures(const signed_transaction &trx) const {
     //   wdump((trx));
     std::set<public_key_type> result;
-    trx.get_required_signatures(STEEMIT_CHAIN_ID, flat_set<public_key_type>(),
+    trx.get_required_signatures(CHAIN_ID, flat_set<public_key_type>(),
         [&](account_name_type account_name) {
             const auto &auth = database().get<account_authority_object, by_account>(account_name).active;
             for (const auto &k : auth.get_keys()) {
@@ -607,7 +607,7 @@ std::set<public_key_type> plugin::api_impl::get_potential_signatures(const signe
             }
             return authority(auth);
         },
-        STEEMIT_MAX_SIG_CHECK_DEPTH
+        CHAIN_MAX_SIG_CHECK_DEPTH
     );
 
     //   wdump((result));
@@ -622,13 +622,13 @@ DEFINE_API(plugin, verify_authority) {
 }
 
 bool plugin::api_impl::verify_authority(const signed_transaction &trx) const {
-    trx.verify_authority(STEEMIT_CHAIN_ID, [&](std::string account_name) {
+    trx.verify_authority(CHAIN_ID, [&](std::string account_name) {
         return authority(database().get<account_authority_object, by_account>(account_name).active);
     }, [&](std::string account_name) {
         return authority(database().get<account_authority_object, by_account>(account_name).owner);
     }, [&](std::string account_name) {
         return authority(database().get<account_authority_object, by_account>(account_name).posting);
-    }, STEEMIT_MAX_SIG_CHECK_DEPTH);
+    }, CHAIN_MAX_SIG_CHECK_DEPTH);
     return true;
 }
 

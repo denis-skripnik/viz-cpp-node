@@ -5,7 +5,7 @@
 
 #include <boost/algorithm/string.hpp>
 
-#define STEEM_NAMESPACE_PREFIX "graphene::protocol::"
+#define NAMESPACE_PREFIX "graphene::protocol::"
 
 #define CHECK_ARG_SIZE(s) \
    FC_ASSERT( args.args->size() == s, "Expected #s argument(s), was ${n}", ("n", args.args->size()) );
@@ -196,7 +196,7 @@ namespace graphene { namespace plugins { namespace operation_history {
 
                 for (const auto& op : ops) {
                     if (op.size()) {
-                        pimpl->ops_list.insert(STEEM_NAMESPACE_PREFIX + op);
+                        pimpl->ops_list.insert(NAMESPACE_PREFIX + op);
                     }
                 }
             }

@@ -105,7 +105,7 @@ namespace mongo_db {
             format_value(body, "json_metadata", content.json_metadata);
 
             std::string root_oid;
-            if (comment.parent_author == STEEMIT_ROOT_POST_PARENT) {
+            if (comment.parent_author == CHAIN_ROOT_POST_PARENT) {
                 root_oid = oid;
             } else {
                 auto& root_comment = db_.get<comment_object, by_id>(comment.root_comment);

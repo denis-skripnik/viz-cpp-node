@@ -16,8 +16,8 @@ namespace graphene { namespace api {
 
         string url; /// /@rootauthor/root_permlink#author/permlink
         string root_title;
-        asset pending_payout_value = asset(0, STEEM_SYMBOL);
-        asset total_pending_payout_value = asset(0, STEEM_SYMBOL); /// including replies
+        asset pending_payout_value = asset(0, TOKEN_SYMBOL);
+        asset total_pending_payout_value = asset(0, TOKEN_SYMBOL); /// including replies
         std::vector<vote_state> active_votes;
         uint32_t active_votes_count = 0;
         std::vector<string> replies; ///< author/slug mapping

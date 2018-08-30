@@ -52,7 +52,7 @@ A list of some seed nodes to get you started can be found in
 [documentation/seednodes](documentation/seednodes).
 
 This same file is baked into the docker images and can be overridden by
-setting `STEEMD_SEED_NODES` in the container environment at `docker run`
+setting `VIZD_SEED_NODES` in the container environment at `docker run`
 time to a whitespace delimited list of seed nodes (with port).
 
 # How to produce blocks

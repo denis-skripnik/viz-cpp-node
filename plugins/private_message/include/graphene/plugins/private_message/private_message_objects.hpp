@@ -22,7 +22,7 @@ namespace graphene {
 #define PRIVATE_MESSAGE_SPACE_ID 6
 #endif
 
-#define STEEMIT_PRIVATE_MESSAGE_COP_ID 777
+#define CHAIN_PRIVATE_MESSAGE_COP_ID 777
 
             enum private_message_object_type {
                 message_object_type = (PRIVATE_MESSAGE_SPACE_ID << 8)

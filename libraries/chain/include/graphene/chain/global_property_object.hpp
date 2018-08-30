@@ -39,19 +39,19 @@ namespace graphene {
             time_point_sec time;
             account_name_type current_witness;
 
-            asset committee_supply = asset(0, STEEM_SYMBOL);
+            asset committee_supply = asset(0, TOKEN_SYMBOL);
             uint32_t committee_requests = 0;
-            asset current_supply = asset(0, STEEM_SYMBOL);
-            asset confidential_supply = asset(0, STEEM_SYMBOL); ///< total asset held in confidential balances
-            asset total_vesting_fund = asset(0, STEEM_SYMBOL);
-            asset total_vesting_shares = asset(0, VESTS_SYMBOL);
-            asset total_reward_fund = asset(0, STEEM_SYMBOL);
+            asset current_supply = asset(0, TOKEN_SYMBOL);
+            asset confidential_supply = asset(0, TOKEN_SYMBOL); ///< total asset held in confidential balances
+            asset total_vesting_fund = asset(0, TOKEN_SYMBOL);
+            asset total_vesting_shares = asset(0, SHARES_SYMBOL);
+            asset total_reward_fund = asset(0, TOKEN_SYMBOL);
             fc::uint128_t total_reward_shares2; ///< the running total of REWARD^2
 
             price get_vesting_share_price() const {
                 if (total_vesting_fund.amount == 0 ||
                     total_vesting_shares.amount == 0) {
-                        return price(asset(1000, STEEM_SYMBOL), asset(1000000, VESTS_SYMBOL));
+                        return price(asset(1000, TOKEN_SYMBOL), asset(1000000, SHARES_SYMBOL));
                 }
 
                 return price(total_vesting_shares, total_vesting_fund);
@@ -95,7 +95,7 @@ namespace graphene {
             /**
              * The maximum bandwidth the blockchain can support is:
              *
-             *    max_bandwidth = maximum_block_size * STEEMIT_BANDWIDTH_AVERAGE_WINDOW_SECONDS / STEEMIT_BLOCK_INTERVAL
+             *    max_bandwidth = maximum_block_size * CHAIN_BANDWIDTH_AVERAGE_WINDOW_SECONDS / CHAIN_BLOCK_INTERVAL
              *
              * The maximum virtual bandwidth is:
              *
@@ -105,7 +105,7 @@ namespace graphene {
 
             /**
              *   Any time average_block_size <= 50% maximum_block_size this value grows by 1 until it
-             *   reaches STEEMIT_MAX_RESERVE_RATIO.  Any time average_block_size is greater than
+             *   reaches CHAIN_MAX_RESERVE_RATIO.  Any time average_block_size is greater than
              *   50% it falls by 1%.  Upward adjustments happen once per round, downward adjustments
              *   happen every block.
              */
@@ -116,7 +116,7 @@ namespace graphene {
              * "wasting" voting power through spillover; any user voting faster than this rate will have
              * their votes reduced.
              */
-            uint32_t vote_regeneration_per_day = STEEMIT_VOTE_POWER_RATE;
+            uint32_t vote_regeneration_per_day = CHAIN_VOTE_POWER_RATE;
 
             /**
              * The number of accounts who can use bandwidth reserve assigned by witnesses consensus

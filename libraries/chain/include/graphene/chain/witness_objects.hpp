@@ -110,7 +110,7 @@ namespace graphene { namespace chain {
 
             fc::uint128_t current_virtual_time;
             uint32_t next_shuffle_block_num = 1;
-            fc::array<account_name_type, STEEMIT_MAX_WITNESSES * STEEMIT_BLOCK_WITNESS_REPEAT> current_shuffled_witnesses;
+            fc::array<account_name_type, CHAIN_MAX_WITNESSES * CHAIN_BLOCK_WITNESS_REPEAT> current_shuffled_witnesses;
             uint8_t num_scheduled_witnesses = 1;
             chain_properties median_props;
             version majority_version;
@@ -122,7 +122,7 @@ namespace graphene { namespace chain {
         version running_version;
 
         hardfork_version hardfork_version_vote;
-        time_point_sec hardfork_time_vote = STEEMIT_GENESIS_TIME;
+        time_point_sec hardfork_time_vote = CHAIN_GENESIS_TIME;
     };
 
 
@@ -158,7 +158,7 @@ namespace graphene { namespace chain {
 
         fc::uint128_t current_virtual_time;
         uint32_t next_shuffle_block_num = 1;
-        fc::array<account_name_type, STEEMIT_MAX_WITNESSES * STEEMIT_BLOCK_WITNESS_REPEAT> current_shuffled_witnesses;
+        fc::array<account_name_type, CHAIN_MAX_WITNESSES * CHAIN_BLOCK_WITNESS_REPEAT> current_shuffled_witnesses;
         uint8_t num_scheduled_witnesses = 1;
         chain_properties median_props;
         version majority_version;

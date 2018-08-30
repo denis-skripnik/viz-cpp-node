@@ -8,7 +8,7 @@ namespace graphene { namespace protocol {
         typedef uint64_t asset_symbol_type;
 
         struct asset {
-            asset(share_type a = 0, asset_symbol_type id = STEEM_SYMBOL)
+            asset(share_type a = 0, asset_symbol_type id = TOKEN_SYMBOL)
                     : amount(a), symbol(id) {
             }
 

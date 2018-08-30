@@ -552,11 +552,11 @@ namespace graphene { namespace wallet {
             annotated_signed_transaction update_account_memo_key( string account_name, public_key_type key, bool broadcast );
 
             /**
-             * This method delegates GESTS from one account to another.
+             * This method delegates SHARES from one account to another.
              *
-             * @param delegator The name of the account delegating GESTS
-             * @param delegatee The name of the account receiving GESTS
-             * @param vesting_shares The amount of GESTS to delegate
+             * @param delegator The name of the account delegating SHARES
+             * @param delegatee The name of the account receiving SHARES
+             * @param vesting_shares The amount of SHARES to delegate
              * @param broadcast true if you wish to broadcast the transaction
              */
             annotated_signed_transaction delegate_vesting_shares(string delegator, string delegatee, asset vesting_shares, bool broadcast);
@@ -754,12 +754,12 @@ namespace graphene { namespace wallet {
             );
 
             /**
-             * Transfer STEEM into a vesting fund represented by vesting shares (VESTS). VESTS are required to vesting
+             * Transfer STEEM into a vesting fund represented by vesting shares (SHARES). SHARES are required to vesting
              * for a minimum of one coin year and can be withdrawn once a week over a two year withdraw period.
-             * VESTS are protected against dilution up until 90% of STEEM is vesting.
+             * SHARES are protected against dilution up until 90% of STEEM is vesting.
              *
              * @param from The account the STEEM is coming from
-             * @param to The account getting the VESTS
+             * @param to The account getting the SHARES
              * @param amount The amount of STEEM to vest i.e. "100.00 STEEM"
              * @param broadcast true if you wish to broadcast the transaction
              */
@@ -768,9 +768,9 @@ namespace graphene { namespace wallet {
             /**
              * Set up a vesting withdraw request. The request is fulfilled once a week over the next two year (104 weeks).
              *
-             * @param from The account the VESTS are withdrawn from
-             * @param vesting_shares The amount of VESTS to withdraw over the next two years. Each week (amount/104) shares are
-             *    withdrawn and deposited back as STEEM. i.e. "10.000000 VESTS"
+             * @param from The account the SHARES are withdrawn from
+             * @param vesting_shares The amount of SHARES to withdraw over the next two years. Each week (amount/104) shares are
+             *    withdrawn and deposited back as STEEM. i.e. "10.000000 SHARES"
              * @param broadcast true if you wish to broadcast the transaction
              */
             annotated_signed_transaction withdraw_vesting( string from, asset vesting_shares, bool broadcast = false );
@@ -779,11 +779,11 @@ namespace graphene { namespace wallet {
              * Set up a vesting withdraw route. When vesting shares are withdrawn, they will be routed to these accounts
              * based on the specified weights.
              *
-             * @param from The account the VESTS are withdrawn from.
-             * @param to   The account receiving either VESTS or STEEM.
+             * @param from The account the SHARES are withdrawn from.
+             * @param to   The account receiving either SHARES or STEEM.
              * @param percent The percent of the withdraw to go to the 'to' account. This is denoted in hundreths of a percent.
              *    i.e. 100 is 1% and 10000 is 100%. This value must be between 1 and 100000
-             * @param auto_vest Set to true if the from account should receive the VESTS as VESTS, or false if it should receive
+             * @param auto_vest Set to true if the from account should receive the SHARES as SHARES, or false if it should receive
              *    them as STEEM.
              * @param broadcast true if you wish to broadcast the transaction.
              */

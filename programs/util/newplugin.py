@@ -213,7 +213,7 @@ templates = {
 
         }} }} }} // {plugin_provider}::plugin::{plugin_name}
 
-        STEEMIT_DEFINE_PLUGIN( {plugin_name}, {plugin_provider}::plugin::{plugin_name}::{plugin_name}_plugin )
+        CHAIN_DEFINE_PLUGIN( {plugin_name}, {plugin_provider}::plugin::{plugin_name}::{plugin_name}_plugin )
         """,
 }
 

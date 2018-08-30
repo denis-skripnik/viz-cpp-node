@@ -157,13 +157,13 @@ namespace graphene { namespace protocol {
             void validate() const;
 
             void get_required_active_authorities(flat_set<account_name_type> &a) const {
-                if (amount.symbol != VESTS_SYMBOL) {
+                if (amount.symbol != SHARES_SYMBOL) {
                     a.insert(from);
                 }
             }
 
             void get_required_owner_authorities(flat_set<account_name_type> &a) const {
-                if (amount.symbol == VESTS_SYMBOL) {
+                if (amount.symbol == SHARES_SYMBOL) {
                     a.insert(from);
                 }
             }
@@ -194,7 +194,7 @@ namespace graphene { namespace protocol {
             account_name_type agent;
             uint32_t escrow_id = 30;
 
-            asset steem_amount = asset(0, STEEM_SYMBOL);
+            asset steem_amount = asset(0, TOKEN_SYMBOL);
             asset fee;
 
             time_point_sec ratification_deadline;
@@ -271,7 +271,7 @@ namespace graphene { namespace protocol {
             account_name_type receiver; ///< the account that should receive funds (might be from, might be to)
 
             uint32_t escrow_id = 30;
-            asset steem_amount = asset(0, STEEM_SYMBOL); ///< the amount of steem to release
+            asset steem_amount = asset(0, TOKEN_SYMBOL); ///< the amount of steem to release
 
             void validate() const;
 
@@ -355,13 +355,13 @@ namespace graphene { namespace protocol {
              *  fee requires all accounts to have some kind of commitment to the network that includes the
              *  ability to vote and make transactions.
              */
-            asset account_creation_fee = asset(STEEMIT_MIN_ACCOUNT_CREATION_FEE, STEEM_SYMBOL);
+            asset account_creation_fee = asset(CHAIN_MIN_ACCOUNT_CREATION_FEE, TOKEN_SYMBOL);
 
             /**
              *  This witnesses vote for the maximum_block_size which is used by the network
              *  to tune rate limiting and capacity
              */
-            uint32_t maximum_block_size = STEEMIT_MIN_BLOCK_SIZE_LIMIT * 2;
+            uint32_t maximum_block_size = CHAIN_MIN_BLOCK_SIZE_LIMIT * 2;
 
             /**
              *  Ratio for delegated VIZ on account creation
@@ -378,36 +378,36 @@ namespace graphene { namespace protocol {
             /**
              * Minimum delegated VIZ
              */
-            asset min_delegation = asset(GOLOS_MIN_DELEGATION, STEEM_SYMBOL);
+            asset min_delegation = asset(GOLOS_MIN_DELEGATION, TOKEN_SYMBOL);
 
             /**
              *  Curation percent range, check median value on payout
              */
-            int16_t min_curation_percent = STEEMIT_REWARD_FUND_CURATOR_PERCENT;
-            int16_t max_curation_percent = STEEMIT_REWARD_FUND_CURATOR_PERCENT;
+            int16_t min_curation_percent = CHAIN_REWARD_FUND_CURATOR_PERCENT;
+            int16_t max_curation_percent = CHAIN_REWARD_FUND_CURATOR_PERCENT;
 
             /**
              *  Consensus - bandwidth reserve percent for account below X shares
              */
             int16_t bandwidth_reserve_percent = CONSENSUS_BANDWIDTH_RESERVE_PERCENT;
-            asset bandwidth_reserve_below = asset(CONSENSUS_BANDWIDTH_RESERVE_BELOW, VESTS_SYMBOL);
+            asset bandwidth_reserve_below = asset(CONSENSUS_BANDWIDTH_RESERVE_BELOW, SHARES_SYMBOL);
 
             void validate() const {
-                FC_ASSERT(account_creation_fee.amount >= STEEMIT_MIN_ACCOUNT_CREATION_FEE);
-                FC_ASSERT(account_creation_fee.symbol == STEEM_SYMBOL);
-                FC_ASSERT(maximum_block_size >= STEEMIT_MIN_BLOCK_SIZE_LIMIT);
+                FC_ASSERT(account_creation_fee.amount >= CHAIN_MIN_ACCOUNT_CREATION_FEE);
+                FC_ASSERT(account_creation_fee.symbol == TOKEN_SYMBOL);
+                FC_ASSERT(maximum_block_size >= CHAIN_MIN_BLOCK_SIZE_LIMIT);
                 FC_ASSERT(create_account_delegation_ratio > 0);
                 FC_ASSERT(create_account_delegation_time >= 0);
-                FC_ASSERT(create_account_delegation_time >= STEEMIT_VOTE_REGENERATION_SECONDS);//prevent delegation abuse (energy double use)
+                FC_ASSERT(create_account_delegation_time >= CHAIN_VOTE_REGENERATION_SECONDS);//prevent delegation abuse (energy double use)
                 FC_ASSERT(min_delegation.amount > 0);
-                FC_ASSERT(min_delegation.symbol == STEEM_SYMBOL);
+                FC_ASSERT(min_delegation.symbol == TOKEN_SYMBOL);
                 FC_ASSERT(min_curation_percent >= 0);
-                FC_ASSERT(max_curation_percent <= STEEMIT_100_PERCENT);
+                FC_ASSERT(max_curation_percent <= CHAIN_100_PERCENT);
                 FC_ASSERT(min_curation_percent <= max_curation_percent);
                 FC_ASSERT(bandwidth_reserve_percent >= 0);
-                FC_ASSERT(bandwidth_reserve_percent <= STEEMIT_100_PERCENT);
+                FC_ASSERT(bandwidth_reserve_percent <= CHAIN_100_PERCENT);
                 FC_ASSERT(bandwidth_reserve_below.amount >= 0);
-                FC_ASSERT(bandwidth_reserve_below.symbol == VESTS_SYMBOL);
+                FC_ASSERT(bandwidth_reserve_below.symbol == SHARES_SYMBOL);
             }
 
             chain_properties& operator=(const chain_properties&) = default;
@@ -637,7 +637,7 @@ namespace graphene { namespace protocol {
  * decreasing it as needed. (i.e. a delegation of 0 removes the delegation)
  *
  * When a delegation is removed the shares are placed in limbo for a week to prevent a satoshi
- * of GESTS from voting on the same content twice.
+ * of SHARES from voting on the same content twice.
  */
         class delegate_vesting_shares_operation: public base_operation {
         public:
@@ -663,9 +663,9 @@ namespace graphene { namespace protocol {
             	FC_ASSERT(url.size() > 0, "URL size must be greater than 0");
             	FC_ASSERT(url.size() < 256, "URL size must be lesser than 256");
                 FC_ASSERT(required_amount_min.amount >= 0);
-                FC_ASSERT(required_amount_min.symbol == STEEM_SYMBOL);
+                FC_ASSERT(required_amount_min.symbol == TOKEN_SYMBOL);
                 FC_ASSERT(required_amount_max.amount > required_amount_min.amount);
-                FC_ASSERT(required_amount_max.symbol == STEEM_SYMBOL);
+                FC_ASSERT(required_amount_max.symbol == TOKEN_SYMBOL);
                 FC_ASSERT(duration >= COMMITTEE_MIN_DURATION);
                 FC_ASSERT(duration <= COMMITTEE_MAX_DURATION);
                 FC_ASSERT(required_amount_max.amount <= COMMITTEE_MAX_REQUIRED_AMOUNT);
@@ -695,8 +695,8 @@ namespace graphene { namespace protocol {
             int16_t vote_percent;
 
             void validate() const {
-                FC_ASSERT(vote_percent >= -STEEMIT_100_PERCENT);
-                FC_ASSERT(vote_percent <= STEEMIT_100_PERCENT);
+                FC_ASSERT(vote_percent >= -CHAIN_100_PERCENT);
+                FC_ASSERT(vote_percent <= CHAIN_100_PERCENT);
             }
 
             void get_required_posting_authorities(flat_set<account_name_type> &a) const {

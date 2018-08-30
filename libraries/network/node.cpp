@@ -877,7 +877,7 @@ namespace graphene {
                     _suspend_fetching_sync_blocks(false),
                     _items_to_fetch_updated(false),
                     _items_to_fetch_sequence_counter(0),
-                    _recent_block_interval_in_seconds(STEEMIT_BLOCK_INTERVAL),
+                    _recent_block_interval_in_seconds(CHAIN_BLOCK_INTERVAL),
                     _user_agent_string(user_agent),
                     _desired_number_of_connections(GRAPHENE_NET_DEFAULT_DESIRED_CONNECTIONS),
                     _maximum_number_of_connections(GRAPHENE_NET_DEFAULT_MAX_CONNECTIONS),
@@ -1989,7 +1989,7 @@ namespace graphene {
                     user_data["last_known_fork_block_number"] = _hard_fork_block_numbers.back();
                 }
 
-                user_data["chain_id"] = STEEMIT_CHAIN_ID;
+                user_data["chain_id"] = CHAIN_ID;
 
                 return user_data;
             }
@@ -2114,9 +2114,9 @@ namespace graphene {
                         }
                     }
                     if (!originating_peer->chain_id ||
-                        *originating_peer->chain_id != STEEMIT_CHAIN_ID) {
+                        *originating_peer->chain_id != CHAIN_ID) {
                         wlog("Received hello message from peer running a node for different blockchain.",
-                                ("my_chain_id", STEEMIT_CHAIN_ID)("their_chain_id", originating_peer->chain_id));
+                                ("my_chain_id", CHAIN_ID)("their_chain_id", originating_peer->chain_id));
 
                         std::ostringstream rejection_message;
                         rejection_message
@@ -2757,7 +2757,7 @@ namespace graphene {
                             originating_peer->last_block_time_delegate_has_seen +
                             // timestamp of the block immediately before the first unfetched block
                             originating_peer->number_of_unfetched_item_ids *
-                            STEEMIT_BLOCK_INTERVAL;
+                            CHAIN_BLOCK_INTERVAL;
                     if (minimum_time_of_last_offered_block >
                         _delegate->get_blockchain_now() +
                         GRAPHENE_NET_FUTURE_SYNC_BLOCKS_GRACE_PERIOD_SEC) {

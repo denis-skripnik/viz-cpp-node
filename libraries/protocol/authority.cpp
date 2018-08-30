@@ -66,21 +66,21 @@ namespace graphene {
         bool is_valid_create_account_name( const string& name )
         {
            const size_t len = name.size();
-           if( len < STEEMIT_CREATE_MIN_ACCOUNT_NAME_LENGTH )
+           if( len < CHAIN_CREATE_MIN_ACCOUNT_NAME_LENGTH )
               return false;
 
-           if( len > STEEMIT_MAX_ACCOUNT_NAME_LENGTH )
+           if( len > CHAIN_MAX_ACCOUNT_NAME_LENGTH )
               return false;
           return true;
         }
 
         bool is_valid_account_name(const string &name) {
             const size_t len = name.size();
-            if (len < STEEMIT_MIN_ACCOUNT_NAME_LENGTH) {
+            if (len < CHAIN_MIN_ACCOUNT_NAME_LENGTH) {
                 return false;
             }
 
-            if (len > STEEMIT_MAX_ACCOUNT_NAME_LENGTH) {
+            if (len > CHAIN_MAX_ACCOUNT_NAME_LENGTH) {
                 return false;
             }
 
@@ -90,7 +90,7 @@ namespace graphene {
                 if (end == std::string::npos) {
                     end = len;
                 }
-                if (end - begin < STEEMIT_MIN_ACCOUNT_NAME_LENGTH) {
+                if (end - begin < CHAIN_MIN_ACCOUNT_NAME_LENGTH) {
                     return false;
                 }
                 switch (name[begin]) {

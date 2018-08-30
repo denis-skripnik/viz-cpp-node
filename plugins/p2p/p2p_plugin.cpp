@@ -80,7 +80,7 @@ namespace graphene {
                     virtual void error_encountered(const std::string &message, const fc::oexception &error) override;
 
                     //virtual uint8_t get_current_block_interval_in_seconds() const override {
-                    //    return STEEMIT_BLOCK_INTERVAL;
+                    //    return CHAIN_BLOCK_INTERVAL;
                     //}
 
 
@@ -247,7 +247,7 @@ namespace graphene {
                 }
 
                 chain_id_type p2p_plugin_impl::get_chain_id() const {
-                    return STEEMIT_CHAIN_ID;
+                    return CHAIN_ID;
                 }
 
                 std::vector<item_hash_t> p2p_plugin_impl::get_blockchain_synopsis(const item_hash_t &reference_point,

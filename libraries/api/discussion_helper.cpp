@@ -151,7 +151,7 @@ namespace graphene { namespace api {
             d.total_pending_payout_value = asset(static_cast<uint64_t>(tpp), pot.symbol);
         }
 
-        if (d.parent_author != STEEMIT_ROOT_POST_PARENT) {
+        if (d.parent_author != CHAIN_ROOT_POST_PARENT) {
             d.cashout_time = db.calculate_discussion_payout_time(db.get<comment_object>(d.id));
         }
 

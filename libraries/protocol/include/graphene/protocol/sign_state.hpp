@@ -38,7 +38,7 @@ namespace graphene { namespace protocol {
         std::vector<public_key_type> used_signatures;
         fc::flat_map<account_name_type, bool> approved_by;
         std::vector<account_name_type> unused_approvals;
-        uint32_t max_recursion = STEEMIT_MAX_SIG_CHECK_DEPTH;
+        uint32_t max_recursion = CHAIN_MAX_SIG_CHECK_DEPTH;
     };
 
 } } // graphene::protocol

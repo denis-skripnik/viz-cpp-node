@@ -101,9 +101,9 @@ namespace graphene { namespace chain {
 
         if (_db.is_producing()) {
             FC_ASSERT(
-                depth_ <= STEEMIT_MAX_PROPOSAL_DEPTH,
+                depth_ <= CHAIN_MAX_PROPOSAL_DEPTH,
                 "You can't create more than ${depth} nested proposals",
-                ("depth", STEEMIT_MAX_PROPOSAL_DEPTH));
+                ("depth", CHAIN_MAX_PROPOSAL_DEPTH));
         }
 
         FC_ASSERT(nullptr == _db.find_proposal(o.author, o.title), "Proposal already exists.");
@@ -113,7 +113,7 @@ namespace graphene { namespace chain {
             o.expiration_time > now,
             "Proposal has already expired on creation.");
         FC_ASSERT(
-            o.expiration_time <= now + STEEMIT_MAX_PROPOSAL_LIFETIME_SEC,
+            o.expiration_time <= now + CHAIN_MAX_PROPOSAL_LIFETIME_SEC,
             "Proposal expiration time is too far in the future.");
         FC_ASSERT(
             !o.review_period_time || *o.review_period_time > now,
@@ -160,7 +160,7 @@ namespace graphene { namespace chain {
         for (const auto& op : o.proposed_operations) {
             trx.operations.push_back(op.op);
         }
-        trx.set_expiration(_db.head_block_time() + STEEMIT_MAX_TIME_UNTIL_EXPIRATION);
+        trx.set_expiration(_db.head_block_time() + CHAIN_MAX_TIME_UNTIL_EXPIRATION);
 
         const uint32_t skip_steps =
             graphene::chain::database::skip_authority_check |
@@ -206,9 +206,9 @@ namespace graphene { namespace chain {
 
         if (_db.is_producing()) {
             FC_ASSERT(
-                depth_ <= STEEMIT_MAX_PROPOSAL_DEPTH,
+                depth_ <= CHAIN_MAX_PROPOSAL_DEPTH,
                 "You can't create more than ${depth} nested proposals",
-                ("depth", STEEMIT_MAX_PROPOSAL_DEPTH));
+                ("depth", CHAIN_MAX_PROPOSAL_DEPTH));
         }
 
         auto& proposal = _db.get_proposal(o.author, o.title);

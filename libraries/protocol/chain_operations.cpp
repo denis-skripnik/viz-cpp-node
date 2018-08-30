@@ -8,7 +8,7 @@ namespace graphene { namespace protocol {
         ///  going forward.
         inline void validate_permlink(const string &permlink) {
             FC_ASSERT(permlink.size() <
-                      STEEMIT_MAX_PERMLINK_LENGTH, "permlink is too long");
+                      CHAIN_MAX_PERMLINK_LENGTH, "permlink is too long");
             FC_ASSERT(fc::is_utf8(permlink), "permlink not formatted in UTF8");
         }
 
@@ -41,8 +41,8 @@ namespace graphene { namespace protocol {
             validate_account_name(new_account_name);
             validate_account_name(creator);
             validate_domain_name(new_account_name, creator);
-            FC_ASSERT(is_asset_type(fee, STEEM_SYMBOL), "Account creation fee must be VIZ");
-            FC_ASSERT(is_asset_type(delegation, VESTS_SYMBOL), "Delegation must be SHARES");
+            FC_ASSERT(is_asset_type(fee, TOKEN_SYMBOL), "Account creation fee must be TOKEN_SYMBOL");
+            FC_ASSERT(is_asset_type(delegation, SHARES_SYMBOL), "Delegation must be SHARES");
             FC_ASSERT(fee.amount >= 0, "Account creation fee cannot be negative");
             FC_ASSERT(delegation.amount >= 0, "Delegation cannot be negative");
             owner.validate();
@@ -87,18 +87,18 @@ namespace graphene { namespace protocol {
                       "Cannot specify more than 127 beneficiaries."); // Require size serialization fits in one byte.
 
             validate_account_name(beneficiaries[0].account);
-            FC_ASSERT(beneficiaries[0].weight <= STEEMIT_100_PERCENT,
+            FC_ASSERT(beneficiaries[0].weight <= CHAIN_100_PERCENT,
                       "Cannot allocate more than 100% of rewards to one account");
             sum += beneficiaries[0].weight;
-            FC_ASSERT(sum <= STEEMIT_100_PERCENT,
+            FC_ASSERT(sum <= CHAIN_100_PERCENT,
                       "Cannot allocate more than 100% of rewards to a comment"); // Have to check incrementally to avoid overflow
 
             for (size_t i = 1; i < beneficiaries.size(); i++) {
                 validate_account_name( beneficiaries[i].account);
-                FC_ASSERT(beneficiaries[i].weight <= STEEMIT_100_PERCENT,
+                FC_ASSERT(beneficiaries[i].weight <= CHAIN_100_PERCENT,
                           "Cannot allocate more than 100% of rewards to one account");
                 sum += beneficiaries[i].weight;
-                FC_ASSERT(sum <= STEEMIT_100_PERCENT,
+                FC_ASSERT(sum <= CHAIN_100_PERCENT,
                           "Cannot allocate more than 100% of rewards to a comment"); // Have to check incrementally to avoid overflow
                 FC_ASSERT(beneficiaries[i - 1] < beneficiaries[i],
                           "Benficiaries must be specified in sorted order (account ascending)");
@@ -119,7 +119,7 @@ namespace graphene { namespace protocol {
             validate_permlink(permlink);
 
             FC_ASSERT(curation_percent >= 0);
-            FC_ASSERT(curation_percent <= STEEMIT_100_PERCENT);
+            FC_ASSERT(curation_percent <= CHAIN_100_PERCENT);
 
             if (json_metadata.size() > 0) {
                 FC_ASSERT(fc::json::is_valid(json_metadata), "JSON Metadata not valid JSON");
@@ -139,7 +139,7 @@ namespace graphene { namespace protocol {
             validate_account_name(voter);
             validate_account_name(author);\
       FC_ASSERT(abs(weight) <=
-                STEEMIT_100_PERCENT, "Weight is not a STEEMIT percentage");
+                CHAIN_100_PERCENT, "Weight is not a percentage");
             validate_permlink(permlink);
         }
 
@@ -148,42 +148,42 @@ namespace graphene { namespace protocol {
                 validate_account_name(from);
                 validate_account_name(to);
                 FC_ASSERT(amount.symbol !=
-                          VESTS_SYMBOL, "transferring of SHARES is not allowed.");
+                          SHARES_SYMBOL, "transferring of SHARES is not allowed.");
                 FC_ASSERT(amount.amount >
                           0, "Cannot transfer a negative amount (aka: stealing)");
                 FC_ASSERT(memo.size() <
-                          STEEMIT_MAX_MEMO_SIZE, "Memo is too large");
+                          CHAIN_MAX_MEMO_SIZE, "Memo is too large");
                 FC_ASSERT(fc::is_utf8(memo), "Memo is not UTF8");
             } FC_CAPTURE_AND_RETHROW((*this))
         }
 
         void transfer_to_vesting_operation::validate() const {
             validate_account_name(from);
-            FC_ASSERT(is_asset_type(amount, STEEM_SYMBOL), "Amount must be VIZ");
+            FC_ASSERT(is_asset_type(amount, TOKEN_SYMBOL), "Amount must be TOKEN_SYMBOL");
             if (to != account_name_type()) {
                 validate_account_name(to);
             }
             FC_ASSERT(amount >
-                      asset(0, STEEM_SYMBOL), "Must transfer a nonzero amount");
+                      asset(0, TOKEN_SYMBOL), "Must transfer a nonzero amount");
         }
 
         void withdraw_vesting_operation::validate() const {
             validate_account_name(account);
-            FC_ASSERT(is_asset_type(vesting_shares, VESTS_SYMBOL), "Amount must be GESTS");
-            FC_ASSERT(vesting_shares.amount >= 0, "Cannot withdraw negative GESTS");
+            FC_ASSERT(is_asset_type(vesting_shares, SHARES_SYMBOL), "Amount must be SHARES");
+            FC_ASSERT(vesting_shares.amount >= 0, "Cannot withdraw negative SHARES");
         }
 
         void set_withdraw_vesting_route_operation::validate() const {
             validate_account_name(from_account);
             validate_account_name(to_account);
             FC_ASSERT(0 <= percent && percent <=
-                                      STEEMIT_100_PERCENT, "Percent must be valid percent");
+                                      CHAIN_100_PERCENT, "Percent must be valid percent");
         }
 
         void witness_update_operation::validate() const {
             validate_account_name(owner);
             FC_ASSERT(url.size() > 0, "URL size must be greater than 0");
-            FC_ASSERT(url.size() < STEEMIT_MAX_WITNESS_URL_LENGTH, "URL size must be lesser than STEEMIT_MAX_WITNESS_URL_LENGTH");
+            FC_ASSERT(url.size() < CHAIN_MAX_WITNESS_URL_LENGTH, "URL size must be lesser than CHAIN_MAX_WITNESS_URL_LENGTH");
             FC_ASSERT(fc::is_utf8(url), "URL is not valid UTF8");
         }
 
@@ -223,9 +223,9 @@ namespace graphene { namespace protocol {
                       0, "steem amount cannot be negative");
             FC_ASSERT(from != agent &&
                       to != agent, "agent must be a third party");
-            FC_ASSERT(fee.symbol == STEEM_SYMBOL, "fee must be VIZ");
+            FC_ASSERT(fee.symbol == TOKEN_SYMBOL, "fee must be TOKEN_SYMBOL");
             FC_ASSERT(steem_amount.symbol ==
-                      STEEM_SYMBOL, "amount must contain VIZ");
+                      TOKEN_SYMBOL, "amount must be TOKEN_SYMBOL");
             FC_ASSERT(ratification_deadline <
                       escrow_expiration, "ratification deadline must be before escrow expiration");
             if (json_meta.size() > 0) {
@@ -265,7 +265,7 @@ namespace graphene { namespace protocol {
                       0, "amount cannot be negative");
             FC_ASSERT(steem_amount.amount > 0, "escrow must release a non-zero amount");
             FC_ASSERT(steem_amount.symbol ==
-                      STEEM_SYMBOL, "amount must contain VIZ");
+                      TOKEN_SYMBOL, "amount must be TOKEN_SYMBOL");
         }
 
         void request_account_recovery_operation::validate() const {
@@ -293,8 +293,8 @@ namespace graphene { namespace protocol {
         void delegate_vesting_shares_operation::validate() const {
             validate_account_name(delegator);
             validate_account_name(delegatee);
-            FC_ASSERT(delegator != delegatee, "You cannot delegate GESTS to yourself");
-            FC_ASSERT(is_asset_type(vesting_shares, VESTS_SYMBOL), "Delegation must be GESTS");
+            FC_ASSERT(delegator != delegatee, "You cannot delegate SHARES to yourself");
+            FC_ASSERT(is_asset_type(vesting_shares, SHARES_SYMBOL), "Delegation must be SHARES");
             FC_ASSERT(vesting_shares.amount >= 0, "Delegation cannot be negative");
         }
 

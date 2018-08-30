@@ -464,7 +464,7 @@ namespace graphene {
                    GRAPHENE_NET_MAX_INVENTORY_SIZE_IN_MINUTES *
                    GRAPHENE_NET_MAX_TRX_PER_SECOND * 60 +
                    (GRAPHENE_NET_MAX_INVENTORY_SIZE_IN_MINUTES + 1) * 60 /
-                   STEEMIT_BLOCK_INTERVAL;
+                   CHAIN_BLOCK_INTERVAL;
         }
 
         bool peer_connection::performing_firewall_check() const {

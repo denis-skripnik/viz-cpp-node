@@ -6,7 +6,7 @@
 #include <memory>
 #include <appbase/application.hpp>
 
-#define STEEM_NETWORK_BROADCAST_API_PLUGIN_NAME "network_broadcast_api"
+#define NETWORK_BROADCAST_API_PLUGIN_NAME "network_broadcast_api"
 
 namespace graphene {
     namespace plugins {
@@ -53,7 +53,7 @@ namespace graphene {
                 ~network_broadcast_api_plugin();
 
                 static const std::string &name() {
-                    static std::string name = STEEM_NETWORK_BROADCAST_API_PLUGIN_NAME;
+                    static std::string name = NETWORK_BROADCAST_API_PLUGIN_NAME;
                     return name;
                 }
 

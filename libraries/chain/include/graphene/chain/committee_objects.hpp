@@ -28,8 +28,8 @@ namespace graphene {
             account_name_type creator;
             account_name_type worker;
 
-            asset required_amount_min = asset(0, STEEM_SYMBOL);
-            asset required_amount_max = asset(0, STEEM_SYMBOL);
+            asset required_amount_min = asset(0, TOKEN_SYMBOL);
+            asset required_amount_max = asset(0, TOKEN_SYMBOL);
 
             time_point_sec start_time;
             uint32_t duration;
@@ -37,9 +37,9 @@ namespace graphene {
             uint16_t status;
             uint32_t votes_count;
             time_point_sec conclusion_time;
-            asset conclusion_payout_amount = asset(0, STEEM_SYMBOL);
-            asset payout_amount = asset(0, STEEM_SYMBOL);
-            asset remain_payout_amount = asset(0, STEEM_SYMBOL);
+            asset conclusion_payout_amount = asset(0, TOKEN_SYMBOL);
+            asset payout_amount = asset(0, TOKEN_SYMBOL);
+            asset remain_payout_amount = asset(0, TOKEN_SYMBOL);
             time_point_sec last_payout_time;
             time_point_sec payout_time;
         };

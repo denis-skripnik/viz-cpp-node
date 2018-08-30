@@ -4,7 +4,7 @@
 
 #include <appbase/application.hpp>
 
-#define STEEM_P2P_PLUGIN_NAME "p2p"
+#define P2P_PLUGIN_NAME "p2p"
 
 namespace graphene {
     namespace plugins {
@@ -27,7 +27,7 @@ namespace graphene {
                                          boost::program_options::options_description &config_file_options) override;
 
                 static const std::string &name() {
-                    static std::string name = STEEM_P2P_PLUGIN_NAME;
+                    static std::string name = P2P_PLUGIN_NAME;
                     return name;
                 }
 

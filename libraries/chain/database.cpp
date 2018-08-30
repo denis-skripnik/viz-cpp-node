@@ -580,7 +580,7 @@ namespace graphene { namespace chain {
         }
 
         chain_id_type database::get_chain_id() const {
-            return STEEMIT_CHAIN_ID;
+            return CHAIN_ID;
         }
 
         const witness_object &database::get_witness(const account_name_type &name) const {
@@ -673,17 +673,17 @@ namespace graphene { namespace chain {
 
             if (props.total_vesting_shares.amount > 0) {
                 share_type new_bandwidth;
-                share_type trx_bandwidth = trx_size * STEEMIT_BANDWIDTH_PRECISION;
+                share_type trx_bandwidth = trx_size * CHAIN_BANDWIDTH_PRECISION;
                 auto delta_time = (head_block_time() - a.last_bandwidth_update).to_seconds();
-                if (delta_time > STEEMIT_BANDWIDTH_AVERAGE_WINDOW_SECONDS) {
+                if (delta_time > CHAIN_BANDWIDTH_AVERAGE_WINDOW_SECONDS) {
                     new_bandwidth = 0;
                 } else {
                     new_bandwidth = (
-                            ((STEEMIT_BANDWIDTH_AVERAGE_WINDOW_SECONDS -
+                            ((CHAIN_BANDWIDTH_AVERAGE_WINDOW_SECONDS -
                               delta_time) *
                              fc::uint128_t(a.average_bandwidth.value))
                             /
-                            STEEMIT_BANDWIDTH_AVERAGE_WINDOW_SECONDS).to_uint64();
+                            CHAIN_BANDWIDTH_AVERAGE_WINDOW_SECONDS).to_uint64();
                 }
 
                 new_bandwidth += trx_bandwidth;
@@ -699,10 +699,10 @@ namespace graphene { namespace chain {
                 fc::uint128_t max_virtual_bandwidth(props.max_virtual_bandwidth);
 
                 if(account_vshares < consensus.median_props.bandwidth_reserve_below.amount.value){
-                    account_vshares = total_vshares * consensus.median_props.bandwidth_reserve_percent / STEEMIT_100_PERCENT / props.bandwidth_reserve_candidates;
+                    account_vshares = total_vshares * consensus.median_props.bandwidth_reserve_percent / CHAIN_100_PERCENT / props.bandwidth_reserve_candidates;
                 }
                 else{
-                    account_vshares = account_vshares * (STEEMIT_100_PERCENT - consensus.median_props.bandwidth_reserve_percent) / STEEMIT_100_PERCENT;
+                    account_vshares = account_vshares * (CHAIN_100_PERCENT - consensus.median_props.bandwidth_reserve_percent) / CHAIN_100_PERCENT;
                 }
 
                 has_bandwidth = (account_vshares * max_virtual_bandwidth) > (account_average_bandwidth * total_vshares);
@@ -720,7 +720,7 @@ namespace graphene { namespace chain {
 
         uint32_t database::witness_participation_rate() const {
             const dynamic_global_property_object &dpo = get_dynamic_global_properties();
-            return uint64_t(STEEMIT_100_PERCENT) *
+            return uint64_t(CHAIN_100_PERCENT) *
                    dpo.recent_slots_filled.popcount() / 128;
         }
 
@@ -1003,7 +1003,7 @@ namespace graphene { namespace chain {
 
             static const size_t max_block_header_size =
                     fc::raw::pack_size(signed_block_header()) + 4;
-            auto maximum_block_size = get_dynamic_global_properties().maximum_block_size; //STEEMIT_MAX_BLOCK_SIZE;
+            auto maximum_block_size = get_dynamic_global_properties().maximum_block_size; //CHAIN_MAX_BLOCK_SIZE;
             size_t total_block_size = max_block_header_size;
 
             signed_block pending_block;
@@ -1076,16 +1076,16 @@ namespace graphene { namespace chain {
 
             const auto &witness = get_witness(witness_owner);
 
-            if (witness.running_version != BLOCKCHAIN_VERSION) {
-                pending_block.extensions.insert(block_header_extensions(BLOCKCHAIN_VERSION));
+            if (witness.running_version != CHAIN_VERSION) {
+                pending_block.extensions.insert(block_header_extensions(CHAIN_VERSION));
             }
 
             const auto &hfp = get_hardfork_property_object();
-            //ilog("hfp.current_hardfork_version=${q}, BLOCKCHAIN_HARDFORK_VERSION=${y}, hfp.last_hardfork=${r}, hpo.next_hardfork=${i}, hpo.next_hardfork_time=${o}, witness.running_version=${t}, witness.hardfork_version_vote=${w}, _hardfork_versions[hfp.last_hardfork + 1]=${u}, witness.hardfork_time_vote=${e}",
-            //    ("q",hfp.current_hardfork_version)("y",BLOCKCHAIN_HARDFORK_VERSION)("r",hfp.last_hardfork)("i",hfp.next_hardfork)("o",hfp.next_hardfork_time)("t",witness.running_version)("w",witness.hardfork_version_vote)("u",_hardfork_versions[hfp.last_hardfork + 1])("e",witness.hardfork_time_vote));
+            //ilog("hfp.current_hardfork_version=${q}, CHAIN_HARDFORK_VERSION=${y}, hfp.last_hardfork=${r}, hpo.next_hardfork=${i}, hpo.next_hardfork_time=${o}, witness.running_version=${t}, witness.hardfork_version_vote=${w}, _hardfork_versions[hfp.last_hardfork + 1]=${u}, witness.hardfork_time_vote=${e}",
+            //    ("q",hfp.current_hardfork_version)("y",CHAIN_HARDFORK_VERSION)("r",hfp.last_hardfork)("i",hfp.next_hardfork)("o",hfp.next_hardfork_time)("t",witness.running_version)("w",witness.hardfork_version_vote)("u",_hardfork_versions[hfp.last_hardfork + 1])("e",witness.hardfork_time_vote));
 
             if (hfp.current_hardfork_version <
-                BLOCKCHAIN_HARDFORK_VERSION // Binary is newer hardfork than has been applied
+                CHAIN_HARDFORK_VERSION // Binary is newer hardfork than has been applied
                 && (witness.hardfork_version_vote !=
                     _hardfork_versions[hfp.last_hardfork + 1] ||
                     witness.hardfork_time_vote !=
@@ -1097,9 +1097,9 @@ namespace graphene { namespace chain {
                         hfp.last_hardfork + 1], _hardfork_times[
                         hfp.last_hardfork + 1])));
             } else if (hfp.current_hardfork_version ==
-                       BLOCKCHAIN_HARDFORK_VERSION // Binary does not know of a new hardfork
+                       CHAIN_HARDFORK_VERSION // Binary does not know of a new hardfork
                        && witness.hardfork_version_vote >
-                          BLOCKCHAIN_HARDFORK_VERSION) // Voting for hardfork in the future, that we do not know of...
+                          CHAIN_HARDFORK_VERSION) // Voting for hardfork in the future, that we do not know of...
             {
                 // Make vote match binary configuration. This is vote to not apply the new hardfork.
                 pending_block.extensions.insert(block_header_extensions(hardfork_version_vote(_hardfork_versions[hfp.last_hardfork], _hardfork_times[hfp.last_hardfork])));
@@ -1111,7 +1111,7 @@ namespace graphene { namespace chain {
 
             // TODO: Move this to _push_block() so session is restored.
             if (!(skip & skip_block_size_check)) {
-                FC_ASSERT(fc::raw::pack_size(pending_block) <= STEEMIT_MAX_BLOCK_SIZE);
+                FC_ASSERT(fc::raw::pack_size(pending_block) <= CHAIN_MAX_BLOCK_SIZE);
             }
 
             push_block(pending_block, skip);
@@ -1162,13 +1162,13 @@ namespace graphene { namespace chain {
             note.op_in_trx = _current_op_in_trx;
 
             if (!is_producing() || _enable_plugins_on_push_transaction) {
-                STEEMIT_TRY_NOTIFY(pre_apply_operation, note);
+                CHAIN_TRY_NOTIFY(pre_apply_operation, note);
             }
         }
 
         void database::notify_post_apply_operation(const operation_notification &note) {
             if (!is_producing() || _enable_plugins_on_push_transaction) {
-                STEEMIT_TRY_NOTIFY(post_apply_operation, note);
+                CHAIN_TRY_NOTIFY(post_apply_operation, note);
             }
         }
 
@@ -1186,15 +1186,15 @@ namespace graphene { namespace chain {
         }
 
         void database::notify_applied_block(const signed_block &block) {
-            STEEMIT_TRY_NOTIFY(applied_block, block)
+            CHAIN_TRY_NOTIFY(applied_block, block)
         }
 
         void database::notify_on_pending_transaction(const signed_transaction &tx) {
-            STEEMIT_TRY_NOTIFY(on_pending_transaction, tx)
+            CHAIN_TRY_NOTIFY(on_pending_transaction, tx)
         }
 
         void database::notify_on_applied_transaction(const signed_transaction &tx) {
-            STEEMIT_TRY_NOTIFY(on_applied_transaction, tx)
+            CHAIN_TRY_NOTIFY(on_applied_transaction, tx)
         }
 
         account_name_type database::get_scheduled_witness(uint32_t slot_num) const {
@@ -1210,7 +1210,7 @@ namespace graphene { namespace chain {
                 return fc::time_point_sec();
             }
 
-            auto interval = STEEMIT_BLOCK_INTERVAL;
+            auto interval = CHAIN_BLOCK_INTERVAL;
             const dynamic_global_property_object &dpo = get_dynamic_global_properties();
 
             if (head_block_num() == 0) {
@@ -1235,21 +1235,21 @@ namespace graphene { namespace chain {
                 return 0;
             }
             return (when - first_slot_time).to_seconds() /
-                   STEEMIT_BLOCK_INTERVAL + 1;
+                   CHAIN_BLOCK_INTERVAL + 1;
         }
 
         void database::shares_sender_recalc_energy(const account_object &sender, asset tokens) {
             try {
                 asset shares = tokens;
-                if(tokens.symbol != VESTS_SYMBOL){
+                if(tokens.symbol != SHARES_SYMBOL){
                     const auto &cprops = get_dynamic_global_properties();
                     asset shares = shares * cprops.get_vesting_share_price();
                 }
                 modify(sender, [&](account_object &s) {
                     int64_t elapsed_seconds = (head_block_time() - s.last_vote_time).to_seconds();
-                    int64_t regenerated_power = (STEEMIT_100_PERCENT * elapsed_seconds) / STEEMIT_VOTE_REGENERATION_SECONDS;
-                    int64_t current_power = std::min(int64_t(s.voting_power + regenerated_power), int64_t(STEEMIT_100_PERCENT));
-                    int64_t new_power = std::max(int64_t(current_power - ((STEEMIT_100_PERCENT * shares.amount.value) / s.effective_vesting_shares().amount.value)), int64_t(-STEEMIT_100_PERCENT));
+                    int64_t regenerated_power = (CHAIN_100_PERCENT * elapsed_seconds) / CHAIN_VOTE_REGENERATION_SECONDS;
+                    int64_t current_power = std::min(int64_t(s.voting_power + regenerated_power), int64_t(CHAIN_100_PERCENT));
+                    int64_t new_power = std::max(int64_t(current_power - ((CHAIN_100_PERCENT * shares.amount.value) / s.effective_vesting_shares().amount.value)), int64_t(-CHAIN_100_PERCENT));
                     s.voting_power = new_power;
                     s.last_vote_time = head_block_time();
                 });
@@ -1296,7 +1296,7 @@ namespace graphene { namespace chain {
         }
 
         void database::update_bandwidth_reserve_candidates() {
-            if ((head_block_num() % STEEMIT_BLOCKS_PER_HOUR ) != 0) return;
+            if ((head_block_num() % CHAIN_BLOCKS_PER_HOUR ) != 0) return;
             uint32_t bandwidth_reserve_candidates = 1;
             const auto &gprops = get_dynamic_global_properties();
             const witness_schedule_object &consensus = get_witness_schedule_object();
@@ -1331,10 +1331,10 @@ namespace graphene { namespace chain {
                         ++vote_itr;
                         const auto &voter_account = get_account(cur_vote.voter);
                         max_rshares+=voter_account.effective_vesting_shares().amount.value;
-                        actual_rshares+=voter_account.effective_vesting_shares().amount.value*cur_vote.vote_percent/STEEMIT_100_PERCENT;
+                        actual_rshares+=voter_account.effective_vesting_shares().amount.value*cur_vote.vote_percent/CHAIN_100_PERCENT;
                     }
                     calculated_payment=cur_request.required_amount_max.amount*actual_rshares/max_rshares;
-                    asset conclusion_payout_amount = asset(calculated_payment, STEEM_SYMBOL);
+                    asset conclusion_payout_amount = asset(calculated_payment, TOKEN_SYMBOL);
                     if(cur_request.required_amount_min.amount > conclusion_payout_amount.amount){
                         modify(cur_request, [&](committee_request_object &c) {
                             c.conclusion_payout_amount=conclusion_payout_amount;
@@ -1365,7 +1365,7 @@ namespace graphene { namespace chain {
             }
 
             const auto &dgp = get_dynamic_global_properties();
-            asset max_payment_per_request=asset(dgp.committee_supply.amount/committee_payment_request_count, STEEM_SYMBOL);
+            asset max_payment_per_request=asset(dgp.committee_supply.amount/committee_payment_request_count, TOKEN_SYMBOL);
 
             const auto &idx3 = get_index<committee_request_index>().indices().get<by_status>();
             auto itr = idx3.lower_bound(3);
@@ -1381,7 +1381,7 @@ namespace graphene { namespace chain {
                 modify(dgp, [&](dynamic_global_property_object& dgpo) {
                     dgpo.committee_supply.amount -= current_payment;
                 });
-                push_virtual_operation(committee_pay_request_operation(cur_request.worker, cur_request.request_id, asset(current_payment, STEEM_SYMBOL)));
+                push_virtual_operation(committee_pay_request_operation(cur_request.worker, cur_request.request_id, asset(current_payment, TOKEN_SYMBOL)));
                 modify(cur_request, [&](committee_request_object& c) {
                     c.payout_amount.amount += current_payment;
                     c.remain_payout_amount.amount -= current_payment;
@@ -1396,21 +1396,21 @@ namespace graphene { namespace chain {
         }
 
         void database::update_witness_schedule() {
-            if ((head_block_num() % ( STEEMIT_MAX_WITNESSES * STEEMIT_BLOCK_WITNESS_REPEAT ) ) != 0) return;
+            if ((head_block_num() % ( CHAIN_MAX_WITNESSES * CHAIN_BLOCK_WITNESS_REPEAT ) ) != 0) return;
             vector<account_name_type> active_witnesses;
-            active_witnesses.reserve(STEEMIT_MAX_WITNESSES);
+            active_witnesses.reserve(CHAIN_MAX_WITNESSES);
 
             vector<account_name_type> support_witnesses;
-            support_witnesses.reserve(STEEMIT_MAX_WITNESSES);
+            support_witnesses.reserve(CHAIN_MAX_WITNESSES);
 
             /// Add the highest voted witnesses
             flat_set<witness_id_type> selected_voted;
-            selected_voted.reserve(STEEMIT_MAX_TOP_WITNESSES);
+            selected_voted.reserve(CHAIN_MAX_TOP_WITNESSES);
 
             const auto &widx = get_index<witness_index>().indices().get<by_vote_name>();
             for (auto itr = widx.begin();
                  itr != widx.end() &&
-                 selected_voted.size() < STEEMIT_MAX_TOP_WITNESSES;
+                 selected_voted.size() < CHAIN_MAX_TOP_WITNESSES;
                  ++itr) {
                 if (itr->signing_key == public_key_type()) {
                     continue;
@@ -1428,7 +1428,7 @@ namespace graphene { namespace chain {
             vector<decltype(sitr)> processed_witnesses;
             for (auto witness_count = selected_voted.size();
                  sitr != schedule_idx.end() &&
-                 witness_count < STEEMIT_MAX_WITNESSES;
+                 witness_count < CHAIN_MAX_WITNESSES;
                  ++sitr) {
                 new_virtual_time = sitr->virtual_scheduled_time; /// everyone advances to at least this time
                 processed_witnesses.push_back(sitr);
@@ -1466,15 +1466,15 @@ namespace graphene { namespace chain {
                 reset_virtual_schedule_time();
             }
 
-            FC_ASSERT( ( active_witnesses.size() + support_witnesses.size() ) <= STEEMIT_MAX_WITNESSES, "Number of active witnesses does cannot be more STEEMIT_MAX_WITNESSES",
-                    ("active_witnesses.size()", active_witnesses.size())("support_witnesses.size()", support_witnesses.size())("STEEMIT_MAX_WITNESSES", STEEMIT_MAX_WITNESSES));
+            FC_ASSERT( ( active_witnesses.size() + support_witnesses.size() ) <= CHAIN_MAX_WITNESSES, "Number of active witnesses does cannot be more CHAIN_MAX_WITNESSES",
+                    ("active_witnesses.size()", active_witnesses.size())("support_witnesses.size()", support_witnesses.size())("CHAIN_MAX_WITNESSES", CHAIN_MAX_WITNESSES));
 
             auto majority_version = wso.majority_version;
 
             flat_map<version, uint32_t, std::greater<version>> witness_versions;
             flat_map<std::tuple<hardfork_version, time_point_sec>, uint32_t> hardfork_version_votes;
 
-            for (uint32_t i = 0; i < wso.num_scheduled_witnesses; i+=STEEMIT_BLOCK_WITNESS_REPEAT) {
+            for (uint32_t i = 0; i < wso.num_scheduled_witnesses; i+=CHAIN_BLOCK_WITNESS_REPEAT) {
                 auto witness = get_witness(wso.current_shuffled_witnesses[i]);
                 if (witness_versions.find(witness.running_version) ==
                     witness_versions.end()) {
@@ -1500,7 +1500,7 @@ namespace graphene { namespace chain {
                 witnesses_on_version += ver_itr->second;
 
                 if (witnesses_on_version >=
-                    STEEMIT_HARDFORK_REQUIRED_WITNESSES) {
+                    CHAIN_HARDFORK_REQUIRED_WITNESSES) {
                     majority_version = ver_itr->first;
                     break;
                 }
@@ -1511,7 +1511,7 @@ namespace graphene { namespace chain {
             auto hf_itr = hardfork_version_votes.begin();
 
             while (hf_itr != hardfork_version_votes.end()) {
-                if (hf_itr->second >= STEEMIT_HARDFORK_REQUIRED_WITNESSES) {
+                if (hf_itr->second >= CHAIN_HARDFORK_REQUIRED_WITNESSES) {
                     const auto &hfp = get_hardfork_property_object();
                     if (hfp.next_hardfork != std::get<0>(hf_itr->first) ||
                         hfp.next_hardfork_time !=
@@ -1536,7 +1536,7 @@ namespace graphene { namespace chain {
             }
 
             modify(wso, [&](witness_schedule_object &_wso) {
-                // active witnesses has exactly STEEMIT_MAX_WITNESSES elements, asserted above
+                // active witnesses has exactly CHAIN_MAX_WITNESSES elements, asserted above
                 size_t j = 0;
                 size_t support_witnesses_count = support_witnesses.size();
                 size_t active_witnesses_count = active_witnesses.size();
@@ -1545,26 +1545,26 @@ namespace graphene { namespace chain {
                 {
                     if(active_witnesses_count > 0){
                         --active_witnesses_count;
-                        for(int repeat=0; repeat < STEEMIT_BLOCK_WITNESS_REPEAT; ++repeat){
+                        for(int repeat=0; repeat < CHAIN_BLOCK_WITNESS_REPEAT; ++repeat){
                             _wso.current_shuffled_witnesses[j] = active_witnesses[i];
                             ++j;
                         }
                     }
                     if(support_witnesses_count > 0){
                         --support_witnesses_count;
-                        for(int repeat=0; repeat < STEEMIT_BLOCK_WITNESS_REPEAT; ++repeat){
+                        for(int repeat=0; repeat < CHAIN_BLOCK_WITNESS_REPEAT; ++repeat){
                             _wso.current_shuffled_witnesses[j] = support_witnesses[i];
                             ++j;
                         }
                     }
                 }
 
-                for (size_t i = sum_witnesses_count * STEEMIT_BLOCK_WITNESS_REPEAT;
-                     i < ( STEEMIT_MAX_WITNESSES * STEEMIT_BLOCK_WITNESS_REPEAT ); i++) {
+                for (size_t i = sum_witnesses_count * CHAIN_BLOCK_WITNESS_REPEAT;
+                     i < ( CHAIN_MAX_WITNESSES * CHAIN_BLOCK_WITNESS_REPEAT ); i++) {
                     _wso.current_shuffled_witnesses[i] = account_name_type();
                 }
 
-                _wso.num_scheduled_witnesses = std::max<uint8_t>(sum_witnesses_count * STEEMIT_BLOCK_WITNESS_REPEAT , 1);
+                _wso.num_scheduled_witnesses = std::max<uint8_t>(sum_witnesses_count * CHAIN_BLOCK_WITNESS_REPEAT , 1);
 
                 /* // VIZ remove randomization
                 /// shuffle current shuffled witnesses
@@ -1601,7 +1601,7 @@ namespace graphene { namespace chain {
             /// fetch all witness objects
             vector<const witness_object *> active;
             active.reserve(wso.num_scheduled_witnesses);
-            for (int i = 0; i < wso.num_scheduled_witnesses; i+=STEEMIT_BLOCK_WITNESS_REPEAT) {
+            for (int i = 0; i < wso.num_scheduled_witnesses; i+=CHAIN_BLOCK_WITNESS_REPEAT) {
                 active.push_back(&get_witness(wso.current_shuffled_witnesses[i]));
             }
 
@@ -1637,18 +1637,18 @@ namespace graphene { namespace chain {
 
         void database::adjust_proxied_witness_votes(const account_object &a,
                 const std::array<share_type,
-                        STEEMIT_MAX_PROXY_RECURSION_DEPTH + 1> &delta,
+                        CHAIN_MAX_PROXY_RECURSION_DEPTH + 1> &delta,
                 int depth) {
-            if (a.proxy != STEEMIT_PROXY_TO_SELF_ACCOUNT) {
+            if (a.proxy != CHAIN_PROXY_TO_SELF_ACCOUNT) {
                 /// nested proxies are not supported, vote will not propagate
-                if (depth >= STEEMIT_MAX_PROXY_RECURSION_DEPTH) {
+                if (depth >= CHAIN_MAX_PROXY_RECURSION_DEPTH) {
                     return;
                 }
 
                 const auto &proxy = get_account(a.proxy);
 
                 modify(proxy, [&](account_object &a) {
-                    for (int i = STEEMIT_MAX_PROXY_RECURSION_DEPTH - depth - 1;
+                    for (int i = CHAIN_MAX_PROXY_RECURSION_DEPTH - depth - 1;
                          i >= 0; --i) {
                         a.proxied_vsf_votes[i + depth] += delta[i];
                     }
@@ -1657,7 +1657,7 @@ namespace graphene { namespace chain {
                 adjust_proxied_witness_votes(proxy, delta, depth + 1);
             } else {
                 share_type total_delta = 0;
-                for (int i = STEEMIT_MAX_PROXY_RECURSION_DEPTH - depth;
+                for (int i = CHAIN_MAX_PROXY_RECURSION_DEPTH - depth;
                      i >= 0; --i) {
                     total_delta += delta[i];
                 }
@@ -1666,9 +1666,9 @@ namespace graphene { namespace chain {
         }
 
         void database::adjust_proxied_witness_votes(const account_object &a, share_type delta, int depth) {
-            if (a.proxy != STEEMIT_PROXY_TO_SELF_ACCOUNT) {
+            if (a.proxy != CHAIN_PROXY_TO_SELF_ACCOUNT) {
                 /// nested proxies are not supported, vote will not propagate
-                if (depth >= STEEMIT_MAX_PROXY_RECURSION_DEPTH) {
+                if (depth >= CHAIN_MAX_PROXY_RECURSION_DEPTH) {
                     return;
                 }
 
@@ -1732,8 +1732,8 @@ namespace graphene { namespace chain {
         }
 
         void database::clear_null_account_balance() {
-            const auto &null_account = get_account(STEEMIT_NULL_ACCOUNT);
-            asset total_steem(0, STEEM_SYMBOL);
+            const auto &null_account = get_account(CHAIN_NULL_ACCOUNT);
+            asset total_steem(0, TOKEN_SYMBOL);
 
             if (null_account.balance.amount > 0) {
                 total_steem += null_account.balance;
@@ -1763,8 +1763,8 @@ namespace graphene { namespace chain {
         }
 
         void database::clear_anonymous_account_balance() {
-            const auto &anonymous_account = get_account(STEEMIT_ANONYMOUS_ACCOUNT);
-            asset total_steem(0, STEEM_SYMBOL);
+            const auto &anonymous_account = get_account(CHAIN_ANONYMOUS_ACCOUNT);
+            asset total_steem(0, TOKEN_SYMBOL);
 
             if (anonymous_account.balance.amount > 0) {
                 total_steem += anonymous_account.balance;
@@ -1795,8 +1795,8 @@ namespace graphene { namespace chain {
 
         void database::claim_committee_account_balance() {
             const auto &gpo = get_dynamic_global_properties();
-            const auto &committee_account = get_account(STEEMIT_COMMITTEE_ACCOUNT);
-            asset total_steem(0, STEEM_SYMBOL);
+            const auto &committee_account = get_account(CHAIN_COMMITTEE_ACCOUNT);
+            asset total_steem(0, TOKEN_SYMBOL);
 
             if (committee_account.balance.amount > 0) {
                 total_steem += committee_account.balance;
@@ -1897,7 +1897,7 @@ namespace graphene { namespace chain {
 
                 share_type vests_deposited_as_steem = 0;
                 share_type vests_deposited_as_vests = 0;
-                asset total_steem_converted = asset(0, STEEM_SYMBOL);
+                asset total_steem_converted = asset(0, TOKEN_SYMBOL);
 
                 // Do two passes, the first for vests, the second for steem. Try to maintain as much accuracy for vests as possible.
                 for (auto itr = didx.upper_bound(boost::make_tuple(from_account.id, account_id_type()));
@@ -1907,7 +1907,7 @@ namespace graphene { namespace chain {
                         share_type to_deposit = (
                                 (fc::uint128_t(to_withdraw.value) *
                                  itr->percent) /
-                                STEEMIT_100_PERCENT).to_uint64();
+                                CHAIN_100_PERCENT).to_uint64();
                         vests_deposited_as_vests += to_deposit;
 
                         if (to_deposit > 0) {
@@ -1919,7 +1919,7 @@ namespace graphene { namespace chain {
 
                             adjust_proxied_witness_votes(to_account, to_deposit);
 
-                            push_virtual_operation(fill_vesting_withdraw_operation(from_account.name, to_account.name, asset(to_deposit, VESTS_SYMBOL), asset(to_deposit, VESTS_SYMBOL)));
+                            push_virtual_operation(fill_vesting_withdraw_operation(from_account.name, to_account.name, asset(to_deposit, SHARES_SYMBOL), asset(to_deposit, SHARES_SYMBOL)));
                         }
                     }
                 }
@@ -1933,9 +1933,9 @@ namespace graphene { namespace chain {
                         share_type to_deposit = (
                                 (fc::uint128_t(to_withdraw.value) *
                                  itr->percent) /
-                                STEEMIT_100_PERCENT).to_uint64();
+                                CHAIN_100_PERCENT).to_uint64();
                         vests_deposited_as_steem += to_deposit;
-                        auto converted_steem = asset(to_deposit, VESTS_SYMBOL) *
+                        auto converted_steem = asset(to_deposit, SHARES_SYMBOL) *
                                                cprops.get_vesting_share_price();
                         total_steem_converted += converted_steem;
 
@@ -1949,7 +1949,7 @@ namespace graphene { namespace chain {
                                 o.total_vesting_shares.amount -= to_deposit;
                             });
 
-                            push_virtual_operation(fill_vesting_withdraw_operation(from_account.name, to_account.name, asset(to_deposit, VESTS_SYMBOL), converted_steem));
+                            push_virtual_operation(fill_vesting_withdraw_operation(from_account.name, to_account.name, asset(to_deposit, SHARES_SYMBOL), converted_steem));
                         }
                     }
                 }
@@ -1960,9 +1960,9 @@ namespace graphene { namespace chain {
                     to_convert=0;
                 }
 
-                auto converted_steem = asset(to_convert, VESTS_SYMBOL) *
+                auto converted_steem = asset(to_convert, SHARES_SYMBOL) *
                                        cprops.get_vesting_share_price();
-                shares_sender_recalc_energy(from_account,asset(vests_deposited_as_vests, VESTS_SYMBOL) + asset(vests_deposited_as_steem, VESTS_SYMBOL) * cprops.get_vesting_share_price());
+                shares_sender_recalc_energy(from_account,asset(vests_deposited_as_vests, SHARES_SYMBOL) + asset(vests_deposited_as_steem, SHARES_SYMBOL) * cprops.get_vesting_share_price());
 
                 modify(from_account, [&](account_object &a) {
                     a.vesting_shares.amount -= to_withdraw;
@@ -1974,7 +1974,7 @@ namespace graphene { namespace chain {
                         a.vesting_withdraw_rate.amount = 0;
                         a.next_vesting_withdrawal = fc::time_point_sec::maximum();
                     } else {
-                        a.next_vesting_withdrawal += fc::seconds(STEEMIT_VESTING_WITHDRAW_INTERVAL_SECONDS);
+                        a.next_vesting_withdrawal += fc::seconds(CHAIN_VESTING_WITHDRAW_INTERVAL_SECONDS);
                     }
                 });
 
@@ -1985,7 +1985,7 @@ namespace graphene { namespace chain {
 
                 if (to_withdraw > 0) {
                     adjust_proxied_witness_votes(from_account, -to_withdraw);
-                    push_virtual_operation(fill_vesting_withdraw_operation(from_account.name, from_account.name, asset(to_withdraw, VESTS_SYMBOL), converted_steem));
+                    push_virtual_operation(fill_vesting_withdraw_operation(from_account.name, from_account.name, asset(to_withdraw, SHARES_SYMBOL), converted_steem));
                 }
             }
         }
@@ -2020,12 +2020,12 @@ namespace graphene { namespace chain {
                         consensus_curation_percent=std::max(consensus_curation_percent,props.median_props.min_curation_percent);
                         share_type curation_tokens = ((reward_tokens *
                                                       consensus_curation_percent) /
-                                                      STEEMIT_100_PERCENT).to_uint64();
+                                                      CHAIN_100_PERCENT).to_uint64();
 
                         share_type author_tokens = reward_tokens.to_uint64() - curation_tokens;
 
                         // VIZ: pay_curators
-                        asset total_curation_shares = asset(0, VESTS_SYMBOL);
+                        asset total_curation_shares = asset(0, SHARES_SYMBOL);
                         uint128_t total_weight(comment.total_vote_weight);
                         share_type unclaimed_rewards = curation_tokens;
                         if (comment.total_vote_weight > 0) {
@@ -2039,8 +2039,8 @@ namespace graphene { namespace chain {
                                 {
                                     unclaimed_rewards -= claim;
                                     const auto &voter = get(itr->voter);
-                                    auto reward = create_vesting(voter, asset(claim, STEEM_SYMBOL));
-                                    total_curation_shares += asset( reward.amount, VESTS_SYMBOL );
+                                    auto reward = create_vesting(voter, asset(claim, TOKEN_SYMBOL));
+                                    total_curation_shares += asset( reward.amount, SHARES_SYMBOL );
                                     push_virtual_operation(curation_reward_operation(voter.name, reward, comment.author, to_string(comment.permlink)));
 #ifndef IS_LOW_MEM
                                     modify(voter, [&](account_object &a) {
@@ -2055,12 +2055,12 @@ namespace graphene { namespace chain {
                         author_tokens += unclaimed_rewards;
 
                         share_type total_beneficiary = 0;
-                        asset total_beneficiary_shares = asset(0, VESTS_SYMBOL);
+                        asset total_beneficiary_shares = asset(0, SHARES_SYMBOL);
 
                         for (auto &b : comment.beneficiaries) {
-                            auto benefactor_tokens = (author_tokens * b.weight) / STEEMIT_100_PERCENT;
+                            auto benefactor_tokens = (author_tokens * b.weight) / CHAIN_100_PERCENT;
                             auto shares_created = create_vesting(get_account(b.account), benefactor_tokens);
-                            total_beneficiary_shares += asset( shares_created.amount, VESTS_SYMBOL );
+                            total_beneficiary_shares += asset( shares_created.amount, SHARES_SYMBOL );
                             push_virtual_operation(
                                 comment_benefactor_reward_operation(
                                     b.account, comment.author, to_string(comment.permlink), shares_created));
@@ -2078,14 +2078,14 @@ namespace graphene { namespace chain {
 
                         adjust_total_payout(
                                 comment,
-                                asset(payout_value, STEEM_SYMBOL),
+                                asset(payout_value, TOKEN_SYMBOL),
                                 shares_created,
                                 total_curation_shares,
                                 total_beneficiary_shares
                         );
 
                         // stats only.. TODO: Move to plugin...
-                        total_payout = asset(reward_tokens.to_uint64(), STEEM_SYMBOL);
+                        total_payout = asset(reward_tokens.to_uint64(), TOKEN_SYMBOL);
 
                         push_virtual_operation(author_reward_operation(comment.author, to_string(comment.permlink), payout_value, shares_created));
                         push_virtual_operation(comment_reward_operation(comment.author, to_string(comment.permlink), total_payout));
@@ -2156,27 +2156,27 @@ namespace graphene { namespace chain {
 
         void database::process_funds() {
             const auto &props = get_dynamic_global_properties();
-            share_type inflation_rate = int64_t( STEEMIT_FIXED_INFLATION );
-            share_type new_supply = int64_t( STEEMIT_INIT_SUPPLY );
-            share_type inflation_per_year = inflation_rate * int64_t( STEEMIT_INIT_SUPPLY ) / int64_t( STEEMIT_100_PERCENT );
+            share_type inflation_rate = int64_t( CHAIN_FIXED_INFLATION );
+            share_type new_supply = int64_t( CHAIN_INIT_SUPPLY );
+            share_type inflation_per_year = inflation_rate * int64_t( CHAIN_INIT_SUPPLY ) / int64_t( CHAIN_100_PERCENT );
             new_supply += inflation_per_year;
-            int circles = props.head_block_number / STEEMIT_BLOCKS_PER_YEAR;
+            int circles = props.head_block_number / CHAIN_BLOCKS_PER_YEAR;
             if(circles > 0)
             {
                for( int itr = 0; itr < circles; ++itr )
                {
-                  inflation_per_year = ( new_supply * inflation_rate ) / int64_t( STEEMIT_100_PERCENT );
+                  inflation_per_year = ( new_supply * inflation_rate ) / int64_t( CHAIN_100_PERCENT );
                   new_supply += inflation_per_year;
                }
             }
-            share_type inflation_per_block = inflation_per_year / int64_t( STEEMIT_BLOCKS_PER_YEAR );
+            share_type inflation_per_block = inflation_per_year / int64_t( CHAIN_BLOCKS_PER_YEAR );
 
             /*ilog( "Inflation status: props.head_block_number=${h1}, inflation_per_year=${h2}, new_supply=${h3}, inflation_per_block=${h4}",
                ("h1",props.head_block_number)("h2", inflation_per_year)("h3",new_supply)("h4",inflation_per_block)
             );*/
-            auto content_reward = ( inflation_per_block * STEEMIT_CONTENT_REWARD_PERCENT ) / STEEMIT_100_PERCENT;
-            auto vesting_reward = ( inflation_per_block * STEEMIT_VESTING_FUND_PERCENT ) / STEEMIT_100_PERCENT; /// 15% to vesting fund
-            auto committee_reward = ( inflation_per_block * STEEMIT_COMMITTEE_FUND_PERCENT ) / STEEMIT_100_PERCENT;
+            auto content_reward = ( inflation_per_block * CHAIN_CONTENT_REWARD_PERCENT ) / CHAIN_100_PERCENT;
+            auto vesting_reward = ( inflation_per_block * CHAIN_VESTING_FUND_PERCENT ) / CHAIN_100_PERCENT; /// 15% to vesting fund
+            auto committee_reward = ( inflation_per_block * CHAIN_COMMITTEE_FUND_PERCENT ) / CHAIN_100_PERCENT;
             auto witness_reward = inflation_per_block - content_reward - vesting_reward - committee_reward; /// Remaining 10% to witness pay
 
             const auto& cwit = get_witness( props.current_witness );
@@ -2189,13 +2189,13 @@ namespace graphene { namespace chain {
             */
             modify( props, [&]( dynamic_global_property_object& p )
             {
-               p.total_vesting_fund += asset( vesting_reward, STEEM_SYMBOL );
-               p.committee_supply += asset( committee_reward, STEEM_SYMBOL );
-               p.total_reward_fund += asset( content_reward, STEEM_SYMBOL );
-               p.current_supply += asset( inflation_per_block, STEEM_SYMBOL );
+               p.total_vesting_fund += asset( vesting_reward, TOKEN_SYMBOL );
+               p.committee_supply += asset( committee_reward, TOKEN_SYMBOL );
+               p.total_reward_fund += asset( content_reward, TOKEN_SYMBOL );
+               p.current_supply += asset( inflation_per_block, TOKEN_SYMBOL );
             });
 
-            create_vesting(get_account(cwit.owner), asset(witness_reward, STEEM_SYMBOL));
+            create_vesting(get_account(cwit.owner), asset(witness_reward, TOKEN_SYMBOL));
         }
 
 /**
@@ -2244,7 +2244,7 @@ namespace graphene { namespace chain {
 
             while (hist != hist_idx.end() && time_point_sec(
                     hist->last_valid_time +
-                    STEEMIT_OWNER_AUTH_RECOVERY_PERIOD) < head_block_time()) {
+                    CHAIN_OWNER_AUTH_RECOVERY_PERIOD) < head_block_time()) {
                 remove(*hist);
                 hist = hist_idx.begin();
             }
@@ -2440,83 +2440,83 @@ namespace graphene { namespace chain {
         void database::init_genesis(uint64_t init_supply) {
             try {
                 // Create blockchain accounts
-                public_key_type initiator_public_key(STEEMIT_INITIATOR_PUBLIC_KEY);
-                public_key_type committee_public_key(STEEMIT_COMMITTEE_PUBLIC_KEY);
+                public_key_type initiator_public_key(CHAIN_INITIATOR_PUBLIC_KEY);
+                public_key_type committee_public_key(CHAIN_COMMITTEE_PUBLIC_KEY);
                 uint32_t bandwidth_reserve_candidates = 1;
 
                 create<account_object>([&](account_object &a) {
-                    a.name = STEEMIT_NULL_ACCOUNT;
+                    a.name = CHAIN_NULL_ACCOUNT;
                 });
 #ifndef IS_LOW_MEM
                 create<account_metadata_object>([&](account_metadata_object& m) {
-                    m.account = STEEMIT_NULL_ACCOUNT;
+                    m.account = CHAIN_NULL_ACCOUNT;
                 });
 #endif
                 create<account_authority_object>([&](account_authority_object &auth) {
-                    auth.account = STEEMIT_NULL_ACCOUNT;
+                    auth.account = CHAIN_NULL_ACCOUNT;
                     auth.owner.weight_threshold = 1;
                     auth.active.weight_threshold = 1;
                     auth.posting.weight_threshold = 1;
                 });
 
                 create<account_object>([&](account_object &a) {
-                    a.name = STEEMIT_COMMITTEE_ACCOUNT;
+                    a.name = CHAIN_COMMITTEE_ACCOUNT;
                 });
 #ifndef IS_LOW_MEM
                 create<account_metadata_object>([&](account_metadata_object& m) {
-                    m.account = STEEMIT_COMMITTEE_ACCOUNT;
+                    m.account = CHAIN_COMMITTEE_ACCOUNT;
                 });
 #endif
                 create<account_authority_object>([&](account_authority_object &auth) {
-                    auth.account = STEEMIT_COMMITTEE_ACCOUNT;
+                    auth.account = CHAIN_COMMITTEE_ACCOUNT;
                     auth.owner.weight_threshold = 1;
                     auth.active.weight_threshold = 1;
                     auth.posting.weight_threshold = 1;
                 });
                 create<witness_object>([&](witness_object &w) {
-                    w.owner = STEEMIT_COMMITTEE_ACCOUNT;
+                    w.owner = CHAIN_COMMITTEE_ACCOUNT;
                     w.signing_key = committee_public_key;
                     w.schedule = witness_object::top;
                 });
 
                 create<account_object>([&](account_object &a) {
-                    a.name = STEEMIT_ANONYMOUS_ACCOUNT;
+                    a.name = CHAIN_ANONYMOUS_ACCOUNT;
                 });
 #ifndef IS_LOW_MEM
                 create<account_metadata_object>([&](account_metadata_object& m) {
-                    m.account = STEEMIT_ANONYMOUS_ACCOUNT;
+                    m.account = CHAIN_ANONYMOUS_ACCOUNT;
                     from_string(m.json_metadata,"0");
                 });
 #endif
                 create<account_authority_object>([&](account_authority_object &auth) {
-                    auth.account = STEEMIT_ANONYMOUS_ACCOUNT;
+                    auth.account = CHAIN_ANONYMOUS_ACCOUNT;
                     auth.owner.weight_threshold = 1;
                     auth.active.weight_threshold = 1;
                     auth.posting.weight_threshold = 1;
                 });
 
                 create<account_object>([&](account_object &a) {
-                    a.name = STEEMIT_TEMP_ACCOUNT;
+                    a.name = CHAIN_TEMP_ACCOUNT;
                 });
 #ifndef IS_LOW_MEM
                 create<account_metadata_object>([&](account_metadata_object& m) {
-                    m.account = STEEMIT_TEMP_ACCOUNT;
+                    m.account = CHAIN_TEMP_ACCOUNT;
                 });
 #endif
                 create<account_authority_object>([&](account_authority_object &auth) {
-                    auth.account = STEEMIT_TEMP_ACCOUNT;
+                    auth.account = CHAIN_TEMP_ACCOUNT;
                     auth.owner.weight_threshold = 0;
                     auth.active.weight_threshold = 0;
                     auth.posting.weight_threshold = 1;
                 });
 
-                if(STEEMIT_NUM_INITIATORS>0){
-                    for (int i = 0; i < STEEMIT_NUM_INITIATORS; ++i) {
-                        const auto& name = STEEMIT_INITIATOR_NAME + (i ? fc::to_string(i) : std::string());
+                if(CHAIN_NUM_INITIATORS>0){
+                    for (int i = 0; i < CHAIN_NUM_INITIATORS; ++i) {
+                        const auto& name = CHAIN_INITIATOR_NAME + (i ? fc::to_string(i) : std::string());
                         create<account_object>([&](account_object &a) {
                             a.name = name;
                             a.memo_key = initiator_public_key;
-                            a.balance = asset(i ? 0 : init_supply, STEEM_SYMBOL);
+                            a.balance = asset(i ? 0 : init_supply, TOKEN_SYMBOL);
                         });
                         ++bandwidth_reserve_candidates;
     #ifndef IS_LOW_MEM
@@ -2540,18 +2540,18 @@ namespace graphene { namespace chain {
                 }
                 else{
                     create<account_object>([&](account_object &a) {
-                        a.name = STEEMIT_INITIATOR_NAME;
+                        a.name = CHAIN_INITIATOR_NAME;
                         a.memo_key = initiator_public_key;
-                        a.balance = asset(init_supply, STEEM_SYMBOL);
+                        a.balance = asset(init_supply, TOKEN_SYMBOL);
                     });
                     ++bandwidth_reserve_candidates;
 #ifndef IS_LOW_MEM
                     create<account_metadata_object>([&](account_metadata_object& m) {
-                        m.account = STEEMIT_INITIATOR_NAME;
+                        m.account = CHAIN_INITIATOR_NAME;
                     });
 #endif
                     create<account_authority_object>([&](account_authority_object &auth) {
-                        auth.account = STEEMIT_INITIATOR_NAME;
+                        auth.account = CHAIN_INITIATOR_NAME;
                         auth.owner.add_authority(initiator_public_key, 1);
                         auth.owner.weight_threshold = 1;
                         auth.active = auth.owner;
@@ -2560,13 +2560,13 @@ namespace graphene { namespace chain {
                 }
 
                 create<dynamic_global_property_object>([&](dynamic_global_property_object &p) {
-                    p.current_witness = STEEMIT_COMMITTEE_ACCOUNT;
-                    p.time = STEEMIT_GENESIS_TIME;
+                    p.current_witness = CHAIN_COMMITTEE_ACCOUNT;
+                    p.time = CHAIN_GENESIS_TIME;
                     p.recent_slots_filled = fc::uint128_t::max_value();
                     p.participation_count = 128;
-                    p.committee_supply = asset(0, STEEM_SYMBOL);
-                    p.current_supply = asset(init_supply, STEEM_SYMBOL);
-                    p.maximum_block_size = STEEMIT_MAX_BLOCK_SIZE;
+                    p.committee_supply = asset(0, TOKEN_SYMBOL);
+                    p.current_supply = asset(init_supply, TOKEN_SYMBOL);
+                    p.maximum_block_size = CHAIN_MAX_BLOCK_SIZE;
                     p.bandwidth_reserve_candidates = bandwidth_reserve_candidates;
                 });
 
@@ -2574,13 +2574,13 @@ namespace graphene { namespace chain {
                     create<block_summary_object>([&](block_summary_object &) {});
                 }
                 create<hardfork_property_object>([&](hardfork_property_object &hpo) {
-                    hpo.processed_hardforks.push_back(STEEMIT_GENESIS_TIME);
-                    hpo.current_hardfork_version=BLOCKCHAIN_HARDFORK_VERSION;
+                    hpo.processed_hardforks.push_back(CHAIN_GENESIS_TIME);
+                    hpo.current_hardfork_version=CHAIN_HARDFORK_VERSION;
                 });
 
                 // Create witness scheduler
                 create<witness_schedule_object>([&](witness_schedule_object &wso) {
-                    wso.current_shuffled_witnesses[0] = STEEMIT_COMMITTEE_ACCOUNT;
+                    wso.current_shuffled_witnesses[0] = CHAIN_COMMITTEE_ACCOUNT;
                 });
             }
             FC_CAPTURE_AND_RETHROW()
@@ -2634,7 +2634,7 @@ namespace graphene { namespace chain {
             }
 
             if (!(skip & (skip_transaction_signatures | skip_authority_check))) {
-                const chain_id_type &chain_id = STEEMIT_CHAIN_ID;
+                const chain_id_type &chain_id = CHAIN_ID;
 
                 auto get_active = [&](const account_name_type& name) {
                     return authority(get<account_authority_object, by_account>(name).active);
@@ -2649,7 +2649,7 @@ namespace graphene { namespace chain {
                 };
 
                 try {
-                    trx.verify_authority(chain_id, get_active, get_owner, get_posting, STEEMIT_MAX_SIG_CHECK_DEPTH);
+                    trx.verify_authority(chain_id, get_active, get_owner, get_posting, CHAIN_MAX_SIG_CHECK_DEPTH);
                 }
                 catch (protocol::tx_missing_active_auth &e) {
                     if (get_shared_db_merkle().find(head_block_num() + 1) == get_shared_db_merkle().end()) {
@@ -2674,9 +2674,9 @@ namespace graphene { namespace chain {
                 fc::time_point_sec now = head_block_time();
 
                 FC_ASSERT(
-                    trx.expiration <= now + fc::seconds(STEEMIT_MAX_TIME_UNTIL_EXPIRATION), "",
+                    trx.expiration <= now + fc::seconds(CHAIN_MAX_TIME_UNTIL_EXPIRATION), "",
                     ("trx.expiration", trx.expiration)("now", now)
-                    ("max_til_exp", STEEMIT_MAX_TIME_UNTIL_EXPIRATION));
+                    ("max_til_exp", CHAIN_MAX_TIME_UNTIL_EXPIRATION));
 
                 FC_ASSERT(now < trx.expiration, "", ("now", now)("trx.exp", trx.expiration));
             }
@@ -2686,7 +2686,7 @@ namespace graphene { namespace chain {
             try {
                 /*vector< graphene::chainbase::generic_id > ids;
       get_changed_ids( ids );
-      STEEMIT_TRY_NOTIFY( changed_objects, ids )*/
+      CHAIN_TRY_NOTIFY( changed_objects, ids )*/
                 /*
       if( _undo_db.enabled() )
       {
@@ -2701,7 +2701,7 @@ namespace graphene { namespace chain {
             changed_ids.push_back( item.first );
             removed.emplace_back( item.second.get() );
          }
-         STEEMIT_TRY_NOTIFY( changed_objects, changed_ids )
+         CHAIN_TRY_NOTIFY( changed_objects, changed_ids )
       }
       */
             }
@@ -2803,7 +2803,7 @@ namespace graphene { namespace chain {
                    // For every existing before the head_block_time (genesis time), apply the hardfork
                    // This allows the test net to launch with past hardforks and apply the next harfork when running
                    uint32_t n;
-                   for( n=0; n<STEEMIT_NUM_HARDFORKS; n++ )
+                   for( n=0; n<CHAIN_NUM_HARDFORKS; n++ )
                    {
                       if( _hardfork_times[n+1] > next_block.timestamp )
                          break;
@@ -2837,7 +2837,7 @@ namespace graphene { namespace chain {
 
                    if(fc::exists(snapshot_json))
                    {
-                         share_type init_supply = int64_t( STEEMIT_INIT_SUPPLY );
+                         share_type init_supply = int64_t( CHAIN_INIT_SUPPLY );
                       ilog("Import snapshot.json");
                       snapshot_items snapshot=fc::json::from_file(snapshot_json).as<snapshot_items>();;
                       for(snapshot_account &account : snapshot.accounts)
@@ -2847,9 +2847,9 @@ namespace graphene { namespace chain {
                          {
                             a.name = account.login;
                             a.memo_key = account_public_key;
-                            a.recovery_account = STEEMIT_INITIATOR_NAME;
-                            a.created = STEEMIT_GENESIS_TIME;
-                            a.last_vote_time = STEEMIT_GENESIS_TIME;
+                            a.recovery_account = CHAIN_INITIATOR_NAME;
+                            a.created = CHAIN_GENESIS_TIME;
+                            a.last_vote_time = CHAIN_GENESIS_TIME;
                          } );
                          ++bandwidth_reserve_candidates;
 
@@ -2867,17 +2867,17 @@ namespace graphene { namespace chain {
                             m.account = account.login;
                          });
                          #endif
-                         create_vesting( get_account( account.login ), asset( account.shares_ammount, STEEM_SYMBOL ) );
+                         create_vesting( get_account( account.login ), asset( account.shares_ammount, TOKEN_SYMBOL ) );
                          init_supply-=account.shares_ammount;
 
                          ilog( "Import account ${a} with public key ${k}, shares: ${s} (remaining init supply: ${i})", ("a", account.login)("k", account.public_key)("s", account.shares_ammount)("i", init_supply) );
                       }
-                      const auto& initiator = get_account( STEEMIT_INITIATOR_NAME );
+                      const auto& initiator = get_account( CHAIN_INITIATOR_NAME );
                       modify( initiator, [&]( account_object& a )
                       {
-                         a.balance  = asset( init_supply, STEEM_SYMBOL );
+                         a.balance  = asset( init_supply, TOKEN_SYMBOL );
                       } );
-                      ilog( "Modify initiator account ${a}, remaining balance: ${i}", ("a", STEEMIT_INITIATOR_NAME)("i", init_supply) );
+                      ilog( "Modify initiator account ${a}, remaining balance: ${i}", ("a", CHAIN_INITIATOR_NAME)("i", init_supply) );
                         modify(gprops, [&](dynamic_global_property_object &dgp) {
                             dgp.bandwidth_reserve_candidates = bandwidth_reserve_candidates;
                         });
@@ -3105,7 +3105,7 @@ namespace graphene { namespace chain {
                                 w.total_missed++;
                                 if (head_block_num() -
                                     w.last_confirmed_block_num >
-                                    STEEMIT_MAX_WITNESS_MISSED_BLOCKS) {
+                                    CHAIN_MAX_WITNESS_MISSED_BLOCKS) {
                                     w.signing_key = public_key_type();
                                     push_virtual_operation(shutdown_witness_operation(w.owner));
                                 }
@@ -3139,7 +3139,7 @@ namespace graphene { namespace chain {
        *  usage, it will only impact users who where attempting to use more than 50% of
        *  their capacity.
        *
-       *  When the reserve ratio is at its max (check STEEMIT_MAX_RESERVE_RATIO) a 50%
+       *  When the reserve ratio is at its max (check CHAIN_MAX_RESERVE_RATIO) a 50%
        *  reduction will take 3 to 4 days to return back to maximum. When it is at its
        *  minimum it will return back to its prior level in just a few minutes.
        *
@@ -3154,26 +3154,26 @@ namespace graphene { namespace chain {
                         }
 
                         if (dgp.current_reserve_ratio >
-                            STEEMIT_MAX_RESERVE_RATIO) {
-                            dgp.current_reserve_ratio = STEEMIT_MAX_RESERVE_RATIO;
+                            CHAIN_MAX_RESERVE_RATIO) {
+                            dgp.current_reserve_ratio = CHAIN_MAX_RESERVE_RATIO;
                         }
                     }
                     dgp.max_virtual_bandwidth = (dgp.maximum_block_size *
                                                  dgp.current_reserve_ratio *
-                                                 STEEMIT_BANDWIDTH_PRECISION *
-                                                 STEEMIT_BANDWIDTH_AVERAGE_WINDOW_SECONDS) /
-                                                STEEMIT_BLOCK_INTERVAL;
+                                                 CHAIN_BANDWIDTH_PRECISION *
+                                                 CHAIN_BANDWIDTH_AVERAGE_WINDOW_SECONDS) /
+                                                CHAIN_BLOCK_INTERVAL;
                 });
 
                 if (!(skip & skip_undo_history_check)) {
                     GOLOS_ASSERT(
-                        _dgp.head_block_number - _dgp.last_irreversible_block_num < STEEMIT_MAX_UNDO_HISTORY,
+                        _dgp.head_block_number - _dgp.last_irreversible_block_num < CHAIN_MAX_UNDO_HISTORY,
                         undo_database_exception,
                         "The database does not have enough undo history to support a blockchain with so many missed blocks. "
                         "Please add a checkpoint if you would like to continue applying blocks beyond this point.",
                         ("last_irreversible_block_num", _dgp.last_irreversible_block_num)
                         ("head", _dgp.head_block_number)
-                        ("max_undo", STEEMIT_MAX_UNDO_HISTORY));
+                        ("max_undo", CHAIN_MAX_UNDO_HISTORY));
                 }
             } FC_CAPTURE_AND_RETHROW()
         }
@@ -3198,20 +3198,20 @@ namespace graphene { namespace chain {
 
                 vector<const witness_object *> wit_objs;
                 wit_objs.reserve(wso.num_scheduled_witnesses);
-                for (int i = 0; i < wso.num_scheduled_witnesses; i+=STEEMIT_BLOCK_WITNESS_REPEAT) {
+                for (int i = 0; i < wso.num_scheduled_witnesses; i+=CHAIN_BLOCK_WITNESS_REPEAT) {
                     wit_objs.push_back(&get_witness(wso.current_shuffled_witnesses[i]));
                 }
 
-                static_assert(STEEMIT_IRREVERSIBLE_THRESHOLD >
+                static_assert(CHAIN_IRREVERSIBLE_THRESHOLD >
                               0, "irreversible threshold must be nonzero");
 
                 // 1 1 1 2 2 2 2 2 2 2 -> 2     .7*10 = 7
                 // 1 1 1 1 1 1 1 2 2 2 -> 1
                 // 3 3 3 3 3 3 3 3 3 3 -> 3
 
-                size_t offset = ((STEEMIT_100_PERCENT -
-                                  STEEMIT_IRREVERSIBLE_THRESHOLD) *
-                                 wit_objs.size() / STEEMIT_100_PERCENT);
+                size_t offset = ((CHAIN_100_PERCENT -
+                                  CHAIN_IRREVERSIBLE_THRESHOLD) *
+                                 wit_objs.size() / CHAIN_100_PERCENT);
 
                 std::nth_element(wit_objs.begin(),
                         wit_objs.begin() + offset, wit_objs.end(),
@@ -3286,7 +3286,7 @@ namespace graphene { namespace chain {
         void database::adjust_balance(const account_object &a, const asset &delta) {
             modify(a, [&](account_object &acnt) {
                 switch (delta.symbol) {
-                    case STEEM_SYMBOL:
+                    case TOKEN_SYMBOL:
                         acnt.balance += delta;
                         break;
                     default:
@@ -3300,7 +3300,7 @@ namespace graphene { namespace chain {
             const auto &props = get_dynamic_global_properties();
             modify(props, [&](dynamic_global_property_object &props) {
                 switch (delta.symbol) {
-                    case STEEM_SYMBOL: {
+                    case TOKEN_SYMBOL: {
                         props.current_supply += delta;
                         assert(props.current_supply.amount.value >= 0);
                         break;
@@ -3314,7 +3314,7 @@ namespace graphene { namespace chain {
 
         asset database::get_balance(const account_object &a, asset_symbol_type symbol) const {
             switch (symbol) {
-                case STEEM_SYMBOL:
+                case TOKEN_SYMBOL:
                     return a.balance;
                 default:
                     FC_ASSERT(false, "invalid symbol");
@@ -3323,19 +3323,19 @@ namespace graphene { namespace chain {
 
 
         void database::init_hardforks() {
-            _hardfork_times[0] = fc::time_point_sec(STEEMIT_GENESIS_TIME);
-            _hardfork_versions[0] = hardfork_version(BLOCKCHAIN_VERSION);
+            _hardfork_times[0] = fc::time_point_sec(CHAIN_GENESIS_TIME);
+            _hardfork_versions[0] = hardfork_version(CHAIN_VERSION);
 
             const auto &hardforks = get_hardfork_property_object();
             FC_ASSERT(
-                hardforks.last_hardfork <= STEEMIT_NUM_HARDFORKS,
+                hardforks.last_hardfork <= CHAIN_NUM_HARDFORKS,
                 "Chain knows of more hardforks than configuration",
                 ("hardforks.last_hardfork", hardforks.last_hardfork)
-                ("STEEMIT_NUM_HARDFORKS", STEEMIT_NUM_HARDFORKS));
+                ("CHAIN_NUM_HARDFORKS", CHAIN_NUM_HARDFORKS));
             FC_ASSERT(
-                _hardfork_versions[hardforks.last_hardfork] <= BLOCKCHAIN_VERSION,
+                _hardfork_versions[hardforks.last_hardfork] <= CHAIN_VERSION,
                 "Blockchain version is older than last applied hardfork");
-            FC_ASSERT(BLOCKCHAIN_HARDFORK_VERSION == _hardfork_versions[STEEMIT_NUM_HARDFORKS]);
+            FC_ASSERT(CHAIN_HARDFORK_VERSION == _hardfork_versions[CHAIN_NUM_HARDFORKS]);
         }
 
         void database::reset_virtual_schedule_time() {
@@ -3364,7 +3364,7 @@ namespace graphene { namespace chain {
                        hardforks.next_hardfork
                        &&
                        hardforks.next_hardfork_time <= head_block_time()) {
-                    if (hardforks.last_hardfork < STEEMIT_NUM_HARDFORKS) {
+                    if (hardforks.last_hardfork < CHAIN_NUM_HARDFORKS) {
                         apply_hardfork(hardforks.last_hardfork + 1);
                     } else {
                         throw unknown_hardfork_exception();
@@ -3383,7 +3383,7 @@ namespace graphene { namespace chain {
             auto const &hardforks = get_hardfork_property_object();
 
             for (uint32_t i = hardforks.last_hardfork + 1;
-                 i <= hardfork && i <= STEEMIT_NUM_HARDFORKS; i++) {
+                 i <= hardfork && i <= CHAIN_NUM_HARDFORKS; i++) {
                 modify(hardforks, [&](hardfork_property_object &hpo) {
                     hpo.next_hardfork = _hardfork_versions[i];
                     hpo.next_hardfork_time = head_block_time();
