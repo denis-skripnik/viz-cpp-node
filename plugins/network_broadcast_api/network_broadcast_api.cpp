@@ -194,4 +194,4 @@ namespace graphene {
                 } FC_LOG_AND_RETHROW() }
         }
     }
-} // steem::plugins::network_broadcast_api
+} // graphene::plugins::network_broadcast_api

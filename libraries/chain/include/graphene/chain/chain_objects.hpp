@@ -34,7 +34,7 @@ namespace graphene {
             account_name_type agent;
             time_point_sec ratification_deadline;
             time_point_sec escrow_expiration;
-            asset steem_balance;
+            asset token_balance;
             asset pending_fee;
             bool to_approved = false;
             bool agent_approved = false;
@@ -151,6 +151,6 @@ CHAINBASE_SET_INDEX_TYPE(graphene::chain::withdraw_vesting_route_object, graphen
 FC_REFLECT((graphene::chain::escrow_object),
         (id)(escrow_id)(from)(to)(agent)
                 (ratification_deadline)(escrow_expiration)
-                (steem_balance)(pending_fee)
+                (token_balance)(pending_fee)
                 (to_approved)(agent_approved)(disputed))
 CHAINBASE_SET_INDEX_TYPE(graphene::chain::escrow_object, graphene::chain::escrow_index)

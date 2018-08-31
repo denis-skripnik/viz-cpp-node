@@ -1,5 +1,5 @@
-#ifndef GOLOS_OWNER_AUTHORITY_HISTORY_API_OBJ_HPP
-#define GOLOS_OWNER_AUTHORITY_HISTORY_API_OBJ_HPP
+#ifndef CHAIN_OWNER_AUTHORITY_HISTORY_API_OBJ_HPP
+#define CHAIN_OWNER_AUTHORITY_HISTORY_API_OBJ_HPP
 
 #include <graphene/chain/account_object.hpp>
 
@@ -32,4 +32,4 @@ namespace graphene {
 
 FC_REFLECT((graphene::plugins::database_api::owner_authority_history_api_object),
            (id)(account)(previous_owner_authority)(last_valid_time))
-#endif //GOLOS_OWNER_AUTHORITY_HISTORY_API_OBJ_HPP
+#endif //CHAIN_OWNER_AUTHORITY_HISTORY_API_OBJ_HPP

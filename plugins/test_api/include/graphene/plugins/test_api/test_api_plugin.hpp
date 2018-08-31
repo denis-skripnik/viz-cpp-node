@@ -54,7 +54,7 @@ namespace graphene {
 
         }
     }
-} // steem::plugins::test_api
+} // graphene::plugins::test_api
 
 FC_REFLECT((graphene::plugins::test_api::test_api_a_t), (value))
 FC_REFLECT((graphene::plugins::test_api::test_api_b_t), (value))

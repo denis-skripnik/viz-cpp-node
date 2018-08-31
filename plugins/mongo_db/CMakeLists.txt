@@ -1,7 +1,7 @@
 
 if(ENABLE_MONGO_PLUGIN)
 
-  # Golos has no direct dependencies on libmongoc but its shared libraries
+  # Project has no direct dependencies on libmongoc but its shared libraries
   # will need to be present at runtime for the C++ libraries we use:
   # libbsoncxx & libmongocxx (both from github.com/mongodb/mongo-cxx-driver)
 
@@ -20,9 +20,9 @@ if(ENABLE_MONGO_PLUGIN)
 
     find_package(libbsoncxx REQUIRED)
     find_package(libmongocxx REQUIRED)
-  
+
     set(CURRENT_TARGET mongo_db)
-  
+
     list(APPEND CURRENT_TARGET_HEADERS
       include/graphene/plugins/mongo_db/mongo_db_plugin.hpp
       include/graphene/plugins/mongo_db/mongo_db_writer.hpp
@@ -50,10 +50,10 @@ if(ENABLE_MONGO_PLUGIN)
         ${CURRENT_TARGET_SOURCES}
       )
     endif()
-  
+
     add_library(graphene::${CURRENT_TARGET} ALIAS graphene_${CURRENT_TARGET})
     set_property(TARGET graphene_${CURRENT_TARGET} PROPERTY EXPORT_NAME ${CURRENT_TARGET})
-    
+
     target_link_libraries(
       graphene_${CURRENT_TARGET}
       graphene::json_rpc
@@ -66,10 +66,10 @@ if(ENABLE_MONGO_PLUGIN)
       ${LIBMONGOCXX_LIBRARIES}
     )
     target_include_directories(graphene_${CURRENT_TARGET} PUBLIC "include" ${LIBMONGOCXX_INCLUDE_DIRS} ${LIBBSONCXX_INCLUDE_DIRS})
-  
+
     install(TARGETS
       graphene_${CURRENT_TARGET}
-  
+
       RUNTIME DESTINATION bin
       LIBRARY DESTINATION lib
       ARCHIVE DESTINATION lib

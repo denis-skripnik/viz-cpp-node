@@ -74,20 +74,20 @@ namespace graphene {
         }
 
         void assert_unused_approvals(sign_state& s) {
-            GOLOS_CTOR_ASSERT(
+            CHAIN_CTOR_ASSERT(
                 !s.remove_unused_signatures(),
                 tx_irrelevant_sig,
                 [&](auto& e) {
                     e.unused_signatures = std::move(s.unused_signatures);
-                    e.append_log(GOLOS_ASSERT_MESSAGE("Unnecessary signature(s) detected"));
+                    e.append_log(CHAIN_ASSERT_MESSAGE("Unnecessary signature(s) detected"));
                 });
 
-            GOLOS_CTOR_ASSERT(
+            CHAIN_CTOR_ASSERT(
                 !s.filter_unused_approvals(),
                 tx_irrelevant_approval,
                 [&](auto& e) {
                     e.unused_approvals = std::move(s.unused_approvals);
-                    e.append_log(GOLOS_ASSERT_MESSAGE("Unnecessary approval(s) detected"));
+                    e.append_log(CHAIN_ASSERT_MESSAGE("Unnecessary approval(s) detected"));
                 });
         }
 
@@ -142,7 +142,7 @@ namespace graphene {
                     }
                 }
 
-                GOLOS_CTOR_ASSERT(
+                CHAIN_CTOR_ASSERT(
                     missing_accounts.empty(),
                     tx_missing_posting_auth,
                     [&](auto& e) {
@@ -150,7 +150,7 @@ namespace graphene {
                         e.used_signatures = std::move(s.used_signatures);
                         e.missing_accounts = std::move(missing_accounts);
                         e.append_log(
-                            GOLOS_ASSERT_MESSAGE("Missing Posting Authority ${id}", ("id", e.missing_accounts)));
+                            CHAIN_ASSERT_MESSAGE("Missing Posting Authority ${id}", ("id", e.missing_accounts)));
                     });
 
                 assert_unused_approvals(s);
@@ -172,13 +172,13 @@ namespace graphene {
                 }
             }
 
-            GOLOS_CTOR_ASSERT(
+            CHAIN_CTOR_ASSERT(
                 missing_auths.empty(),
                 tx_missing_other_auth,
                 [&](auto& e) {
                     e.missing_auths = std::move(missing_auths);
                     e.append_log(
-                        GOLOS_ASSERT_MESSAGE("Missing Authority", ("auth", e.missing_auths)));
+                        CHAIN_ASSERT_MESSAGE("Missing Authority", ("auth", e.missing_auths)));
                 });
 
             // fetch all of the top level authorities
@@ -188,7 +188,7 @@ namespace graphene {
                 }
             }
 
-            GOLOS_CTOR_ASSERT(
+            CHAIN_CTOR_ASSERT(
                 missing_accounts.empty(),
                 tx_missing_active_auth,
                 [&](auto& e) {
@@ -196,7 +196,7 @@ namespace graphene {
                     e.used_signatures = std::move(s.used_signatures);
                     e.missing_accounts = std::move(missing_accounts);
                     e.append_log(
-                        GOLOS_ASSERT_MESSAGE("Missing Active Authority ${id}", ("id", e.missing_accounts)));
+                        CHAIN_ASSERT_MESSAGE("Missing Active Authority ${id}", ("id", e.missing_accounts)));
                 });
 
             for (const auto& id: required_owner) {
@@ -207,7 +207,7 @@ namespace graphene {
                 }
             }
 
-            GOLOS_CTOR_ASSERT(
+            CHAIN_CTOR_ASSERT(
                 missing_accounts.empty(),
                 tx_missing_owner_auth,
                 [&](auto& e) {
@@ -215,7 +215,7 @@ namespace graphene {
                     e.used_signatures = std::move(s.used_signatures);
                     e.missing_accounts = std::move(missing_accounts);
                     e.append_log(
-                        GOLOS_ASSERT_MESSAGE("Missing Owner Authority ${id}", ("id", e.missing_accounts)));
+                        CHAIN_ASSERT_MESSAGE("Missing Owner Authority ${id}", ("id", e.missing_accounts)));
                 });
 
             assert_unused_approvals(s);
@@ -227,7 +227,7 @@ namespace graphene {
                 auto d = sig_digest(chain_id);
                 flat_set<public_key_type> result;
                 for (const auto &sig : signatures) {
-                    GOLOS_ASSERT(
+                    CHAIN_ASSERT(
                         result.insert(fc::ecc::public_key(sig, d)).second,
                         tx_duplicate_sig,
                         "Duplicate Signature detected");

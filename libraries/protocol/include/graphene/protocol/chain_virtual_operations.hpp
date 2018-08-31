@@ -13,13 +13,13 @@ namespace graphene { namespace protocol {
             }
 
             author_reward_operation(const account_name_type &a, const string &p, const asset &st, const asset &v)
-                    : author(a), permlink(p), steem_payout(st),
+                    : author(a), permlink(p), token_payout(st),
                       vesting_payout(v) {
             }
 
             account_name_type author;
             string permlink;
-            asset steem_payout;
+            asset token_payout;
             asset vesting_payout;
         };
 
@@ -175,7 +175,7 @@ namespace graphene { namespace protocol {
         };
 } } //graphene::protocol
 
-FC_REFLECT((graphene::protocol::author_reward_operation), (author)(permlink)(steem_payout)(vesting_payout))
+FC_REFLECT((graphene::protocol::author_reward_operation), (author)(permlink)(token_payout)(vesting_payout))
 FC_REFLECT((graphene::protocol::curation_reward_operation), (curator)(reward)(comment_author)(comment_permlink))
 FC_REFLECT((graphene::protocol::comment_reward_operation), (author)(permlink)(payout))
 FC_REFLECT((graphene::protocol::fill_vesting_withdraw_operation), (from_account)(to_account)(withdrawn)(deposited))

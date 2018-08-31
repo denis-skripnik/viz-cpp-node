@@ -94,12 +94,12 @@ namespace graphene {
             typedef object_id<blog_object> blog_id_type;
 
             /**
-             *  This index is maintained to get an idea of which authors are resteemed by a particular blogger and
+             *  This index is maintained to get an idea of which authors are reposted by a particular blogger and
              *  how frequnetly. It is designed to give an overview of the type of people a blogger sponsors as well
              *  as to enable generation of filter set for a blog list.
              *
              *  Give me the top authors promoted by this blog
-             *  Give me all blog posts by [authors] that were resteemed by this blog
+             *  Give me all blog posts by [authors] that were reposted by this blog
              */
             class blog_author_stats_object : public object<blog_author_stats_object_type, blog_author_stats_object> {
             public:

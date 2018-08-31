@@ -1,5 +1,5 @@
-#ifndef GOLOS_ACCOUNT_API_OBJ_HPP
-#define GOLOS_ACCOUNT_API_OBJ_HPP
+#ifndef CHAIN_ACCOUNT_API_OBJ_HPP
+#define CHAIN_ACCOUNT_API_OBJ_HPP
 
 #include <graphene/chain/account_object.hpp>
 #include <graphene/chain/database.hpp>
@@ -87,4 +87,4 @@ FC_REFLECT((graphene::api::account_api_object),
     (average_bandwidth)(lifetime_bandwidth)(last_bandwidth_update)
     (witness_votes))
 
-#endif //GOLOS_ACCOUNT_API_OBJ_HPP
+#endif //CHAIN_ACCOUNT_API_OBJ_HPP

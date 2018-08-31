@@ -326,7 +326,7 @@ namespace graphene { namespace chain {
 
             void shares_sender_recalc_energy(const account_object &receiver, asset tokens);
 
-            asset create_vesting(const account_object &to_account, asset steem);
+            asset create_vesting(const account_object &to_account, asset tokens);
 
             void adjust_total_payout(const comment_object &a, const asset &payout, const asset &shares_payout, const asset &curator_value, const asset& beneficiary_value);
 

@@ -1,5 +1,5 @@
-#ifndef GOLOS_DISCUSSION_QUERY_H
-#define GOLOS_DISCUSSION_QUERY_H
+#ifndef CHAIN_DISCUSSION_QUERY_H
+#define CHAIN_DISCUSSION_QUERY_H
 
 #include <fc/optional.hpp>
 #include <fc/variant_object.hpp>
@@ -112,4 +112,4 @@ FC_REFLECT((graphene::plugins::tags::discussion_query),
         (parent_permlink)(limit)(select_languages)(filter_languages)
 );
 
-#endif //GOLOS_DISCUSSION_QUERY_H
+#endif //CHAIN_DISCUSSION_QUERY_H

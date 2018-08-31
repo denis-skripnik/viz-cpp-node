@@ -1,5 +1,5 @@
-#ifndef GOLOS_TAG_API_OBJ_HPP
-#define GOLOS_TAG_API_OBJ_HPP
+#ifndef CHAIN_TAG_API_OBJ_HPP
+#define CHAIN_TAG_API_OBJ_HPP
 
 #include <graphene/plugins/tags/tags_object.hpp>
 #include <graphene/protocol/asset.hpp>
@@ -30,4 +30,4 @@ namespace graphene { namespace plugins { namespace tags {
 FC_REFLECT((graphene::plugins::tags::tag_api_object),
     (name)(total_children_rshares2)(total_payouts)(net_votes)(top_posts)(comments)
 )
-#endif //GOLOS_TAG_API_OBJ_HPP
+#endif //CHAIN_TAG_API_OBJ_HPP

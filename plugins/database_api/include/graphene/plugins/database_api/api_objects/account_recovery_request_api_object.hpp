@@ -1,5 +1,5 @@
-#ifndef GOLOS_ACCOUNT_RECOVERY_REQUEST_API_OBJ_HPP
-#define GOLOS_ACCOUNT_RECOVERY_REQUEST_API_OBJ_HPP
+#ifndef CHAIN_ACCOUNT_RECOVERY_REQUEST_API_OBJ_HPP
+#define CHAIN_ACCOUNT_RECOVERY_REQUEST_API_OBJ_HPP
 
 #include <graphene/chain/account_object.hpp>
 
@@ -31,4 +31,4 @@ FC_REFLECT((graphene::plugins::database_api::account_recovery_request_api_object
            (id)(account_to_recover)(new_owner_authority)(expires))
 
 
-#endif //GOLOS_ACCOUNT_RECOVERY_REQUEST_API_OBJ_HPP
+#endif //CHAIN_ACCOUNT_RECOVERY_REQUEST_API_OBJ_HPP

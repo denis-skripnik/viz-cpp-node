@@ -3,22 +3,22 @@
 #include <fc/exception/exception.hpp>
 #include <graphene/protocol/protocol.hpp>
 
-#define GOLOS_ASSERT_MESSAGE(FORMAT, ...) \
+#define CHAIN_ASSERT_MESSAGE(FORMAT, ...) \
     FC_LOG_MESSAGE(error, FORMAT, __VA_ARGS__)
 
-#define GOLOS_CTOR_ASSERT(expr, exception_type, exception_ctor) \
+#define CHAIN_CTOR_ASSERT(expr, exception_type, exception_ctor) \
     if (!(expr)) { \
         exception_type _E; \
         exception_ctor(_E); \
         throw _E; \
     }
 
-#define GOLOS_ASSERT(expr, exception_type, FORMAT, ...) \
+#define CHAIN_ASSERT(expr, exception_type, FORMAT, ...) \
     if (!(expr)) { \
-        throw exception_type(GOLOS_ASSERT_MESSAGE(FORMAT, __VA_ARGS__)); \
+        throw exception_type(CHAIN_ASSERT_MESSAGE(FORMAT, __VA_ARGS__)); \
     }
 
-#define GOLOS_DECLARE_DERIVED_EXCEPTION_BODY(TYPE, BASE, CODE, WHAT) \
+#define CHAIN_DECLARE_DERIVED_EXCEPTION_BODY(TYPE, BASE, CODE, WHAT) \
     public: \
         enum code_enum { \
             code_value = CODE, \
@@ -45,18 +45,18 @@
         explicit TYPE(fc::log_message&& m, int64_t code, const std::string& name_value, const std::string& what_value) \
             : BASE(std::move(m), code, name_value, what_value) {}
 
-#define GOLOS_DECLARE_DERIVED_EXCEPTION(TYPE, BASE, CODE, WHAT) \
+#define CHAIN_DECLARE_DERIVED_EXCEPTION(TYPE, BASE, CODE, WHAT) \
     class TYPE: public BASE { \
-        GOLOS_DECLARE_DERIVED_EXCEPTION_BODY(TYPE, BASE, CODE, WHAT) \
+        CHAIN_DECLARE_DERIVED_EXCEPTION_BODY(TYPE, BASE, CODE, WHAT) \
     };
 
 namespace graphene { namespace protocol {
-    GOLOS_DECLARE_DERIVED_EXCEPTION(
+    CHAIN_DECLARE_DERIVED_EXCEPTION(
         transaction_exception, fc::exception,
         3000000, "transaction exception")
 
     class tx_missing_active_auth: public transaction_exception {
-        GOLOS_DECLARE_DERIVED_EXCEPTION_BODY(
+        CHAIN_DECLARE_DERIVED_EXCEPTION_BODY(
             tx_missing_active_auth, transaction_exception,
             3010000, "missing required active authority");
     public:
@@ -65,7 +65,7 @@ namespace graphene { namespace protocol {
     };
 
     class tx_missing_owner_auth: public transaction_exception {
-        GOLOS_DECLARE_DERIVED_EXCEPTION_BODY(
+        CHAIN_DECLARE_DERIVED_EXCEPTION_BODY(
             tx_missing_owner_auth, transaction_exception,
             3020000, "missing required owner authority");
     public:
@@ -74,7 +74,7 @@ namespace graphene { namespace protocol {
     };
 
     class tx_missing_posting_auth: public transaction_exception {
-        GOLOS_DECLARE_DERIVED_EXCEPTION_BODY(
+        CHAIN_DECLARE_DERIVED_EXCEPTION_BODY(
             tx_missing_posting_auth, transaction_exception,
             3030000, "missing required posting authority");
     public:
@@ -83,7 +83,7 @@ namespace graphene { namespace protocol {
     };
 
     class tx_missing_other_auth: public transaction_exception {
-        GOLOS_DECLARE_DERIVED_EXCEPTION_BODY(
+        CHAIN_DECLARE_DERIVED_EXCEPTION_BODY(
             tx_missing_other_auth, transaction_exception,
             3040000, "missing required other authority");
     public:
@@ -91,7 +91,7 @@ namespace graphene { namespace protocol {
     };
 
     class tx_irrelevant_sig: public transaction_exception {
-        GOLOS_DECLARE_DERIVED_EXCEPTION_BODY(
+        CHAIN_DECLARE_DERIVED_EXCEPTION_BODY(
             tx_irrelevant_sig, transaction_exception,
             3050000, "irrelevant signature included");
     public:
@@ -99,13 +99,13 @@ namespace graphene { namespace protocol {
     };
 
     class tx_duplicate_sig: public transaction_exception {
-        GOLOS_DECLARE_DERIVED_EXCEPTION_BODY(
+        CHAIN_DECLARE_DERIVED_EXCEPTION_BODY(
             tx_duplicate_sig, transaction_exception,
             3060000, "duplicate signature included");
     };
 
     class tx_irrelevant_approval: public transaction_exception {
-        GOLOS_DECLARE_DERIVED_EXCEPTION_BODY(
+        CHAIN_DECLARE_DERIVED_EXCEPTION_BODY(
             tx_irrelevant_approval, transaction_exception,
             3070000, "irrelevant approval included");
     public:

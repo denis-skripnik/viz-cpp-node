@@ -1,5 +1,5 @@
-#ifndef GOLOS_FOLLOW_FORWARD_HPP
-#define GOLOS_FOLLOW_FORWARD_HPP
+#ifndef CHAIN_FOLLOW_FORWARD_HPP
+#define CHAIN_FOLLOW_FORWARD_HPP
 
 #include <fc/reflect/reflect.hpp>
 
@@ -17,4 +17,4 @@ namespace graphene {
 
 FC_REFLECT_ENUM(graphene::plugins::follow::follow_type, (undefined)(blog)(ignore))
 
-#endif //GOLOS_FORWARD_HPP
+#endif //CHAIN_FORWARD_HPP

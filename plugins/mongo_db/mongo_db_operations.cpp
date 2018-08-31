@@ -251,7 +251,7 @@ namespace mongo_db {
         format_value(body, "agent", op.agent);
         format_value(body, "escrow_id", op.escrow_id);
 
-        format_value(body, "steem_amount ", op.steem_amount);
+        format_value(body, "token_amount ", op.token_amount);
         format_value(body, "fee", op.fee);
         format_value(body, "json_meta", op.json_meta);
 
@@ -280,7 +280,7 @@ namespace mongo_db {
         format_value(body, "receiver", op.receiver);
         format_value(body, "escrow_id", op.escrow_id);
 
-        format_value(body, "steem_amount", op.steem_amount);
+        format_value(body, "token_amount", op.token_amount);
 
         return body;
     }
@@ -367,7 +367,7 @@ namespace mongo_db {
 
         format_value(body, "author", op.author);
         format_value(body, "permlink", op.permlink);
-        format_value(body, "steem_payout", op.steem_payout);
+        format_value(body, "token_payout", op.token_payout);
         format_value(body, "vesting_payout", op.vesting_payout);
 
         return body;

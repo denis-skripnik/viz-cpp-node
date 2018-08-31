@@ -87,4 +87,4 @@ namespace graphene { namespace wallet {
             return vtor.m;
         }
 
-    } } // namespace steem::wallet
+    } } // namespace graphene::wallet

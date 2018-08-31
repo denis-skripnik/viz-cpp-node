@@ -430,15 +430,15 @@ namespace graphene { namespace chain {
                 FC_ASSERT(o.escrow_expiration >
                           _db.head_block_time(), "The escrow expiration must be after head block time.");
 
-                asset steem_spent = o.steem_amount;
+                asset token_spent = o.token_amount;
                 if (o.fee.symbol == TOKEN_SYMBOL) {
-                    steem_spent += o.fee;
+                    token_spent += o.fee;
                 }
 
                 FC_ASSERT(from_account.balance >=
-                          steem_spent, "Account cannot cover STEEM costs of escrow. Required: ${r} Available: ${a}", ("r", steem_spent)("a", from_account.balance));
+                          token_spent, "Account cannot cover token costs of escrow. Required: ${r} Available: ${a}", ("r", token_spent)("a", from_account.balance));
 
-                _db.adjust_balance(from_account, -steem_spent);
+                _db.adjust_balance(from_account, -token_spent);
 
                 _db.create<escrow_object>([&](escrow_object &esc) {
                     esc.escrow_id = o.escrow_id;
@@ -447,7 +447,7 @@ namespace graphene { namespace chain {
                     esc.agent = o.agent;
                     esc.ratification_deadline = o.ratification_deadline;
                     esc.escrow_expiration = o.escrow_expiration;
-                    esc.steem_balance = o.steem_amount;
+                    esc.token_balance = o.token_amount;
                     esc.pending_fee = o.fee;
                 });
             }
@@ -489,7 +489,7 @@ namespace graphene { namespace chain {
 
                 if (reject_escrow) {
                     const auto &from_account = _db.get_account(o.from);
-                    _db.adjust_balance(from_account, escrow.steem_balance);
+                    _db.adjust_balance(from_account, escrow.token_balance);
                     _db.adjust_balance(from_account, escrow.pending_fee);
 
                     _db.remove(escrow);
@@ -535,8 +535,8 @@ namespace graphene { namespace chain {
                 const auto &receiver_account = _db.get_account(o.receiver);
 
                 const auto &e = _db.get_escrow(o.from, o.escrow_id);
-                FC_ASSERT(e.steem_balance >=
-                          o.steem_amount, "Release amount exceeds escrow balance. Amount: ${a}, Balance: ${b}", ("a", o.steem_amount)("b", e.steem_balance));
+                FC_ASSERT(e.token_balance >=
+                          o.token_amount, "Release amount exceeds escrow balance. Amount: ${a}, Balance: ${b}", ("a", o.token_amount)("b", e.token_balance));
                 FC_ASSERT(e.to ==
                           o.to, "Operation 'to' (${o}) does not match escrow 'to' (${e}).", ("o", o.to)("e", e.to));
                 FC_ASSERT(e.agent ==
@@ -567,13 +567,13 @@ namespace graphene { namespace chain {
                 }
                 // If escrow expires and there is no dispute, either party can release funds to either party.
 
-                _db.adjust_balance(receiver_account, o.steem_amount);
+                _db.adjust_balance(receiver_account, o.token_amount);
 
                 _db.modify(e, [&](escrow_object &esc) {
-                    esc.steem_balance -= o.steem_amount;
+                    esc.token_balance -= o.token_amount;
                 });
 
-                if (e.steem_balance.amount == 0) {
+                if (e.token_balance.amount == 0) {
                     _db.remove(e);
                 }
             }
@@ -636,7 +636,7 @@ namespace graphene { namespace chain {
                                                  : from_account;
 
             FC_ASSERT(_db.get_balance(from_account, TOKEN_SYMBOL) >=
-                      o.amount, "Account does not have sufficient GOLOS for transfer.");
+                      o.amount, "Account does not have sufficient TOKEN for transfer.");
             _db.adjust_balance(from_account, -o.amount);
             _db.create_vesting(to_account, o.amount);
         }
@@ -647,9 +647,9 @@ namespace graphene { namespace chain {
             const auto &account = _db.get_account(o.account);
 
             FC_ASSERT(account.vesting_shares.amount >= 0,
-                "Account does not have sufficient Golos Power for withdraw.");
+                "Account does not have sufficient SHARES for withdraw.");
             FC_ASSERT(account.available_vesting_shares() >= o.vesting_shares,
-                "Account does not have sufficient Golos Power for withdraw.");
+                "Account does not have sufficient SHARES for withdraw.");
             FC_ASSERT(o.vesting_shares.amount >= 0, "Cannot withdraw negative SHARES.");
 
             if (o.vesting_shares.amount == 0) {

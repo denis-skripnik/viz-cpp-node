@@ -1,5 +1,5 @@
-#ifndef GOLOS_FOLLOW_EVALUATORS_HPP
-#define GOLOS_FOLLOW_EVALUATORS_HPP
+#ifndef CHAIN_FOLLOW_EVALUATORS_HPP
+#define CHAIN_FOLLOW_EVALUATORS_HPP
 
 #include <graphene/plugins/follow/follow_operations.hpp>
 #include <graphene/chain/database.hpp>
@@ -38,4 +38,4 @@ namespace graphene {
     }
 }
 
-#endif //GOLOS_FOLLOW_EVALUATORS_HPP
+#endif //CHAIN_FOLLOW_EVALUATORS_HPP

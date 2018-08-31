@@ -36,4 +36,4 @@ namespace graphene {
 
         }
     }
-} // steem::plugins::test_api
+} // graphene::plugins::test_api

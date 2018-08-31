@@ -269,7 +269,7 @@ namespace graphene { namespace chain {
                 _fork_db.reset();    // override effect of _fork_db.start_block() call in open()
 
                 auto start = fc::time_point::now();
-                GOLOS_ASSERT(_block_log.head(), block_log_exception, "No blocks in block log. Cannot reindex an empty chain.");
+                CHAIN_ASSERT(_block_log.head(), block_log_exception, "No blocks in block log. Cannot reindex an empty chain.");
 
                 ilog("Replaying blocks...");
 
@@ -1130,7 +1130,7 @@ namespace graphene { namespace chain {
 
                 /// save the head block so we can recover its transactions
                 optional<signed_block> head_block = fetch_block_by_id(head_id);
-                GOLOS_ASSERT(head_block.valid(), pop_empty_chain, "there are no blocks to pop");
+                CHAIN_ASSERT(head_block.valid(), pop_empty_chain, "there are no blocks to pop");
 
                 _fork_db.pop_block();
                 undo();
@@ -1258,9 +1258,9 @@ namespace graphene { namespace chain {
         }
 /**
  * @param to_account - the account to receive the new vesting shares
- * @param STEEM - STEEM to be converted to vesting shares
+ * @param tokens - TOKEN to be converted to vesting shares
  */
-        asset database::create_vesting(const account_object &to_account, asset steem) {
+        asset database::create_vesting(const account_object &to_account, asset tokens) {
             try {
                 const auto &cprops = get_dynamic_global_properties();
 
@@ -1277,14 +1277,14 @@ namespace graphene { namespace chain {
                  *
                  *  128 bit math is requred due to multiplying of 64 bit numbers. This is done in asset and price.
                  */
-                asset new_vesting = steem * cprops.get_vesting_share_price();
+                asset new_vesting = tokens * cprops.get_vesting_share_price();
 
                 modify(to_account, [&](account_object &to) {
                     to.vesting_shares += new_vesting;
                 });
 
                 modify(cprops, [&](dynamic_global_property_object &props) {
-                    props.total_vesting_fund += steem;
+                    props.total_vesting_fund += tokens;
                     props.total_vesting_shares += new_vesting;
                 });
 
@@ -1292,7 +1292,7 @@ namespace graphene { namespace chain {
 
                 return new_vesting;
             }
-            FC_CAPTURE_AND_RETHROW((to_account.name)(steem))
+            FC_CAPTURE_AND_RETHROW((to_account.name)(tokens))
         }
 
         void database::update_bandwidth_reserve_candidates() {
@@ -1733,96 +1733,96 @@ namespace graphene { namespace chain {
 
         void database::clear_null_account_balance() {
             const auto &null_account = get_account(CHAIN_NULL_ACCOUNT);
-            asset total_steem(0, TOKEN_SYMBOL);
+            asset total_tokens(0, TOKEN_SYMBOL);
 
             if (null_account.balance.amount > 0) {
-                total_steem += null_account.balance;
+                total_tokens += null_account.balance;
                 adjust_balance(null_account, -null_account.balance);
             }
 
             if (null_account.vesting_shares.amount > 0) {
                 const auto &gpo = get_dynamic_global_properties();
-                auto converted_steem = null_account.vesting_shares *
+                auto converted_tokens = null_account.vesting_shares *
                                        gpo.get_vesting_share_price();
 
             modify(gpo, [&](dynamic_global_property_object &g) {
                 g.total_vesting_shares -= null_account.vesting_shares;
-                g.total_vesting_fund -= converted_steem;
+                g.total_vesting_fund -= converted_tokens;
             });
 
             modify(null_account, [&](account_object &a) {
                 a.vesting_shares.amount = 0;
             });
 
-                total_steem += converted_steem;
+                total_tokens += converted_tokens;
             }
 
-            if (total_steem.amount > 0) {
-                burn_asset(-total_steem);
+            if (total_tokens.amount > 0) {
+                burn_asset(-total_tokens);
             }
         }
 
         void database::clear_anonymous_account_balance() {
             const auto &anonymous_account = get_account(CHAIN_ANONYMOUS_ACCOUNT);
-            asset total_steem(0, TOKEN_SYMBOL);
+            asset total_tokens(0, TOKEN_SYMBOL);
 
             if (anonymous_account.balance.amount > 0) {
-                total_steem += anonymous_account.balance;
+                total_tokens += anonymous_account.balance;
                 adjust_balance(anonymous_account, -anonymous_account.balance);
             }
 
             if (anonymous_account.vesting_shares.amount > 0) {
                 const auto &gpo = get_dynamic_global_properties();
-                auto converted_steem = anonymous_account.vesting_shares *
+                auto converted_tokens = anonymous_account.vesting_shares *
                                        gpo.get_vesting_share_price();
 
             modify(gpo, [&](dynamic_global_property_object &g) {
                 g.total_vesting_shares -= anonymous_account.vesting_shares;
-                g.total_vesting_fund -= converted_steem;
+                g.total_vesting_fund -= converted_tokens;
             });
 
             modify(anonymous_account, [&](account_object &a) {
                 a.vesting_shares.amount = 0;
             });
 
-                total_steem += converted_steem;
+                total_tokens += converted_tokens;
             }
 
-            if (total_steem.amount > 0) {
-                burn_asset(-total_steem);
+            if (total_tokens.amount > 0) {
+                burn_asset(-total_tokens);
             }
         }
 
         void database::claim_committee_account_balance() {
             const auto &gpo = get_dynamic_global_properties();
             const auto &committee_account = get_account(CHAIN_COMMITTEE_ACCOUNT);
-            asset total_steem(0, TOKEN_SYMBOL);
+            asset total_tokens(0, TOKEN_SYMBOL);
 
             if (committee_account.balance.amount > 0) {
-                total_steem += committee_account.balance;
+                total_tokens += committee_account.balance;
                 adjust_balance(committee_account, -committee_account.balance);
             }
 
             if (committee_account.vesting_shares.amount > 0) {
-                auto converted_steem = committee_account.vesting_shares *
+                auto converted_tokens = committee_account.vesting_shares *
                                        gpo.get_vesting_share_price();
 
                 modify(gpo, [&](dynamic_global_property_object &g) {
                     g.total_vesting_shares -= committee_account.vesting_shares;
-                    g.total_vesting_fund -= converted_steem;
+                    g.total_vesting_fund -= converted_tokens;
                 });
 
                 modify(committee_account, [&](account_object &a) {
                     a.vesting_shares.amount = 0;
                 });
 
-                total_steem += converted_steem;
+                total_tokens += converted_tokens;
             }
 
-            if (total_steem.amount > 0) {
-                burn_asset(-total_steem);
+            if (total_tokens.amount > 0) {
+                burn_asset(-total_tokens);
                 modify(gpo, [&](dynamic_global_property_object &g) {
-                    g.committee_supply += total_steem;
+                    g.committee_supply += total_tokens;
                 });
             }
         }
@@ -1895,11 +1895,11 @@ namespace graphene { namespace chain {
                     to_withdraw=0;
                 }
 
-                share_type vests_deposited_as_steem = 0;
+                share_type vests_deposited_as_tokens = 0;
                 share_type vests_deposited_as_vests = 0;
-                asset total_steem_converted = asset(0, TOKEN_SYMBOL);
+                asset total_tokens_converted = asset(0, TOKEN_SYMBOL);
 
-                // Do two passes, the first for vests, the second for steem. Try to maintain as much accuracy for vests as possible.
+                // Do two passes, the first for shares, the second for tokens. Try to maintain as much accuracy for shares as possible.
                 for (auto itr = didx.upper_bound(boost::make_tuple(from_account.id, account_id_type()));
                      itr != didx.end() && itr->from_account == from_account.id;
                      ++itr) {
@@ -1934,39 +1934,39 @@ namespace graphene { namespace chain {
                                 (fc::uint128_t(to_withdraw.value) *
                                  itr->percent) /
                                 CHAIN_100_PERCENT).to_uint64();
-                        vests_deposited_as_steem += to_deposit;
-                        auto converted_steem = asset(to_deposit, SHARES_SYMBOL) *
+                        vests_deposited_as_tokens += to_deposit;
+                        auto converted_tokens = asset(to_deposit, SHARES_SYMBOL) *
                                                cprops.get_vesting_share_price();
-                        total_steem_converted += converted_steem;
+                        total_tokens_converted += converted_tokens;
 
                         if (to_deposit > 0) {
                             modify(to_account, [&](account_object &a) {
-                                a.balance += converted_steem;
+                                a.balance += converted_tokens;
                             });
 
                             modify(cprops, [&](dynamic_global_property_object &o) {
-                                o.total_vesting_fund -= converted_steem;
+                                o.total_vesting_fund -= converted_tokens;
                                 o.total_vesting_shares.amount -= to_deposit;
                             });
 
-                            push_virtual_operation(fill_vesting_withdraw_operation(from_account.name, to_account.name, asset(to_deposit, SHARES_SYMBOL), converted_steem));
+                            push_virtual_operation(fill_vesting_withdraw_operation(from_account.name, to_account.name, asset(to_deposit, SHARES_SYMBOL), converted_tokens));
                         }
                     }
                 }
 
-                share_type to_convert = to_withdraw - vests_deposited_as_steem -
+                share_type to_convert = to_withdraw - vests_deposited_as_tokens -
                                         vests_deposited_as_vests;
                 if(to_convert<0){
                     to_convert=0;
                 }
 
-                auto converted_steem = asset(to_convert, SHARES_SYMBOL) *
+                auto converted_tokens = asset(to_convert, SHARES_SYMBOL) *
                                        cprops.get_vesting_share_price();
-                shares_sender_recalc_energy(from_account,asset(vests_deposited_as_vests, SHARES_SYMBOL) + asset(vests_deposited_as_steem, SHARES_SYMBOL) * cprops.get_vesting_share_price());
+                shares_sender_recalc_energy(from_account,asset(vests_deposited_as_vests, SHARES_SYMBOL) + asset(vests_deposited_as_tokens, SHARES_SYMBOL) * cprops.get_vesting_share_price());
 
                 modify(from_account, [&](account_object &a) {
                     a.vesting_shares.amount -= to_withdraw;
-                    a.balance += converted_steem;
+                    a.balance += converted_tokens;
                     a.withdrawn += to_withdraw;
 
                     if (a.withdrawn >= a.to_withdraw ||
@@ -1979,13 +1979,13 @@ namespace graphene { namespace chain {
                 });
 
                 modify(cprops, [&](dynamic_global_property_object &o) {
-                    o.total_vesting_fund -= converted_steem;
+                    o.total_vesting_fund -= converted_tokens;
                     o.total_vesting_shares.amount -= to_convert;
                 });
 
                 if (to_withdraw > 0) {
                     adjust_proxied_witness_votes(from_account, -to_withdraw);
-                    push_virtual_operation(fill_vesting_withdraw_operation(from_account.name, from_account.name, asset(to_withdraw, SHARES_SYMBOL), converted_steem));
+                    push_virtual_operation(fill_vesting_withdraw_operation(from_account.name, from_account.name, asset(to_withdraw, SHARES_SYMBOL), converted_tokens));
                 }
             }
         }
@@ -2275,7 +2275,7 @@ namespace graphene { namespace chain {
                 ++escrow_itr;
 
                 const auto &from_account = get_account(old_escrow.from);
-                adjust_balance(from_account, old_escrow.steem_balance);
+                adjust_balance(from_account, old_escrow.token_balance);
                 adjust_balance(from_account, old_escrow.pending_fee);
 
                 remove(old_escrow);
@@ -2798,7 +2798,7 @@ namespace graphene { namespace chain {
                     dgp.current_witness = next_block.witness;
                 });
 
-                if( BOOST_UNLIKELY( next_block_num == 1 ) )//added from Steem
+                if( BOOST_UNLIKELY( next_block_num == 1 ) )//init hardforks
                 {
                    // For every existing before the head_block_time (genesis time), apply the hardfork
                    // This allows the test net to launch with past hardforks and apply the next harfork when running
@@ -3166,7 +3166,7 @@ namespace graphene { namespace chain {
                 });
 
                 if (!(skip & skip_undo_history_check)) {
-                    GOLOS_ASSERT(
+                    CHAIN_ASSERT(
                         _dgp.head_block_number - _dgp.last_irreversible_block_num < CHAIN_MAX_UNDO_HISTORY,
                         undo_database_exception,
                         "The database does not have enough undo history to support a blockchain with so many missed blocks. "

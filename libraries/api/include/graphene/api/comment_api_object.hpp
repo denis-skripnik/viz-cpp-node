@@ -1,5 +1,5 @@
-#ifndef GOLOS_COMMENT_API_OBJ_H
-#define GOLOS_COMMENT_API_OBJ_H
+#ifndef CHAIN_COMMENT_API_OBJ_H
+#define CHAIN_COMMENT_API_OBJ_H
 
 #include <graphene/chain/comment_object.hpp>
 #include <graphene/chain/database.hpp>
@@ -67,4 +67,4 @@ FC_REFLECT(
     (payout_value)(shares_payout_value)(curator_payout_value)(beneficiary_payout_value)(author_rewards)(net_votes)
     (root_comment)(beneficiaries))
 
-#endif //GOLOS_COMMENT_API_OBJ_H
+#endif //CHAIN_COMMENT_API_OBJ_H

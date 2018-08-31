@@ -117,7 +117,7 @@ namespace graphene { namespace chain {
         };
 
         /**
-         * This field represents the Golos blockchain version the witness is running.
+         * This field represents the blockchain version the witness is running.
          */
         version running_version;
 

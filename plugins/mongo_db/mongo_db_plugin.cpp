@@ -57,7 +57,7 @@ namespace mongo_db {
     ) {
         cli.add_options()
             ("mongodb-uri",
-             boost::program_options::value<string>()->default_value("mongodb://127.0.0.1:27017/Golos"),
+             boost::program_options::value<string>()->default_value("mongodb://127.0.0.1:27017/viz"),
              "Mongo DB connection string")
             ("mongodb-write-raw-blocks",
              boost::program_options::value<bool>()->default_value(true),
@@ -110,7 +110,7 @@ namespace mongo_db {
 
             ilog("mongo_db plugin: plugin_initialize() end");
         } FC_CAPTURE_AND_RETHROW()
-    } 
+    }
 
     void mongo_db_plugin::plugin_startup() {
         ilog("mongo_db plugin: plugin_startup() begin");

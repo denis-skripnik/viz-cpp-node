@@ -407,4 +407,4 @@ namespace chain {
 
 }
 }
-} // namespace steem::plugis::chain::chain_apis
+} // namespace graphene::plugis::chain::chain_apis

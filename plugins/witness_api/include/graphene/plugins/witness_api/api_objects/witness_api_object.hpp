@@ -1,5 +1,5 @@
-#ifndef GOLOS_WITNESS_API_OBJ_HPP
-#define GOLOS_WITNESS_API_OBJ_HPP
+#ifndef CHAIN_WITNESS_API_OBJ_HPP
+#define CHAIN_WITNESS_API_OBJ_HPP
 
 #include <graphene/chain/witness_objects.hpp>
 #include <graphene/chain/chain_object_types.hpp>
@@ -52,4 +52,4 @@ FC_REFLECT((graphene::plugins::witness_api::witness_api_object),
            (total_missed)(last_aslot)(last_confirmed_block_num)(signing_key)(props)
            (last_work)(running_version)(hardfork_version_vote)(hardfork_time_vote))
 
-#endif //GOLOS_WITNESS_API_OBJ_HPP
+#endif //CHAIN_WITNESS_API_OBJ_HPP

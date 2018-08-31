@@ -141,6 +141,6 @@ namespace graphene {
             }
         }
     }
-} // steem::plugins::json_rpc
+} // graphene::plugins::json_rpc
 
 FC_REFLECT((graphene::plugins::json_rpc::api_method_signature), (args)(ret))

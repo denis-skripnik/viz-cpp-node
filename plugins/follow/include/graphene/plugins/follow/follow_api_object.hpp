@@ -1,5 +1,5 @@
-#ifndef GOLOS_FOLLOW_API_OBJECT_HPP
-#define GOLOS_FOLLOW_API_OBJECT_HPP
+#ifndef CHAIN_FOLLOW_API_OBJECT_HPP
+#define CHAIN_FOLLOW_API_OBJECT_HPP
 
 #include <graphene/api/comment_api_object.hpp>
 #include <graphene/plugins/follow/follow_objects.hpp>
@@ -92,4 +92,4 @@ FC_REFLECT((graphene::plugins::follow::reblog_count), (author)(count));
 FC_REFLECT((graphene::plugins::follow::follow_count_api_obj), (account)(follower_count)(following_count)(limit));
 
 
-#endif //GOLOS_FOLLOW_API_OBJECT_HPP
+#endif //CHAIN_FOLLOW_API_OBJECT_HPP

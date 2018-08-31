@@ -40,7 +40,7 @@ namespace mongo_db {
         try {
             uri = mongocxx::uri {uri_str};
             mongo_conn = mongocxx::client {uri};
-            db_name = uri.database().empty() ? "Golos" : uri.database();
+            db_name = uri.database().empty() ? "viz" : uri.database();
             mongo_database = mongo_conn[db_name];
             bulk_opts.ordered(false);
             write_raw_blocks = write_raw;
@@ -95,7 +95,7 @@ namespace mongo_db {
                                 op.visit(st_writer);
                             }
                         }
-                        
+
                         write_block_operations(st_writer, head_iter->second, virtual_ops[head_iter->first]);
                     }
                     catch (...) {
@@ -216,9 +216,9 @@ namespace mongo_db {
         } else {
             document filter;
 
-            filter << "_id" << bsoncxx::oid(named_doc.keyval); 
+            filter << "_id" << bsoncxx::oid(named_doc.keyval);
 
-            mongocxx::model::update_one msg{filter.view(), 
+            mongocxx::model::update_one msg{filter.view(),
                 view};
             msg.upsert(true);
             formatted_blocks[named_doc.collection_name]->append(msg);

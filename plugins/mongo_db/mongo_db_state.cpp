@@ -82,7 +82,6 @@ namespace mongo_db {
             format_value(body, "net_votes", comment.net_votes);
             format_value(body, "parent_author", comment.parent_author);
             format_value(body, "parent_permlink", comment.parent_permlink);
-            format_value(body, "percent_steem_dollars", comment.percent_steem_dollars);
             format_value(body, "total_payout", comment.payout_value);
             format_value(body, "total_vote_weight", comment.total_vote_weight);
             format_value(body, "vote_rshares", comment.vote_rshares);
@@ -437,7 +436,7 @@ namespace mongo_db {
             format_value(body, "author", op.author);
             format_value(body, "permlink", op.permlink);
             format_value(body, "timestamp", state_block.timestamp);
-            format_value(body, "steem_payout", op.steem_payout);
+            format_value(body, "token_payout", op.token_payout);
             format_value(body, "vesting_payout", op.vesting_payout);
 
             body << close_document;

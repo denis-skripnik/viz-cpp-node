@@ -1,5 +1,5 @@
-#ifndef GOLOS_FORWARD_HPP
-#define GOLOS_FORWARD_HPP
+#ifndef CHAIN_FORWARD_HPP
+#define CHAIN_FORWARD_HPP
 
 #include <graphene/chain/chain_objects.hpp>
 
@@ -19,4 +19,4 @@ using vesting_delegation_expiration_api_object = graphene::chain::vesting_delega
 
 } } } // graphene::plugins::database_api
 
-#endif //GOLOS_FORWARD_HPP
+#endif //CHAIN_FORWARD_HPP

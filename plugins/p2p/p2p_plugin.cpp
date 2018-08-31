@@ -458,7 +458,7 @@ namespace graphene {
                     my->endpoint = fc::ip::endpoint::from_string(options.at("p2p-endpoint").as<string>());
                 }
 
-                my->user_agent = "Steem Reference Implementation";
+                my->user_agent = "Graphene Reference Implementation";
 
                 if (options.count("p2p-max-connections")) {
                     my->max_connections = options.at("p2p-max-connections").as<uint32_t>();
@@ -558,4 +558,4 @@ namespace graphene {
 
         }
     }
-} // namespace steem::plugins::p2p
+} // namespace graphene::plugins::p2p

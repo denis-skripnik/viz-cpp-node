@@ -49,4 +49,4 @@ namespace graphene {
 
         }
     }
-} // steem::plugins::p2p
+} // graphene::plugins::p2p

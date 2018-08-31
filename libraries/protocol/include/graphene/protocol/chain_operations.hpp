@@ -194,7 +194,7 @@ namespace graphene { namespace protocol {
             account_name_type agent;
             uint32_t escrow_id = 30;
 
-            asset steem_amount = asset(0, TOKEN_SYMBOL);
+            asset token_amount = asset(0, TOKEN_SYMBOL);
             asset fee;
 
             time_point_sec ratification_deadline;
@@ -271,7 +271,7 @@ namespace graphene { namespace protocol {
             account_name_type receiver; ///< the account that should receive funds (might be from, might be to)
 
             uint32_t escrow_id = 30;
-            asset steem_amount = asset(0, TOKEN_SYMBOL); ///< the amount of steem to release
+            asset token_amount = asset(0, TOKEN_SYMBOL); ///< the amount of tokens to release
 
             void validate() const;
 
@@ -368,17 +368,17 @@ namespace graphene { namespace protocol {
              *
              *  target_delegation = create_account_delegation_ratio * account_creation_fee
              */
-            uint32_t create_account_delegation_ratio = GOLOS_CREATE_ACCOUNT_DELEGATION_RATIO;
+            uint32_t create_account_delegation_ratio = CHAIN_CREATE_ACCOUNT_DELEGATION_RATIO;
 
             /**
              * Minimum time of delegated SHARES on create account
              */
-            uint32_t create_account_delegation_time = (GOLOS_CREATE_ACCOUNT_DELEGATION_TIME).to_seconds();
+            uint32_t create_account_delegation_time = (CHAIN_CREATE_ACCOUNT_DELEGATION_TIME).to_seconds();
 
             /**
              * Minimum delegated VIZ
              */
-            asset min_delegation = asset(GOLOS_MIN_DELEGATION, TOKEN_SYMBOL);
+            asset min_delegation = asset(CHAIN_MIN_DELEGATION, TOKEN_SYMBOL);
 
             /**
              *  Curation percent range, check median value on payout
@@ -743,10 +743,10 @@ FC_REFLECT((graphene::protocol::beneficiary_route_type), (account)(weight))
 FC_REFLECT((graphene::protocol::comment_payout_beneficiaries), (beneficiaries));
 FC_REFLECT_TYPENAME((graphene::protocol::comment_extension));
 
-FC_REFLECT((graphene::protocol::escrow_transfer_operation), (from)(to)(steem_amount)(escrow_id)(agent)(fee)(json_meta)(ratification_deadline)(escrow_expiration));
+FC_REFLECT((graphene::protocol::escrow_transfer_operation), (from)(to)(token_amount)(escrow_id)(agent)(fee)(json_meta)(ratification_deadline)(escrow_expiration));
 FC_REFLECT((graphene::protocol::escrow_approve_operation), (from)(to)(agent)(who)(escrow_id)(approve));
 FC_REFLECT((graphene::protocol::escrow_dispute_operation), (from)(to)(agent)(who)(escrow_id));
-FC_REFLECT((graphene::protocol::escrow_release_operation), (from)(to)(agent)(who)(receiver)(escrow_id)(steem_amount));
+FC_REFLECT((graphene::protocol::escrow_release_operation), (from)(to)(agent)(who)(receiver)(escrow_id)(token_amount));
 FC_REFLECT((graphene::protocol::request_account_recovery_operation), (recovery_account)(account_to_recover)(new_owner_authority)(extensions));
 FC_REFLECT((graphene::protocol::recover_account_operation), (account_to_recover)(new_owner_authority)(recent_owner_authority)(extensions));
 FC_REFLECT((graphene::protocol::change_recovery_account_operation), (account_to_recover)(new_recovery_account)(extensions));

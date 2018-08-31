@@ -219,12 +219,12 @@ namespace graphene { namespace protocol {
             validate_account_name(to);
             validate_account_name(agent);
             FC_ASSERT(fee.amount >= 0, "fee cannot be negative");
-            FC_ASSERT(steem_amount.amount >=
-                      0, "steem amount cannot be negative");
+            FC_ASSERT(token_amount.amount >=
+                      0, "tokens amount cannot be negative");
             FC_ASSERT(from != agent &&
                       to != agent, "agent must be a third party");
             FC_ASSERT(fee.symbol == TOKEN_SYMBOL, "fee must be TOKEN_SYMBOL");
-            FC_ASSERT(steem_amount.symbol ==
+            FC_ASSERT(token_amount.symbol ==
                       TOKEN_SYMBOL, "amount must be TOKEN_SYMBOL");
             FC_ASSERT(ratification_deadline <
                       escrow_expiration, "ratification deadline must be before escrow expiration");
@@ -261,10 +261,10 @@ namespace graphene { namespace protocol {
                       who == agent, "who must be from or to or agent");
             FC_ASSERT(receiver == from ||
                       receiver == to, "receiver must be from or to");
-            FC_ASSERT(steem_amount.amount >=
+            FC_ASSERT(token_amount.amount >=
                       0, "amount cannot be negative");
-            FC_ASSERT(steem_amount.amount > 0, "escrow must release a non-zero amount");
-            FC_ASSERT(steem_amount.symbol ==
+            FC_ASSERT(token_amount.amount > 0, "escrow must release a non-zero amount");
+            FC_ASSERT(token_amount.symbol ==
                       TOKEN_SYMBOL, "amount must be TOKEN_SYMBOL");
         }
 

@@ -206,7 +206,7 @@ namespace graphene { namespace wallet {
 
             public:
                 wallet_api& self;
-                wallet_api_impl( wallet_api& s, const wallet_data& initial_data, const graphene::protocol::chain_id_type& _steem_chain_id, fc::api_connection& con ):
+                wallet_api_impl( wallet_api& s, const wallet_data& initial_data, const graphene::protocol::chain_id_type& _chain_id, fc::api_connection& con ):
                     self( s ),
                     _remote_database_api( con.get_remote_api< remote_database_api >( 0, "database_api" ) ),
                     _remote_operation_history( con.get_remote_api< remote_operation_history >( 0, "operation_history" ) ),
@@ -221,7 +221,7 @@ namespace graphene { namespace wallet {
                     init_prototype_ops();
 
                     _wallet.ws_server = initial_data.ws_server;
-                    steem_chain_id = _steem_chain_id;
+                    chain_id = _chain_id;
                 }
                 virtual ~wallet_api_impl()
                 {}
@@ -330,8 +330,8 @@ namespace graphene { namespace wallet {
 
                     fc::mutable_variant_object result;
                     result["client_version"]           = client_version;
-                    result["steem_revision"]           = graphene::utilities::git_revision_sha;
-                    result["steem_revision_age"]       = fc::get_approximate_relative_time_string( fc::time_point_sec( graphene::utilities::git_revision_unix_timestamp ) );
+                    result["revision"]           = graphene::utilities::git_revision_sha;
+                    result["revision_age"]       = fc::get_approximate_relative_time_string( fc::time_point_sec( graphene::utilities::git_revision_unix_timestamp ) );
                     result["fc_revision"]              = fc::git_revision_sha;
                     result["fc_revision_age"]          = fc::get_approximate_relative_time_string( fc::time_point_sec( fc::git_revision_unix_timestamp ) );
                     result["compile_date"]             = "compiled on " __DATE__ " at " __TIME__;
@@ -353,7 +353,6 @@ namespace graphene { namespace wallet {
                     try {
                         //auto v = _remote_api->get_version();
                         //result["server_blockchain_version"] = v.blockchain_version;
-                        //result["server_steem_revision"] = v.steem_revision;
                         //result["server_fc_revision"] = v.fc_revision;
                     } catch( fc::exception& ) {
                         result["server"] = "could not retrieve server version information";
@@ -784,7 +783,7 @@ namespace graphene { namespace wallet {
                     }
 
                     auto minimal_signing_keys = tx.minimize_required_signatures(
-                            steem_chain_id,
+                            chain_id,
                             available_keys,
                             [&]( const string& account_name ) -> const authority&
                             { return (get_account_from_lut( account_name ).active); },
@@ -798,7 +797,7 @@ namespace graphene { namespace wallet {
                     for( const public_key_type& k : minimal_signing_keys ) {
                         auto it = available_private_keys.find(k);
                         FC_ASSERT( it != available_private_keys.end() );
-                        tx.sign( it->second, steem_chain_id );
+                        tx.sign( it->second, chain_id );
                     }
 
                     if( broadcast ) {
@@ -830,10 +829,10 @@ namespace graphene { namespace wallet {
                         std::stringstream out;
 
                         auto accounts = result.as<vector<graphene::api::account_api_object>>();
-                        asset total_steem;
+                        asset total_tokens;
                         asset total_vest(0, SHARES_SYMBOL );
                         for( const auto& a : accounts ) {
-                            total_steem += a.balance;
+                            total_tokens += a.balance;
                             total_vest  += a.vesting_shares;
                             out << std::left << std::setw( 17 ) << std::string(a.name)
                                 << std::right << std::setw(18) << fc::variant(a.balance).as_string() <<" "
@@ -841,7 +840,7 @@ namespace graphene { namespace wallet {
                         }
                         out << "-------------------------------------------------------------------------\n";
                         out << std::left << std::setw( 17 ) << "TOTAL"
-                            << std::right << std::setw(18) << fc::variant(total_steem).as_string() <<" "
+                            << std::right << std::setw(18) << fc::variant(total_tokens).as_string() <<" "
                             << std::right << std::setw(26) << fc::variant(total_vest).as_string() <<"\n";
                         return out.str();
                     };
@@ -877,7 +876,7 @@ namespace graphene { namespace wallet {
 
                 string                                  _wallet_filename;
                 wallet_data                             _wallet;
-                graphene::protocol::chain_id_type          steem_chain_id;
+                graphene::protocol::chain_id_type          chain_id;
 
                 map<public_key_type,string>             _keys;
                 fc::sha512                              _checksum;
@@ -908,8 +907,8 @@ namespace graphene { namespace wallet {
 
 namespace graphene { namespace wallet {
 
-        wallet_api::wallet_api(const wallet_data& initial_data, const graphene::protocol::chain_id_type& _steem_chain_id, fc::api_connection& con)
-                : my(new detail::wallet_api_impl(*this, initial_data, _steem_chain_id, con))
+        wallet_api::wallet_api(const wallet_data& initial_data, const graphene::protocol::chain_id_type& _chain_id, fc::api_connection& con)
+                : my(new detail::wallet_api_impl(*this, initial_data, _chain_id, con))
         {}
 
         wallet_api::~wallet_api(){}
@@ -1261,7 +1260,7 @@ fc::ecc::private_key wallet_api::derive_private_key(const std::string& prefix_st
  *  which will be controlable by this wallet.
  */
         annotated_signed_transaction wallet_api::create_account(
-            string creator, asset steem_fee, asset delegated_vests, string new_account_name,
+            string creator, asset tokens_fee, asset delegated_vests, string new_account_name,
             string json_meta, bool broadcast
         ) {
             try {
@@ -1275,7 +1274,7 @@ fc::ecc::private_key wallet_api::derive_private_key(const std::string& prefix_st
                 import_key(posting.wif_priv_key);
                 import_key(memo.wif_priv_key);
                 return create_account_with_keys(
-                    creator, steem_fee, delegated_vests, new_account_name, json_meta,
+                    creator, tokens_fee, delegated_vests, new_account_name, json_meta,
                     owner.pub_key, active.pub_key, posting.pub_key, memo.pub_key, broadcast);
             }
             FC_CAPTURE_AND_RETHROW((creator)(new_account_name)(json_meta));
@@ -1287,7 +1286,7 @@ fc::ecc::private_key wallet_api::derive_private_key(const std::string& prefix_st
  */
         annotated_signed_transaction wallet_api::create_account_with_keys(
             string creator,
-            asset steem_fee,
+            asset tokens_fee,
             asset delegated_vests,
             string new_account_name,
             string json_meta,
@@ -1307,7 +1306,7 @@ fc::ecc::private_key wallet_api::derive_private_key(const std::string& prefix_st
                 op.posting = authority(1, posting, 1);
                 op.memo_key = memo;
                 op.json_metadata = json_meta;
-                op.fee = steem_fee;
+                op.fee = tokens_fee;
                 op.delegation = delegated_vests;
 
                 signed_transaction tx;
@@ -1822,7 +1821,7 @@ fc::ecc::private_key wallet_api::derive_private_key(const std::string& prefix_st
                 string to,
                 string agent,
                 uint32_t escrow_id,
-                asset steem_amount,
+                asset token_amount,
                 asset fee,
                 time_point_sec ratification_deadline,
                 time_point_sec escrow_expiration,
@@ -1836,7 +1835,7 @@ fc::ecc::private_key wallet_api::derive_private_key(const std::string& prefix_st
             op.to = to;
             op.agent = agent;
             op.escrow_id = escrow_id;
-            op.steem_amount = steem_amount;
+            op.token_amount = token_amount;
             op.fee = fee;
             op.ratification_deadline = ratification_deadline;
             op.escrow_expiration = escrow_expiration;
@@ -1905,7 +1904,7 @@ fc::ecc::private_key wallet_api::derive_private_key(const std::string& prefix_st
                 string who,
                 string receiver,
                 uint32_t escrow_id,
-                asset steem_amount,
+                asset token_amount,
                 bool broadcast
         )
         {
@@ -1917,7 +1916,7 @@ fc::ecc::private_key wallet_api::derive_private_key(const std::string& prefix_st
             op.who = who;
             op.receiver = receiver;
             op.escrow_id = escrow_id;
-            op.steem_amount = steem_amount;
+            op.token_amount = token_amount;
 
             signed_transaction tx;
             tx.operations.push_back( op );
@@ -2164,5 +2163,4 @@ fc::ecc::private_key wallet_api::derive_private_key(const std::string& prefix_st
             return my->sign_transaction( trx, broadcast );
         }
 
-    } } // steem::wallet
-
+    } } // graphene::wallet

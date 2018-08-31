@@ -73,9 +73,9 @@
 
 #define CHAIN_MAX_RESERVE_RATIO   (20000)
 
-#define GOLOS_CREATE_ACCOUNT_DELEGATION_RATIO       10
-#define GOLOS_CREATE_ACCOUNT_DELEGATION_TIME        (fc::days(30))
-#define GOLOS_MIN_DELEGATION                        1
+#define CHAIN_CREATE_ACCOUNT_DELEGATION_RATIO       10
+#define CHAIN_CREATE_ACCOUNT_DELEGATION_TIME        (fc::days(30))
+#define CHAIN_MIN_DELEGATION                        1
 
 #define CHAIN_EQUIHASH_N                      140
 #define CHAIN_EQUIHASH_K                      6

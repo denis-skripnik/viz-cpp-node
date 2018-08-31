@@ -1,5 +1,5 @@
-#ifndef GOLOS_COMMITTEE_API_OBJ_H
-#define GOLOS_COMMITTEE_API_OBJ_H
+#ifndef CHAIN_COMMITTEE_API_OBJ_H
+#define CHAIN_COMMITTEE_API_OBJ_H
 
 #include <graphene/chain/committee_objects.hpp>
 #include <graphene/chain/database.hpp>
@@ -59,4 +59,4 @@ FC_REFLECT(
     (start_time)(duration)(end_time)(status)(votes_count)(conclusion_time)(conclusion_payout_amount)
     (payout_amount)(remain_payout_amount)(last_payout_time)(payout_time)(votes))
 
-#endif //GOLOS_COMMITTEE_API_OBJ_H
+#endif //CHAIN_COMMITTEE_API_OBJ_H
