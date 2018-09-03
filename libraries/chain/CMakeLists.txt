@@ -35,7 +35,7 @@ if(BUILD_SHARED_LIBRARIES)
             include/graphene/chain/account_object.hpp
             include/graphene/chain/block_log.hpp
             include/graphene/chain/block_summary_object.hpp
-            include/graphene/chain/comment_object.hpp
+            include/graphene/chain/content_object.hpp
             include/graphene/chain/proposal_object.hpp
             include/graphene/chain/compound.hpp
             include/graphene/chain/custom_operation_interpreter.hpp
@@ -85,7 +85,7 @@ else()
             include/graphene/chain/account_object.hpp
             include/graphene/chain/block_log.hpp
             include/graphene/chain/block_summary_object.hpp
-            include/graphene/chain/comment_object.hpp
+            include/graphene/chain/content_object.hpp
             include/graphene/chain/proposal_object.hpp
             include/graphene/chain/compound.hpp
             include/graphene/chain/custom_operation_interpreter.hpp

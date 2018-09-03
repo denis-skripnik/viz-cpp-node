@@ -2,7 +2,7 @@ set(CURRENT_TARGET api)
 
 list(APPEND CURRENT_TARGET_HEADERS
     include/graphene/api/account_api_object.hpp
-    include/graphene/api/comment_api_object.hpp
+    include/graphene/api/content_api_object.hpp
     include/graphene/api/chain_api_properties.hpp
     include/graphene/api/witness_api_object.hpp
     include/graphene/api/discussion.hpp
@@ -15,7 +15,7 @@ list(APPEND CURRENT_TARGET_HEADERS
 list(APPEND CURRENT_TARGET_SOURCES
     account_api_object.cpp
     discussion_helper.cpp
-    comment_api_object.cpp
+    content_api_object.cpp
     chain_api_properties.cpp
     witness_api_object.cpp
     committee_api_object.cpp

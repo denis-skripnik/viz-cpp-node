@@ -1,7 +1,7 @@
 #pragma once
 
 #include "tags_object.hpp"
-#include <graphene/chain/comment_object.hpp>
+#include <graphene/chain/content_object.hpp>
 #include <graphene/chain/account_object.hpp>
 #include <boost/algorithm/string.hpp>
 

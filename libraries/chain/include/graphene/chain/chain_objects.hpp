@@ -141,7 +141,7 @@ namespace graphene {
     }
 } // graphene::chain
 
-#include <graphene/chain/comment_object.hpp>
+#include <graphene/chain/content_object.hpp>
 #include <graphene/chain/account_object.hpp>
 
 FC_REFLECT((graphene::chain::withdraw_vesting_route_object),

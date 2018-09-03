@@ -6,7 +6,7 @@
 #include <graphene/chain/generic_custom_operation_interpreter.hpp>
 #include <graphene/chain/operation_notification.hpp>
 #include <graphene/chain/account_object.hpp>
-#include <graphene/chain/comment_object.hpp>
+#include <graphene/chain/content_object.hpp>
 #include <memory>
 #include <graphene/plugins/json_rpc/plugin.hpp>
 #include <graphene/chain/index.hpp>

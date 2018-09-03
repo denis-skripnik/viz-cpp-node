@@ -1,7 +1,7 @@
 #pragma once
 
 #include <graphene/api/vote_state.hpp>
-#include <graphene/api/comment_api_object.hpp>
+#include <graphene/api/content_api_object.hpp>
 
 
 namespace graphene { namespace api {

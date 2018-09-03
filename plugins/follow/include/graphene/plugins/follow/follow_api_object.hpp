@@ -1,7 +1,7 @@
 #ifndef CHAIN_FOLLOW_API_OBJECT_HPP
 #define CHAIN_FOLLOW_API_OBJECT_HPP
 
-#include <graphene/api/comment_api_object.hpp>
+#include <graphene/api/content_api_object.hpp>
 #include <graphene/plugins/follow/follow_objects.hpp>
 #include "follow_forward.hpp"
 

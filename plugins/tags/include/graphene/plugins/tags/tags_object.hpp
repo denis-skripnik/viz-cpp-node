@@ -1,11 +1,11 @@
 #pragma once
 
 #include <graphene/plugins/chain/plugin.hpp>
-#include <graphene/chain/comment_object.hpp>
+#include <graphene/chain/content_object.hpp>
 #include <graphene/chain/account_object.hpp>
 #include <boost/multi_index/composite_key.hpp>
 #include <appbase/application.hpp>
-#include <graphene/api/comment_api_object.hpp>
+#include <graphene/api/content_api_object.hpp>
 #include <graphene/plugins/tags/tags_sort.hpp>
 
 #include <graphene/plugins/json_rpc/utility.hpp>

@@ -2,7 +2,7 @@
 #include <graphene/plugins/follow/follow_objects.hpp>
 #include <graphene/plugins/follow/follow_evaluators.hpp>
 #include <graphene/chain/account_object.hpp>
-#include <graphene/chain/comment_object.hpp>
+#include <graphene/chain/content_object.hpp>
 
 namespace graphene {
     namespace plugins {

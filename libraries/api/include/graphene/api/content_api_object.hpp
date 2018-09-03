@@ -1,7 +1,7 @@
 #ifndef CHAIN_COMMENT_API_OBJ_H
 #define CHAIN_COMMENT_API_OBJ_H
 
-#include <graphene/chain/comment_object.hpp>
+#include <graphene/chain/content_object.hpp>
 #include <graphene/chain/database.hpp>
 #include <vector>
 
