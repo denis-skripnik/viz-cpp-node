@@ -33,13 +33,13 @@ namespace graphene {
             }
         };
 
-        class comment_content_object
-                : public object<comment_content_object_type, comment_content_object> {
+        class content_type_object
+                : public object<content_type_object_type, content_type_object> {
         public:
-            comment_content_object() = delete;
+            content_type_object() = delete;
 
             template<typename Constructor, typename Allocator>
-            comment_content_object(Constructor &&c, allocator <Allocator> a)
+            content_type_object(Constructor &&c, allocator <Allocator> a)
                     :title(a), body(a), json_metadata(a) {
                 c(*this);
             }
@@ -108,7 +108,7 @@ namespace graphene {
 
             int32_t net_votes = 0;
 
-            id_type root_comment;
+            id_type root_content;
 
             bip::vector <protocol::beneficiary_route_type, allocator<protocol::beneficiary_route_type>> beneficiaries;
         };
@@ -215,7 +215,7 @@ namespace graphene {
                 ordered_unique <
                     tag<by_root>,
                         composite_key<comment_object,
-                        member <comment_object, comment_id_type, &comment_object::root_comment>,
+                        member <comment_object, comment_id_type, &comment_object::root_content>,
                         member<comment_object, comment_id_type, &comment_object::id>>>,
                 ordered_unique <
                     tag<by_parent>, /// used by consensus to find posts referenced in ops
@@ -251,19 +251,19 @@ namespace graphene {
     struct by_comment;
 
     typedef multi_index_container<
-          comment_content_object,
+          content_type_object,
           indexed_by<
-             ordered_unique< tag< by_id >, member< comment_content_object, comment_content_id_type, &comment_content_object::id > >,
-             ordered_unique< tag< by_comment >, member< comment_content_object, comment_id_type, &comment_content_object::comment > > >,
-        allocator< comment_content_object >
-    > comment_content_index;
+             ordered_unique< tag< by_id >, member< content_type_object, content_type_id_type, &content_type_object::id > >,
+             ordered_unique< tag< by_comment >, member< content_type_object, comment_id_type, &content_type_object::comment > > >,
+        allocator< content_type_object >
+    > content_type_index;
 
     }
 } // graphene::chain
 
 CHAINBASE_SET_INDEX_TYPE(graphene::chain::comment_object, graphene::chain::comment_index)
 
-CHAINBASE_SET_INDEX_TYPE(graphene::chain::comment_content_object, graphene::chain::comment_content_index)
+CHAINBASE_SET_INDEX_TYPE(graphene::chain::content_type_object, graphene::chain::content_type_index)
 
 CHAINBASE_SET_INDEX_TYPE(graphene::chain::comment_vote_object, graphene::chain::comment_vote_index)
 

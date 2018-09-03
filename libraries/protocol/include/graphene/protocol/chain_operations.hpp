@@ -79,19 +79,19 @@ namespace graphene { namespace protocol {
             }
         };
 
-        struct comment_payout_beneficiaries {
+        struct content_payout_beneficiaries {
             vector <beneficiary_route_type> beneficiaries;
 
             void validate() const;
         };
 
         typedef static_variant <
-            comment_payout_beneficiaries
+            content_payout_beneficiaries
         > comment_extension;
 
         typedef flat_set <comment_extension> comment_extensions_type;
 
-        struct comment_operation : public base_operation {
+        struct content_operation : public base_operation {
             account_name_type parent_author;
             string parent_permlink;
 
@@ -112,7 +112,7 @@ namespace graphene { namespace protocol {
         };
 
 
-        struct delete_comment_operation : public base_operation {
+        struct delete_content_operation : public base_operation {
             account_name_type author;
             string permlink;
 
@@ -733,14 +733,14 @@ FC_REFLECT((graphene::protocol::set_withdraw_vesting_route_operation), (from_acc
 FC_REFLECT((graphene::protocol::witness_update_operation), (owner)(url)(block_signing_key))
 FC_REFLECT((graphene::protocol::account_witness_vote_operation), (account)(witness)(approve))
 FC_REFLECT((graphene::protocol::account_witness_proxy_operation), (account)(proxy))
-FC_REFLECT((graphene::protocol::comment_operation), (parent_author)(parent_permlink)(author)(permlink)(title)(body)(curation_percent)(json_metadata)(extensions))
+FC_REFLECT((graphene::protocol::content_operation), (parent_author)(parent_permlink)(author)(permlink)(title)(body)(curation_percent)(json_metadata)(extensions))
 FC_REFLECT((graphene::protocol::vote_operation), (voter)(author)(permlink)(weight))
 FC_REFLECT((graphene::protocol::custom_json_operation), (required_auths)(required_posting_auths)(id)(json))
 
-FC_REFLECT((graphene::protocol::delete_comment_operation), (author)(permlink));
+FC_REFLECT((graphene::protocol::delete_content_operation), (author)(permlink));
 
 FC_REFLECT((graphene::protocol::beneficiary_route_type), (account)(weight))
-FC_REFLECT((graphene::protocol::comment_payout_beneficiaries), (beneficiaries));
+FC_REFLECT((graphene::protocol::content_payout_beneficiaries), (beneficiaries));
 FC_REFLECT_TYPENAME((graphene::protocol::comment_extension));
 
 FC_REFLECT((graphene::protocol::escrow_transfer_operation), (from)(to)(token_amount)(escrow_id)(agent)(fee)(json_meta)(ratification_deadline)(escrow_expiration));

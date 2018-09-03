@@ -29,7 +29,7 @@ namespace graphene { namespace plugins { namespace tags {
     DEFINE_API_ARGS(get_discussions_by_hot,                msg_pack, std::vector<discussion>)
     DEFINE_API_ARGS(get_discussions_by_feed,               msg_pack, std::vector<discussion>)
     DEFINE_API_ARGS(get_discussions_by_blog,               msg_pack, std::vector<discussion>)
-    DEFINE_API_ARGS(get_discussions_by_comments,           msg_pack, std::vector<discussion>)
+    DEFINE_API_ARGS(get_discussions_by_contents,           msg_pack, std::vector<discussion>)
     DEFINE_API_ARGS(get_discussions_by_author_before_date, msg_pack, std::vector<discussion>)
     DEFINE_API_ARGS(get_languages,                         msg_pack, get_languages_result);
 
@@ -119,7 +119,7 @@ namespace graphene { namespace plugins { namespace tags {
              **/
             (get_discussions_by_blog)
 
-            (get_discussions_by_comments)
+            (get_discussions_by_contents)
 
             /**
              * Used to retrieve top 1000 tags list used by an author sorted by most frequently used

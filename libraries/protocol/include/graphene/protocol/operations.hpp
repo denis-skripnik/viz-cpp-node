@@ -12,7 +12,7 @@ namespace graphene { namespace protocol {
          */
         typedef fc::static_variant<
                 vote_operation,
-                comment_operation,
+                content_operation,
 
                 transfer_operation,
                 transfer_to_vesting_operation,
@@ -24,7 +24,7 @@ namespace graphene { namespace protocol {
                 account_witness_vote_operation,
                 account_witness_proxy_operation,
 
-                delete_comment_operation,
+                delete_content_operation,
                 custom_json_operation,
                 set_withdraw_vesting_route_operation,
                 request_account_recovery_operation,
@@ -45,12 +45,12 @@ namespace graphene { namespace protocol {
                 // virtual operations:
                 author_reward_operation,
                 curation_reward_operation,
-                comment_reward_operation,
+                content_reward_operation,
                 fill_vesting_withdraw_operation,
                 shutdown_witness_operation,
                 hardfork_operation,
-                comment_payout_update_operation,
-                comment_benefactor_reward_operation,
+                content_payout_update_operation,
+                content_benefactor_reward_operation,
                 return_vesting_delegation_operation,
 
                 // VIZ Committee operations:

@@ -157,14 +157,14 @@ if( options.count(name) ) { \
             impacted.insert(op.account);
         }
 
-        void operator()(const comment_operation& op) {
+        void operator()(const content_operation& op) {
             impacted.insert(op.author);
             if (op.parent_author.size()) {
                 impacted.insert(op.parent_author);
             }
         }
 
-        void operator()(const delete_comment_operation& op) {
+        void operator()(const delete_content_operation& op) {
             impacted.insert(op.author);
         }
 
@@ -257,7 +257,7 @@ if( options.count(name) ) { \
             impacted.insert(op.agent);
         }
 
-        void operator()(const comment_benefactor_reward_operation& op) {
+        void operator()(const content_benefactor_reward_operation& op) {
             impacted.insert(op.benefactor);
             impacted.insert(op.author);
         }

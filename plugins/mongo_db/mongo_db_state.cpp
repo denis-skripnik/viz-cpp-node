@@ -97,7 +97,7 @@ namespace mongo_db {
                 body << "beneficiaries" << ben_array;
             }
 
-            auto& content = db_.get_comment_content(comment_id_type(comment.id));
+            auto& content = db_.get_content_type(comment_id_type(comment.id));
 
             format_value(body, "title", content.title);
             format_value(body, "body", content.body);
@@ -107,13 +107,13 @@ namespace mongo_db {
             if (comment.parent_author == CHAIN_ROOT_POST_PARENT) {
                 root_oid = oid;
             } else {
-                auto& root_comment = db_.get<comment_object, by_id>(comment.root_comment);
-                root_oid = std::string(root_comment.author).append("/").append(root_comment.permlink.c_str());
+                auto& root_content = db_.get<comment_object, by_id>(comment.root_content);
+                root_oid = std::string(root_content.author).append("/").append(root_content.permlink.c_str());
             }
-            format_oid(body, "root_comment", root_oid);
-            document root_comment_index;
-            root_comment_index << "root_comment" << 1;
-            doc.indexes_to_create.push_back(std::move(root_comment_index));
+            format_oid(body, "root_content", root_oid);
+            document root_content_index;
+            root_content_index << "root_content" << 1;
+            doc.indexes_to_create.push_back(std::move(root_content_index));
 
             body << close_document;
 
@@ -247,11 +247,11 @@ namespace mongo_db {
         }
     }
 
-    auto state_writer::operator()(const comment_operation& op) -> result_type {
+    auto state_writer::operator()(const content_operation& op) -> result_type {
         format_comment(op.author, op.permlink);
     }
 
-    auto state_writer::operator()(const delete_comment_operation& op) -> result_type {
+    auto state_writer::operator()(const delete_content_operation& op) -> result_type {
 
 	std::string author = op.author;
 
@@ -416,7 +416,7 @@ namespace mongo_db {
 
     }
 
-    auto state_writer::operator()(const comment_payout_update_operation& op) -> result_type {
+    auto state_writer::operator()(const content_payout_update_operation& op) -> result_type {
         format_comment(op.author, op.permlink);
     }
 
@@ -480,7 +480,7 @@ namespace mongo_db {
         }
     }
 
-    auto state_writer::operator()(const comment_reward_operation& op) -> result_type {
+    auto state_writer::operator()(const content_reward_operation& op) -> result_type {
         try {
             auto comment_oid = std::string(op.author).append("/").append(op.permlink);
             auto comment_oid_hash = hash_oid(comment_oid);
@@ -506,7 +506,7 @@ namespace mongo_db {
         }
     }
 
-    auto state_writer::operator()(const comment_benefactor_reward_operation& op) -> result_type {
+    auto state_writer::operator()(const content_benefactor_reward_operation& op) -> result_type {
         try {
             auto comment_oid = std::string(op.author).append("/").append(op.permlink);
             auto benefactor_oid = comment_oid + "/" + op.benefactor;

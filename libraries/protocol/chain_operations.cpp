@@ -74,12 +74,12 @@ namespace graphene { namespace protocol {
 
             using result_type = void;
 
-            void operator()( const comment_payout_beneficiaries& cpb ) const {
+            void operator()( const content_payout_beneficiaries& cpb ) const {
                 cpb.validate();
             }
         };
 
-        void comment_payout_beneficiaries::validate() const {
+        void content_payout_beneficiaries::validate() const {
             uint32_t sum = 0;
 
             FC_ASSERT(beneficiaries.size(), "Must specify at least one beneficiary");
@@ -105,7 +105,7 @@ namespace graphene { namespace protocol {
             }
         }
 
-        void comment_operation::validate() const {
+        void content_operation::validate() const {
             FC_ASSERT(title.size() < 256, "Title larger than size limit");
             FC_ASSERT(fc::is_utf8(title), "Title not formatted in UTF8");
             FC_ASSERT(body.size() > 0, "Body is empty");
@@ -130,7 +130,7 @@ namespace graphene { namespace protocol {
             }
         }
 
-        void delete_comment_operation::validate() const {
+        void delete_content_operation::validate() const {
             validate_permlink(permlink);
             validate_account_name(author);
         }

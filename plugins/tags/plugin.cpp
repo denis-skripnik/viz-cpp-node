@@ -570,7 +570,7 @@ namespace graphene { namespace plugins { namespace tags {
         return result;
     }
 
-    DEFINE_API(tags_plugin, get_discussions_by_comments) {
+    DEFINE_API(tags_plugin, get_discussions_by_contents) {
         CHECK_ARG_SIZE(1)
         std::vector<discussion> result;
 #ifndef IS_LOW_MEM
@@ -604,7 +604,7 @@ namespace graphene { namespace plugins { namespace tags {
 
             for (; itr != idx.end() && itr->author == *query.start_author && result.size() < query.limit; ++itr) {
                 if (itr->parent_author.size() > 0) {
-                    discussion p(db.get<comment_object>(itr->root_comment), db);
+                    discussion p(db.get<comment_object>(itr->root_content), db);
                     if (!query.is_good_tags(p) || !query.is_good_author(p.author)) {
                         continue;
                     }

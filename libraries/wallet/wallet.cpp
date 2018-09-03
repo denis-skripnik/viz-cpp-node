@@ -2020,7 +2020,7 @@ fc::ecc::private_key wallet_api::derive_private_key(const std::string& prefix_st
 
         annotated_signed_transaction wallet_api::post_comment( string author, string permlink, string parent_author, string parent_permlink, string title, string body, int16_t curation_percent, string json, bool broadcast ) {
             FC_ASSERT( !is_locked() );
-            comment_operation op;
+            content_operation op;
             op.parent_author = parent_author;
             op.parent_permlink = parent_permlink;
             op.author = author;

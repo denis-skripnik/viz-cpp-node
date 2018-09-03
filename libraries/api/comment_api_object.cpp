@@ -30,13 +30,13 @@ namespace graphene { namespace api {
           beneficiary_payout_value(o.beneficiary_payout_value),
           author_rewards(o.author_rewards),
           net_votes(o.net_votes),
-          root_comment(o.root_comment) {
+          root_content(o.root_content) {
 
         for (auto& route : o.beneficiaries) {
             beneficiaries.push_back(route);
         }
 #ifndef IS_LOW_MEM
-        auto& content = db.get_comment_content(o.id);
+        auto& content = db.get_content_type(o.id);
 
         title = to_string(content.title);
         body = to_string(content.body);

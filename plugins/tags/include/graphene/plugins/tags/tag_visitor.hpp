@@ -55,15 +55,15 @@ namespace graphene { namespace plugins { namespace tags {
         void update_tags(const account_name_type& author, const std::string& permlink) const;
         void remove_tags(const account_name_type& author, const std::string& permlink) const;
 
-        void operator()(const comment_operation& op) const;
+        void operator()(const content_operation& op) const;
 
         void operator()(const vote_operation& op) const;
 
-        void operator()(const delete_comment_operation& op) const;
+        void operator()(const delete_content_operation& op) const;
 
-        void operator()(const comment_reward_operation& op) const;
+        void operator()(const content_reward_operation& op) const;
 
-        void operator()(const comment_payout_update_operation& op) const;
+        void operator()(const content_payout_update_operation& op) const;
 
         template<typename Op>
         void operator()(Op&&) const {

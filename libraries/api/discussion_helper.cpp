@@ -171,7 +171,7 @@ namespace graphene { namespace api {
 //
 // set_url
     void discussion_helper::impl::set_url(discussion& d) const {
-        const comment_api_object root(database().get<comment_object, by_id>(d.root_comment), database());
+        const comment_api_object root(database().get<comment_object, by_id>(d.root_content), database());
 
         d.root_title = root.title;
         d.url = "/@" + root.author + "/" + root.permlink;

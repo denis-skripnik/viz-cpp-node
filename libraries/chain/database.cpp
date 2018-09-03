@@ -624,14 +624,14 @@ namespace graphene { namespace chain {
         }
 
 
-        const comment_content_object &database::get_comment_content(const comment_id_type &comment) const {
+        const content_type_object &database::get_content_type(const comment_id_type &comment) const {
             try {
-                return get<comment_content_object, by_comment>(comment);
+                return get<content_type_object, by_comment>(comment);
             } FC_CAPTURE_AND_RETHROW((comment))
         }
 
-        const comment_content_object *database::find_comment_content(const comment_id_type &comment) const {
-            return find<comment_content_object, by_comment>(comment);
+        const content_type_object *database::find_content_type(const comment_id_type &comment) const {
+            return find<content_type_object, by_comment>(comment);
         }
 
         const escrow_object &database::get_escrow(const account_name_type &name, uint32_t escrow_id) const {
@@ -2062,7 +2062,7 @@ namespace graphene { namespace chain {
                             auto shares_created = create_vesting(get_account(b.account), benefactor_tokens);
                             total_beneficiary_shares += asset( shares_created.amount, SHARES_SYMBOL );
                             push_virtual_operation(
-                                comment_benefactor_reward_operation(
+                                content_benefactor_reward_operation(
                                     b.account, comment.author, to_string(comment.permlink), shares_created));
                             total_beneficiary += benefactor_tokens;
                         }
@@ -2088,7 +2088,7 @@ namespace graphene { namespace chain {
                         total_payout = asset(reward_tokens.to_uint64(), TOKEN_SYMBOL);
 
                         push_virtual_operation(author_reward_operation(comment.author, to_string(comment.permlink), payout_value, shares_created));
-                        push_virtual_operation(comment_reward_operation(comment.author, to_string(comment.permlink), total_payout));
+                        push_virtual_operation(content_reward_operation(comment.author, to_string(comment.permlink), total_payout));
 
 #ifndef IS_LOW_MEM
                         modify(comment, [&](comment_object &c) {
@@ -2122,7 +2122,7 @@ namespace graphene { namespace chain {
                     c.last_payout = head_block_time();
                 });
 
-                push_virtual_operation(comment_payout_update_operation(comment.author, to_string(comment.permlink)));
+                push_virtual_operation(content_payout_update_operation(comment.author, to_string(comment.permlink)));
 
                 const auto &vote_idx = get_index<comment_vote_index>().indices().get<by_comment_voter>();
                 auto vote_itr = vote_idx.lower_bound(comment.id);
@@ -2300,8 +2300,8 @@ namespace graphene { namespace chain {
 
         void database::initialize_evaluators() {
             _my->_evaluator_registry.register_evaluator<vote_evaluator>();
-            _my->_evaluator_registry.register_evaluator<comment_evaluator>();
-            _my->_evaluator_registry.register_evaluator<delete_comment_evaluator>();
+            _my->_evaluator_registry.register_evaluator<content_evaluator>();
+            _my->_evaluator_registry.register_evaluator<delete_content_evaluator>();
             _my->_evaluator_registry.register_evaluator<transfer_evaluator>();
             _my->_evaluator_registry.register_evaluator<transfer_to_vesting_evaluator>();
             _my->_evaluator_registry.register_evaluator<withdraw_vesting_evaluator>();
@@ -2353,7 +2353,7 @@ namespace graphene { namespace chain {
             add_core_index<block_summary_index>(*this);
             add_core_index<witness_schedule_index>(*this);
             add_core_index<comment_index>(*this);
-            add_core_index<comment_content_index>(*this);
+            add_core_index<content_type_index>(*this);
             add_core_index<comment_vote_index>(*this);
             add_core_index<witness_vote_index>(*this);
             add_core_index<hardfork_property_index>(*this);

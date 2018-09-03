@@ -256,7 +256,7 @@ namespace graphene { namespace plugins { namespace tags {
         }
     }
 
-    void operation_visitor::operator()(const delete_comment_operation& op) const {
+    void operation_visitor::operator()(const delete_content_operation& op) const {
         const auto& author = db_.get_account(op.author).id;
         const auto& idx = db_.get_index<tag_index>().indices().get<by_author_comment>();
         auto itr = idx.lower_bound(author);
@@ -270,7 +270,7 @@ namespace graphene { namespace plugins { namespace tags {
         }
     }
 
-    void operation_visitor::operator()(const comment_reward_operation& op) const {
+    void operation_visitor::operator()(const content_reward_operation& op) const {
         // only update existing tags
         update_tags(op.author, op.permlink);
 
@@ -306,7 +306,7 @@ namespace graphene { namespace plugins { namespace tags {
         }
     }
 
-    void operation_visitor::operator()(const comment_operation& op) const {
+    void operation_visitor::operator()(const content_operation& op) const {
         const auto& comment = db_.get_comment(op.author, op.permlink);
 
         if (db_.calculate_discussion_payout_time(comment) != fc::time_point_sec::maximum()) {
@@ -320,7 +320,7 @@ namespace graphene { namespace plugins { namespace tags {
         update_tags(op.author, op.permlink);
     }
 
-    void operation_visitor::operator()(const comment_payout_update_operation& op) const {
+    void operation_visitor::operator()(const content_payout_update_operation& op) const {
         const auto& comment = db_.get_comment(op.author, op.permlink);
         const auto cashout_time = db_.calculate_discussion_payout_time(comment);
 

@@ -38,7 +38,7 @@ namespace graphene {
                 void operator()(const T &) const {
                 }
 
-                void operator()(const delete_comment_operation &op) const {
+                void operator()(const delete_content_operation &op) const {
                     try {
                         const auto *comment = db.find_comment(op.author, op.permlink);
 
@@ -107,7 +107,7 @@ namespace graphene {
                     } FC_CAPTURE_AND_RETHROW()
                 }
 
-                void operator()(const comment_operation &op) const {
+                void operator()(const content_operation &op) const {
                     try {
                         if (op.parent_author.size() > 0) {
                             return;

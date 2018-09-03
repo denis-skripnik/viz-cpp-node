@@ -72,7 +72,7 @@ namespace mongo_db {
         return body;
     }
 
-    auto operation_writer::operator()(const comment_operation& op) -> result_type {
+    auto operation_writer::operator()(const content_operation& op) -> result_type {
         result_type body;
 
         format_value(body, "parent_author", op.parent_author);
@@ -185,7 +185,7 @@ namespace mongo_db {
         return body;
     }
 
-    auto operation_writer::operator()(const delete_comment_operation& op) -> result_type {
+    auto operation_writer::operator()(const delete_content_operation& op) -> result_type {
         result_type body;
 
         format_value(body, "author", op.author);
@@ -384,7 +384,7 @@ namespace mongo_db {
         return body;
     }
 
-    auto operation_writer::operator()(const comment_reward_operation& op) -> result_type {
+    auto operation_writer::operator()(const content_reward_operation& op) -> result_type {
         result_type body;
 
         format_value(body, "author", op.author);
@@ -421,7 +421,7 @@ namespace mongo_db {
         return body;
     }
 
-    auto operation_writer::operator()(const comment_payout_update_operation& op) -> result_type {
+    auto operation_writer::operator()(const content_payout_update_operation& op) -> result_type {
         result_type body;
 
         format_value(body, "author", op.author);
@@ -430,7 +430,7 @@ namespace mongo_db {
         return body;
     }
 
-    auto operation_writer::operator()(const comment_benefactor_reward_operation& op) -> result_type {
+    auto operation_writer::operator()(const content_benefactor_reward_operation& op) -> result_type {
         result_type body;
 
         format_value(body, "benefactor", op.benefactor);

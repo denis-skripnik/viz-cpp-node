@@ -183,33 +183,33 @@ namespace graphene { namespace chain {
 /**
  *  Because net_rshares is 0 there is no need to update any pending payout calculations or parent posts.
  */
-        void delete_comment_evaluator::do_apply(const delete_comment_operation &o) {
+        void delete_content_evaluator::do_apply(const delete_content_operation &o) {
             database &_db = db();
-            const auto &comment = _db.get_comment(o.author, o.permlink);
-            FC_ASSERT(comment.children ==
-                      0, "Cannot delete a comment with replies.");
+            const auto &content = _db.get_comment(o.author, o.permlink);
+            FC_ASSERT(content.children ==
+                      0, "Cannot delete a content with replies.");
 
             if (_db.is_producing()) {
-                FC_ASSERT(comment.net_rshares <=
-                          0, "Cannot delete a comment with network positive votes.");
+                FC_ASSERT(content.net_rshares <=
+                          0, "Cannot delete a content with network positive votes.");
             }
-            if (comment.net_rshares > 0) {
+            if (content.net_rshares > 0) {
                 return;
             }
 
             const auto &vote_idx = _db.get_index<comment_vote_index>().indices().get<by_comment_voter>();
 
-            auto vote_itr = vote_idx.lower_bound(comment_id_type(comment.id));
+            auto vote_itr = vote_idx.lower_bound(comment_id_type(content.id));
             while (vote_itr != vote_idx.end() &&
-                   vote_itr->comment == comment.id) {
+                   vote_itr->comment == content.id) {
                 const auto &cur_vote = *vote_itr;
                 ++vote_itr;
                 _db.remove(cur_vote);
             }
 
-            const auto &auth = _db.get_account(comment.author); /// prove it exists
+            const auto &auth = _db.get_account(content.author); /// prove it exists
             db().modify(auth, [&](account_object &a) {
-                if( comment.parent_author == CHAIN_ROOT_POST_PARENT ) {
+                if( content.parent_author == CHAIN_ROOT_POST_PARENT ) {
                     a.post_count--;
                 }
                 else{
@@ -218,8 +218,8 @@ namespace graphene { namespace chain {
             });
 
             /// this loop can be skiped for validate-only nodes as it is merely gathering stats for indicies
-            if (comment.parent_author != CHAIN_ROOT_POST_PARENT) {
-                auto parent = &_db.get_comment(comment.parent_author, comment.parent_permlink);
+            if (content.parent_author != CHAIN_ROOT_POST_PARENT) {
+                auto parent = &_db.get_comment(content.parent_author, content.parent_permlink);
                 auto now = _db.head_block_time();
                 while (parent) {
                     _db.modify(*parent, [&](comment_object &p) {
@@ -237,14 +237,14 @@ namespace graphene { namespace chain {
                 }
             }
 #ifndef IS_LOW_MEM
-            auto& content = _db.get_comment_content(comment.id);
-            _db.remove(content);
+            auto& content_link = _db.get_content_type(content.id);
+            _db.remove(content_link);
 #endif
-            _db.remove(comment);
+            _db.remove(content);
         }
 
-        struct comment_extension_visitor {
-            comment_extension_visitor(const comment_object &c, database &db)
+        struct content_extension_visitor {
+            content_extension_visitor(const comment_object &c, database &db)
                     : _c(c), _db(db) {
             }
 
@@ -253,7 +253,7 @@ namespace graphene { namespace chain {
             const comment_object &_c;
             database &_db;
 
-            void operator()(const comment_payout_beneficiaries &cpb) const {
+            void operator()(const content_payout_beneficiaries &cpb) const {
                 if (_db.is_producing()) {
                     FC_ASSERT(cpb.beneficiaries.size() <= CHAIN_MAX_COMMENT_BENEFICIARIES,
                               "Cannot specify more than ${m} beneficiaries.", ("m", CHAIN_MAX_COMMENT_BENEFICIARIES));
@@ -272,12 +272,12 @@ namespace graphene { namespace chain {
             }
         };
 
-        void comment_evaluator::do_apply(const comment_operation &o) {
+        void content_evaluator::do_apply(const content_operation &o) {
             try {
                 database &_db = db();
 
                 FC_ASSERT(o.title.size() + o.body.size() +
-                          o.json_metadata.size(), "Cannot update comment because nothing appears to be changing.");
+                          o.json_metadata.size(), "Cannot update content because nothing appears to be changing.");
 
                 const auto &by_permlink_idx = _db.get_index<comment_index>().indices().get<by_permlink>();
                 auto itr = by_permlink_idx.find(boost::make_tuple(o.author, o.permlink));
@@ -291,7 +291,7 @@ namespace graphene { namespace chain {
                     parent = &_db.get_comment(o.parent_author, o.parent_permlink);
                     auto max_depth = CHAIN_MAX_COMMENT_DEPTH;
                     FC_ASSERT(parent->depth < max_depth,
-                              "Comment is nested ${x} posts deep, maximum depth is ${y}.",
+                              "Content is nested ${x} posts deep, maximum depth is ${y}.",
                               ("x", parent->depth)("y", max_depth));
                 }
                 auto now = _db.head_block_time();
@@ -299,10 +299,10 @@ namespace graphene { namespace chain {
                 if (itr == by_permlink_idx.end()) {
                     if (o.parent_author == CHAIN_ROOT_POST_PARENT)
                         FC_ASSERT((now - auth.last_root_post) >
-                                  CHAIN_MIN_ROOT_COMMENT_INTERVAL, "You may only post once every 1 second.", ("now", now)("last_root_post", auth.last_root_post));
+                                  CHAIN_MIN_ROOT_COMMENT_INTERVAL, "You may only post content once every 1 second.", ("now", now)("last_root_post", auth.last_root_post));
                     else
                         FC_ASSERT((now - auth.last_post) >
-                                  CHAIN_MIN_REPLY_INTERVAL, "You may only comment once every 1 second.", ("now", now)("auth.last_post", auth.last_post));
+                                  CHAIN_MIN_REPLY_INTERVAL, "You may only post subcontent once every 1 second.", ("now", now)("auth.last_post", auth.last_post));
 
                     db().modify(auth, [&](account_object &a) {
                         a.last_post = now;
@@ -315,7 +315,7 @@ namespace graphene { namespace chain {
                         }
                     });
 
-                    const auto &new_comment = _db.create<comment_object>([&](comment_object &com) {
+                    const auto &new_content = _db.create<comment_object>([&](comment_object &com) {
                         validate_permlink(o.parent_permlink);
                         validate_permlink(o.permlink);
 
@@ -331,23 +331,23 @@ namespace graphene { namespace chain {
                         if (o.parent_author == CHAIN_ROOT_POST_PARENT) {
                             com.parent_author = "";
                             from_string(com.parent_permlink, o.parent_permlink);
-                            com.root_comment = com.id;
+                            com.root_content = com.id;
                         }
                         else {
                             com.parent_author = parent->author;
                             com.parent_permlink = parent->permlink;
                             com.depth = parent->depth + 1;
-                            com.root_comment = parent->root_comment;
+                            com.root_content = parent->root_content;
                         }
                     });
 
                     for (auto &e : o.extensions) {
-                        e.visit(comment_extension_visitor(new_comment, _db));
+                        e.visit(content_extension_visitor(new_content, _db));
                     }
 
-                    id = new_comment.id;
+                    id = new_content.id;
 #ifndef IS_LOW_MEM
-                    _db.create<comment_content_object>([&](comment_content_object& con) {
+                    _db.create<content_type_object>([&](content_type_object& con) {
                         con.comment = id;
                         from_string(con.title, o.title);
                         if (o.body.size() < 1024*1024*128) {
@@ -356,7 +356,7 @@ namespace graphene { namespace chain {
                         if (fc::is_utf8(o.json_metadata)) {
                             from_string(con.json_metadata, o.json_metadata);
                         } else {
-                            wlog("Comment ${a}/${p} contains invalid UTF-8 metadata",
+                            wlog("Content ${a}/${p} contains invalid UTF-8 metadata",
                                  ("a", o.author)("p", o.permlink));
                         }
                     });
@@ -380,29 +380,29 @@ namespace graphene { namespace chain {
 
                 } else // start edit case
                 {
-                    const auto &comment = *itr;
-                    _db.modify(comment, [&](comment_object &com) {
+                    const auto &content = *itr;
+                    _db.modify(content, [&](comment_object &com) {
                         com.last_update = _db.head_block_time();
                         com.active = com.last_update;
                         strcmp_equal equal;
 
                         if (!parent) {
                             FC_ASSERT(com.parent_author ==
-                                      account_name_type(), "The parent of a comment cannot change.");
-                            FC_ASSERT(equal(com.parent_permlink, o.parent_permlink), "The permlink of a comment cannot change.");
+                                      account_name_type(), "The parent of a content cannot change.");
+                            FC_ASSERT(equal(com.parent_permlink, o.parent_permlink), "The permlink of a content cannot change.");
                         } else {
                             FC_ASSERT(com.parent_author ==
-                                      o.parent_author, "The parent of a comment cannot change.");
-                            FC_ASSERT(equal(com.parent_permlink, o.parent_permlink), "The permlink of a comment cannot change.");
+                                      o.parent_author, "The parent of a content cannot change.");
+                            FC_ASSERT(equal(com.parent_permlink, o.parent_permlink), "The permlink of a content cannot change.");
                         }
                     });
 
                     for (auto &e : o.extensions) {
-                        e.visit(comment_extension_visitor(comment, _db));
+                        e.visit(content_extension_visitor(content, _db));
                     }
 
 #ifndef IS_LOW_MEM
-                    _db.modify(_db.get< comment_content_object, by_comment >( comment.id ), [&]( comment_content_object& con ) {
+                    _db.modify(_db.get< content_type_object, by_comment >( content.id ), [&]( content_type_object& con ) {
                         if (o.title.size())
                             from_string(con.title, o.title);
                         if (o.json_metadata.size())
@@ -879,7 +879,7 @@ namespace graphene { namespace chain {
                 // Lazily delete vote
                 if (itr != comment_vote_idx.end() && itr->num_changes == -1) {
                     if (_db.is_producing())
-                        FC_ASSERT(false, "Cannot vote again on a comment after payout.");
+                        FC_ASSERT(false, "Cannot vote again on a content after payout.");
 
                     _db.remove(*itr);
                     itr = comment_vote_idx.end();
@@ -978,7 +978,7 @@ namespace graphene { namespace chain {
                     }
                 } else {
                     FC_ASSERT(itr->num_changes <
-                              CHAIN_MAX_VOTE_CHANGES, "Voter has used the maximum number of vote changes on this comment.");
+                              CHAIN_MAX_VOTE_CHANGES, "Voter has used the maximum number of vote changes on this content.");
 
                     FC_ASSERT(itr->vote_percent !=
                               o.weight, "You have already voted in a similar way.");

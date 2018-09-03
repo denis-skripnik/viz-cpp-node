@@ -50,7 +50,7 @@ namespace graphene { namespace chain {
             block_summary_object_type,
             witness_schedule_object_type,
             comment_object_type,
-            comment_content_object_type,
+            content_type_object_type,
             comment_vote_object_type,
             witness_vote_object_type,
             hardfork_property_object_type,
@@ -79,7 +79,7 @@ namespace graphene { namespace chain {
         class proposal_object;
         class required_approval_object;
         class comment_object;
-        class comment_content_object;
+        class content_type_object;
         class comment_vote_object;
         class witness_vote_object;
         class hardfork_property_object;
@@ -104,7 +104,7 @@ namespace graphene { namespace chain {
         typedef object_id<block_summary_object> block_summary_id_type;
         typedef object_id<witness_schedule_object> witness_schedule_id_type;
         typedef object_id<comment_object> comment_id_type;
-        typedef object_id<comment_content_object> comment_content_id_type;
+        typedef object_id<content_type_object> content_type_id_type;
         typedef object_id<comment_vote_object> comment_vote_id_type;
         typedef object_id<witness_vote_object> witness_vote_id_type;
         typedef object_id<hardfork_property_object> hardfork_property_id_type;
@@ -194,7 +194,7 @@ FC_REFLECT_ENUM(graphene::chain::object_type,
                 (block_summary_object_type)
                 (witness_schedule_object_type)
                 (comment_object_type)
-                (comment_content_object_type)
+                (content_type_object_type)
                 (comment_vote_object_type)
                 (witness_vote_object_type)
                 (hardfork_property_object_type)

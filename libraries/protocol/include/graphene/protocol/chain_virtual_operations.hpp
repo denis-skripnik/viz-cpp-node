@@ -40,11 +40,11 @@ namespace graphene { namespace protocol {
         };
 
 
-        struct comment_reward_operation : public virtual_operation {
-            comment_reward_operation() {
+        struct content_reward_operation : public virtual_operation {
+            content_reward_operation() {
             }
 
-            comment_reward_operation(const account_name_type &a, const string &pl, const asset &p)
+            content_reward_operation(const account_name_type &a, const string &pl, const asset &p)
                     : author(a), permlink(pl), payout(p) {
             }
 
@@ -91,11 +91,11 @@ namespace graphene { namespace protocol {
             uint32_t hardfork_id = 0;
         };
 
-        struct comment_payout_update_operation : public virtual_operation {
-            comment_payout_update_operation() {
+        struct content_payout_update_operation : public virtual_operation {
+            content_payout_update_operation() {
             }
 
-            comment_payout_update_operation(const account_name_type &a, const string &p)
+            content_payout_update_operation(const account_name_type &a, const string &p)
                     : author(a), permlink(p) {
             }
 
@@ -103,11 +103,11 @@ namespace graphene { namespace protocol {
             string permlink;
         };
 
-        struct comment_benefactor_reward_operation : public virtual_operation {
-            comment_benefactor_reward_operation() {
+        struct content_benefactor_reward_operation : public virtual_operation {
+            content_benefactor_reward_operation() {
             }
 
-            comment_benefactor_reward_operation(const account_name_type &b, const account_name_type &a, const string &p, const asset &r)
+            content_benefactor_reward_operation(const account_name_type &b, const account_name_type &a, const string &p, const asset &r)
                     : benefactor(b), author(a), permlink(p), reward(r) {
             }
 
@@ -177,12 +177,12 @@ namespace graphene { namespace protocol {
 
 FC_REFLECT((graphene::protocol::author_reward_operation), (author)(permlink)(token_payout)(vesting_payout))
 FC_REFLECT((graphene::protocol::curation_reward_operation), (curator)(reward)(comment_author)(comment_permlink))
-FC_REFLECT((graphene::protocol::comment_reward_operation), (author)(permlink)(payout))
+FC_REFLECT((graphene::protocol::content_reward_operation), (author)(permlink)(payout))
 FC_REFLECT((graphene::protocol::fill_vesting_withdraw_operation), (from_account)(to_account)(withdrawn)(deposited))
 FC_REFLECT((graphene::protocol::shutdown_witness_operation), (owner))
 FC_REFLECT((graphene::protocol::hardfork_operation), (hardfork_id))
-FC_REFLECT((graphene::protocol::comment_payout_update_operation), (author)(permlink))
-FC_REFLECT((graphene::protocol::comment_benefactor_reward_operation), (benefactor)(author)(permlink)(reward))
+FC_REFLECT((graphene::protocol::content_payout_update_operation), (author)(permlink))
+FC_REFLECT((graphene::protocol::content_benefactor_reward_operation), (benefactor)(author)(permlink)(reward))
 FC_REFLECT((graphene::protocol::return_vesting_delegation_operation), (account)(vesting_shares))
 FC_REFLECT((graphene::protocol::committee_cancel_request_operation), (request_id))
 FC_REFLECT((graphene::protocol::committee_approve_request_operation), (request_id))

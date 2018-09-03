@@ -52,7 +52,7 @@ namespace graphene { namespace api {
 
         int32_t net_votes;
 
-        comment_object::id_type root_comment;
+        comment_object::id_type root_content;
 
         vector< protocol::beneficiary_route_type > beneficiaries;
     };
@@ -65,6 +65,6 @@ FC_REFLECT(
     (created)(active)(last_payout)(depth)(children)(children_rshares2)(net_rshares)(abs_rshares)
     (vote_rshares)(cashout_time)(total_vote_weight)(curation_percent)(consensus_curation_percent)
     (payout_value)(shares_payout_value)(curator_payout_value)(beneficiary_payout_value)(author_rewards)(net_votes)
-    (root_comment)(beneficiaries))
+    (root_content)(beneficiaries))
 
 #endif //CHAIN_COMMENT_API_OBJ_H
