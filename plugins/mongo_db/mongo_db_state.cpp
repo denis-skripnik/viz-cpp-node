@@ -348,10 +348,6 @@ namespace mongo_db {
 
     }
 
-    auto state_writer::operator()(const custom_json_operation& op) -> result_type {
-
-    }
-
     auto state_writer::operator()(const set_withdraw_vesting_route_operation& op) -> result_type {
 
     }
@@ -381,10 +377,6 @@ namespace mongo_db {
     }
 
     auto state_writer::operator()(const escrow_approve_operation& op) -> result_type {
-
-    }
-
-    auto state_writer::operator()(const custom_binary_operation& op) -> result_type {
 
     }
 

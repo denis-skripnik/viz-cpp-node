@@ -83,10 +83,10 @@ namespace graphene {
                 void operator()(const T &) const {
                 }
 
-                void operator()(const custom_json_operation &op) const {
+                void operator()(const custom_operation &op) const {
                     try {
                         if (op.id == plugin::plugin_name) {
-                            custom_json_operation new_cop;
+                            custom_operation new_cop;
 
                             new_cop.required_auths = op.required_auths;
                             new_cop.required_posting_auths = op.required_posting_auths;
@@ -101,7 +101,7 @@ namespace graphene {
 
                             auto new_fop = follow_plugin_operation(fop);
                             new_cop.json = fc::json::to_string(new_fop);
-                            std::shared_ptr<custom_operation_interpreter> eval = db.get_custom_json_evaluator(op.id);
+                            std::shared_ptr<custom_operation_interpreter> eval = db.get_custom_evaluator(op.id);
                             eval->apply(new_cop);
                         }
                     } FC_CAPTURE_AND_RETHROW()

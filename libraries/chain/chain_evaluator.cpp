@@ -1043,9 +1043,9 @@ namespace graphene { namespace chain {
             } FC_CAPTURE_AND_RETHROW((o))
         }
 
-        void custom_json_evaluator::do_apply(const custom_json_operation &o) {
+        void custom_evaluator::do_apply(const custom_operation &o) {
             database &d = db();
-            std::shared_ptr<custom_operation_interpreter> eval = d.get_custom_json_evaluator(o.id);
+            std::shared_ptr<custom_operation_interpreter> eval = d.get_custom_evaluator(o.id);
             if (!eval) {
                 return;
             }

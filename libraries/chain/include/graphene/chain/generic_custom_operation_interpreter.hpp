@@ -61,7 +61,7 @@ namespace graphene {
                 plugin_session.squash();
             }
 
-            virtual void apply(const protocol::custom_json_operation &outer_o) override {
+            virtual void apply(const protocol::custom_operation &outer_o) override {
                 try {
                     fc::variant v = fc::json::from_string(outer_o.json);
 

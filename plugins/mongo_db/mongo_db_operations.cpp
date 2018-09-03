@@ -170,21 +170,6 @@ namespace mongo_db {
         return body;
     }
 
-    auto operation_writer::operator()(const custom_operation& op) -> result_type {
-        result_type body;
-
-        format_value(body, "id", op.id);
-        if (!op.required_auths.empty()) {
-            array auths;
-            for (auto& iter : op.required_auths) {
-                auths << iter;
-            }
-            body << "required_auths" << auths;
-        }
-
-        return body;
-    }
-
     auto operation_writer::operator()(const delete_content_operation& op) -> result_type {
         result_type body;
 
@@ -194,7 +179,7 @@ namespace mongo_db {
         return body;
     }
 
-    auto operation_writer::operator()(const custom_json_operation& op) -> result_type {
+    auto operation_writer::operator()(const custom_operation& op) -> result_type {
         result_type body;
 
         format_value(body, "id", op.id);
@@ -294,38 +279,6 @@ namespace mongo_db {
         format_value(body, "who", op.who);
         format_value(body, "escrow_id", op.escrow_id);
         format_value(body, "approve", op.approve);
-
-        return body;
-    }
-
-    auto operation_writer::operator()(const custom_binary_operation& op) -> result_type {
-        result_type body;
-
-        array required_owner_auths_arr;
-        for (auto& iter : op.required_owner_auths) {
-            required_owner_auths_arr << iter;
-        }
-
-        array required_active_auths_arr;
-        for (auto& iter : op.required_active_auths) {
-            required_active_auths_arr << iter;
-        }
-
-        array required_posting_auths_arr;
-        for (auto& iter : op.required_posting_auths) {
-            required_posting_auths_arr << iter;
-        }
-
-        array auths;
-        for (auto& iter : op.required_auths) {
-            auths << format_authority(iter);
-        }
-
-        format_value(body, "id", op.id);
-        body << "required_owner_auths" << required_owner_auths_arr;
-        body << "required_active_auths" << required_active_auths_arr;
-        body << "required_posting_auths" << required_posting_auths_arr;
-        body << "required_auths" << auths;
 
         return body;
     }

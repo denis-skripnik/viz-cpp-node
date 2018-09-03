@@ -25,7 +25,7 @@ namespace graphene { namespace protocol {
                 account_witness_proxy_operation,
 
                 delete_content_operation,
-                custom_json_operation,
+                custom_operation,
                 set_withdraw_vesting_route_operation,
                 request_account_recovery_operation,
                 recover_account_operation,

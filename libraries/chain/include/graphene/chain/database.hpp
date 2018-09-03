@@ -397,7 +397,7 @@ namespace graphene { namespace chain {
 
             void set_custom_operation_interpreter(const std::string &id, std::shared_ptr<custom_operation_interpreter> registry);
 
-            std::shared_ptr<custom_operation_interpreter> get_custom_json_evaluator(const std::string &id);
+            std::shared_ptr<custom_operation_interpreter> get_custom_evaluator(const std::string &id);
 
             /// Reset the object graph in-memory
             void initialize_indexes();

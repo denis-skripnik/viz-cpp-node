@@ -11,7 +11,7 @@ namespace graphene {
 
 namespace graphene {
     namespace protocol {
-        struct custom_json_operation;
+        struct custom_operation;
     }
 }
 
@@ -20,7 +20,7 @@ namespace graphene {
 
         class custom_operation_interpreter {
         public:
-            virtual void apply(const protocol::custom_json_operation &op) = 0;
+            virtual void apply(const protocol::custom_operation &op) = 0;
         };
 
     }

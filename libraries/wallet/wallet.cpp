@@ -2151,7 +2151,7 @@ fc::ecc::private_key wallet_api::derive_private_key(const std::string& prefix_st
             fop.what = what;
             follow::follow_plugin_operation op = fop;
 
-            custom_json_operation jop;
+            custom_operation jop;
             jop.id = "follow";
             jop.json = fc::json::to_string(op);
             jop.required_posting_auths.insert(follower);

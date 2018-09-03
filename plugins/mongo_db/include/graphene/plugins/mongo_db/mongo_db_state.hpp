@@ -31,9 +31,8 @@ namespace mongo_db {
         result_type operator()(const witness_update_operation& op);
         result_type operator()(const account_witness_vote_operation& op);
         result_type operator()(const account_witness_proxy_operation& op);
-        result_type operator()(const custom_operation& op);
         result_type operator()(const delete_content_operation& op);
-        result_type operator()(const custom_json_operation& op);
+        result_type operator()(const custom_operation& op);
         result_type operator()(const set_withdraw_vesting_route_operation& op);
         result_type operator()(const request_account_recovery_operation& op);
         result_type operator()(const recover_account_operation& op);
@@ -42,7 +41,6 @@ namespace mongo_db {
         result_type operator()(const escrow_dispute_operation& op);
         result_type operator()(const escrow_release_operation&op);
         result_type operator()(const escrow_approve_operation& op);
-        result_type operator()(const custom_binary_operation& op);
         result_type operator()(const delegate_vesting_shares_operation& op);
         result_type operator()(const account_create_operation& op);
         result_type operator()(const account_metadata_operation& op);

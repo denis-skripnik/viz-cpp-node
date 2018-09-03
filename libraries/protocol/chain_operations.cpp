@@ -205,7 +205,7 @@ namespace graphene { namespace protocol {
             FC_ASSERT(proxy != account, "Cannot proxy to self");
         }
 
-        void custom_json_operation::validate() const {
+        void custom_operation::validate() const {
             /// required auth accounts are the ones whose bandwidth is consumed
             FC_ASSERT((required_auths.size() + required_posting_auths.size()) >
                       0, "at least on account must be specified");

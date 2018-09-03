@@ -23,7 +23,7 @@ namespace graphene { namespace chain {
         DEFINE_EVALUATOR(content)
         DEFINE_EVALUATOR(delete_content)
         DEFINE_EVALUATOR(vote)
-        DEFINE_EVALUATOR(custom_json)
+        DEFINE_EVALUATOR(custom)
         DEFINE_EVALUATOR(escrow_transfer)
         DEFINE_EVALUATOR(escrow_approve)
         DEFINE_EVALUATOR(escrow_dispute)

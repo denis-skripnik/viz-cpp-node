@@ -477,7 +477,7 @@ namespace graphene { namespace protocol {
         };
 
 
-        struct custom_json_operation : public base_operation {
+        struct custom_operation : public base_operation {
             flat_set<account_name_type> required_auths;
             flat_set<account_name_type> required_posting_auths;
             string id; ///< must be less than 32 characters long
@@ -735,7 +735,7 @@ FC_REFLECT((graphene::protocol::account_witness_vote_operation), (account)(witne
 FC_REFLECT((graphene::protocol::account_witness_proxy_operation), (account)(proxy))
 FC_REFLECT((graphene::protocol::content_operation), (parent_author)(parent_permlink)(author)(permlink)(title)(body)(curation_percent)(json_metadata)(extensions))
 FC_REFLECT((graphene::protocol::vote_operation), (voter)(author)(permlink)(weight))
-FC_REFLECT((graphene::protocol::custom_json_operation), (required_auths)(required_posting_auths)(id)(json))
+FC_REFLECT((graphene::protocol::custom_operation), (required_auths)(required_posting_auths)(id)(json))
 
 FC_REFLECT((graphene::protocol::delete_content_operation), (author)(permlink));
 
