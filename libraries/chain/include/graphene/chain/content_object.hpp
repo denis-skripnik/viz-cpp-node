@@ -46,20 +46,20 @@ namespace graphene {
 
             id_type id;
 
-            comment_id_type   comment;
+            content_id_type   content;
 
             shared_string title;
             shared_string body;
             shared_string json_metadata;
         };
 
-        class comment_object
-                : public object<comment_object_type, comment_object> {
+        class content_object
+                : public object<content_object_type, content_object> {
         public:
-            comment_object() = delete;
+            content_object() = delete;
 
             template<typename Constructor, typename Allocator>
-            comment_object(Constructor &&c, allocator <Allocator> a)
+            content_object(Constructor &&c, allocator <Allocator> a)
                     :parent_permlink(a), permlink(a), beneficiaries(a) {
                 c(*this);
             }
@@ -81,7 +81,7 @@ namespace graphene {
 
             /**
              *  Used to track the total rshares^2 of all children, this is used for indexing purposes. A discussion
-             *  that has a nested comment of high value should promote the entire discussion so that the comment can
+             *  that has a nested content of high value should promote the entire discussion so that the content can
              *  be reviewed.
              */
             fc::uint128_t children_rshares2;
@@ -98,7 +98,7 @@ namespace graphene {
             int16_t curation_percent = 0;
             int16_t consensus_curation_percent = 0;
 
-            /** tracks the total payout this comment has received over time, measured in VIZ */
+            /** tracks the total payout this content has received over time, measured in VIZ */
             asset payout_value = asset(0, TOKEN_SYMBOL);
             asset shares_payout_value = asset(0, SHARES_SYMBOL);
             asset curator_payout_value = asset(0, SHARES_SYMBOL);
@@ -115,21 +115,21 @@ namespace graphene {
 
 
         /**
-         * This index maintains the set of voter/comment pairs that have been used, voters cannot
-         * vote on the same comment more than once per payout period.
+         * This index maintains the set of voter/content pairs that have been used, voters cannot
+         * vote on the same content more than once per payout period.
          */
-        class comment_vote_object
-                : public object<comment_vote_object_type, comment_vote_object> {
+        class content_vote_object
+                : public object<content_vote_object_type, content_vote_object> {
         public:
             template<typename Constructor, typename Allocator>
-            comment_vote_object(Constructor &&c, allocator <Allocator> a) {
+            content_vote_object(Constructor &&c, allocator <Allocator> a) {
                 c(*this);
             }
 
             id_type id;
 
             account_id_type voter;
-            comment_id_type comment;
+            content_id_type content;
             uint64_t weight = 0; ///< defines the score this vote receives, used by vote payout calc. 0 if a negative vote or changed votes.
             int64_t rshares = 0; ///< The number of rshares this vote is responsible for
             int16_t vote_percent = 0; ///< The percent weight of the vote
@@ -137,51 +137,51 @@ namespace graphene {
             int8_t num_changes = 0;
         };
 
-        struct by_comment_voter;
-        struct by_voter_comment;
-        struct by_comment_weight_voter;
+        struct by_content_voter;
+        struct by_voter_content;
+        struct by_content_weight_voter;
         struct by_voter_last_update;
         typedef multi_index_container <
-        comment_vote_object,
+        content_vote_object,
         indexed_by<
                 ordered_unique < tag <
-                by_id>, member<comment_vote_object, comment_vote_id_type, &comment_vote_object::id>>,
-        ordered_unique <tag<by_comment_voter>,
-        composite_key<comment_vote_object,
+                by_id>, member<content_vote_object, content_vote_id_type, &content_vote_object::id>>,
+        ordered_unique <tag<by_content_voter>,
+        composite_key<content_vote_object,
                 member <
-                comment_vote_object, comment_id_type, &comment_vote_object::comment>,
-        member<comment_vote_object, account_id_type, &comment_vote_object::voter>
+                content_vote_object, content_id_type, &content_vote_object::content>,
+        member<content_vote_object, account_id_type, &content_vote_object::voter>
         >
         >,
-        ordered_unique <tag<by_voter_comment>,
-        composite_key<comment_vote_object,
+        ordered_unique <tag<by_voter_content>,
+        composite_key<content_vote_object,
                 member <
-                comment_vote_object, account_id_type, &comment_vote_object::voter>,
-        member<comment_vote_object, comment_id_type, &comment_vote_object::comment>
+                content_vote_object, account_id_type, &content_vote_object::voter>,
+        member<content_vote_object, content_id_type, &content_vote_object::content>
         >
         >,
         ordered_unique <tag<by_voter_last_update>,
-        composite_key<comment_vote_object,
+        composite_key<content_vote_object,
                 member <
-                comment_vote_object, account_id_type, &comment_vote_object::voter>,
-        member<comment_vote_object, time_point_sec, &comment_vote_object::last_update>,
-        member<comment_vote_object, comment_id_type, &comment_vote_object::comment>
+                content_vote_object, account_id_type, &content_vote_object::voter>,
+        member<content_vote_object, time_point_sec, &content_vote_object::last_update>,
+        member<content_vote_object, content_id_type, &content_vote_object::content>
         >,
-        composite_key_compare <std::less<account_id_type>, std::greater<time_point_sec>, std::less<comment_id_type>>
+        composite_key_compare <std::less<account_id_type>, std::greater<time_point_sec>, std::less<content_id_type>>
         >,
-        ordered_unique <tag<by_comment_weight_voter>,
-        composite_key<comment_vote_object,
+        ordered_unique <tag<by_content_weight_voter>,
+        composite_key<content_vote_object,
                 member <
-                comment_vote_object, comment_id_type, &comment_vote_object::comment>,
-        member<comment_vote_object, uint64_t, &comment_vote_object::weight>,
-        member<comment_vote_object, account_id_type, &comment_vote_object::voter>
+                content_vote_object, content_id_type, &content_vote_object::content>,
+        member<content_vote_object, uint64_t, &content_vote_object::weight>,
+        member<content_vote_object, account_id_type, &content_vote_object::voter>
         >,
-        composite_key_compare <std::less<comment_id_type>, std::greater<uint64_t>, std::less<account_id_type>>
+        composite_key_compare <std::less<content_id_type>, std::greater<uint64_t>, std::less<account_id_type>>
         >
         >,
-        allocator <comment_vote_object>
+        allocator <content_vote_object>
         >
-        comment_vote_index;
+        content_vote_index;
 
 
         struct by_cashout_time; /// cashout_time
@@ -196,74 +196,74 @@ namespace graphene {
          */
         typedef multi_index_container <
 
-            comment_object,
+            content_object,
             indexed_by<
                 /// CONSENUSS INDICIES - used by evaluators
                 ordered_unique <
-                    tag <by_id>, member<comment_object, comment_id_type, &comment_object::id>>,
+                    tag <by_id>, member<content_object, content_id_type, &content_object::id>>,
                 ordered_unique <
                     tag<by_cashout_time>,
-                        composite_key<comment_object,
-                        member <comment_object, time_point_sec, &comment_object::cashout_time>,
-                        member<comment_object, comment_id_type, &comment_object::id>>>,
+                        composite_key<content_object,
+                        member <content_object, time_point_sec, &content_object::cashout_time>,
+                        member<content_object, content_id_type, &content_object::id>>>,
                 ordered_unique <
                     tag<by_permlink>, /// used by consensus to find posts referenced in ops
-                        composite_key<comment_object,
-                        member <comment_object, account_name_type, &comment_object::author>,
-                        member<comment_object, shared_string, &comment_object::permlink>>,
+                        composite_key<content_object,
+                        member <content_object, account_name_type, &content_object::author>,
+                        member<content_object, shared_string, &content_object::permlink>>,
                     composite_key_compare <std::less<account_name_type>, strcmp_less>>,
                 ordered_unique <
                     tag<by_root>,
-                        composite_key<comment_object,
-                        member <comment_object, comment_id_type, &comment_object::root_content>,
-                        member<comment_object, comment_id_type, &comment_object::id>>>,
+                        composite_key<content_object,
+                        member <content_object, content_id_type, &content_object::root_content>,
+                        member<content_object, content_id_type, &content_object::id>>>,
                 ordered_unique <
                     tag<by_parent>, /// used by consensus to find posts referenced in ops
-                        composite_key<comment_object,
-                        member <comment_object, account_name_type, &comment_object::parent_author>,
-                        member<comment_object, shared_string, &comment_object::parent_permlink>,
-                        member<comment_object, comment_id_type, &comment_object::id>>,
-            composite_key_compare <std::less<account_name_type>, strcmp_less, std::less<comment_id_type>> >
+                        composite_key<content_object,
+                        member <content_object, account_name_type, &content_object::parent_author>,
+                        member<content_object, shared_string, &content_object::parent_permlink>,
+                        member<content_object, content_id_type, &content_object::id>>,
+            composite_key_compare <std::less<account_name_type>, strcmp_less, std::less<content_id_type>> >
         /// NON_CONSENSUS INDICIES - used by APIs
 #ifndef IS_LOW_MEM
                 ,
                 ordered_unique <
                     tag<by_last_update>,
-                        composite_key<comment_object,
-                        member <comment_object, account_name_type, &comment_object::parent_author>,
-                        member<comment_object, time_point_sec, &comment_object::last_update>,
-                        member<comment_object, comment_id_type, &comment_object::id>>,
-                    composite_key_compare <std::less<account_name_type>, std::greater<time_point_sec>, std::less<comment_id_type>>>,
+                        composite_key<content_object,
+                        member <content_object, account_name_type, &content_object::parent_author>,
+                        member<content_object, time_point_sec, &content_object::last_update>,
+                        member<content_object, content_id_type, &content_object::id>>,
+                    composite_key_compare <std::less<account_name_type>, std::greater<time_point_sec>, std::less<content_id_type>>>,
                 ordered_unique <
                     tag<by_author_last_update>,
-                        composite_key<comment_object,
-                        member <comment_object, account_name_type, &comment_object::author>,
-                        member<comment_object, time_point_sec, &comment_object::last_update>,
-                        member<comment_object, comment_id_type, &comment_object::id>>,
-                    composite_key_compare <std::less<account_name_type>, std::greater<time_point_sec>, std::less<comment_id_type>>>
+                        composite_key<content_object,
+                        member <content_object, account_name_type, &content_object::author>,
+                        member<content_object, time_point_sec, &content_object::last_update>,
+                        member<content_object, content_id_type, &content_object::id>>,
+                    composite_key_compare <std::less<account_name_type>, std::greater<time_point_sec>, std::less<content_id_type>>>
 #endif
             >,
-            allocator <comment_object>
+            allocator <content_object>
         >
-        comment_index;
+        content_index;
 
 
-    struct by_comment;
+    struct by_content;
 
     typedef multi_index_container<
           content_type_object,
           indexed_by<
              ordered_unique< tag< by_id >, member< content_type_object, content_type_id_type, &content_type_object::id > >,
-             ordered_unique< tag< by_comment >, member< content_type_object, comment_id_type, &content_type_object::comment > > >,
+             ordered_unique< tag< by_content >, member< content_type_object, content_id_type, &content_type_object::content > > >,
         allocator< content_type_object >
     > content_type_index;
 
     }
 } // graphene::chain
 
-CHAINBASE_SET_INDEX_TYPE(graphene::chain::comment_object, graphene::chain::comment_index)
+CHAINBASE_SET_INDEX_TYPE(graphene::chain::content_object, graphene::chain::content_index)
 
 CHAINBASE_SET_INDEX_TYPE(graphene::chain::content_type_object, graphene::chain::content_type_index)
 
-CHAINBASE_SET_INDEX_TYPE(graphene::chain::comment_vote_object, graphene::chain::comment_vote_index)
+CHAINBASE_SET_INDEX_TYPE(graphene::chain::content_vote_object, graphene::chain::content_vote_index)
 

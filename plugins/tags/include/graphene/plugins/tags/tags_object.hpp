@@ -14,8 +14,8 @@
 
 namespace graphene { namespace plugins { namespace tags {
     using graphene::api::discussion;
-    using graphene::api::comment_object;
-    using graphene::api::comment_api_object;
+    using graphene::api::content_object;
+    using graphene::api::content_api_object;
 
     using graphene::api::get_metadata;
 
@@ -67,7 +67,7 @@ namespace graphene { namespace plugins { namespace tags {
      *  3. active - last reply the post or any child of the post
      *  4. netvotes - individual accounts voting for post minus accounts voting against it
      *
-     *  When ever a comment is modified, all tag_objects for that comment are updated to match.
+     *  When ever a content is modified, all tag_objects for that content are updated to match.
      */
     class tag_object: public object<tag_object_type, tag_object> {
     public:
@@ -92,25 +92,25 @@ namespace graphene { namespace plugins { namespace tags {
 
         /**
          *  Used to track the total rshares^2 of all children, this is used for indexing purposes. A discussion
-         *  that has a nested comment of high value should promote the entire discussion so that the comment can
+         *  that has a nested content of high value should promote the entire discussion so that the content can
          *  be reviewed.
          */
         fc::uint128_t children_rshares2;
 
         account_object::id_type author;
-        comment_object::id_type parent;
-        comment_object::id_type comment;
+        content_object::id_type parent;
+        content_object::id_type content;
 
         bool is_post() const {
-            return parent == comment_object::id_type();
+            return parent == content_object::id_type();
         }
     };
 
     using tag_id_type = object_id<tag_object> ;
 
 
-    struct by_author_comment;
-    struct by_comment;
+    struct by_author_content;
+    struct by_content;
     struct by_tag;
 
     using tag_index = multi_index_container<
@@ -120,24 +120,24 @@ namespace graphene { namespace plugins { namespace tags {
                 tag<by_id>,
                 member<tag_object, tag_object::id_type, &tag_object::id>>,
             ordered_unique<
-                tag<by_comment>,
+                tag<by_content>,
                 composite_key<
                     tag_object,
-                    member<tag_object, comment_object::id_type, &tag_object::comment>,
+                    member<tag_object, content_object::id_type, &tag_object::content>,
                     member<tag_object, tag_object::id_type, &tag_object::id> >,
                 composite_key_compare<
-                    std::less<comment_object::id_type>,
+                    std::less<content_object::id_type>,
                     std::less<tag_id_type>>>,
             ordered_unique<
-                tag<by_author_comment>,
+                tag<by_author_content>,
                 composite_key<
                     tag_object,
                     member<tag_object, account_object::id_type, &tag_object::author>,
-                    member<tag_object, comment_object::id_type, &tag_object::comment>,
+                    member<tag_object, content_object::id_type, &tag_object::content>,
                     member<tag_object, tag_id_type, &tag_object::id> >,
                 composite_key_compare<
                     std::less<account_object::id_type>,
-                    std::less<comment_object::id_type>,
+                    std::less<content_object::id_type>,
                     std::less<tag_id_type>>>,
             ordered_non_unique<
                 tag<by_tag>,
@@ -253,7 +253,7 @@ namespace graphene { namespace plugins { namespace tags {
         asset total_payout = asset(0, TOKEN_SYMBOL);
         int32_t net_votes = 0;
         uint32_t top_posts = 0;
-        uint32_t comments = 0;
+        uint32_t contents = 0;
     };
 
     using tag_stats_id_type = object_id<tag_stats_object>;
@@ -376,9 +376,9 @@ namespace graphene { namespace plugins { namespace tags {
         allocator<language_object>>;
 
     /**
-     * Used to parse the metadata from the comment json_meta field.
+     * Used to parse the metadata from the content json_meta field.
      */
-    struct comment_metadata {
+    struct content_metadata {
         std::set<std::string> tags;
         std::string language;
     };
@@ -400,5 +400,5 @@ CHAINBASE_SET_INDEX_TYPE(
     graphene::plugins::tags::language_object,
     graphene::plugins::tags::language_index)
 
-FC_REFLECT((graphene::plugins::tags::comment_metadata), (tags)(language))
+FC_REFLECT((graphene::plugins::tags::content_metadata), (tags)(language))
 

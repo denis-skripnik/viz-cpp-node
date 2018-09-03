@@ -48,13 +48,13 @@ namespace mongo_db {
         return doc;
     }
 
-    bool state_writer::format_comment(const std::string& auth, const std::string& perm) {
+    bool state_writer::format_content(const std::string& auth, const std::string& perm) {
         try {
-            auto& comment = db_.get_comment(auth, perm);
+            auto& content = db_.get_content(auth, perm);
             auto oid = std::string(auth).append("/").append(perm);
             auto oid_hash = hash_oid(oid);
 
-            auto doc = create_document("comment_object", "_id", oid_hash);
+            auto doc = create_document("content_object", "_id", oid_hash);
             auto& body = doc.doc;
 
             body << "$set" << open_document;
@@ -65,30 +65,30 @@ namespace mongo_db {
 
             format_value(body, "author", auth);
             format_value(body, "permlink", perm);
-            format_value(body, "abs_rshares", comment.abs_rshares);
-            format_value(body, "active", comment.active);
+            format_value(body, "abs_rshares", content.abs_rshares);
+            format_value(body, "active", content.active);
 
-            format_value(body, "author_rewards", comment.author_rewards);
-            format_value(body, "beneficiary_payout", comment.beneficiary_payout_value);
-            format_value(body, "cashout_time", comment.cashout_time);
-            format_value(body, "children", comment.children);
-            format_value(body, "children_rshares2", comment.children_rshares2);
-            format_value(body, "created", comment.created);
-            format_value(body, "curator_payout", comment.curator_payout_value);
-            format_value(body, "depth", comment.depth);
-            format_value(body, "last_payout", comment.last_payout);
-            format_value(body, "last_update", comment.last_update);
-            format_value(body, "net_rshares", comment.net_rshares);
-            format_value(body, "net_votes", comment.net_votes);
-            format_value(body, "parent_author", comment.parent_author);
-            format_value(body, "parent_permlink", comment.parent_permlink);
-            format_value(body, "total_payout", comment.payout_value);
-            format_value(body, "total_vote_weight", comment.total_vote_weight);
-            format_value(body, "vote_rshares", comment.vote_rshares);
+            format_value(body, "author_rewards", content.author_rewards);
+            format_value(body, "beneficiary_payout", content.beneficiary_payout_value);
+            format_value(body, "cashout_time", content.cashout_time);
+            format_value(body, "children", content.children);
+            format_value(body, "children_rshares2", content.children_rshares2);
+            format_value(body, "created", content.created);
+            format_value(body, "curator_payout", content.curator_payout_value);
+            format_value(body, "depth", content.depth);
+            format_value(body, "last_payout", content.last_payout);
+            format_value(body, "last_update", content.last_update);
+            format_value(body, "net_rshares", content.net_rshares);
+            format_value(body, "net_votes", content.net_votes);
+            format_value(body, "parent_author", content.parent_author);
+            format_value(body, "parent_permlink", content.parent_permlink);
+            format_value(body, "total_payout", content.payout_value);
+            format_value(body, "total_vote_weight", content.total_vote_weight);
+            format_value(body, "vote_rshares", content.vote_rshares);
 
-            if (!comment.beneficiaries.empty()) {
+            if (!content.beneficiaries.empty()) {
                 array ben_array;
-                for (auto& b: comment.beneficiaries) {
+                for (auto& b: content.beneficiaries) {
                     document tmp;
                     format_value(tmp, "account", b.account);
                     format_value(tmp, "weight", b.weight);
@@ -97,17 +97,17 @@ namespace mongo_db {
                 body << "beneficiaries" << ben_array;
             }
 
-            auto& content = db_.get_content_type(comment_id_type(comment.id));
+            auto& content = db_.get_content_type(content_id_type(content.id));
 
             format_value(body, "title", content.title);
             format_value(body, "body", content.body);
             format_value(body, "json_metadata", content.json_metadata);
 
             std::string root_oid;
-            if (comment.parent_author == CHAIN_ROOT_POST_PARENT) {
+            if (content.parent_author == CHAIN_ROOT_POST_PARENT) {
                 root_oid = oid;
             } else {
-                auto& root_content = db_.get<comment_object, by_id>(comment.root_content);
+                auto& root_content = db_.get<content_object, by_id>(content.root_content);
                 root_oid = std::string(root_content.author).append("/").append(root_content.permlink.c_str());
             }
             format_oid(body, "root_content", root_oid);
@@ -122,10 +122,10 @@ namespace mongo_db {
             return true;
         }
 //        catch (fc::exception& ex) {
-//            ilog("MongoDB operations fc::exception during formatting comment. ${e}", ("e", ex.what()));
+//            ilog("MongoDB operations fc::exception during formatting content. ${e}", ("e", ex.what()));
 //        }
         catch (...) {
-            // ilog("Unknown exception during formatting comment.");
+            // ilog("Unknown exception during formatting content.");
             return false;
         }
     }
@@ -152,7 +152,7 @@ namespace mongo_db {
             format_value(body, "created", account.created);
             format_value(body, "recovery_account", account.recovery_account);
             format_value(body, "last_account_recovery", account.last_account_recovery);
-            format_value(body, "comment_count", account.comment_count);
+            format_value(body, "content_count", account.content_count);
             format_value(body, "vote_count", account.vote_count);
             format_value(body, "post_count", account.post_count);
 
@@ -193,36 +193,36 @@ namespace mongo_db {
 
         }
 //        catch (fc::exception& ex) {
-//            ilog("MongoDB operations fc::exception during formatting comment. ${e}", ("e", ex.what()));
+//            ilog("MongoDB operations fc::exception during formatting content. ${e}", ("e", ex.what()));
 //        }
         catch (...) {
-            // ilog("Unknown exception during formatting comment.");
+            // ilog("Unknown exception during formatting content.");
         }
     }
 
     auto state_writer::operator()(const vote_operation& op) -> result_type {
-        format_comment(op.author, op.permlink);
+        format_content(op.author, op.permlink);
 
         try {
-            auto& vote_idx = db_.get_index<comment_vote_index>().indices().get<by_comment_voter>();
-            auto& comment = db_.get_comment(op.author, op.permlink);
+            auto& vote_idx = db_.get_index<content_vote_index>().indices().get<by_content_voter>();
+            auto& content = db_.get_content(op.author, op.permlink);
             auto& voter = db_.get_account(op.voter);
-            auto itr = vote_idx.find(std::make_tuple(comment.id, voter.id));
+            auto itr = vote_idx.find(std::make_tuple(content.id, voter.id));
             if (vote_idx.end() != itr) {
-                auto comment_oid = std::string(op.author).append("/").append(op.permlink);
-                auto oid = comment_oid + "/" + op.voter;
+                auto content_oid = std::string(op.author).append("/").append(op.permlink);
+                auto oid = content_oid + "/" + op.voter;
                 auto oid_hash = hash_oid(oid);
 
-                auto doc = create_document("comment_vote_object", "_id", oid_hash);
-                document comment_index;
-                comment_index << "comment" << 1;
-                doc.indexes_to_create.push_back(std::move(comment_index));
+                auto doc = create_document("content_vote_object", "_id", oid_hash);
+                document content_index;
+                content_index << "content" << 1;
+                doc.indexes_to_create.push_back(std::move(content_index));
                 auto &body = doc.doc;
 
                 body << "$set" << open_document;
 
                 format_oid(body, oid);
-                format_oid(body, "comment", comment_oid);
+                format_oid(body, "content", content_oid);
 
                 format_value(body, "author", op.author);
                 format_value(body, "permlink", op.permlink);
@@ -248,24 +248,24 @@ namespace mongo_db {
     }
 
     auto state_writer::operator()(const content_operation& op) -> result_type {
-        format_comment(op.author, op.permlink);
+        format_content(op.author, op.permlink);
     }
 
     auto state_writer::operator()(const delete_content_operation& op) -> result_type {
 
 	std::string author = op.author;
 
-        auto comment_oid = std::string(op.author).append("/").append(op.permlink);
-        auto comment_oid_hash = hash_oid(comment_oid);
+        auto content_oid = std::string(op.author).append("/").append(op.permlink);
+        auto content_oid_hash = hash_oid(content_oid);
 
         // Will be updated with the following fields. If no one - created with these fields.
-	auto comment = create_document("comment_object", "_id", comment_oid_hash);
+	auto content = create_document("content_object", "_id", content_oid_hash);
 
-        auto& body = comment.doc;
+        auto& body = content.doc;
 
         body << "$set" << open_document;
 
-        format_oid(body, comment_oid);
+        format_oid(body, content_oid);
 
         format_value(body, "removed", true);
 
@@ -274,12 +274,12 @@ namespace mongo_db {
 
         body << close_document;
 
-        bmi_insert_or_replace(all_docs, std::move(comment));
+        bmi_insert_or_replace(all_docs, std::move(content));
 
         // Will be updated with removed = true. If no one - nothing to do.
-	auto comment_vote = create_removal_document("comment_vote_object", "comment", comment_oid_hash);
+	auto content_vote = create_removal_document("content_vote_object", "content", content_oid_hash);
 
-        bmi_insert_or_replace(all_docs, std::move(comment_vote));
+        bmi_insert_or_replace(all_docs, std::move(content_vote));
     }
 
     auto state_writer::operator()(const transfer_operation& op) -> result_type {
@@ -298,9 +298,9 @@ namespace mongo_db {
             auto acnt = part[0].substr(1);
             auto perm = part[1];
 
-            if (format_comment(acnt, perm)) {
-                auto comment_oid = acnt.append("/").append(perm);
-                format_oid(body, "comment", comment_oid);
+            if (format_content(acnt, perm)) {
+                auto content_oid = acnt.append("/").append(perm);
+                format_oid(body, "content", content_oid);
             } else {
                 ilog("unable to find body");
             }
@@ -417,22 +417,22 @@ namespace mongo_db {
     }
 
     auto state_writer::operator()(const content_payout_update_operation& op) -> result_type {
-        format_comment(op.author, op.permlink);
+        format_content(op.author, op.permlink);
     }
 
     auto state_writer::operator()(const author_reward_operation& op) -> result_type {
         try {
-            auto comment_oid = std::string(op.author).append("/").append(op.permlink);
-            auto comment_oid_hash = hash_oid(comment_oid);
+            auto content_oid = std::string(op.author).append("/").append(op.permlink);
+            auto content_oid_hash = hash_oid(content_oid);
 
-            auto doc = create_document("author_reward", "_id", comment_oid_hash);
+            auto doc = create_document("author_reward", "_id", content_oid_hash);
             auto &body = doc.doc;
 
             body << "$set" << open_document;
 
             format_value(body, "removed", false);
-            format_oid(body, comment_oid);
-            format_oid(body, "comment", comment_oid);
+            format_oid(body, content_oid);
+            format_oid(body, "content", content_oid);
             format_value(body, "author", op.author);
             format_value(body, "permlink", op.permlink);
             format_value(body, "timestamp", state_block.timestamp);
@@ -450,24 +450,24 @@ namespace mongo_db {
 
     auto state_writer::operator()(const curation_reward_operation& op) -> result_type {
         try {
-            auto comment_oid = std::string(op.comment_author).append("/").append(op.comment_permlink);
-            auto vote_oid = comment_oid + "/" + op.curator;
+            auto content_oid = std::string(op.content_author).append("/").append(op.content_permlink);
+            auto vote_oid = content_oid + "/" + op.curator;
             auto vote_oid_hash = hash_oid(vote_oid);
 
             auto doc = create_document("curation_reward", "_id", vote_oid_hash);
-            document comment_index;
-            comment_index << "comment" << 1;
-            doc.indexes_to_create.push_back(std::move(comment_index));
+            document content_index;
+            content_index << "content" << 1;
+            doc.indexes_to_create.push_back(std::move(content_index));
             auto &body = doc.doc;
 
             body << "$set" << open_document;
 
             format_value(body, "removed", false);
             format_oid(body, vote_oid);
-            format_oid(body, "comment", comment_oid);
+            format_oid(body, "content", content_oid);
             format_oid(body, "vote", vote_oid);
-            format_value(body, "author", op.comment_author);
-            format_value(body, "permlink", op.comment_permlink);
+            format_value(body, "author", op.content_author);
+            format_value(body, "permlink", op.content_permlink);
             format_value(body, "timestamp", state_block.timestamp);
             format_value(body, "reward", op.reward);
             format_value(body, "curator", op.curator);
@@ -482,17 +482,17 @@ namespace mongo_db {
 
     auto state_writer::operator()(const content_reward_operation& op) -> result_type {
         try {
-            auto comment_oid = std::string(op.author).append("/").append(op.permlink);
-            auto comment_oid_hash = hash_oid(comment_oid);
+            auto content_oid = std::string(op.author).append("/").append(op.permlink);
+            auto content_oid_hash = hash_oid(content_oid);
 
-            auto doc = create_document("comment_reward", "_id", comment_oid_hash);
+            auto doc = create_document("content_reward", "_id", content_oid_hash);
             auto &body = doc.doc;
 
             body << "$set" << open_document;
 
             format_value(body, "removed", false);
-            format_oid(body, comment_oid);
-            format_oid(body, "comment", comment_oid);
+            format_oid(body, content_oid);
+            format_oid(body, "content", content_oid);
             format_value(body, "author", op.author);
             format_value(body, "permlink", op.permlink);
             format_value(body, "timestamp", state_block.timestamp);
@@ -508,21 +508,21 @@ namespace mongo_db {
 
     auto state_writer::operator()(const content_benefactor_reward_operation& op) -> result_type {
         try {
-            auto comment_oid = std::string(op.author).append("/").append(op.permlink);
-            auto benefactor_oid = comment_oid + "/" + op.benefactor;
+            auto content_oid = std::string(op.author).append("/").append(op.permlink);
+            auto benefactor_oid = content_oid + "/" + op.benefactor;
             auto benefactor_oid_hash = hash_oid(benefactor_oid);
 
             auto doc = create_document("benefactor_reward", "_id", benefactor_oid_hash);
-            document comment_index;
-            comment_index << "comment" << 1;
-            doc.indexes_to_create.push_back(std::move(comment_index));
+            document content_index;
+            content_index << "content" << 1;
+            doc.indexes_to_create.push_back(std::move(content_index));
             auto &body = doc.doc;
 
             body << "$set" << open_document;
 
             format_value(body, "removed", false);
             format_oid(body, benefactor_oid);
-            format_oid(body, "comment", comment_oid);
+            format_oid(body, "content", content_oid);
             format_value(body, "author", op.author);
             format_value(body, "permlink", op.permlink);
             format_value(body, "timestamp", state_block.timestamp);

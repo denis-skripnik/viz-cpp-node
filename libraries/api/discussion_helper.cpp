@@ -8,13 +8,13 @@
 
 namespace graphene { namespace api {
 
-    comment_metadata get_metadata(const comment_api_object &c) {
+    content_metadata get_metadata(const content_api_object &c) {
 
-        comment_metadata meta;
+        content_metadata meta;
 
         if (!c.json_metadata.empty()) {
             try {
-                meta = fc::json::from_string(c.json_metadata).as<comment_metadata>();
+                meta = fc::json::from_string(c.json_metadata).as<content_metadata>();
             } catch (const fc::exception& e) {
                 // Do nothing on malformed json_metadata
             }
@@ -57,7 +57,7 @@ namespace graphene { namespace api {
         impl(graphene::chain::database& db):database_(db){}
         ~impl() = default;
 
-        discussion create_discussion(const comment_object& o) const ;
+        discussion create_discussion(const content_object& o) const ;
 
         void select_active_votes(
             std::vector<vote_state>& result, uint32_t& total_count,
@@ -76,14 +76,14 @@ namespace graphene { namespace api {
             return database_;
         }
 
-        discussion get_discussion(const comment_object& c, uint32_t vote_limit) const;
+        discussion get_discussion(const content_object& c, uint32_t vote_limit) const;
 
     private:
         graphene::chain::database& database_;
     };
 
 // get_discussion
-    discussion discussion_helper::impl::get_discussion(const comment_object& c, uint32_t vote_limit) const {
+    discussion discussion_helper::impl::get_discussion(const content_object& c, uint32_t vote_limit) const {
         discussion d = create_discussion(c);
         set_url(d);
         set_pending_payout(d);
@@ -91,7 +91,7 @@ namespace graphene { namespace api {
         return d;
     }
 
-    discussion discussion_helper::get_discussion(const comment_object& c, uint32_t vote_limit) const {
+    discussion discussion_helper::get_discussion(const content_object& c, uint32_t vote_limit) const {
         return pimpl->get_discussion(c, vote_limit);
     }
 //
@@ -101,12 +101,12 @@ namespace graphene { namespace api {
         std::vector<vote_state>& result, uint32_t& total_count,
         const std::string& author, const std::string& permlink, uint32_t limit
     ) const {
-        const auto& comment = database().get_comment(author, permlink);
-        const auto& idx = database().get_index<comment_vote_index>().indices().get<by_comment_voter>();
-        comment_object::id_type cid(comment.id);
+        const auto& content = database().get_content(author, permlink);
+        const auto& idx = database().get_index<content_vote_index>().indices().get<by_content_voter>();
+        content_object::id_type cid(content.id);
         total_count = 0;
         result.clear();
-        for (auto itr = idx.lower_bound(cid); itr != idx.end() && itr->comment == cid; ++itr, ++total_count) {
+        for (auto itr = idx.lower_bound(cid); itr != idx.end() && itr->content == cid; ++itr, ++total_count) {
             if (result.size() < limit) {
                 const auto& vo = database().get(itr->voter);
                 vote_state vstate;
@@ -152,14 +152,14 @@ namespace graphene { namespace api {
         }
 
         if (d.parent_author != CHAIN_ROOT_POST_PARENT) {
-            d.cashout_time = db.calculate_discussion_payout_time(db.get<comment_object>(d.id));
+            d.cashout_time = db.calculate_discussion_payout_time(db.get<content_object>(d.id));
         }
 
         if (d.body.size() > 1024 * 128) {
             d.body = "body pruned due to size";
         }
         if (d.parent_author.size() > 0 && d.body.size() > 1024 * 16) {
-            d.body = "comment pruned due to size";
+            d.body = "content pruned due to size";
         }
 
         set_url(d);
@@ -171,7 +171,7 @@ namespace graphene { namespace api {
 //
 // set_url
     void discussion_helper::impl::set_url(discussion& d) const {
-        const comment_api_object root(database().get<comment_object, by_id>(d.root_content), database());
+        const content_api_object root(database().get<content_object, by_id>(d.root_content), database());
 
         d.root_title = root.title;
         d.url = "/@" + root.author + "/" + root.permlink;
@@ -186,11 +186,11 @@ namespace graphene { namespace api {
     }
 //
 // create_discussion
-    discussion discussion_helper::impl::create_discussion(const comment_object& o) const {
+    discussion discussion_helper::impl::create_discussion(const content_object& o) const {
         return discussion(o, database_);
     }
 
-    discussion discussion_helper::create_discussion(const comment_object& o) const {
+    discussion discussion_helper::create_discussion(const content_object& o) const {
         return pimpl->create_discussion(o);
     }
 

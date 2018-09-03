@@ -24,7 +24,7 @@ namespace graphene { namespace wallet {
                         )
                     return name.substr( prefix.size(), name.size() - prefix.size() - suffix.size() );
 
-                // If this line spams the console, please don't just comment it out.
+                // If this line spams the console, please don't just content it out.
                 // Instead, add code above to deal specifically with the names that are causing the spam.
                 wlog( "don't know how to clean name: ${name}", ("name", name) );
                 return name;

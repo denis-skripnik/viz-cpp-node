@@ -68,8 +68,8 @@ namespace graphene { namespace protocol {
             validate_account_json_metadata(json_metadata);
         }
 
-        struct comment_extension_validate_visitor {
-            comment_extension_validate_visitor() {
+        struct content_extension_validate_visitor {
+            content_extension_validate_visitor() {
             }
 
             using result_type = void;
@@ -91,7 +91,7 @@ namespace graphene { namespace protocol {
                       "Cannot allocate more than 100% of rewards to one account");
             sum += beneficiaries[0].weight;
             FC_ASSERT(sum <= CHAIN_100_PERCENT,
-                      "Cannot allocate more than 100% of rewards to a comment"); // Have to check incrementally to avoid overflow
+                      "Cannot allocate more than 100% of rewards to a content"); // Have to check incrementally to avoid overflow
 
             for (size_t i = 1; i < beneficiaries.size(); i++) {
                 validate_account_name( beneficiaries[i].account);
@@ -99,7 +99,7 @@ namespace graphene { namespace protocol {
                           "Cannot allocate more than 100% of rewards to one account");
                 sum += beneficiaries[i].weight;
                 FC_ASSERT(sum <= CHAIN_100_PERCENT,
-                          "Cannot allocate more than 100% of rewards to a comment"); // Have to check incrementally to avoid overflow
+                          "Cannot allocate more than 100% of rewards to a content"); // Have to check incrementally to avoid overflow
                 FC_ASSERT(beneficiaries[i - 1] < beneficiaries[i],
                           "Benficiaries must be specified in sorted order (account ascending)");
             }
@@ -126,7 +126,7 @@ namespace graphene { namespace protocol {
             }
 
             for (auto &e : extensions) {
-                e.visit(comment_extension_validate_visitor());
+                e.visit(content_extension_validate_visitor());
             }
         }
 

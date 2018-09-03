@@ -13,7 +13,7 @@ namespace graphene { namespace plugins { namespace social_network {
     using graphene::api::discussion;
     using graphene::api::account_vote;
     using graphene::api::vote_state;
-    using graphene::api::comment_api_object;
+    using graphene::api::content_api_object;
     using graphene::api::committee_api_object;
     using graphene::api::committee_vote_state;
     using namespace graphene::chain;

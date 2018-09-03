@@ -185,7 +185,7 @@ namespace graphene { namespace chain {
  */
         void delete_content_evaluator::do_apply(const delete_content_operation &o) {
             database &_db = db();
-            const auto &content = _db.get_comment(o.author, o.permlink);
+            const auto &content = _db.get_content(o.author, o.permlink);
             FC_ASSERT(content.children ==
                       0, "Cannot delete a content with replies.");
 
@@ -197,11 +197,11 @@ namespace graphene { namespace chain {
                 return;
             }
 
-            const auto &vote_idx = _db.get_index<comment_vote_index>().indices().get<by_comment_voter>();
+            const auto &vote_idx = _db.get_index<content_vote_index>().indices().get<by_content_voter>();
 
-            auto vote_itr = vote_idx.lower_bound(comment_id_type(content.id));
+            auto vote_itr = vote_idx.lower_bound(content_id_type(content.id));
             while (vote_itr != vote_idx.end() &&
-                   vote_itr->comment == content.id) {
+                   vote_itr->content == content.id) {
                 const auto &cur_vote = *vote_itr;
                 ++vote_itr;
                 _db.remove(cur_vote);
@@ -213,22 +213,22 @@ namespace graphene { namespace chain {
                     a.post_count--;
                 }
                 else{
-                    a.comment_count--;
+                    a.content_count--;
                 }
             });
 
             /// this loop can be skiped for validate-only nodes as it is merely gathering stats for indicies
             if (content.parent_author != CHAIN_ROOT_POST_PARENT) {
-                auto parent = &_db.get_comment(content.parent_author, content.parent_permlink);
+                auto parent = &_db.get_content(content.parent_author, content.parent_permlink);
                 auto now = _db.head_block_time();
                 while (parent) {
-                    _db.modify(*parent, [&](comment_object &p) {
+                    _db.modify(*parent, [&](content_object &p) {
                         p.children--;
                         p.active = now;
                     });
 #ifndef IS_LOW_MEM
                     if (parent->parent_author != CHAIN_ROOT_POST_PARENT) {
-                        parent = &_db.get_comment(parent->parent_author, parent->parent_permlink);
+                        parent = &_db.get_content(parent->parent_author, parent->parent_permlink);
                     } else
 #endif
                     {
@@ -244,13 +244,13 @@ namespace graphene { namespace chain {
         }
 
         struct content_extension_visitor {
-            content_extension_visitor(const comment_object &c, database &db)
+            content_extension_visitor(const content_object &c, database &db)
                     : _c(c), _db(db) {
             }
 
             using result_type = void;
 
-            const comment_object &_c;
+            const content_object &_c;
             database &_db;
 
             void operator()(const content_payout_beneficiaries &cpb) const {
@@ -262,7 +262,7 @@ namespace graphene { namespace chain {
                 FC_ASSERT(_c.beneficiaries.size() == 0, "Comment already has beneficiaries specified.");
                 FC_ASSERT(_c.abs_rshares == 0, "Comment must not have been voted on before specifying beneficiaries.");
 
-                _db.modify(_c, [&](comment_object &c) {
+                _db.modify(_c, [&](content_object &c) {
                     for (auto &b : cpb.beneficiaries) {
                         auto acc = _db.find< account_object, by_name >( b.account );
                         FC_ASSERT( acc != nullptr, "Beneficiary \"${a}\" must exist.", ("a", b.account) );
@@ -279,16 +279,16 @@ namespace graphene { namespace chain {
                 FC_ASSERT(o.title.size() + o.body.size() +
                           o.json_metadata.size(), "Cannot update content because nothing appears to be changing.");
 
-                const auto &by_permlink_idx = _db.get_index<comment_index>().indices().get<by_permlink>();
+                const auto &by_permlink_idx = _db.get_index<content_index>().indices().get<by_permlink>();
                 auto itr = by_permlink_idx.find(boost::make_tuple(o.author, o.permlink));
 
                 const auto &auth = _db.get_account(o.author); /// prove it exists
 
-                comment_id_type id;
+                content_id_type id;
 
-                const comment_object *parent = nullptr;
+                const content_object *parent = nullptr;
                 if (o.parent_author != CHAIN_ROOT_POST_PARENT) {
-                    parent = &_db.get_comment(o.parent_author, o.parent_permlink);
+                    parent = &_db.get_content(o.parent_author, o.parent_permlink);
                     auto max_depth = CHAIN_MAX_COMMENT_DEPTH;
                     FC_ASSERT(parent->depth < max_depth,
                               "Content is nested ${x} posts deep, maximum depth is ${y}.",
@@ -311,11 +311,11 @@ namespace graphene { namespace chain {
                             a.post_count++;
                         }
                         else{
-                            a.comment_count++;
+                            a.content_count++;
                         }
                     });
 
-                    const auto &new_content = _db.create<comment_object>([&](comment_object &com) {
+                    const auto &new_content = _db.create<content_object>([&](content_object &com) {
                         validate_permlink(o.parent_permlink);
                         validate_permlink(o.permlink);
 
@@ -348,7 +348,7 @@ namespace graphene { namespace chain {
                     id = new_content.id;
 #ifndef IS_LOW_MEM
                     _db.create<content_type_object>([&](content_type_object& con) {
-                        con.comment = id;
+                        con.content = id;
                         from_string(con.title, o.title);
                         if (o.body.size() < 1024*1024*128) {
                             from_string(con.body, o.body);
@@ -364,13 +364,13 @@ namespace graphene { namespace chain {
 /// this loop can be skiped for validate-only nodes as it is merely gathering stats for indicies
                     auto now = _db.head_block_time();
                     while (parent) {
-                        _db.modify(*parent, [&](comment_object &p) {
+                        _db.modify(*parent, [&](content_object &p) {
                             p.children++;
                             p.active = now;
                         });
 #ifndef IS_LOW_MEM
                         if (parent->parent_author != CHAIN_ROOT_POST_PARENT) {
-                            parent = &_db.get_comment(parent->parent_author, parent->parent_permlink);
+                            parent = &_db.get_content(parent->parent_author, parent->parent_permlink);
                         } else
 #endif
                         {
@@ -381,7 +381,7 @@ namespace graphene { namespace chain {
                 } else // start edit case
                 {
                     const auto &content = *itr;
-                    _db.modify(content, [&](comment_object &com) {
+                    _db.modify(content, [&](content_object &com) {
                         com.last_update = _db.head_block_time();
                         com.active = com.last_update;
                         strcmp_equal equal;
@@ -402,7 +402,7 @@ namespace graphene { namespace chain {
                     }
 
 #ifndef IS_LOW_MEM
-                    _db.modify(_db.get< content_type_object, by_comment >( content.id ), [&]( content_type_object& con ) {
+                    _db.modify(_db.get< content_type_object, by_content >( content.id ), [&]( content_type_object& con ) {
                         if (o.title.size())
                             from_string(con.title, o.title);
                         if (o.json_metadata.size())
@@ -832,11 +832,11 @@ namespace graphene { namespace chain {
             try {
                 database &_db = db();
 
-                const auto &comment = _db.get_comment(o.author, o.permlink);
+                const auto &content = _db.get_content(o.author, o.permlink);
                 const auto &voter = _db.get_account(o.voter);
 
-                const auto &comment_vote_idx = _db.get_index<comment_vote_index>().indices().get<by_comment_voter>();
-                auto itr = comment_vote_idx.find(std::make_tuple(comment.id, voter.id));
+                const auto &content_vote_idx = _db.get_index<content_vote_index>().indices().get<by_content_voter>();
+                auto itr = content_vote_idx.find(std::make_tuple(content.id, voter.id));
 
                 int64_t elapsed_seconds = (_db.head_block_time() -
                                            voter.last_vote_time).to_seconds();
@@ -877,22 +877,22 @@ namespace graphene { namespace chain {
                                                     0, "Voting weight is too small, please accumulate more Shares");
 
                 // Lazily delete vote
-                if (itr != comment_vote_idx.end() && itr->num_changes == -1) {
+                if (itr != content_vote_idx.end() && itr->num_changes == -1) {
                     if (_db.is_producing())
                         FC_ASSERT(false, "Cannot vote again on a content after payout.");
 
                     _db.remove(*itr);
-                    itr = comment_vote_idx.end();
+                    itr = content_vote_idx.end();
                 }
 
-                if (itr == comment_vote_idx.end()) {
+                if (itr == content_vote_idx.end()) {
                     FC_ASSERT(o.weight != 0, "Vote weight cannot be 0.");
                     /// this is the rshares voting for or against the post
                     int64_t rshares = o.weight < 0 ? -abs_rshares : abs_rshares;
 
                     if (rshares > 0) {
                         FC_ASSERT(_db.head_block_time() <
-                                  _db.calculate_discussion_payout_time(comment) - CHAIN_UPVOTE_LOCKOUT,
+                                  _db.calculate_discussion_payout_time(content) - CHAIN_UPVOTE_LOCKOUT,
                                   "Cannot increase reward of post within the last minute before payout.");
                     }
 
@@ -913,16 +913,16 @@ namespace graphene { namespace chain {
                         });
                     }
 
-                    if (_db.calculate_discussion_payout_time(comment) ==
+                    if (_db.calculate_discussion_payout_time(content) ==
                         fc::time_point_sec::maximum()) {
                         // VIZ: if payout window closed then award author with rshares and create unchangable vote
-                        const auto &comment_author = _db.get_account(comment.author);
-                        _db.modify(comment_author, [&](account_object &a) {
+                        const auto &content_author = _db.get_account(content.author);
+                        _db.modify(content_author, [&](account_object &a) {
                             a.awarded_rshares += static_cast< uint64_t >(abs_rshares);
                         });
-                        _db.create<comment_vote_object>([&](comment_vote_object &cv) {
+                        _db.create<content_vote_object>([&](content_vote_object &cv) {
                             cv.voter = voter.id;
-                            cv.comment = comment.id;
+                            cv.content = content.id;
                             cv.rshares = rshares;
                             cv.vote_percent = o.weight;
                             cv.last_update = _db.head_block_time();
@@ -931,11 +931,11 @@ namespace graphene { namespace chain {
                         });
                     }
                     else{
-                        // VIZ: if payout window opened then create vote and calc new rshares for comment
+                        // VIZ: if payout window opened then create vote and calc new rshares for content
                         /// if the current net_rshares is less than 0, the post is getting 0 rewards so it is not factored into total rshares^2
-                        fc::uint128_t old_rshares = std::max(comment.net_rshares.value, int64_t(0));
+                        fc::uint128_t old_rshares = std::max(content.net_rshares.value, int64_t(0));
 
-                        _db.modify(comment, [&](comment_object &c) {
+                        _db.modify(content, [&](content_object &c) {
                             c.net_rshares += rshares;
                             c.abs_rshares += abs_rshares;
                             if (rshares > 0) {
@@ -948,18 +948,18 @@ namespace graphene { namespace chain {
                             }
                         });
 
-                        fc::uint128_t new_rshares = std::max(comment.net_rshares.value, int64_t(0));
+                        fc::uint128_t new_rshares = std::max(content.net_rshares.value, int64_t(0));
 
                         uint64_t max_vote_weight = 0;
 
-                        _db.create<comment_vote_object>([&](comment_vote_object &cv) {
+                        _db.create<content_vote_object>([&](content_vote_object &cv) {
                             cv.voter = voter.id;
-                            cv.comment = comment.id;
+                            cv.content = content.id;
                             cv.rshares = rshares;
                             cv.vote_percent = o.weight;
                             cv.last_update = _db.head_block_time();
 
-                            if (rshares > 0 && (comment.last_payout == fc::time_point_sec())) {
+                            if (rshares > 0 && (content.last_payout == fc::time_point_sec())) {
                                 cv.weight = static_cast< uint64_t >(rshares);
                                 max_vote_weight = cv.weight;
                             } else {
@@ -969,12 +969,12 @@ namespace graphene { namespace chain {
 
                         if (max_vote_weight) // Optimization
                         {
-                            _db.modify(comment, [&](comment_object &c) {
+                            _db.modify(content, [&](content_object &c) {
                                 c.total_vote_weight += max_vote_weight;
                             });
                         }
 
-                        _db.adjust_rshares2(comment, old_rshares, new_rshares);
+                        _db.adjust_rshares2(content, old_rshares, new_rshares);
                     }
                 } else {
                     FC_ASSERT(itr->num_changes <
@@ -988,7 +988,7 @@ namespace graphene { namespace chain {
 
                     if (itr->rshares < rshares) {
                         FC_ASSERT(_db.head_block_time() <
-                                  _db.calculate_discussion_payout_time(comment) - CHAIN_UPVOTE_LOCKOUT,
+                                  _db.calculate_discussion_payout_time(content) - CHAIN_UPVOTE_LOCKOUT,
                                   "Cannot increase reward of post within the last minute before payout.");
                     }
 
@@ -1000,9 +1000,9 @@ namespace graphene { namespace chain {
                     });
 
                     /// if the current net_rshares is less than 0, the post is getting 0 rewards so it is not factored into total rshares^2
-                    fc::uint128_t old_rshares = std::max(comment.net_rshares.value, int64_t(0));
+                    fc::uint128_t old_rshares = std::max(content.net_rshares.value, int64_t(0));
 
-                    _db.modify(comment, [&](comment_object &c) {
+                    _db.modify(content, [&](content_object &c) {
                         c.net_rshares -= itr->rshares;
                         c.net_rshares += rshares;
                         c.abs_rshares += abs_rshares;
@@ -1023,13 +1023,13 @@ namespace graphene { namespace chain {
                         }
                     });
 
-                    fc::uint128_t new_rshares = std::max(comment.net_rshares.value, int64_t(0));
+                    fc::uint128_t new_rshares = std::max(content.net_rshares.value, int64_t(0));
 
-                    _db.modify(comment, [&](comment_object &c) {
+                    _db.modify(content, [&](content_object &c) {
                         c.total_vote_weight -= itr->weight;
                     });
 
-                    _db.modify(*itr, [&](comment_vote_object &cv) {
+                    _db.modify(*itr, [&](content_vote_object &cv) {
                         cv.rshares = rshares;
                         cv.vote_percent = o.weight;
                         cv.last_update = _db.head_block_time();
@@ -1037,7 +1037,7 @@ namespace graphene { namespace chain {
                         cv.num_changes += 1;
                     });
 
-                    _db.adjust_rshares2(comment, old_rshares, new_rshares);
+                    _db.adjust_rshares2(content, old_rshares, new_rshares);
                 }
 
             } FC_CAPTURE_AND_RETHROW((o))

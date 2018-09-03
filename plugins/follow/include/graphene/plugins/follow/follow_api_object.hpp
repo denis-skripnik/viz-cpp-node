@@ -8,7 +8,7 @@
 namespace graphene {
     namespace plugins {
         namespace follow {
-            using graphene::api::comment_api_object;
+            using graphene::api::content_api_object;
 
             struct feed_entry {
                 std::string author;
@@ -18,8 +18,8 @@ namespace graphene {
                 uint32_t entry_id = 0;
             };
 
-            struct comment_feed_entry {
-                comment_api_object comment;
+            struct content_feed_entry {
+                content_api_object content;
                 std::vector<std::string> reblog_by;
                 time_point_sec reblog_on;
                 uint32_t entry_id = 0;
@@ -33,8 +33,8 @@ namespace graphene {
                 uint32_t entry_id = 0;
             };
 
-            struct comment_blog_entry {
-                comment_api_object comment;
+            struct content_blog_entry {
+                content_api_object content;
                 std::string blog;
                 time_point_sec reblog_on;
                 uint32_t entry_id = 0;
@@ -79,11 +79,11 @@ namespace graphene {
 
 FC_REFLECT((graphene::plugins::follow::feed_entry), (author)(permlink)(reblog_by)(reblog_on)(entry_id));
 
-FC_REFLECT((graphene::plugins::follow::comment_feed_entry), (comment)(reblog_by)(reblog_on)(entry_id));
+FC_REFLECT((graphene::plugins::follow::content_feed_entry), (content)(reblog_by)(reblog_on)(entry_id));
 
 FC_REFLECT((graphene::plugins::follow::blog_entry), (author)(permlink)(blog)(reblog_on)(entry_id));
 
-FC_REFLECT((graphene::plugins::follow::comment_blog_entry), (comment)(blog)(reblog_on)(entry_id));
+FC_REFLECT((graphene::plugins::follow::content_blog_entry), (content)(blog)(reblog_on)(entry_id));
 
 FC_REFLECT((graphene::plugins::follow::follow_api_object), (follower)(following)(what));
 

@@ -4,7 +4,7 @@
 
 namespace graphene { namespace plugins { namespace tags { namespace sort {
     using graphene::api::discussion;
-    using graphene::api::comment_object;
+    using graphene::api::content_object;
     using graphene::chain::account_object;
     using protocol::asset;
     using protocol::share_type;
@@ -19,7 +19,7 @@ namespace graphene { namespace plugins { namespace tags { namespace sort {
             } else if (std::greater<double>()(second.trending, first.trending)) {
                 return false;
             }
-            return std::less<comment_object::id_type>()(first.id, second.id);
+            return std::less<content_object::id_type>()(first.id, second.id);
         }
     };
 
@@ -28,7 +28,7 @@ namespace graphene { namespace plugins { namespace tags { namespace sort {
             if (std::greater<time_point_sec>()(first.created, second.created)) {
                 return true;
             } else if (std::equal_to<time_point_sec>()(first.created, second.created)) {
-                return std::less<comment_object::id_type>()(first.id, second.id);
+                return std::less<content_object::id_type>()(first.id, second.id);
             }
             return false;
         }
@@ -39,7 +39,7 @@ namespace graphene { namespace plugins { namespace tags { namespace sort {
             if (std::greater<time_point_sec>()(first.active, second.active)) {
                 return true;
             } else if (std::equal_to<time_point_sec>()(first.active, second.active)) {
-                return std::less<comment_object::id_type>()(first.id, second.id);
+                return std::less<content_object::id_type>()(first.id, second.id);
             }
             return false;
         }
@@ -50,7 +50,7 @@ namespace graphene { namespace plugins { namespace tags { namespace sort {
             if (std::greater<time_point_sec>()(first.last_update, second.last_update)) {
                 return true;
             } else if (std::equal_to<time_point_sec>()(first.last_update, second.last_update)) {
-                return std::less<comment_object::id_type>()(first.id, second.id);
+                return std::less<content_object::id_type>()(first.id, second.id);
             }
             return false;
         }
@@ -61,7 +61,7 @@ namespace graphene { namespace plugins { namespace tags { namespace sort {
             if (std::less<time_point_sec>()(first.cashout_time, second.cashout_time)) {
                 return true;
             } else if (std::equal_to<time_point_sec>()(first.cashout_time, second.cashout_time)) {
-                return std::less<comment_object::id_type>()(first.id, second.id);
+                return std::less<content_object::id_type>()(first.id, second.id);
             }
             return false;
         }
@@ -72,7 +72,7 @@ namespace graphene { namespace plugins { namespace tags { namespace sort {
             if (std::greater<share_type>()(first.net_rshares, second.net_rshares)) {
                 return true;
             } else if (std::equal_to<share_type>()(first.net_rshares, second.net_rshares)) {
-                return std::less<comment_object::id_type>()(first.id, second.id);
+                return std::less<content_object::id_type>()(first.id, second.id);
             }
             return false;
         }
@@ -83,7 +83,7 @@ namespace graphene { namespace plugins { namespace tags { namespace sort {
             if (std::greater<int32_t>()(first.net_votes, second.net_votes)) {
                 return true;
             } else if (std::equal_to<int32_t>()(first.net_votes, second.net_votes)) {
-                return std::less<comment_object::id_type>()(first.id, second.id);
+                return std::less<content_object::id_type>()(first.id, second.id);
             }
             return false;
         }
@@ -94,7 +94,7 @@ namespace graphene { namespace plugins { namespace tags { namespace sort {
             if (std::less<int32_t>()(first.children, second.children)) {
                 return true;
             } else if (std::equal_to<int32_t>()(first.children, second.children)) {
-                return std::less<comment_object::id_type>()(first.id, second.id);
+                return std::less<content_object::id_type>()(first.id, second.id);
             }
             return false;
         }
@@ -107,7 +107,7 @@ namespace graphene { namespace plugins { namespace tags { namespace sort {
             } else if (std::greater<double>()(second.hot, first.hot)) {
                 return false;
             }
-            return std::less<comment_object::id_type>()(first.id, second.id);
+            return std::less<content_object::id_type>()(first.id, second.id);
         }
     };
 

@@ -45,7 +45,7 @@ int main(int argc, char **argv, char **envp) {
     std::vector<std::shared_ptr<abstract_schema>> schemas;
 
     schemas.push_back(get_schema_for_type<graphene::chain::account_object>());
-    schemas.push_back(get_schema_for_type<graphene::chain::comment_object>());
+    schemas.push_back(get_schema_for_type<graphene::chain::content_object>());
     add_dependent_schemas(schemas);
 
     for (const std::shared_ptr<abstract_schema> &s : schemas) {

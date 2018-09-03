@@ -11,7 +11,7 @@ namespace graphene { namespace plugins { namespace tags {
               total_children_rshares2(o.total_children_rshares2),
               total_payouts(o.total_payout),
               net_votes(o.net_votes), top_posts(o.top_posts),
-              comments(o.comments) {
+              contents(o.contents) {
         }
 
         tag_api_object() {
@@ -22,12 +22,12 @@ namespace graphene { namespace plugins { namespace tags {
         graphene::protocol::asset total_payouts;
         int32_t net_votes = 0;
         uint32_t top_posts = 0;
-        uint32_t comments = 0;
+        uint32_t contents = 0;
     };
 } } } // graphene::plugins::tags
 
 
 FC_REFLECT((graphene::plugins::tags::tag_api_object),
-    (name)(total_children_rshares2)(total_payouts)(net_votes)(top_posts)(comments)
+    (name)(total_children_rshares2)(total_payouts)(net_votes)(top_posts)(contents)
 )
 #endif //CHAIN_TAG_API_OBJ_HPP

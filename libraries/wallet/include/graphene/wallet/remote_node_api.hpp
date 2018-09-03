@@ -134,9 +134,9 @@ struct remote_follow {
     vector< follow_api_object > get_following( account_name_type, account_name_type, follow_type, uint32_t );
     get_follow_count_return get_follow_count( account_name_type );
     vector< feed_entry > get_feed_entries( account_name_type, uint32_t, uint32_t );
-    vector< comment_feed_entry > get_feed( account_name_type, uint32_t, uint32_t );
+    vector< content_feed_entry > get_feed( account_name_type, uint32_t, uint32_t );
     vector< blog_entry > get_blog_entries( account_name_type, uint32_t, uint32_t );
-    vector< comment_blog_entry > get_blog( account_name_type, uint32_t, uint32_t );
+    vector< content_blog_entry > get_blog( account_name_type, uint32_t, uint32_t );
     vector< account_name_type > get_reblogged_by( account_name_type, string );
     vector< reblog_count > get_blog_authors( account_name_type );
 };

@@ -9371,7 +9371,7 @@ namespace graphene {
                 "comma",
                 "command",
                 "commend",
-                "comment",
+                "content",
                 "commie",
                 "commit",
                 "commix",

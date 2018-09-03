@@ -87,9 +87,9 @@ namespace graphene { namespace protocol {
 
         typedef static_variant <
             content_payout_beneficiaries
-        > comment_extension;
+        > content_extension;
 
-        typedef flat_set <comment_extension> comment_extensions_type;
+        typedef flat_set <content_extension> content_extensions_type;
 
         struct content_operation : public base_operation {
             account_name_type parent_author;
@@ -102,7 +102,7 @@ namespace graphene { namespace protocol {
             string body;
             int16_t curation_percent;
             string json_metadata;
-            comment_extensions_type extensions;
+            content_extensions_type extensions;
 
             void validate() const;
 
@@ -741,7 +741,7 @@ FC_REFLECT((graphene::protocol::delete_content_operation), (author)(permlink));
 
 FC_REFLECT((graphene::protocol::beneficiary_route_type), (account)(weight))
 FC_REFLECT((graphene::protocol::content_payout_beneficiaries), (beneficiaries));
-FC_REFLECT_TYPENAME((graphene::protocol::comment_extension));
+FC_REFLECT_TYPENAME((graphene::protocol::content_extension));
 
 FC_REFLECT((graphene::protocol::escrow_transfer_operation), (from)(to)(token_amount)(escrow_id)(agent)(fee)(json_meta)(ratification_deadline)(escrow_expiration));
 FC_REFLECT((graphene::protocol::escrow_approve_operation), (from)(to)(agent)(who)(escrow_id)(approve));

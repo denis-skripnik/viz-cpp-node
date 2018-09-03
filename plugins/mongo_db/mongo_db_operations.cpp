@@ -378,8 +378,8 @@ namespace mongo_db {
 
         format_value(body, "curator", op.curator);
         format_value(body, "reward", op.reward);
-        format_value(body, "comment_author", op.comment_author);
-        format_value(body, "comment_permlink", op.comment_permlink);
+        format_value(body, "content_author", op.content_author);
+        format_value(body, "content_permlink", op.content_permlink);
 
         return body;
     }

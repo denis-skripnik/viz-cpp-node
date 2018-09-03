@@ -69,9 +69,9 @@ namespace graphene { namespace plugins { namespace tags {
 
         bool filter_authors(discussion_query& query) const;
 
-        bool filter_start_comment(discussion_query& query) const;
+        bool filter_start_content(discussion_query& query) const;
 
-        bool filter_parent_comment(discussion_query& query) const;
+        bool filter_parent_content(discussion_query& query) const;
 
         bool filter_query(discussion_query& query) const;
 
@@ -80,7 +80,7 @@ namespace graphene { namespace plugins { namespace tags {
 
         template<typename Iterator, typename Order, typename Select, typename Exit>
         void select_discussions(
-            std::set<comment_object::id_type>& id_set,
+            std::set<content_object::id_type>& id_set,
             std::vector<discussion>& result,
             const discussion_query& query,
             Iterator itr, Iterator etr,
@@ -105,10 +105,10 @@ namespace graphene { namespace plugins { namespace tags {
             uint32_t limit, uint32_t vote_limit
         ) const;
 
-        discussion get_discussion(const comment_object& c, uint32_t vote_limit) const ;
+        discussion get_discussion(const content_object& c, uint32_t vote_limit) const ;
 
-        discussion create_discussion(const comment_object& o) const;
-        discussion create_discussion(const comment_object& o, const discussion_query& query) const;
+        discussion create_discussion(const content_object& o) const;
+        discussion create_discussion(const content_object& o, const discussion_query& query) const;
         void fill_discussion(discussion& d, const discussion_query& query) const;
 
         get_languages_result get_languages();
@@ -125,7 +125,7 @@ namespace graphene { namespace plugins { namespace tags {
         helper->select_active_votes(result, total_count, author, permlink, limit);
     }
 
-    discussion tags_plugin::impl::get_discussion(const comment_object& c, uint32_t vote_limit) const {
+    discussion tags_plugin::impl::get_discussion(const content_object& c, uint32_t vote_limit) const {
         return helper->get_discussion(c, vote_limit);
     }
 
@@ -138,7 +138,7 @@ namespace graphene { namespace plugins { namespace tags {
         return result;
     }
 
-    discussion tags_plugin::impl::create_discussion(const comment_object& o) const {
+    discussion tags_plugin::impl::create_discussion(const content_object& o) const {
         return helper->create_discussion(o);
     }
 
@@ -165,7 +165,7 @@ namespace graphene { namespace plugins { namespace tags {
         }
     }
 
-    discussion tags_plugin::impl::create_discussion(const comment_object& o, const discussion_query& query) const {
+    discussion tags_plugin::impl::create_discussion(const content_object& o, const discussion_query& query) const {
 
         discussion d = create_discussion(o);
         fill_discussion(d, query);
@@ -268,30 +268,30 @@ namespace graphene { namespace plugins { namespace tags {
         return query.has_author_selector();
     }
 
-    bool tags_plugin::impl::filter_start_comment(discussion_query& query) const {
-        if (query.has_start_comment()) {
+    bool tags_plugin::impl::filter_start_content(discussion_query& query) const {
+        if (query.has_start_content()) {
             if (!query.start_permlink.valid()) {
                 return false;
             }
-            auto* comment = database().find_comment(*query.start_author, *query.start_permlink);
-            if (!comment) {
+            auto* content = database().find_content(*query.start_author, *query.start_permlink);
+            if (!content) {
                 return false;
             }
-            query.start_comment = create_discussion(*comment, query);
+            query.start_content = create_discussion(*content, query);
         }
         return true;
     }
 
-    bool tags_plugin::impl::filter_parent_comment(discussion_query& query) const {
-        if (query.has_parent_comment()) {
+    bool tags_plugin::impl::filter_parent_content(discussion_query& query) const {
+        if (query.has_parent_content()) {
             if (!query.parent_permlink) {
                 return false;
             }
-            auto* comment = database().find_comment(*query.parent_author, *query.parent_permlink);
-            if (comment) {
+            auto* content = database().find_content(*query.parent_author, *query.parent_permlink);
+            if (content) {
                 return false;
             }
-            query.parent_comment = create_discussion(*comment, query);
+            query.parent_content = create_discussion(*content, query);
         }
         return true;
     }
@@ -313,7 +313,7 @@ namespace graphene { namespace plugins { namespace tags {
     std::vector<discussion> tags_plugin::impl::select_unordered_discussions(discussion_query& query) const {
         std::vector<discussion> result;
 
-        if (!filter_start_comment(query) || !filter_query(query)) {
+        if (!filter_start_content(query) || !filter_query(query)) {
             return result;
         }
 
@@ -324,39 +324,39 @@ namespace graphene { namespace plugins { namespace tags {
 
         result.reserve(query.limit);
 
-        std::set<comment_object::id_type> id_set;
+        std::set<content_object::id_type> id_set;
         auto aitr = query.select_authors.begin();
-        if (query.has_start_comment()) {
+        if (query.has_start_content()) {
             can_add = false;
         }
 
         for (; query.select_authors.end() != aitr && result.size() < query.limit; ++aitr) {
             auto itr = idx.lower_bound(*aitr);
             for (; itr != etr && itr->account == *aitr && result.size() < query.limit; ++itr) {
-                if (id_set.count(itr->comment)) {
+                if (id_set.count(itr->content)) {
                     continue;
                 }
-                id_set.insert(itr->comment);
+                id_set.insert(itr->content);
 
-                if (query.has_start_comment() && !can_add) {
-                    can_add = (query.is_good_start(itr->comment));
+                if (query.has_start_content() && !can_add) {
+                    can_add = (query.is_good_start(itr->content));
                     if (!can_add) {
                         continue;
                     }
                 }
 
-                const auto* comment = db.find(itr->comment);
-                if (!comment) {
+                const auto* content = db.find(itr->content);
+                if (!content) {
                     continue;
                 }
 
-                if ((query.parent_author && *query.parent_author != comment->parent_author) ||
-                    (query.parent_permlink && *query.parent_permlink != to_string(comment->parent_permlink))
+                if ((query.parent_author && *query.parent_author != content->parent_author) ||
+                    (query.parent_permlink && *query.parent_permlink != to_string(content->parent_permlink))
                 ) {
                     continue;
                 }
 
-                discussion d = create_discussion(*comment);
+                discussion d = create_discussion(*content);
                 if (!query.is_good_tags(d)) {
                     continue;
                 }
@@ -374,7 +374,7 @@ namespace graphene { namespace plugins { namespace tags {
         typename Select,
         typename Exit>
     void tags_plugin::impl::select_discussions(
-        std::set<comment_object::id_type>& id_set,
+        std::set<content_object::id_type>& id_set,
         std::vector<discussion>& result,
         const discussion_query& query,
         Iterator itr, Iterator etr,
@@ -384,21 +384,21 @@ namespace graphene { namespace plugins { namespace tags {
     ) const {
         auto& db = database();
         for (; itr != etr && !exit(*itr); ++itr) {
-            if (id_set.count(itr->comment)) {
+            if (id_set.count(itr->content)) {
                 continue;
             }
-            id_set.insert(itr->comment);
+            id_set.insert(itr->content);
 
             if (!query.is_good_parent(itr->parent) || !query.is_good_author(itr->author)) {
                 continue;
             }
 
-            const auto* comment = db.find(itr->comment);
-            if (!comment) {
+            const auto* content = db.find(itr->content);
+            if (!content) {
                 continue;
             }
 
-            discussion d = create_discussion(*comment);
+            discussion d = create_discussion(*content);
 
             if (!select(d) || !query.is_good_tags(d)) {
                 continue;
@@ -408,7 +408,7 @@ namespace graphene { namespace plugins { namespace tags {
             d.hot = itr->hot;
             d.trending = itr->trending;
 
-            if (query.has_start_comment() && !query.is_good_start(d.id) && !order(query.start_comment, d)) {
+            if (query.has_start_content() && !query.is_good_start(d.id) && !order(query.start_content, d)) {
                 continue;
             }
 
@@ -427,13 +427,13 @@ namespace graphene { namespace plugins { namespace tags {
         auto& db = database();
 
         db.with_weak_read_lock([&]() {
-            if (!filter_query(query) || !filter_start_comment(query) || !filter_parent_comment(query) ||
-                (query.has_start_comment() && !query.is_good_author(*query.start_author))
+            if (!filter_query(query) || !filter_start_content(query) || !filter_parent_content(query) ||
+                (query.has_start_content() && !query.is_good_author(*query.start_author))
             ) {
                 return false;
             }
 
-            std::set<comment_object::id_type> id_set;
+            std::set<content_object::id_type> id_set;
             if (query.has_tags_selector()) { // seems to have a least complexity
                 const auto& idx = db.get_index<tags::tag_index>().indices().get<tags::by_tag>();
                 auto etr = idx.end();
@@ -449,7 +449,7 @@ namespace graphene { namespace plugins { namespace tags {
                         DiscussionOrder());
                 }
             } else if (query.has_author_selector()) { // a more complexity
-                const auto& idx = db.get_index<tags::tag_index>().indices().get<tags::by_author_comment>();
+                const auto& idx = db.get_index<tags::tag_index>().indices().get<tags::by_author_content>();
                 auto etr = idx.end();
                 unordered.reserve(query.select_author_ids.size() * query.limit);
 
@@ -481,14 +481,14 @@ namespace graphene { namespace plugins { namespace tags {
                 const auto& idx = indices.get<DiscussionOrder>();
                 auto itr = idx.begin();
 
-                if (query.has_start_comment()) {
-                    const auto& cidx = indices.get<tags::by_comment>();
-                    const auto citr = cidx.find(query.start_comment.id);
+                if (query.has_start_content()) {
+                    const auto& cidx = indices.get<tags::by_content>();
+                    const auto citr = cidx.find(query.start_content.id);
                     if (citr != cidx.end()) {
                         return false;
                     }
 
-                    query.reset_start_comment();
+                    query.reset_start_content();
                     itr = idx.iterator_to(*citr);
                 }
 
@@ -515,8 +515,8 @@ namespace graphene { namespace plugins { namespace tags {
         const auto et = unordered.end();
         std::sort(it, et, DiscussionOrder());
 
-        if (query.has_start_comment()) {
-            for (; et != it && it->id != query.start_comment.id; ++it);
+        if (query.has_start_content()) {
+            for (; et != it && it->id != query.start_content.id; ++it);
             if (et == it) {
                 return result;
             }
@@ -577,18 +577,18 @@ namespace graphene { namespace plugins { namespace tags {
         auto query = args.args->at(0).as<discussion_query>();
         query.prepare();
         query.validate();
-        FC_ASSERT(!!query.start_author, "Must get comments for a specific author");
+        FC_ASSERT(!!query.start_author, "Must get contents for a specific author");
 
         auto& db = pimpl->database();
         return db.with_weak_read_lock([&]() {
-            const auto &idx = db.get_index<comment_index>().indices().get<by_author_last_update>();
+            const auto &idx = db.get_index<content_index>().indices().get<by_author_last_update>();
             auto itr = idx.lower_bound(*query.start_author);
             if (itr == idx.end()) {
                 return result;
             }
 
             if (!!query.start_permlink) {
-                const auto &lidx = db.get_index<comment_index>().indices().get<by_permlink>();
+                const auto &lidx = db.get_index<content_index>().indices().get<by_permlink>();
                 auto litr = lidx.find(std::make_tuple(*query.start_author, *query.start_permlink));
                 if (litr == lidx.end()) {
                     return result;
@@ -604,7 +604,7 @@ namespace graphene { namespace plugins { namespace tags {
 
             for (; itr != idx.end() && itr->author == *query.start_author && result.size() < query.limit; ++itr) {
                 if (itr->parent_author.size() > 0) {
-                    discussion p(db.get<comment_object>(itr->root_content), db);
+                    discussion p(db.get<content_object>(itr->root_content), db);
                     if (!query.is_good_tags(p) || !query.is_good_author(p.author)) {
                         continue;
                     }
@@ -849,13 +849,13 @@ namespace graphene { namespace plugins { namespace tags {
         return db.with_weak_read_lock([&]() {
             try {
                 uint32_t count = 0;
-                const auto& didx = db.get_index<comment_index>().indices().get<by_author_last_update>();
+                const auto& didx = db.get_index<content_index>().indices().get<by_author_last_update>();
 
                 auto itr = didx.lower_bound(std::make_tuple(author, before_date));
                 if (start_permlink.size()) {
-                    const auto& comment = db.get_comment(author, start_permlink);
-                    if (comment.last_update < before_date) {
-                        itr = didx.iterator_to(comment);
+                    const auto& content = db.get_content(author, start_permlink);
+                    if (content.last_update < before_date) {
+                        itr = didx.iterator_to(content);
                     }
                 }
 

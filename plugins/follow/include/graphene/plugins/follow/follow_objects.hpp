@@ -12,10 +12,10 @@ namespace graphene {
             using chainbase::object_id;
             using chainbase::allocator ;
             using chainbase::shared_vector;
-            using graphene::chain::comment_object;
+            using graphene::chain::content_object;
             using graphene::chain::by_id;
-            using graphene::chain::comment_vote_index;
-            using graphene::chain::by_comment_voter;
+            using graphene::chain::content_vote_index;
+            using graphene::chain::by_content_voter;
 
 #ifndef FOLLOW_SPACE_ID
 #define FOLLOW_SPACE_ID 8
@@ -65,7 +65,7 @@ namespace graphene {
                 shared_vector<account_name_type> reblogged_by;
                 account_name_type first_reblogged_by;
                 time_point_sec first_reblogged_on;
-                comment_object::id_type comment;
+                content_object::id_type content;
                 uint32_t reblogs;
                 uint32_t account_feed_id = 0;
             };
@@ -86,7 +86,7 @@ namespace graphene {
                 id_type id;
 
                 account_name_type account;
-                comment_object::id_type comment;
+                content_object::id_type content;
                 time_point_sec reblogged_on;
                 uint32_t blog_feed_id = 0;
             };
@@ -167,7 +167,7 @@ namespace graphene {
             struct by_feed;
             struct by_old_feed;
             struct by_account;
-            struct by_comment;
+            struct by_content;
 
             typedef multi_index_container<feed_object,
                     indexed_by<ordered_unique<tag<by_id>, member<feed_object, feed_id_type, &feed_object::id>>,
@@ -183,10 +183,10 @@ namespace graphene {
                                     member<feed_object, account_name_type, &feed_object::account>,
                                     member<feed_object, feed_id_type, &feed_object::id> >,
                                     composite_key_compare<std::less<account_name_type>, std::less<feed_id_type>>>,
-                            ordered_unique<tag<by_comment>, composite_key<feed_object,
-                                    member<feed_object, comment_object::id_type, &feed_object::comment>,
+                            ordered_unique<tag<by_content>, composite_key<feed_object,
+                                    member<feed_object, content_object::id_type, &feed_object::content>,
                                     member<feed_object, account_name_type, &feed_object::account> >,
-                                    composite_key_compare<std::less<comment_object::id_type>,
+                                    composite_key_compare<std::less<content_object::id_type>,
                                             std::less<account_name_type>>> >, allocator<feed_object> > feed_index;
 
             struct by_blog;
@@ -202,10 +202,10 @@ namespace graphene {
                                     member<blog_object, account_name_type, &blog_object::account>,
                                     member<blog_object, uint32_t, &blog_object::blog_feed_id> >,
                                     composite_key_compare<std::less<account_name_type>, std::less<uint32_t>>>,
-                            ordered_unique<tag<by_comment>, composite_key<blog_object,
-                                    member<blog_object, comment_object::id_type, &blog_object::comment>,
+                            ordered_unique<tag<by_content>, composite_key<blog_object,
+                                    member<blog_object, content_object::id_type, &blog_object::content>,
                                     member<blog_object, account_name_type, &blog_object::account> >,
-                                    composite_key_compare<std::less<comment_object::id_type>,
+                                    composite_key_compare<std::less<content_object::id_type>,
                                             std::less<account_name_type>>> >, allocator<blog_object> > blog_index;
 
             struct by_followers;
@@ -235,10 +235,10 @@ FC_REFLECT((graphene::plugins::follow::follow_object), (id)(follower)(following)
 CHAINBASE_SET_INDEX_TYPE(graphene::plugins::follow::follow_object, graphene::plugins::follow::follow_index)
 
 FC_REFLECT((graphene::plugins::follow::feed_object),
-           (id)(account)(first_reblogged_by)(first_reblogged_on)(reblogged_by)(comment)(reblogs)(account_feed_id))
+           (id)(account)(first_reblogged_by)(first_reblogged_on)(reblogged_by)(content)(reblogs)(account_feed_id))
 CHAINBASE_SET_INDEX_TYPE(graphene::plugins::follow::feed_object, graphene::plugins::follow::feed_index)
 
-FC_REFLECT((graphene::plugins::follow::blog_object), (id)(account)(comment)(reblogged_on)(blog_feed_id))
+FC_REFLECT((graphene::plugins::follow::blog_object), (id)(account)(content)(reblogged_on)(blog_feed_id))
 CHAINBASE_SET_INDEX_TYPE(graphene::plugins::follow::blog_object, graphene::plugins::follow::blog_index)
 
 FC_REFLECT((graphene::plugins::follow::follow_count_object), (id)(account)(follower_count)(following_count))

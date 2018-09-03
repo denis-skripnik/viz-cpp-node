@@ -9,11 +9,11 @@ namespace graphene { namespace api {
 
     using namespace graphene::chain;
 
-    struct comment_api_object {
-        comment_api_object(const comment_object &o, const database &db);
-        comment_api_object();
+    struct content_api_object {
+        content_api_object(const content_object &o, const database &db);
+        content_api_object();
 
-        comment_object::id_type id;
+        content_object::id_type id;
 
         std::string title;
         std::string body;
@@ -52,7 +52,7 @@ namespace graphene { namespace api {
 
         int32_t net_votes;
 
-        comment_object::id_type root_content;
+        content_object::id_type root_content;
 
         vector< protocol::beneficiary_route_type > beneficiaries;
     };
@@ -60,7 +60,7 @@ namespace graphene { namespace api {
 } } // graphene::api
 
 FC_REFLECT(
-    (graphene::api::comment_api_object),
+    (graphene::api::content_api_object),
     (id)(author)(permlink)(parent_author)(parent_permlink)(title)(body)(json_metadata)(last_update)
     (created)(active)(last_payout)(depth)(children)(children_rshares2)(net_rshares)(abs_rshares)
     (vote_rshares)(cashout_time)(total_vote_weight)(curation_percent)(consensus_curation_percent)

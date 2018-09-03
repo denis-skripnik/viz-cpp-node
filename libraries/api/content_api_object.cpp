@@ -4,7 +4,7 @@ namespace graphene { namespace api {
 
     using namespace graphene::chain;
 
-    comment_api_object::comment_api_object(const graphene::chain::comment_object &o, const graphene::chain::database &db)
+    content_api_object::content_api_object(const graphene::chain::content_object &o, const graphene::chain::database &db)
         : id(o.id),
           parent_author(o.parent_author),
           parent_permlink(to_string(o.parent_permlink)),
@@ -44,6 +44,6 @@ namespace graphene { namespace api {
 #endif
     }
 
-    comment_api_object::comment_api_object() = default;
+    content_api_object::content_api_object() = default;
 
 } } // graphene::api

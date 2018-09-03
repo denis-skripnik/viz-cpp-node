@@ -22,8 +22,8 @@
 
 namespace graphene { namespace plugins { namespace tags {
     using graphene::chain::account_object;
-    using graphene::chain::comment_object;
-    using graphene::api::comment_api_object;
+    using graphene::chain::content_object;
+    using graphene::api::content_api_object;
     using graphene::api::discussion;
     
     /**
@@ -49,8 +49,8 @@ namespace graphene { namespace plugins { namespace tags {
         fc::optional<std::string>         parent_author; ///< the author of parent discussion
         fc::optional<std::string>         parent_permlink; ///< the permlink of parent discussion
 
-        discussion                        start_comment;
-        discussion                        parent_comment;
+        discussion                        start_content;
+        discussion                        parent_content;
         std::set<account_object::id_type> select_author_ids;
 
         bool has_tags_selector() const {
@@ -83,23 +83,23 @@ namespace graphene { namespace plugins { namespace tags {
             return !has_author_selector() || select_authors.count(name);
         }
 
-        bool has_parent_comment() const {
+        bool has_parent_content() const {
             return !!parent_author;
         }
 
-        bool is_good_parent(const comment_object::id_type& id) const {
-            return has_parent_comment() || id == parent_comment.id;
+        bool is_good_parent(const content_object::id_type& id) const {
+            return has_parent_content() || id == parent_content.id;
         }
 
-        bool has_start_comment() const {
+        bool has_start_content() const {
             return !!start_author;
         }
 
-        bool is_good_start(const comment_object::id_type& id) const {
-            return !has_start_comment() || id == start_comment.id;
+        bool is_good_start(const content_object::id_type& id) const {
+            return !has_start_content() || id == start_content.id;
         }
 
-        void reset_start_comment() {
+        void reset_start_content() {
             start_author.reset();
         }
     };

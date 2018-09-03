@@ -67,7 +67,7 @@ namespace mongo_db {
 
         db_map &all_docs;
 
-        bool format_comment(const std::string& auth, const std::string& perm);
+        bool format_content(const std::string& auth, const std::string& perm);
 
         void format_account(const std::string& name);
 

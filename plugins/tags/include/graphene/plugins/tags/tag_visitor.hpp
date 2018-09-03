@@ -21,9 +21,9 @@ namespace graphene { namespace plugins { namespace tags {
 
         const tag_stats_object& get_stats(const tag_object&) const;
 
-        void update_tag(const tag_object&, const comment_object&, double hot, double trending) const;
+        void update_tag(const tag_object&, const content_object&, double hot, double trending) const;
 
-        void create_tag(const std::string&, const tag_type, const comment_object&, double hot, double trending) const;
+        void create_tag(const std::string&, const tag_type, const content_object&, double hot, double trending) const;
 
         /**
          * https://medium.com/hacking-and-gonzo/how-reddit-ranking-algorithms-work-ef111e33d0d9#.lcbj6auuw

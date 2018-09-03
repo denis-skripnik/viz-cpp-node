@@ -10,7 +10,7 @@ account_api_object::account_api_object(const account_object& a, const graphene::
     :   id(a.id), name(a.name), memo_key(a.memo_key), proxy(a.proxy), referrer(a.referrer),
         last_account_update(a.last_account_update), created(a.created),
         recovery_account(a.recovery_account), last_account_recovery(a.last_account_recovery),
-        comment_count(a.comment_count), vote_count(a.vote_count), post_count(a.post_count),
+        content_count(a.content_count), vote_count(a.vote_count), post_count(a.post_count),
         awarded_rshares(a.awarded_rshares), voting_power(a.voting_power), last_vote_time(a.last_vote_time),
         balance(a.balance), curation_rewards(a.curation_rewards), posting_rewards(a.posting_rewards),
         vesting_shares(a.vesting_shares),

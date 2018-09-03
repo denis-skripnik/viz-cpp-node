@@ -146,17 +146,17 @@ namespace graphene { namespace chain {
 
             const proposal_object* find_proposal(const account_name_type&, const std::string&) const;
 
-            const comment_object &get_comment(const account_name_type &author, const shared_string &permlink) const;
+            const content_object &get_content(const account_name_type &author, const shared_string &permlink) const;
 
-            const comment_object *find_comment(const account_name_type &author, const shared_string &permlink) const;
+            const content_object *find_content(const account_name_type &author, const shared_string &permlink) const;
 
-            const comment_object &get_comment(const account_name_type &author, const string &permlink) const;
+            const content_object &get_content(const account_name_type &author, const string &permlink) const;
 
-            const comment_object *find_comment(const account_name_type &author, const string &permlink) const;
+            const content_object *find_content(const account_name_type &author, const string &permlink) const;
 
-            const content_type_object &get_content_type(const comment_id_type &comment) const;
+            const content_type_object &get_content_type(const content_id_type &content) const;
 
-            const content_type_object *find_content_type(const comment_id_type &comment) const;
+            const content_type_object *find_content_type(const content_id_type &content) const;
 
             const escrow_object &get_escrow(const account_name_type &name, uint32_t escrow_id) const;
 
@@ -169,7 +169,7 @@ namespace graphene { namespace chain {
             const hardfork_property_object &get_hardfork_property_object() const;
 
 
-            const time_point_sec calculate_discussion_payout_time(const comment_object &comment) const;
+            const time_point_sec calculate_discussion_payout_time(const content_object &content) const;
 
             /**
              * Update an account's bandwidth and returns if the account had the requisite bandwidth for the trx
@@ -328,7 +328,7 @@ namespace graphene { namespace chain {
 
             asset create_vesting(const account_object &to_account, asset tokens);
 
-            void adjust_total_payout(const comment_object &a, const asset &payout, const asset &shares_payout, const asset &curator_value, const asset& beneficiary_value);
+            void adjust_total_payout(const content_object &a, const asset &payout, const asset &shares_payout, const asset &curator_value, const asset& beneficiary_value);
 
             void update_bandwidth_reserve_candidates();
 
@@ -338,7 +338,7 @@ namespace graphene { namespace chain {
 
             void burn_asset(const asset &delta);
 
-            void adjust_rshares2(const comment_object &comment, fc::uint128_t old_rshares2, fc::uint128_t new_rshares2);
+            void adjust_rshares2(const content_object &content, fc::uint128_t old_rshares2, fc::uint128_t new_rshares2);
 
             void update_owner_authority(const account_object &account, const authority &owner_authority);
 
@@ -371,9 +371,9 @@ namespace graphene { namespace chain {
 
             void process_vesting_withdrawals();
 
-            void cashout_comment_helper(const comment_object &comment);
+            void cashout_content_helper(const content_object &content);
 
-            void process_comment_cashout();
+            void process_content_cashout();
 
             void process_funds();
             void committee_processing();

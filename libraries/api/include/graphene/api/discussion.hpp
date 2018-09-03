@@ -6,9 +6,9 @@
 
 namespace graphene { namespace api {
 
-    struct discussion : public comment_api_object {
-        discussion(const comment_object& o, const graphene::chain::database &db)
-                : comment_api_object(o, db) {
+    struct discussion : public content_api_object {
+        discussion(const content_object& o, const graphene::chain::database &db)
+                : content_api_object(o, db) {
         }
 
         discussion() {
@@ -30,6 +30,6 @@ namespace graphene { namespace api {
 
 } } // graphene::api
 
-FC_REFLECT_DERIVED( (graphene::api::discussion), ((graphene::api::comment_api_object)),
+FC_REFLECT_DERIVED( (graphene::api::discussion), ((graphene::api::content_api_object)),
         (url)(root_title)(pending_payout_value)(total_pending_payout_value)(active_votes)(active_votes_count)(replies)
         (reblogged_by)(first_reblogged_by)(first_reblogged_on))

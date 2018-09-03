@@ -40,28 +40,28 @@ namespace graphene {
 
                 void operator()(const delete_content_operation &op) const {
                     try {
-                        const auto *comment = db.find_comment(op.author, op.permlink);
+                        const auto *content = db.find_content(op.author, op.permlink);
 
-                        if (comment == nullptr) {
+                        if (content == nullptr) {
                             return;
                         }
-                        if (comment->parent_author.size()) {
+                        if (content->parent_author.size()) {
                             return;
                         }
 
-                        const auto &feed_idx = db.get_index<feed_index>().indices().get<by_comment>();
-                        auto itr = feed_idx.lower_bound(comment->id);
+                        const auto &feed_idx = db.get_index<feed_index>().indices().get<by_content>();
+                        auto itr = feed_idx.lower_bound(content->id);
 
-                        while (itr != feed_idx.end() && itr->comment == comment->id) {
+                        while (itr != feed_idx.end() && itr->content == content->id) {
                             const auto &old_feed = *itr;
                             ++itr;
                             db.remove(old_feed);
                         }
 
-                        const auto &blog_idx = db.get_index<blog_index>().indices().get<by_comment>();
-                        auto blog_itr = blog_idx.lower_bound(comment->id);
+                        const auto &blog_idx = db.get_index<blog_index>().indices().get<by_content>();
+                        auto blog_itr = blog_idx.lower_bound(content->id);
 
-                        while (blog_itr != blog_idx.end() && blog_itr->comment == comment->id) {
+                        while (blog_itr != blog_idx.end() && blog_itr->content == content->id) {
                             const auto &old_blog = *blog_itr;
                             ++blog_itr;
                             db.remove(old_blog);
@@ -113,14 +113,14 @@ namespace graphene {
                             return;
                         }
 
-                        const auto &c = db.get_comment(op.author, op.permlink);
+                        const auto &c = db.get_content(op.author, op.permlink);
 
                         if (c.created != db.head_block_time()) {
                             return;
                         }
 
                         const auto &idx = db.get_index<follow_index>().indices().get<by_following_follower>();
-                        const auto &comment_idx = db.get_index<feed_index>().indices().get<by_comment>();
+                        const auto &content_idx = db.get_index<feed_index>().indices().get<by_content>();
                         auto itr = idx.find(op.author);
 
                         const auto &feed_idx = db.get_index<feed_index>().indices().get<by_feed>();
@@ -134,10 +134,10 @@ namespace graphene {
                                     next_id = last_feed->account_feed_id + 1;
                                 }
 
-                                if (comment_idx.find(boost::make_tuple(c.id, itr->follower)) == comment_idx.end()) {
+                                if (content_idx.find(boost::make_tuple(c.id, itr->follower)) == content_idx.end()) {
                                     db.create<feed_object>([&](feed_object &f) {
                                         f.account = itr->follower;
-                                        f.comment = c.id;
+                                        f.content = c.id;
                                         f.account_feed_id = next_id;
                                     });
 
@@ -156,7 +156,7 @@ namespace graphene {
                         }
 
                         const auto &blog_idx = db.get_index<blog_index>().indices().get<by_blog>();
-                        const auto &comment_blog_idx = db.get_index<blog_index>().indices().get<by_comment>();
+                        const auto &content_blog_idx = db.get_index<blog_index>().indices().get<by_content>();
                         auto last_blog = blog_idx.lower_bound(op.author);
                         uint32_t next_id = 0;
 
@@ -164,10 +164,10 @@ namespace graphene {
                             next_id = last_blog->blog_feed_id + 1;
                         }
 
-                        if (comment_blog_idx.find(boost::make_tuple(c.id, op.author)) == comment_blog_idx.end()) {
+                        if (content_blog_idx.find(boost::make_tuple(c.id, op.author)) == content_blog_idx.end()) {
                             db.create<blog_object>([&](blog_object &b) {
                                 b.account = op.author;
-                                b.comment = c.id;
+                                b.content = c.id;
                                 b.blog_feed_id = next_id;
                             });
 
@@ -261,12 +261,12 @@ namespace graphene {
                         uint32_t start_entry_id = 0,
                         uint32_t limit = 500);
 
-                std::vector<comment_feed_entry> get_feed(
+                std::vector<content_feed_entry> get_feed(
                         account_name_type account,
                         uint32_t start_entry_id = 0,
                         uint32_t limit = 500);
 
-                std::vector<comment_blog_entry> get_blog(
+                std::vector<content_blog_entry> get_blog(
                         account_name_type account,
                         uint32_t start_entry_id = 0,
                         uint32_t limit = 500);
@@ -421,10 +421,10 @@ namespace graphene {
                 auto itr = feed_idx.lower_bound(boost::make_tuple(account, entry_id));
 
                 while (itr != feed_idx.end() && itr->account == account && result.size() < limit) {
-                    const auto &comment = db.get(itr->comment);
+                    const auto &content = db.get(itr->content);
                     feed_entry entry;
-                    entry.author = comment.author;
-                    entry.permlink = to_string(comment.permlink);
+                    entry.author = content.author;
+                    entry.permlink = to_string(content.permlink);
                     entry.entry_id = itr->account_feed_id;
                     if (itr->first_reblogged_by != account_name_type()) {
                         entry.reblog_by.reserve(itr->reblogged_by.size());
@@ -442,7 +442,7 @@ namespace graphene {
                 return result;
             }
 
-            std::vector<comment_feed_entry> plugin::impl::get_feed(
+            std::vector<content_feed_entry> plugin::impl::get_feed(
                     account_name_type account,
                     uint32_t entry_id,
                     uint32_t limit) {
@@ -452,7 +452,7 @@ namespace graphene {
                     entry_id = ~0;
                 }
 
-                std::vector<comment_feed_entry> result;
+                std::vector<content_feed_entry> result;
                 result.reserve(limit);
 
                 const auto &db = database();
@@ -460,9 +460,9 @@ namespace graphene {
                 auto itr = feed_idx.lower_bound(boost::make_tuple(account, entry_id));
 
                 while (itr != feed_idx.end() && itr->account == account && result.size() < limit) {
-                    const auto &comment = db.get(itr->comment);
-                    comment_feed_entry entry;
-                    entry.comment = comment_api_object(comment, db);
+                    const auto &content = db.get(itr->content);
+                    content_feed_entry entry;
+                    entry.content = content_api_object(content, db);
                     entry.entry_id = itr->account_feed_id;
                     if (itr->first_reblogged_by != account_name_type()) {
                         //entry.reblog_by = itr->first_reblogged_by;
@@ -498,10 +498,10 @@ namespace graphene {
                 auto itr = blog_idx.lower_bound(boost::make_tuple(account, entry_id));
 
                 while (itr != blog_idx.end() && itr->account == account && result.size() < limit) {
-                    const auto &comment = db.get(itr->comment);
+                    const auto &content = db.get(itr->content);
                     blog_entry entry;
-                    entry.author = comment.author;
-                    entry.permlink = to_string(comment.permlink);
+                    entry.author = content.author;
+                    entry.permlink = to_string(content.permlink);
                     entry.blog = account;
                     entry.reblog_on = itr->reblogged_on;
                     entry.entry_id = itr->blog_feed_id;
@@ -514,7 +514,7 @@ namespace graphene {
                 return result;
             }
 
-            std::vector<comment_blog_entry> plugin::impl::get_blog(
+            std::vector<content_blog_entry> plugin::impl::get_blog(
                     account_name_type account,
                     uint32_t entry_id,
                     uint32_t limit) {
@@ -524,7 +524,7 @@ namespace graphene {
                     entry_id = ~0;
                 }
 
-                std::vector<comment_blog_entry> result;
+                std::vector<content_blog_entry> result;
                 result.reserve(limit);
 
                 const auto &db = database();
@@ -532,9 +532,9 @@ namespace graphene {
                 auto itr = blog_idx.lower_bound(boost::make_tuple(account, entry_id));
 
                 while (itr != blog_idx.end() && itr->account == account && result.size() < limit) {
-                    const auto &comment = db.get(itr->comment);
-                    comment_blog_entry entry;
-                    entry.comment = comment_api_object(comment, db);
+                    const auto &content = db.get(itr->content);
+                    content_blog_entry entry;
+                    entry.content = content_api_object(content, db);
                     entry.blog = account;
                     entry.reblog_on = itr->reblogged_on;
                     entry.entry_id = itr->blog_feed_id;
@@ -553,10 +553,10 @@ namespace graphene {
             ) {
                 auto &db = database();
                 std::vector<account_name_type> result;
-                const auto &post = db.get_comment(author, permlink);
-                const auto &blog_idx = db.get_index<blog_index, by_comment>();
+                const auto &post = db.get_content(author, permlink);
+                const auto &blog_idx = db.get_index<blog_index, by_content>();
                 auto itr = blog_idx.lower_bound(post.id);
-                while (itr != blog_idx.end() && itr->comment == post.id && result.size() < 2000) {
+                while (itr != blog_idx.end() && itr->content == post.id && result.size() < 2000) {
                     result.push_back(itr->account);
                     ++itr;
                 }

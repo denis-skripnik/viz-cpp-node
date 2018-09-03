@@ -107,11 +107,11 @@ namespace graphene {
 
             void reblog_evaluator::do_apply(const reblog_operation &o) {
                 try {
-                    const auto &c = db().get_comment(o.author, o.permlink);
+                    const auto &c = db().get_content(o.author, o.permlink);
                     FC_ASSERT(c.parent_author.size() == 0, "Only top level posts can be reblogged");
 
                     const auto &blog_idx = db().get_index<blog_index>().indices().get<by_blog>();
-                    const auto &blog_comment_idx = db().get_index<blog_index>().indices().get<by_comment>();
+                    const auto &blog_content_idx = db().get_index<blog_index>().indices().get<by_content>();
 
                     auto next_blog_id = 0;
                     auto last_blog = blog_idx.lower_bound(o.account);
@@ -120,12 +120,12 @@ namespace graphene {
                         next_blog_id = last_blog->blog_feed_id + 1;
                     }
 
-                    auto blog_itr = blog_comment_idx.find(boost::make_tuple(c.id, o.account));
+                    auto blog_itr = blog_content_idx.find(boost::make_tuple(c.id, o.account));
 
-                    FC_ASSERT(blog_itr == blog_comment_idx.end(), "Account has already reblogged this post");
+                    FC_ASSERT(blog_itr == blog_content_idx.end(), "Account has already reblogged this post");
                     db().create<blog_object>([&](blog_object &b) {
                         b.account = o.account;
-                        b.comment = c.id;
+                        b.content = c.id;
                         b.reblogged_on = db().head_block_time();
                         b.blog_feed_id = next_blog_id;
                     });
@@ -146,7 +146,7 @@ namespace graphene {
                     }
 
                     const auto &feed_idx = db().get_index<feed_index>().indices().get<by_feed>();
-                    const auto &comment_idx = db().get_index<feed_index>().indices().get<by_comment>();
+                    const auto &content_idx = db().get_index<feed_index>().indices().get<by_content>();
                     const auto &idx = db().get_index<follow_index>().indices().get<by_following_follower>();
                     auto itr = idx.find(o.account);
 
@@ -160,15 +160,15 @@ namespace graphene {
                                 next_id = last_feed->account_feed_id + 1;
                             }
 
-                            auto feed_itr = comment_idx.find(boost::make_tuple(c.id, itr->follower));
+                            auto feed_itr = content_idx.find(boost::make_tuple(c.id, itr->follower));
 
-                            if (feed_itr == comment_idx.end()) {
+                            if (feed_itr == content_idx.end()) {
                                 db().create<feed_object>([&](feed_object &f) {
                                     f.account = itr->follower;
                                     f.reblogged_by.push_back(o.account);
                                     f.first_reblogged_by = o.account;
                                     f.first_reblogged_on = db().head_block_time();
-                                    f.comment = c.id;
+                                    f.content = c.id;
                                     f.reblogs = 1;
                                     f.account_feed_id = next_id;
                                 });

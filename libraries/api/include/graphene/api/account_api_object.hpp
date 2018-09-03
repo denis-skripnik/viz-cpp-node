@@ -37,7 +37,7 @@ struct account_api_object {
     time_point_sec created;
     account_name_type recovery_account;
     time_point_sec last_account_recovery;
-    uint32_t comment_count;
+    uint32_t content_count;
     uint32_t vote_count;
     uint32_t post_count;
     uint64_t awarded_rshares;
@@ -78,7 +78,7 @@ struct account_api_object {
 FC_REFLECT((graphene::api::account_api_object),
     (id)(name)(owner)(active)(posting)(memo_key)(json_metadata)(proxy)(referrer)(last_owner_update)(last_account_update)
     (created)
-    (recovery_account)(last_account_recovery)(comment_count)(vote_count)
+    (recovery_account)(last_account_recovery)(content_count)(vote_count)
     (post_count)(awarded_rshares)(voting_power)(last_vote_time)(balance)
     (vesting_shares)(delegated_vesting_shares)(received_vesting_shares)
     (vesting_withdraw_rate)(next_vesting_withdrawal)(withdrawn)(to_withdraw)(withdraw_routes)

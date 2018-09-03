@@ -129,7 +129,7 @@ namespace graphene { namespace plugins { namespace tags {
             (get_tags_used_by_author)
 
             /**
-             *  This method is used to fetch all posts/comments by start_author that occur after before_date and
+             *  This method is used to fetch all posts/contents by start_author that occur after before_date and
              *  start_permlink with up to limit being returned.
              *
              *  If start_permlink is empty then only before_date will be considered. If both are specified

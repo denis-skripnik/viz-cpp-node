@@ -818,25 +818,25 @@ namespace graphene { namespace wallet {
             operation get_prototype_operation(string operation_type);
 
             /**
-             *  Post or update a comment.
+             *  Post or update a content.
              *
-             *  @param author the name of the account authoring the comment
-             *  @param permlink the accountwide unique permlink for the comment
-             *  @param parent_author can be null if this is a top level comment
-             *  @param parent_permlink can be null if this is a top level comment
-             *  @param title the title of the comment
-             *  @param body the body of the comment
-             *  @param json the json metadata of the comment
+             *  @param author the name of the account authoring the content
+             *  @param permlink the accountwide unique permlink for the content
+             *  @param parent_author can be null if this is a top level content
+             *  @param parent_permlink can be null if this is a top level content
+             *  @param title the title of the content
+             *  @param body the body of the content
+             *  @param json the json metadata of the content
              *  @param broadcast true if you wish to broadcast the transaction
              */
-            annotated_signed_transaction post_comment( string author, string permlink, string parent_author, string parent_permlink, string title, string body, int16_t curation_percent, string json, bool broadcast );
+            annotated_signed_transaction post_content( string author, string permlink, string parent_author, string parent_permlink, string title, string body, int16_t curation_percent, string json, bool broadcast );
 
             /**
-             * Vote on a comment to be paid TOKEN
+             * Vote on a content to be paid TOKEN
              *
              * @param voter The account voting
-             * @param author The author of the comment to be voted on
-             * @param permlink The permlink of the comment to be voted on. (author, permlink) is a unique pair
+             * @param author The author of the content to be voted on
+             * @param permlink The permlink of the content to be voted on. (author, permlink) is a unique pair
              * @param weight The weight [-100,100] of the vote
              * @param broadcast true if you wish to broadcast the transaction
              */
@@ -902,7 +902,7 @@ namespace graphene { namespace wallet {
              *
              *  @param follower
              *  @param following
-             *  @param what - a set of things to follow: posts, comments, votes, ignore
+             *  @param what - a set of things to follow: posts, contents, votes, ignore
              *  @param broadcast true if you wish to broadcast the transaction
              */
             annotated_signed_transaction follow(
@@ -1012,7 +1012,7 @@ FC_API( graphene::wallet::wallet_api,
                 (transfer_to_vesting)
                 (withdraw_vesting)
                 (set_withdraw_vesting_route)
-                (post_comment)
+                (post_content)
                 (vote)
                 (set_transaction_expiration)
                 (request_account_recovery)

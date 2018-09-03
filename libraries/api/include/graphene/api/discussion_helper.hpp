@@ -4,12 +4,12 @@
 #include <graphene/api/discussion.hpp>
 
 namespace graphene { namespace api {
-    struct comment_metadata {
+    struct content_metadata {
         std::set<std::string> tags;
         std::string language;
     };
 
-    comment_metadata get_metadata(const comment_api_object &c);
+    content_metadata get_metadata(const content_api_object &c);
 
     class discussion_helper {
     public:
@@ -27,9 +27,9 @@ namespace graphene { namespace api {
             const std::string& author, const std::string& permlink, uint32_t limit
         ) const;
 
-        discussion create_discussion(const comment_object& o) const;
+        discussion create_discussion(const content_object& o) const;
 
-        discussion get_discussion(const comment_object& c, uint32_t vote_limit) const;
+        discussion get_discussion(const content_object& c, uint32_t vote_limit) const;
 
     private:
         struct impl;
@@ -38,4 +38,4 @@ namespace graphene { namespace api {
 
 } } // graphene::api
 
-FC_REFLECT((graphene::api::comment_metadata), (tags)(language))
+FC_REFLECT((graphene::api::content_metadata), (tags)(language))

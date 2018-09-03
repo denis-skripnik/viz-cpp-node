@@ -73,7 +73,7 @@ namespace graphene { namespace plugins { namespace social_network {
 
         discussion get_content(std::string author, std::string permlink, uint32_t limit) const;
 
-        discussion get_discussion(const comment_object& c, uint32_t vote_limit) const ;
+        discussion get_discussion(const content_object& c, uint32_t vote_limit) const ;
 
     private:
         graphene::chain::database& database_;
@@ -81,7 +81,7 @@ namespace graphene { namespace plugins { namespace social_network {
     };
 
 
-    discussion social_network::impl::get_discussion(const comment_object& c, uint32_t vote_limit) const {
+    discussion social_network::impl::get_discussion(const content_object& c, uint32_t vote_limit) const {
         return helper->get_discussion(c, vote_limit);
     }
 
@@ -124,7 +124,7 @@ namespace graphene { namespace plugins { namespace social_network {
         std::vector<discussion>& result, std::string author, std::string permlink, uint32_t limit
     ) const {
         account_name_type acc_name = account_name_type(author);
-        const auto& by_permlink_idx = database().get_index<comment_index>().indices().get<by_parent>();
+        const auto& by_permlink_idx = database().get_index<content_index>().indices().get<by_parent>();
         auto itr = by_permlink_idx.find(std::make_tuple(acc_name, permlink));
         while (
             itr != by_permlink_idx.end() &&
@@ -192,7 +192,7 @@ namespace graphene { namespace plugins { namespace social_network {
             std::vector<account_vote> result;
 
             const auto& voter_acnt = db.get_account(voter);
-            const auto& idx = db.get_index<comment_vote_index>().indices().get<by_voter_comment>();
+            const auto& idx = db.get_index<content_vote_index>().indices().get<by_voter_content>();
 
             account_object::id_type aid(voter_acnt.id);
             auto itr = idx.lower_bound(aid);
@@ -204,7 +204,7 @@ namespace graphene { namespace plugins { namespace social_network {
                     continue;
                 }
 
-                const auto& vo = db.get(itr->comment);
+                const auto& vo = db.get(itr->content);
                 account_vote avote;
                 avote.authorperm = vo.author + "/" + to_string(vo.permlink);
                 avote.weight = itr->weight;
@@ -218,7 +218,7 @@ namespace graphene { namespace plugins { namespace social_network {
     }
 
     discussion social_network::impl::get_content(std::string author, std::string permlink, uint32_t limit) const {
-        const auto& by_permlink_idx = database().get_index<comment_index>().indices().get<by_permlink>();
+        const auto& by_permlink_idx = database().get_index<content_index>().indices().get<by_permlink>();
         auto itr = by_permlink_idx.find(std::make_tuple(author, permlink));
         if (itr != by_permlink_idx.end()) {
             return get_discussion(*itr, limit);
@@ -326,14 +326,14 @@ namespace graphene { namespace plugins { namespace social_network {
         std::vector<discussion> result;
 #ifndef IS_LOW_MEM
         auto& db = database();
-        const auto& last_update_idx = db.get_index<comment_index>().indices().get<by_last_update>();
+        const auto& last_update_idx = db.get_index<content_index>().indices().get<by_last_update>();
         auto itr = last_update_idx.begin();
         const account_name_type* parent_author = &start_parent_author;
 
         if (start_permlink.size()) {
-            const auto& comment = db.get_comment(start_parent_author, start_permlink);
-            itr = last_update_idx.iterator_to(comment);
-            parent_author = &comment.parent_author;
+            const auto& content = db.get_content(start_parent_author, start_permlink);
+            itr = last_update_idx.iterator_to(content);
+            parent_author = &content.parent_author;
         } else if (start_parent_author.size()) {
             itr = last_update_idx.lower_bound(start_parent_author);
         }

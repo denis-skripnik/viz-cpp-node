@@ -603,35 +603,35 @@ namespace graphene { namespace chain {
             return find<account_object, by_name>(name);
         }
 
-        const comment_object &database::get_comment(const account_name_type &author, const shared_string &permlink) const {
+        const content_object &database::get_content(const account_name_type &author, const shared_string &permlink) const {
             try {
-                return get<comment_object, by_permlink>(boost::make_tuple(author, permlink));
+                return get<content_object, by_permlink>(boost::make_tuple(author, permlink));
             } FC_CAPTURE_AND_RETHROW((author)(permlink))
         }
 
-        const comment_object *database::find_comment(const account_name_type &author, const shared_string &permlink) const {
-            return find<comment_object, by_permlink>(boost::make_tuple(author, permlink));
+        const content_object *database::find_content(const account_name_type &author, const shared_string &permlink) const {
+            return find<content_object, by_permlink>(boost::make_tuple(author, permlink));
         }
 
-        const comment_object &database::get_comment(const account_name_type &author, const string &permlink) const {
+        const content_object &database::get_content(const account_name_type &author, const string &permlink) const {
             try {
-                return get<comment_object, by_permlink>(boost::make_tuple(author, permlink));
+                return get<content_object, by_permlink>(boost::make_tuple(author, permlink));
             } FC_CAPTURE_AND_RETHROW((author)(permlink))
         }
 
-        const comment_object *database::find_comment(const account_name_type &author, const string &permlink) const {
-            return find<comment_object, by_permlink>(boost::make_tuple(author, permlink));
+        const content_object *database::find_content(const account_name_type &author, const string &permlink) const {
+            return find<content_object, by_permlink>(boost::make_tuple(author, permlink));
         }
 
 
-        const content_type_object &database::get_content_type(const comment_id_type &comment) const {
+        const content_type_object &database::get_content_type(const content_id_type &content) const {
             try {
-                return get<content_type_object, by_comment>(comment);
-            } FC_CAPTURE_AND_RETHROW((comment))
+                return get<content_type_object, by_content>(content);
+            } FC_CAPTURE_AND_RETHROW((content))
         }
 
-        const content_type_object *database::find_content_type(const comment_id_type &comment) const {
-            return find<content_type_object, by_comment>(comment);
+        const content_type_object *database::find_content_type(const content_id_type &content) const {
+            return find<content_type_object, by_content>(content);
         }
 
         const escrow_object &database::get_escrow(const account_name_type &name, uint32_t escrow_id) const {
@@ -662,8 +662,8 @@ namespace graphene { namespace chain {
             } FC_CAPTURE_AND_RETHROW()
         }
 
-        const time_point_sec database::calculate_discussion_payout_time(const comment_object &comment) const {
-            return comment.cashout_time;
+        const time_point_sec database::calculate_discussion_payout_time(const content_object &content) const {
+            return content.cashout_time;
         }
 
         bool database::update_account_bandwidth(const account_object &a, uint32_t trx_size) {
@@ -1831,13 +1831,13 @@ namespace graphene { namespace chain {
  * This method recursively tallies children_rshares2 for this post plus all of its parents,
  * TODO: this method can be skipped for validation-only nodes
  */
-        void database::adjust_rshares2(const comment_object &c, fc::uint128_t old_rshares2, fc::uint128_t new_rshares2) {
-            modify(c, [&](comment_object &comment) {
-                comment.children_rshares2 -= old_rshares2;
-                comment.children_rshares2 += new_rshares2;
+        void database::adjust_rshares2(const content_object &c, fc::uint128_t old_rshares2, fc::uint128_t new_rshares2) {
+            modify(c, [&](content_object &content) {
+                content.children_rshares2 -= old_rshares2;
+                content.children_rshares2 += new_rshares2;
             });
             if (c.depth) {
-                adjust_rshares2(get_comment(c.parent_author, c.parent_permlink), old_rshares2, new_rshares2);
+                adjust_rshares2(get_content(c.parent_author, c.parent_permlink), old_rshares2, new_rshares2);
             } else {
                 const auto &cprops = get_dynamic_global_properties();
                 modify(cprops, [&](dynamic_global_property_object &p) {
@@ -1991,13 +1991,13 @@ namespace graphene { namespace chain {
         }
 
         void database::adjust_total_payout(
-                const comment_object &cur,
+                const content_object &cur,
                 const asset &payout,
                 const asset &shares_payout,
                 const asset &curator_value,
                 const asset &beneficiary_value
         ) {
-            modify(cur, [&](comment_object &c) {
+            modify(cur, [&](content_object &c) {
                 if (c.payout_value.symbol == payout.symbol) {
                     c.payout_value += payout;
                     c.shares_payout_value += shares_payout;
@@ -2007,16 +2007,16 @@ namespace graphene { namespace chain {
             });
         }
 
-        void database::cashout_comment_helper(const comment_object &comment) {
+        void database::cashout_content_helper(const content_object &content) {
             try {
-                if (comment.net_rshares > 0) {
+                if (content.net_rshares > 0) {
                     uint128_t reward_tokens = uint128_t(
-                         claim_rshare_reward(comment.net_rshares));
+                         claim_rshare_reward(content.net_rshares));
 
                     asset total_payout;
                     if (reward_tokens > 0) {
                         const witness_schedule_object &props = get_witness_schedule_object();
-                        auto consensus_curation_percent=std::min(comment.curation_percent,props.median_props.max_curation_percent);
+                        auto consensus_curation_percent=std::min(content.curation_percent,props.median_props.max_curation_percent);
                         consensus_curation_percent=std::max(consensus_curation_percent,props.median_props.min_curation_percent);
                         share_type curation_tokens = ((reward_tokens *
                                                       consensus_curation_percent) /
@@ -2026,12 +2026,12 @@ namespace graphene { namespace chain {
 
                         // VIZ: pay_curators
                         asset total_curation_shares = asset(0, SHARES_SYMBOL);
-                        uint128_t total_weight(comment.total_vote_weight);
+                        uint128_t total_weight(content.total_vote_weight);
                         share_type unclaimed_rewards = curation_tokens;
-                        if (comment.total_vote_weight > 0) {
-                            const auto &cvidx = get_index<comment_vote_index>().indices().get<by_comment_weight_voter>();
-                            auto itr = cvidx.lower_bound(comment.id);
-                            while (itr != cvidx.end() && itr->comment == comment.id) {
+                        if (content.total_vote_weight > 0) {
+                            const auto &cvidx = get_index<content_vote_index>().indices().get<by_content_weight_voter>();
+                            auto itr = cvidx.lower_bound(content.id);
+                            while (itr != cvidx.end() && itr->content == content.id) {
                                 uint128_t weight(itr->weight);
                                 auto claim = ((curation_tokens.value * weight) /
                                               total_weight).to_uint64();
@@ -2041,7 +2041,7 @@ namespace graphene { namespace chain {
                                     const auto &voter = get(itr->voter);
                                     auto reward = create_vesting(voter, asset(claim, TOKEN_SYMBOL));
                                     total_curation_shares += asset( reward.amount, SHARES_SYMBOL );
-                                    push_virtual_operation(curation_reward_operation(voter.name, reward, comment.author, to_string(comment.permlink)));
+                                    push_virtual_operation(curation_reward_operation(voter.name, reward, content.author, to_string(content.permlink)));
 #ifndef IS_LOW_MEM
                                     modify(voter, [&](account_object &a) {
                                         a.curation_rewards += claim;
@@ -2057,13 +2057,13 @@ namespace graphene { namespace chain {
                         share_type total_beneficiary = 0;
                         asset total_beneficiary_shares = asset(0, SHARES_SYMBOL);
 
-                        for (auto &b : comment.beneficiaries) {
+                        for (auto &b : content.beneficiaries) {
                             auto benefactor_tokens = (author_tokens * b.weight) / CHAIN_100_PERCENT;
                             auto shares_created = create_vesting(get_account(b.account), benefactor_tokens);
                             total_beneficiary_shares += asset( shares_created.amount, SHARES_SYMBOL );
                             push_virtual_operation(
                                 content_benefactor_reward_operation(
-                                    b.account, comment.author, to_string(comment.permlink), shares_created));
+                                    b.account, content.author, to_string(content.permlink), shares_created));
                             total_beneficiary += benefactor_tokens;
                         }
 
@@ -2072,12 +2072,12 @@ namespace graphene { namespace chain {
                         auto payout_value = author_tokens / 2;
                         auto shares_payout_value = author_tokens - payout_value;
 
-                        const auto &author = get_account(comment.author);
+                        const auto &author = get_account(content.author);
                         auto shares_created = create_vesting(author, shares_payout_value);
                         adjust_balance(author, payout_value);
 
                         adjust_total_payout(
-                                comment,
+                                content,
                                 asset(payout_value, TOKEN_SYMBOL),
                                 shares_created,
                                 total_curation_shares,
@@ -2087,27 +2087,27 @@ namespace graphene { namespace chain {
                         // stats only.. TODO: Move to plugin...
                         total_payout = asset(reward_tokens.to_uint64(), TOKEN_SYMBOL);
 
-                        push_virtual_operation(author_reward_operation(comment.author, to_string(comment.permlink), payout_value, shares_created));
-                        push_virtual_operation(content_reward_operation(comment.author, to_string(comment.permlink), total_payout));
+                        push_virtual_operation(author_reward_operation(content.author, to_string(content.permlink), payout_value, shares_created));
+                        push_virtual_operation(content_reward_operation(content.author, to_string(content.permlink), total_payout));
 
 #ifndef IS_LOW_MEM
-                        modify(comment, [&](comment_object &c) {
+                        modify(content, [&](content_object &c) {
                             c.author_rewards += author_tokens;
                             c.consensus_curation_percent = consensus_curation_percent;
                         });
 
-                        modify(get_account(comment.author), [&](account_object &a) {
+                        modify(get_account(content.author), [&](account_object &a) {
                             a.posting_rewards += author_tokens;
                         });
 #endif
 
                     }
 
-                    fc::uint128_t old_rshares2 = comment.net_rshares.value;
-                    adjust_rshares2(comment, old_rshares2, 0);
+                    fc::uint128_t old_rshares2 = content.net_rshares.value;
+                    adjust_rshares2(content, old_rshares2, 0);
                 }
 
-                modify(comment, [&](comment_object &c) {
+                modify(content, [&](content_object &c) {
                     /**
                     * A payout is only made for positive rshares, negative rshares hang around
                     * for the next time this post might get an upvote.
@@ -2122,16 +2122,16 @@ namespace graphene { namespace chain {
                     c.last_payout = head_block_time();
                 });
 
-                push_virtual_operation(content_payout_update_operation(comment.author, to_string(comment.permlink)));
+                push_virtual_operation(content_payout_update_operation(content.author, to_string(content.permlink)));
 
-                const auto &vote_idx = get_index<comment_vote_index>().indices().get<by_comment_voter>();
-                auto vote_itr = vote_idx.lower_bound(comment.id);
+                const auto &vote_idx = get_index<content_vote_index>().indices().get<by_content_voter>();
+                auto vote_itr = vote_idx.lower_bound(content.id);
                 while (vote_itr != vote_idx.end() &&
-                       vote_itr->comment == comment.id) {
+                       vote_itr->content == content.id) {
                     const auto &cur_vote = *vote_itr;
                     ++vote_itr;
-                    if (calculate_discussion_payout_time(comment) != fc::time_point_sec::maximum()) {
-                        modify(cur_vote, [&](comment_vote_object &cvo) {
+                    if (calculate_discussion_payout_time(content) != fc::time_point_sec::maximum()) {
+                        modify(cur_vote, [&](content_vote_object &cvo) {
                             cvo.num_changes = -1;
                         });
                     } else {
@@ -2143,13 +2143,13 @@ namespace graphene { namespace chain {
             } FC_CAPTURE_AND_RETHROW()
         }
 
-        void database::process_comment_cashout() {
-            const auto &cidx = get_index<comment_index>().indices().get<by_cashout_time>();
+        void database::process_content_cashout() {
+            const auto &cidx = get_index<content_index>().indices().get<by_cashout_time>();
             const auto block_time = head_block_time();
 
             auto current = cidx.begin();
             while (current != cidx.end() && current->cashout_time <= block_time) {
-                cashout_comment_helper(*current);
+                cashout_content_helper(*current);
                 current = cidx.begin();
             }
         }
@@ -2352,9 +2352,9 @@ namespace graphene { namespace chain {
             add_core_index<transaction_index>(*this);
             add_core_index<block_summary_index>(*this);
             add_core_index<witness_schedule_index>(*this);
-            add_core_index<comment_index>(*this);
+            add_core_index<content_index>(*this);
             add_core_index<content_type_index>(*this);
-            add_core_index<comment_vote_index>(*this);
+            add_core_index<content_vote_index>(*this);
             add_core_index<witness_vote_index>(*this);
             add_core_index<hardfork_property_index>(*this);
             add_core_index<withdraw_vesting_route_index>(*this);
@@ -2922,7 +2922,7 @@ namespace graphene { namespace chain {
                 update_witness_schedule();
 
                 process_funds();
-                process_comment_cashout();
+                process_content_cashout();
                 process_vesting_withdrawals();
 
                 account_recovery_processing();
