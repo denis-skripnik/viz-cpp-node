@@ -1,10 +1,10 @@
-#include <golos/plugins/account_by_key/account_by_key_plugin.hpp>
+#include <graphene/plugins/account_by_key/account_by_key_plugin.hpp>
 
-#include <golos/chain/account_object.hpp>
-#include <golos/chain/index.hpp>
-#include <golos/chain/operation_notification.hpp>
+#include <graphene/chain/account_object.hpp>
+#include <graphene/chain/index.hpp>
+#include <graphene/chain/operation_notification.hpp>
 
-namespace golos { namespace plugins { namespace account_by_key {
+namespace graphene { namespace plugins { namespace account_by_key {
 
             namespace detail {
 
@@ -21,10 +21,7 @@ namespace golos { namespace plugins { namespace account_by_key {
                     void operator()(const T &) const {
                     }
 
-                    void operator()(const account_create_operation &op) const {
-                        _plugin.my->clear_cache();
-                    }
-                    void operator()(const account_create_with_delegation_operation& op) const {
+                    void operator()(const account_create_operation& op) const {
                         _plugin.my->clear_cache();
                     }
 
@@ -44,23 +41,6 @@ namespace golos { namespace plugins { namespace account_by_key {
                             _plugin.my->cache_auths(*acct_itr);
                         }
                     }
-
-                    void operator()(const pow_operation &op) const {
-                        _plugin.my->clear_cache();
-                    }
-
-                    void operator()(const pow2_operation &op) const {
-                        _plugin.my->clear_cache();
-                    }
-                };
-
-                struct pow2_work_get_account_visitor {
-                    typedef const account_name_type *result_type;
-
-                    template<typename WorkType>
-                    result_type operator()(const WorkType &work) const {
-                        return &work.input.worker_account;
-                    }
                 };
 
                 struct post_operation_visitor {
@@ -76,15 +56,7 @@ namespace golos { namespace plugins { namespace account_by_key {
                     void operator()(const T &) const {
                     }
 
-                    void operator()(const account_create_operation &op) const {
-                        auto acct_itr = _plugin.my->database().find<account_authority_object, by_account>(
-                                op.new_account_name);
-                        if (acct_itr) {
-                            _plugin.my->update_key_lookup(*acct_itr);
-                        }
-                    }
-
-                    void operator()(const account_create_with_delegation_operation& op) const {
+                    void operator()(const account_create_operation& op) const {
                         auto itr = _plugin.my->database().find<account_authority_object, by_account>(op.new_account_name);
                         if (itr) {
                             _plugin.my->update_key_lookup(*itr);
@@ -106,41 +78,8 @@ namespace golos { namespace plugins { namespace account_by_key {
                         }
                     }
 
-                    void operator()(const pow_operation &op) const {
-                        auto acct_itr = _plugin.my->database().find<account_authority_object, by_account>(
-                                op.worker_account);
-                        if (acct_itr) {
-                            _plugin.my->update_key_lookup(*acct_itr);
-                        }
-                    }
-
-                    void operator()(const pow2_operation &op) const {
-                        const account_name_type *worker_account = op.work.visit(pow2_work_get_account_visitor());
-                        if (worker_account == nullptr) {
-                            return;
-                        }
-                        auto acct_itr = _plugin.my->database().find<account_authority_object, by_account>(*worker_account);
-                        if (acct_itr) {
-                            _plugin.my->update_key_lookup(*acct_itr);
-                        }
-                    }
-
                     void operator()(const hardfork_operation &op) const {
-                        if (op.hardfork_id == STEEMIT_HARDFORK_0_16) {
-                            auto &db = _plugin.my->database();
 
-                            for (const std::string &acc : hardfork16::get_compromised_accounts()) {
-                                const account_object *account = db.find_account(acc);
-                                if (account == nullptr) {
-                                    continue;
-                                }
-
-                                db.create<key_lookup_object>([&](key_lookup_object &o) {
-                                    o.key = public_key_type("GLS8hLtc7rC59Ed7uNVVTXtF578pJKQwMfdTvuzYLwUi8GkNTh5F6");
-                                    o.account = account->name;
-                                });
-                            }
-                        }
                     }
                 };
             } // detail
@@ -248,7 +187,7 @@ namespace golos { namespace plugins { namespace account_by_key {
                 try {
                     ilog("Initializing account_by_key plugin");
                     my.reset(new account_by_key_plugin_impl(*this));
-                    golos::chain::database &db = appbase::app().get_plugin<golos::plugins::chain::plugin>().db();
+                    graphene::chain::database &db = appbase::app().get_plugin<graphene::plugins::chain::plugin>().db();
 
                     db.pre_apply_operation.connect([&](operation_notification &o) { my->pre_operation(o); });
                     db.post_apply_operation.connect([&](const operation_notification &o) { my->post_operation(o); });
@@ -279,4 +218,4 @@ namespace golos { namespace plugins { namespace account_by_key {
                     return my->get_key_references(tmp);
                 });
             }
-} } } // golos::plugins::account_by_key
+} } } // graphene::plugins::account_by_key

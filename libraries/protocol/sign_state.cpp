@@ -1,7 +1,7 @@
 
-#include <golos/protocol/sign_state.hpp>
+#include <graphene/protocol/sign_state.hpp>
 
-namespace golos { namespace protocol {
+namespace graphene { namespace protocol {
 
     bool sign_state::signed_by(const public_key_type& k) {
         auto itr = provided_signatures.find(k);
@@ -103,4 +103,4 @@ namespace golos { namespace protocol {
         approved_by["temp"] = true;
     }
 
-} } // golos::protocol
+} } // graphene::protocol

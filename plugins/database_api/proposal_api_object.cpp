@@ -1,11 +1,11 @@
-#include <golos/plugins/database_api/api_objects/proposal_api_object.hpp>
+#include <graphene/plugins/database_api/api_objects/proposal_api_object.hpp>
 
-namespace golos { namespace plugins { namespace database_api {
+namespace graphene { namespace plugins { namespace database_api {
 
-    proposal_api_object::proposal_api_object(const golos::chain::proposal_object& p)
+    proposal_api_object::proposal_api_object(const graphene::chain::proposal_object& p)
         : author(p.author),
-          title(golos::chain::to_string(p.title)),
-          memo(golos::chain::to_string(p.memo)),
+          title(graphene::chain::to_string(p.title)),
+          memo(graphene::chain::to_string(p.memo)),
           expiration_time(p.expiration_time),
           review_period_time(p.review_period_time),
           proposed_operations(p.operations()),
@@ -18,4 +18,4 @@ namespace golos { namespace plugins { namespace database_api {
           available_key_approvals(p.available_key_approvals.begin(), p.available_key_approvals.end()) {
     }
 
-}}} // golos::plugins::database_api
+}}} // graphene::plugins::database_api

@@ -1,4 +1,4 @@
-#include <golos/time/time.hpp>
+#include <graphene/time/time.hpp>
 
 #include <fc/exception/exception.hpp>
 #include <fc/network/ntp.hpp>
@@ -7,7 +7,7 @@
 
 #include <atomic>
 
-namespace golos {
+namespace graphene {
     namespace time {
 
         static int32_t simulated_time = 0;
@@ -97,4 +97,4 @@ namespace golos {
         }
 
     }
-} // golos::time
+} // graphene::time

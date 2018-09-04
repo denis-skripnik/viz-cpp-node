@@ -1,11 +1,14 @@
 #include <boost/program_options/options_description.hpp>
-#include <golos/plugins/social_network/social_network.hpp>
-#include <golos/chain/index.hpp>
-#include <golos/api/vote_state.hpp>
-#include <golos/chain/steem_objects.hpp>
-#include <golos/api/discussion_helper.hpp>
+#include <graphene/plugins/social_network/social_network.hpp>
+#include <graphene/chain/index.hpp>
+#include <graphene/api/vote_state.hpp>
+#include <graphene/chain/chain_objects.hpp>
+#include <graphene/api/discussion_helper.hpp>
+#include <graphene/chain/committee_objects.hpp>
+#include <graphene/api/committee_api_object.hpp>
+
 // These visitors creates additional tables, we don't really need them in LOW_MEM mode
-#include <golos/plugins/tags/plugin.hpp>
+#include <graphene/plugins/tags/plugin.hpp>
 
 #define CHECK_ARG_SIZE(_S)                                 \
    FC_ASSERT(                                              \
@@ -28,22 +31,21 @@
 #  define DEFAULT_VOTE_LIMIT 10000
 #endif
 
-namespace golos { namespace plugins { namespace social_network {
-    using golos::plugins::tags::fill_promoted;
-    using golos::api::discussion_helper;
+namespace graphene { namespace plugins { namespace social_network {
+    using graphene::api::discussion_helper;
 
     struct social_network::impl final {
         impl(): database_(appbase::app().get_plugin<chain::plugin>().db()) {
-            helper = std::make_unique<discussion_helper>(database_, follow::fill_account_reputation, fill_promoted);
+            helper = std::make_unique<discussion_helper>(database_);
         }
 
         ~impl() = default;
 
-        golos::chain::database& database() {
+        graphene::chain::database& database() {
             return database_;
         }
 
-        golos::chain::database& database() const {
+        graphene::chain::database& database() const {
             return database_;
         }
 
@@ -53,7 +55,7 @@ namespace golos { namespace plugins { namespace social_network {
         ) const ;
 
         void select_content_replies(
-            std::vector<discussion>& result, const std::string& author, const std::string& permlink, uint32_t limit
+            std::vector<discussion>& result, std::string author, std::string permlink, uint32_t limit
         ) const;
 
         std::vector<discussion> get_content_replies(
@@ -71,15 +73,15 @@ namespace golos { namespace plugins { namespace social_network {
 
         discussion get_content(std::string author, std::string permlink, uint32_t limit) const;
 
-        discussion get_discussion(const comment_object& c, uint32_t vote_limit) const ;
+        discussion get_discussion(const content_object& c, uint32_t vote_limit) const ;
 
     private:
-        golos::chain::database& database_;
+        graphene::chain::database& database_;
         std::unique_ptr<discussion_helper> helper;
     };
 
 
-    discussion social_network::impl::get_discussion(const comment_object& c, uint32_t vote_limit) const {
+    discussion social_network::impl::get_discussion(const content_object& c, uint32_t vote_limit) const {
         return helper->get_discussion(c, vote_limit);
     }
 
@@ -119,10 +121,10 @@ namespace golos { namespace plugins { namespace social_network {
     social_network::~social_network() = default;
 
     void social_network::impl::select_content_replies(
-        std::vector<discussion>& result, const std::string& author, const std::string& permlink, uint32_t limit
+        std::vector<discussion>& result, std::string author, std::string permlink, uint32_t limit
     ) const {
         account_name_type acc_name = account_name_type(author);
-        const auto& by_permlink_idx = database().get_index<comment_index>().indices().get<by_parent>();
+        const auto& by_permlink_idx = database().get_index<content_index>().indices().get<by_parent>();
         auto itr = by_permlink_idx.find(std::make_tuple(acc_name, permlink));
         while (
             itr != by_permlink_idx.end() &&
@@ -190,7 +192,7 @@ namespace golos { namespace plugins { namespace social_network {
             std::vector<account_vote> result;
 
             const auto& voter_acnt = db.get_account(voter);
-            const auto& idx = db.get_index<comment_vote_index>().indices().get<by_voter_comment>();
+            const auto& idx = db.get_index<content_vote_index>().indices().get<by_voter_content>();
 
             account_object::id_type aid(voter_acnt.id);
             auto itr = idx.lower_bound(aid);
@@ -202,7 +204,7 @@ namespace golos { namespace plugins { namespace social_network {
                     continue;
                 }
 
-                const auto& vo = db.get(itr->comment);
+                const auto& vo = db.get(itr->content);
                 account_vote avote;
                 avote.authorperm = vo.author + "/" + to_string(vo.permlink);
                 avote.weight = itr->weight;
@@ -216,12 +218,80 @@ namespace golos { namespace plugins { namespace social_network {
     }
 
     discussion social_network::impl::get_content(std::string author, std::string permlink, uint32_t limit) const {
-        const auto& by_permlink_idx = database().get_index<comment_index>().indices().get<by_permlink>();
+        const auto& by_permlink_idx = database().get_index<content_index>().indices().get<by_permlink>();
         auto itr = by_permlink_idx.find(std::make_tuple(author, permlink));
         if (itr != by_permlink_idx.end()) {
             return get_discussion(*itr, limit);
         }
         return discussion();
+    }
+
+    DEFINE_API(social_network, get_committee_request) {
+        CHECK_ARG_MIN_SIZE(1, 2)
+        auto request_id = args.args->at(0).as<uint32_t>();
+        auto votes_count = GET_OPTIONAL_ARG(1, int32_t, 0);
+        auto& db = pimpl->database();
+        return db.with_weak_read_lock([&]() {
+            const auto &idx = db.get_index<committee_request_index>().indices().get<by_request_id>();
+            auto itr = idx.find(request_id);
+            FC_ASSERT(itr != idx.end(), "Committee request id not found.");
+            committee_api_object result = committee_api_object(*itr);
+            if(0!=votes_count){
+                const auto &vote_idx = db.get_index<committee_vote_index>().indices().get<by_request_id>();
+                auto vote_itr = vote_idx.lower_bound(request_id);
+                int32_t num = 0;
+                while (vote_itr != vote_idx.end() &&
+                       vote_itr->request_id == request_id) {
+                    const auto &cur_vote = *vote_itr;
+                    ++vote_itr;
+                    committee_vote_state vote=committee_vote_state(cur_vote);
+                    result.votes.emplace_back(vote);
+                    if(-1!=votes_count){
+                        ++num;
+                        if(num>=votes_count){
+                            vote_itr=vote_idx.end();
+                        }
+                    }
+                }
+            }
+            return result;
+        });
+    }
+
+    DEFINE_API(social_network, get_committee_request_votes) {
+        CHECK_ARG_MIN_SIZE(1, 1)
+        auto request_id = args.args->at(0).as<uint32_t>();
+        auto& db = pimpl->database();
+        return db.with_weak_read_lock([&]() {
+            const auto &vote_idx = db.get_index<committee_vote_index>().indices().get<by_request_id>();
+            auto vote_itr = vote_idx.lower_bound(request_id);
+            std::vector<committee_vote_state> votes;
+            while (vote_itr != vote_idx.end() &&
+                   vote_itr->request_id == request_id) {
+                const auto &cur_vote = *vote_itr;
+                ++vote_itr;
+                committee_vote_state vote=committee_vote_state(cur_vote);
+                votes.emplace_back(vote);
+            }
+            return votes;
+        });
+    }
+
+    DEFINE_API(social_network, get_committee_requests_list) {
+        CHECK_ARG_MIN_SIZE(1, 1)
+        auto status = args.args->at(0).as<uint16_t>();
+        auto& db = pimpl->database();
+        return db.with_weak_read_lock([&]() {
+            const auto &idx = db.get_index<committee_request_index>().indices().get<by_status>();
+            std::vector<uint16_t> requests_list;
+            auto itr = idx.lower_bound(status);
+            while (itr != idx.end() &&
+                   itr->status == status) {
+                requests_list.emplace_back(itr->request_id);
+                ++itr;
+            }
+            return requests_list;
+        });
     }
 
     DEFINE_API(social_network, get_content) {
@@ -256,14 +326,14 @@ namespace golos { namespace plugins { namespace social_network {
         std::vector<discussion> result;
 #ifndef IS_LOW_MEM
         auto& db = database();
-        const auto& last_update_idx = db.get_index<comment_index>().indices().get<by_last_update>();
+        const auto& last_update_idx = db.get_index<content_index>().indices().get<by_last_update>();
         auto itr = last_update_idx.begin();
         const account_name_type* parent_author = &start_parent_author;
 
         if (start_permlink.size()) {
-            const auto& comment = db.get_comment(start_parent_author, start_permlink);
-            itr = last_update_idx.iterator_to(comment);
-            parent_author = &comment.parent_author;
+            const auto& content = db.get_content(start_parent_author, start_permlink);
+            itr = last_update_idx.iterator_to(content);
+            parent_author = &content.parent_author;
         } else if (start_parent_author.size()) {
             itr = last_update_idx.lower_bound(start_parent_author);
         }
@@ -296,4 +366,4 @@ namespace golos { namespace plugins { namespace social_network {
         });
     }
 
-} } } // golos::plugins::social_network
+} } } // graphene::plugins::social_network

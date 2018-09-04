@@ -1,7 +1,7 @@
-#include <golos/plugins/follow/follow_operations.hpp>
-#include <golos/protocol/operation_util_impl.hpp>
+#include <graphene/plugins/follow/follow_operations.hpp>
+#include <graphene/protocol/operation_util_impl.hpp>
 
-namespace golos {
+namespace graphene {
     namespace plugins {
         namespace follow {
 
@@ -15,6 +15,6 @@ namespace golos {
 
         }
     }
-} //golos::follow
+} //graphene::follow
 
-DEFINE_OPERATION_TYPE(golos::plugins::follow::follow_plugin_operation)
+DEFINE_OPERATION_TYPE(graphene::plugins::follow::follow_plugin_operation)

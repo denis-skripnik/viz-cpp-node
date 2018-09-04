@@ -24,7 +24,7 @@
 
 #include <graphene/utilities/tempdir.hpp>
 
-namespace golos {
+namespace graphene {
     namespace utilities {
 
         fc::path temp_directory_path() {
@@ -32,8 +32,8 @@ namespace golos {
             if (graphene_tempdir != nullptr) {
                 return fc::path(graphene_tempdir);
             }
-            return fc::temp_directory_path() / "golos-tmp";
+            return fc::temp_directory_path() / "graphene-tmp";
         }
 
     }
-} // golos::utilities
+} // graphene::utilities

@@ -1,8 +1,8 @@
-#include <golos/chain/database.hpp>
-#include <golos/chain/proposal_object.hpp>
-#include <golos/chain/account_object.hpp>
+#include <graphene/chain/database.hpp>
+#include <graphene/chain/proposal_object.hpp>
+#include <graphene/chain/account_object.hpp>
 
-namespace golos { namespace chain {
+namespace graphene { namespace chain {
 
     const proposal_object& database::get_proposal(
         const account_name_type& author,
@@ -68,4 +68,4 @@ namespace golos { namespace chain {
         }
     }
 
-} } // golos::chain
+} } // graphene::chain

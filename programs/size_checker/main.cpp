@@ -2,9 +2,9 @@
 #include <fc/smart_ref_impl.hpp>
 #include <fc/variant_object.hpp>
 
-#include <golos/protocol/protocol.hpp>
+#include <graphene/protocol/protocol.hpp>
 
-using namespace golos::protocol;
+using namespace graphene::protocol;
 
 std::vector<fc::variant_object> g_op_types;
 
@@ -34,7 +34,7 @@ struct size_check_type_visitor {
 
 int main(int argc, char **argv) {
     try {
-        golos::protocol::operation op;
+        graphene::protocol::operation op;
 
 
         std::vector<uint64_t> witnesses;

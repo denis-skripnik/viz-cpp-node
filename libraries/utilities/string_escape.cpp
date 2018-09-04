@@ -24,7 +24,7 @@
 #include <graphene/utilities/string_escape.hpp>
 #include <sstream>
 
-namespace golos {
+namespace graphene {
     namespace utilities {
 
         std::string escape_string_for_c_source_code(const std::string &input) {
@@ -68,5 +68,5 @@ namespace golos {
         }
 
     }
-} // end namespace golos::utilities
+} // end namespace graphene::utilities
 

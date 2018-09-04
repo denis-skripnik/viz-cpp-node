@@ -1,20 +1,25 @@
-#include <golos/api/chain_api_properties.hpp>
+#include <graphene/api/chain_api_properties.hpp>
 
-namespace golos { namespace api {
+namespace graphene { namespace api {
 
     chain_api_properties::chain_api_properties(
         const chain_properties& src,
         const database& db
     ) : account_creation_fee(src.account_creation_fee),
         maximum_block_size(src.maximum_block_size),
-        sbd_interest_rate(src.sbd_interest_rate)
+        create_account_delegation_ratio(src.create_account_delegation_ratio),
+        create_account_delegation_time(src.create_account_delegation_time),
+        min_delegation(src.min_delegation),
+        min_curation_percent(src.min_curation_percent),
+        max_curation_percent(src.max_curation_percent),
+        bandwidth_reserve_percent(src.bandwidth_reserve_percent),
+        bandwidth_reserve_below(src.bandwidth_reserve_below)
     {
-        if (db.has_hardfork(STEEMIT_HARDFORK_0_18__673)) {
-            create_account_with_golos_modifier = src.create_account_with_golos_modifier;
-            create_account_delegation_ratio = src.create_account_delegation_ratio;
-            create_account_delegation_time = src.create_account_delegation_time;
-            min_delegation_multiplier = src.min_delegation_multiplier;
-        }
+        create_account_delegation_ratio = src.create_account_delegation_ratio;
+        create_account_delegation_time = src.create_account_delegation_time;
+        min_delegation = src.min_delegation;
+        min_curation_percent = src.min_curation_percent;
+        max_curation_percent = src.max_curation_percent;
     }
 
-} } // golos::api
+} } // graphene::api

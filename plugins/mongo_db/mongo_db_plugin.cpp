@@ -1,21 +1,21 @@
-#include <golos/plugins/mongo_db/mongo_db_plugin.hpp>
-#include <golos/plugins/json_rpc/plugin.hpp>
-#include <golos/plugins/chain/plugin.hpp>
-#include <golos/protocol/block.hpp>
+#include <graphene/plugins/mongo_db/mongo_db_plugin.hpp>
+#include <graphene/plugins/json_rpc/plugin.hpp>
+#include <graphene/plugins/chain/plugin.hpp>
+#include <graphene/protocol/block.hpp>
 
-#include <golos/plugins/mongo_db/mongo_db_writer.hpp>
+#include <graphene/plugins/mongo_db/mongo_db_writer.hpp>
 
-namespace golos {
+namespace graphene {
 namespace plugins {
 namespace mongo_db {
 
-    using golos::protocol::signed_block;
+    using graphene::protocol::signed_block;
 
     class mongo_db_plugin::mongo_db_plugin_impl {
     public:
         mongo_db_plugin_impl(mongo_db_plugin &plugin)
             : pimpl_(plugin),
-              db_(appbase::app().get_plugin<golos::plugins::chain::plugin>().db()) {
+              db_(appbase::app().get_plugin<graphene::plugins::chain::plugin>().db()) {
         }
 
         bool initialize(const std::string& uri, const bool write_raw, const std::vector<std::string>& op) {
@@ -28,20 +28,20 @@ namespace mongo_db {
             writer.on_block(block);
         }
 
-        void on_operation(const golos::chain::operation_notification& note) {
+        void on_operation(const graphene::chain::operation_notification& note) {
             if (is_virtual_operation(note.op)) {
                writer.on_operation(note);
             }
         }
 
-        golos::chain::database &database() const {
+        graphene::chain::database &database() const {
             return db_;
         }
 
         mongo_db_writer writer;
         mongo_db_plugin &pimpl_;
 
-        golos::chain::database &db_;
+        graphene::chain::database &db_;
     };
 
     // Plugin
@@ -57,7 +57,7 @@ namespace mongo_db {
     ) {
         cli.add_options()
             ("mongodb-uri",
-             boost::program_options::value<string>()->default_value("mongodb://127.0.0.1:27017/Golos"),
+             boost::program_options::value<string>()->default_value("mongodb://127.0.0.1:27017/viz"),
              "Mongo DB connection string")
             ("mongodb-write-raw-blocks",
              boost::program_options::value<bool>()->default_value(true),
@@ -110,7 +110,7 @@ namespace mongo_db {
 
             ilog("mongo_db plugin: plugin_initialize() end");
         } FC_CAPTURE_AND_RETHROW()
-    } 
+    }
 
     void mongo_db_plugin::plugin_startup() {
         ilog("mongo_db plugin: plugin_startup() begin");
@@ -124,4 +124,4 @@ namespace mongo_db {
         ilog("mongo_db plugin: plugin_shutdown() end");
     }
 
- }}} // namespace golos::plugins::mongo_db
+ }}} // namespace graphene::plugins::mongo_db

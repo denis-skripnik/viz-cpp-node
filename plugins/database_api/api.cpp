@@ -1,8 +1,8 @@
-#include <golos/plugins/database_api/plugin.hpp>
+#include <graphene/plugins/database_api/plugin.hpp>
 
-#include <golos/plugins/follow/plugin.hpp>
+#include <graphene/plugins/follow/plugin.hpp>
 
-#include <golos/protocol/get_config.hpp>
+#include <graphene/protocol/get_config.hpp>
 
 #include <fc/bloom_filter.hpp>
 #include <fc/smart_ref_impl.hpp>
@@ -10,7 +10,7 @@
 #include <boost/range/iterator_range.hpp>
 #include <boost/algorithm/string.hpp>
 #include <memory>
-#include <golos/plugins/json_rpc/plugin.hpp>
+#include <graphene/plugins/json_rpc/plugin.hpp>
 
 #define GET_REQUIRED_FEES_MAX_RECURSION 4
 
@@ -20,7 +20,9 @@
    FC_ASSERT(n_args >= min && n_args <= max, "Expected #min-#max arguments, got ${n}", ("n", n_args));
 
 
-namespace golos { namespace plugins { namespace database_api {
+namespace graphene { namespace plugins { namespace database_api {
+
+using protocol::share_type;
 
 struct block_applied_callback_info {
     using ptr = std::shared_ptr<block_applied_callback_info>;
@@ -115,19 +117,16 @@ public:
     std::function<void(const fc::variant &)> _pending_trx_callback;
 
 
-    golos::chain::database &database() const {
+    graphene::chain::database &database() const {
         return _db;
     }
-
-
-    std::map<std::pair<asset_symbol_type, asset_symbol_type>, std::function<void(const variant &)>> _market_subscriptions;
 
     block_applied_callback_info::cont active_block_applied_callback;
     block_applied_callback_info::cont free_block_applied_callback;
 
 private:
 
-    golos::chain::database &_db;
+    graphene::chain::database &_db;
 };
 
 
@@ -285,7 +284,7 @@ DEFINE_API(plugin, get_config) {
 }
 
 fc::variant_object plugin::api_impl::get_config() const {
-    return golos::protocol::get_config();
+    return graphene::protocol::get_config();
 }
 
 DEFINE_API(plugin, get_dynamic_global_properties) {
@@ -342,7 +341,6 @@ std::vector<account_api_object> plugin::api_impl::get_accounts(std::vector<std::
         auto itr = idx.find(name);
         if (itr != idx.end()) {
             results.push_back(account_api_object(*itr, _db));
-            follow::fill_account_reputation(_db, itr->name, results.back().reputation);
             auto vitr = vidx.lower_bound(boost::make_tuple(itr->id, witness_id_type()));
             while (vitr != vidx.end() && vitr->account == itr->id) {
                 results.back().witness_votes.insert(_db.get(vitr->witness).owner);
@@ -527,20 +525,6 @@ DEFINE_API(plugin, get_withdraw_routes) {
     });
 }
 
-DEFINE_API(plugin, get_account_bandwidth) {
-    CHECK_ARG_SIZE(2)
-    auto account = args.args->at(0).as<string>();
-    auto type = args.args->at(1).as<bandwidth_type>();
-    optional<account_bandwidth_api_object> result;
-    auto band = my->database().find<account_bandwidth_object, by_account_bandwidth_type>(
-            boost::make_tuple(account, type));
-    if (band != nullptr) {
-        result = *band;
-    }
-
-    return result;
-}
-
 
 //////////////////////////////////////////////////////////////////////
 //                                                                  //
@@ -575,7 +559,7 @@ std::set<public_key_type> plugin::api_impl::get_required_signatures(
 ) const {
     //   wdump((trx)(available_keys));
     auto result = trx.get_required_signatures(
-        STEEMIT_CHAIN_ID, available_keys,
+        CHAIN_ID, available_keys,
         [&](std::string account_name) {
             return authority(database().get<account_authority_object, by_account>(account_name).active);
         },
@@ -585,7 +569,7 @@ std::set<public_key_type> plugin::api_impl::get_required_signatures(
         [&](std::string account_name) {
             return authority(database().get<account_authority_object, by_account>(account_name).posting);
         },
-        STEEMIT_MAX_SIG_CHECK_DEPTH
+        CHAIN_MAX_SIG_CHECK_DEPTH
     );
     //   wdump((result));
     return result;
@@ -601,7 +585,7 @@ DEFINE_API(plugin, get_potential_signatures) {
 std::set<public_key_type> plugin::api_impl::get_potential_signatures(const signed_transaction &trx) const {
     //   wdump((trx));
     std::set<public_key_type> result;
-    trx.get_required_signatures(STEEMIT_CHAIN_ID, flat_set<public_key_type>(),
+    trx.get_required_signatures(CHAIN_ID, flat_set<public_key_type>(),
         [&](account_name_type account_name) {
             const auto &auth = database().get<account_authority_object, by_account>(account_name).active;
             for (const auto &k : auth.get_keys()) {
@@ -623,7 +607,7 @@ std::set<public_key_type> plugin::api_impl::get_potential_signatures(const signe
             }
             return authority(auth);
         },
-        STEEMIT_MAX_SIG_CHECK_DEPTH
+        CHAIN_MAX_SIG_CHECK_DEPTH
     );
 
     //   wdump((result));
@@ -638,13 +622,13 @@ DEFINE_API(plugin, verify_authority) {
 }
 
 bool plugin::api_impl::verify_authority(const signed_transaction &trx) const {
-    trx.verify_authority(STEEMIT_CHAIN_ID, [&](std::string account_name) {
+    trx.verify_authority(CHAIN_ID, [&](std::string account_name) {
         return authority(database().get<account_authority_object, by_account>(account_name).active);
     }, [&](std::string account_name) {
         return authority(database().get<account_authority_object, by_account>(account_name).owner);
     }, [&](std::string account_name) {
         return authority(database().get<account_authority_object, by_account>(account_name).posting);
-    }, STEEMIT_MAX_SIG_CHECK_DEPTH);
+    }, CHAIN_MAX_SIG_CHECK_DEPTH);
     return true;
 }
 
@@ -671,54 +655,6 @@ bool plugin::api_impl::verify_account_authority(
     trx.operations.emplace_back(op);
 
     return verify_authority(trx);
-}
-
-DEFINE_API(plugin, get_conversion_requests) {
-    CHECK_ARG_SIZE(1)
-    auto account = args.args->at(0).as<std::string>();
-    return my->database().with_weak_read_lock([&]() {
-        const auto &idx = my->database().get_index<convert_request_index>().indices().get<by_owner>();
-        std::vector<convert_request_api_object> result;
-        auto itr = idx.lower_bound(account);
-        while (itr != idx.end() && itr->owner == account) {
-            result.emplace_back(*itr);
-            ++itr;
-        }
-        return result;
-    });
-}
-
-
-DEFINE_API(plugin, get_savings_withdraw_from) {
-    CHECK_ARG_SIZE(1)
-    auto account = args.args->at(0).as<string>();
-    return my->database().with_weak_read_lock([&]() {
-        std::vector<savings_withdraw_api_object> result;
-
-        const auto &from_rid_idx = my->database().get_index<savings_withdraw_index>().indices().get<by_from_rid>();
-        auto itr = from_rid_idx.lower_bound(account);
-        while (itr != from_rid_idx.end() && itr->from == account) {
-            result.push_back(savings_withdraw_api_object(*itr));
-            ++itr;
-        }
-        return result;
-    });
-}
-
-DEFINE_API(plugin, get_savings_withdraw_to) {
-    CHECK_ARG_SIZE(1)
-    auto account = args.args->at(0).as<string>();
-    return my->database().with_weak_read_lock([&]() {
-        std::vector<savings_withdraw_api_object> result;
-
-        const auto &to_complete_idx = my->database().get_index<savings_withdraw_index>().indices().get<by_to_complete>();
-        auto itr = to_complete_idx.lower_bound(account);
-        while (itr != to_complete_idx.end() && itr->to == account) {
-            result.push_back(savings_withdraw_api_object(*itr));
-            ++itr;
-        }
-        return result;
-    });
 }
 
 //vector<vesting_delegation_api_obj> get_vesting_delegations(string account, string from, uint32_t limit, delegations_type type = delegated) const;
@@ -860,4 +796,4 @@ void plugin::plugin_startup() {
     my->startup();
 }
 
-} } } // golos::plugins::database_api
+} } } // graphene::plugins::database_api

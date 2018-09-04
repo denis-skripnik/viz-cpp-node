@@ -1,15 +1,15 @@
 set(CURRENT_TARGET network)
 
 list(APPEND ${CURRENT_TARGET}_HEADERS
-        include/golos/network/config.hpp
-        include/golos/network/core_messages.hpp
-        include/golos/network/exceptions.hpp
-        include/golos/network/message.hpp
-        include/golos/network/message_oriented_connection.hpp
-        include/golos/network/node.hpp
-        include/golos/network/peer_connection.hpp
-        include/golos/network/peer_database.hpp
-        include/golos/network/stcp_socket.hpp
+        include/graphene/network/config.hpp
+        include/graphene/network/core_messages.hpp
+        include/graphene/network/exceptions.hpp
+        include/graphene/network/message.hpp
+        include/graphene/network/message_oriented_connection.hpp
+        include/graphene/network/node.hpp
+        include/graphene/network/peer_connection.hpp
+        include/graphene/network/peer_database.hpp
+        include/graphene/network/stcp_socket.hpp
         )
 
 list(APPEND ${CURRENT_TARGET}_SOURCES
@@ -22,22 +22,22 @@ list(APPEND ${CURRENT_TARGET}_SOURCES
         )
 
 if(BUILD_SHARED_LIBRARIES)
-    add_library(golos_${CURRENT_TARGET} SHARED
+    add_library(graphene_${CURRENT_TARGET} SHARED
             ${${CURRENT_TARGET}_HEADERS}
             ${${CURRENT_TARGET}_SOURCES}
             )
 else()
-    add_library(golos_${CURRENT_TARGET} STATIC
+    add_library(graphene_${CURRENT_TARGET} STATIC
             ${${CURRENT_TARGET}_HEADERS}
             ${${CURRENT_TARGET}_SOURCES}
             )
 endif()
 
-add_library(golos::${CURRENT_TARGET} ALIAS golos_${CURRENT_TARGET})
-set_property(TARGET golos_${CURRENT_TARGET} PROPERTY EXPORT_NAME ${CURRENT_TARGET})
+add_library(graphene::${CURRENT_TARGET} ALIAS graphene_${CURRENT_TARGET})
+set_property(TARGET graphene_${CURRENT_TARGET} PROPERTY EXPORT_NAME ${CURRENT_TARGET})
 
-target_link_libraries(golos_${CURRENT_TARGET} PUBLIC fc golos_protocol)
-target_include_directories(golos_${CURRENT_TARGET}
+target_link_libraries(graphene_${CURRENT_TARGET} PUBLIC fc graphene_protocol)
+target_include_directories(graphene_${CURRENT_TARGET}
         PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include"
         PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/../protocol/include"
         #PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/../version/include"
@@ -48,16 +48,16 @@ if(MSVC)
 endif(MSVC)
 
 if(USE_PCH)
-    set_target_properties(golos_${CURRENT_TARGET} PROPERTIES COTIRE_ADD_UNITY_BUILD FALSE)
-    cotire(golos::network)
+    set_target_properties(graphene_${CURRENT_TARGET} PROPERTIES COTIRE_ADD_UNITY_BUILD FALSE)
+    cotire(graphene::network)
 endif(USE_PCH)
 
 install(TARGETS
-        golos_${CURRENT_TARGET}
+        graphene_${CURRENT_TARGET}
 
         RUNTIME DESTINATION bin
         LIBRARY DESTINATION lib
         ARCHIVE DESTINATION lib
         )
-install(FILES ${${CURRENT_TARGET}_HEADERS} DESTINATION "include/golos/${CURRENT_TARGET}")
+install(FILES ${${CURRENT_TARGET}_HEADERS} DESTINATION "include/graphene/${CURRENT_TARGET}")
 

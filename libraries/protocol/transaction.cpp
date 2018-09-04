@@ -1,11 +1,11 @@
 
-#include <golos/protocol/transaction.hpp>
-#include <golos/protocol/exceptions.hpp>
+#include <graphene/protocol/transaction.hpp>
+#include <graphene/protocol/exceptions.hpp>
 
 #include <fc/bitutil.hpp>
 #include <fc/smart_ref_impl.hpp>
 
-namespace golos {
+namespace graphene {
     namespace protocol {
 
         digest_type signed_transaction::merkle_digest() const {
@@ -35,20 +35,20 @@ namespace golos {
             }
         }
 
-        golos::protocol::transaction_id_type golos::protocol::transaction::id() const {
+        graphene::protocol::transaction_id_type graphene::protocol::transaction::id() const {
             auto h = digest();
             transaction_id_type result;
             memcpy(result._hash, h._hash, std::min(sizeof(result), sizeof(h)));
             return result;
         }
 
-        const signature_type &golos::protocol::signed_transaction::sign(const private_key_type &key, const chain_id_type &chain_id) {
+        const signature_type &graphene::protocol::signed_transaction::sign(const private_key_type &key, const chain_id_type &chain_id) {
             digest_type h = sig_digest(chain_id);
             signatures.push_back(key.sign_compact(h));
             return signatures.back();
         }
 
-        signature_type golos::protocol::signed_transaction::sign(const private_key_type &key, const chain_id_type &chain_id) const {
+        signature_type graphene::protocol::signed_transaction::sign(const private_key_type &key, const chain_id_type &chain_id) const {
             digest_type::encoder enc;
             fc::raw::pack(enc, chain_id);
             fc::raw::pack(enc, *this);
@@ -74,20 +74,20 @@ namespace golos {
         }
 
         void assert_unused_approvals(sign_state& s) {
-            GOLOS_CTOR_ASSERT(
+            CHAIN_CTOR_ASSERT(
                 !s.remove_unused_signatures(),
                 tx_irrelevant_sig,
                 [&](auto& e) {
                     e.unused_signatures = std::move(s.unused_signatures);
-                    e.append_log(GOLOS_ASSERT_MESSAGE("Unnecessary signature(s) detected"));
+                    e.append_log(CHAIN_ASSERT_MESSAGE("Unnecessary signature(s) detected"));
                 });
 
-            GOLOS_CTOR_ASSERT(
+            CHAIN_CTOR_ASSERT(
                 !s.filter_unused_approvals(),
                 tx_irrelevant_approval,
                 [&](auto& e) {
                     e.unused_approvals = std::move(s.unused_approvals);
-                    e.append_log(GOLOS_ASSERT_MESSAGE("Unnecessary approval(s) detected"));
+                    e.append_log(CHAIN_ASSERT_MESSAGE("Unnecessary approval(s) detected"));
                 });
         }
 
@@ -142,7 +142,7 @@ namespace golos {
                     }
                 }
 
-                GOLOS_CTOR_ASSERT(
+                CHAIN_CTOR_ASSERT(
                     missing_accounts.empty(),
                     tx_missing_posting_auth,
                     [&](auto& e) {
@@ -150,7 +150,7 @@ namespace golos {
                         e.used_signatures = std::move(s.used_signatures);
                         e.missing_accounts = std::move(missing_accounts);
                         e.append_log(
-                            GOLOS_ASSERT_MESSAGE("Missing Posting Authority ${id}", ("id", e.missing_accounts)));
+                            CHAIN_ASSERT_MESSAGE("Missing Posting Authority ${id}", ("id", e.missing_accounts)));
                     });
 
                 assert_unused_approvals(s);
@@ -172,13 +172,13 @@ namespace golos {
                 }
             }
 
-            GOLOS_CTOR_ASSERT(
+            CHAIN_CTOR_ASSERT(
                 missing_auths.empty(),
                 tx_missing_other_auth,
                 [&](auto& e) {
                     e.missing_auths = std::move(missing_auths);
                     e.append_log(
-                        GOLOS_ASSERT_MESSAGE("Missing Authority", ("auth", e.missing_auths)));
+                        CHAIN_ASSERT_MESSAGE("Missing Authority", ("auth", e.missing_auths)));
                 });
 
             // fetch all of the top level authorities
@@ -188,7 +188,7 @@ namespace golos {
                 }
             }
 
-            GOLOS_CTOR_ASSERT(
+            CHAIN_CTOR_ASSERT(
                 missing_accounts.empty(),
                 tx_missing_active_auth,
                 [&](auto& e) {
@@ -196,7 +196,7 @@ namespace golos {
                     e.used_signatures = std::move(s.used_signatures);
                     e.missing_accounts = std::move(missing_accounts);
                     e.append_log(
-                        GOLOS_ASSERT_MESSAGE("Missing Active Authority ${id}", ("id", e.missing_accounts)));
+                        CHAIN_ASSERT_MESSAGE("Missing Active Authority ${id}", ("id", e.missing_accounts)));
                 });
 
             for (const auto& id: required_owner) {
@@ -207,7 +207,7 @@ namespace golos {
                 }
             }
 
-            GOLOS_CTOR_ASSERT(
+            CHAIN_CTOR_ASSERT(
                 missing_accounts.empty(),
                 tx_missing_owner_auth,
                 [&](auto& e) {
@@ -215,7 +215,7 @@ namespace golos {
                     e.used_signatures = std::move(s.used_signatures);
                     e.missing_accounts = std::move(missing_accounts);
                     e.append_log(
-                        GOLOS_ASSERT_MESSAGE("Missing Owner Authority ${id}", ("id", e.missing_accounts)));
+                        CHAIN_ASSERT_MESSAGE("Missing Owner Authority ${id}", ("id", e.missing_accounts)));
                 });
 
             assert_unused_approvals(s);
@@ -227,7 +227,7 @@ namespace golos {
                 auto d = sig_digest(chain_id);
                 flat_set<public_key_type> result;
                 for (const auto &sig : signatures) {
-                    GOLOS_ASSERT(
+                    CHAIN_ASSERT(
                         result.insert(fc::ecc::public_key(sig, d)).second,
                         tx_duplicate_sig,
                         "Duplicate Signature detected");
@@ -317,7 +317,7 @@ namespace golos {
             for (const public_key_type &k : s) {
                 result.erase(k);
                 try {
-                    golos::protocol::verify_authority(operations, result, get_active, get_owner, get_posting, max_recursion);
+                    graphene::protocol::verify_authority(operations, result, get_active, get_owner, get_posting, max_recursion);
                     continue;  // element stays erased if verify_authority is ok
                 }
                 catch (const tx_missing_owner_auth &e) {
@@ -340,9 +340,9 @@ namespace golos {
                 const authority_getter &get_posting,
                 uint32_t max_recursion) const {
             try {
-                golos::protocol::verify_authority(operations, get_signature_keys(chain_id), get_active, get_owner, get_posting, max_recursion);
+                graphene::protocol::verify_authority(operations, get_signature_keys(chain_id), get_active, get_owner, get_posting, max_recursion);
             } FC_CAPTURE_AND_RETHROW((*this))
         }
 
     }
-} // golos::protocol
+} // graphene::protocol

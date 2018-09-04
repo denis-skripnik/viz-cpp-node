@@ -1,14 +1,14 @@
-#include <golos/plugins/witness_api/plugin.hpp>
-#include <golos/chain/operation_notification.hpp>
+#include <graphene/plugins/witness_api/plugin.hpp>
+#include <graphene/chain/operation_notification.hpp>
 
 
 #define CHECK_ARG_SIZE(s) \
    FC_ASSERT( args.args->size() == s, "Expected #s argument(s), was ${n}", ("n", args.args->size()) );
 
-namespace golos { namespace plugins { namespace witness_api {
+namespace graphene { namespace plugins { namespace witness_api {
 
-using namespace golos::protocol;
-using namespace golos::chain;
+using namespace graphene::protocol;
+using namespace graphene::chain;
 
 struct plugin::witness_plugin_impl {
 public:
@@ -17,49 +17,14 @@ public:
 
     ~witness_plugin_impl() = default;
 
-    std::vector<account_name_type> get_miner_queue() const;
     std::vector<optional<witness_api_object>> get_witnesses(const std::vector<witness_object::id_type> &witness_ids) const;
     fc::optional<witness_api_object> get_witness_by_account(std::string account_name) const;
     std::vector<witness_api_object> get_witnesses_by_vote(std::string from, uint32_t limit) const;
     uint64_t get_witness_count() const;
     std::set<account_name_type> lookup_witness_accounts(const std::string &lower_bound_name, uint32_t limit) const;
 
-    golos::chain::database& database;
+    graphene::chain::database& database;
 };
-
-
-DEFINE_API(plugin, get_current_median_history_price) {
-    return my->database.with_weak_read_lock([&]() {
-        return my->database.get_feed_history().current_median_history;
-    });
-}
-
-DEFINE_API(plugin, get_feed_history) {
-    return my->database.with_weak_read_lock([&]() {
-        return feed_history_api_object(my->database.get_feed_history());
-    });
-}
-
-std::vector<account_name_type> plugin::witness_plugin_impl::get_miner_queue() const {
-    std::vector<account_name_type> result;
-    const auto &pow_idx = database.get_index<witness_index>().indices().get<by_pow>();
-
-    auto itr = pow_idx.upper_bound(0);
-    while (itr != pow_idx.end()) {
-        if (itr->pow_worker) {
-            result.push_back(itr->owner);
-        }
-        ++itr;
-    }
-    return result;
-}
-
-DEFINE_API(plugin, get_miner_queue) {
-    return my->database.with_weak_read_lock([&]() {
-        return my->get_miner_queue();
-    });
-}
-
 
 DEFINE_API(plugin, get_active_witnesses) {
     return my->database.with_weak_read_lock([&]() {
@@ -231,4 +196,4 @@ void plugin::plugin_startup() {
 }
 
 
-} } } // golos::plugins::witness_api
+} } } // graphene::plugins::witness_api

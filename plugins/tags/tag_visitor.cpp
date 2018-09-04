@@ -1,7 +1,7 @@
 #include <boost/algorithm/string.hpp>
-#include <golos/plugins/tags/tag_visitor.hpp>
+#include <graphene/plugins/tags/tag_visitor.hpp>
 
-namespace golos { namespace plugins { namespace tags {
+namespace graphene { namespace plugins { namespace tags {
 
     operation_visitor::operation_visitor(database& db)
         : db_(db) {
@@ -16,15 +16,15 @@ namespace golos { namespace plugins { namespace tags {
 
         bool need_remove = false;
         db_.modify(*itr, [&](tag_stats_object& s) {
-            if (tag.parent == comment_object::id_type()) {
+            if (tag.parent == content_object::id_type()) {
                 s.total_children_rshares2 -= tag.children_rshares2;
                 s.top_posts--;
             } else {
-                s.comments--;
+                s.contents--;
             }
             s.net_votes -= tag.net_votes;
 
-            need_remove = (s.top_posts == 0) && (s.comments == 0);
+            need_remove = (s.top_posts == 0) && (s.contents == 0);
         });
 
         if (need_remove) {
@@ -54,11 +54,11 @@ namespace golos { namespace plugins { namespace tags {
 
     void operation_visitor::add_stats(const tag_object& tag) const {
         db_.modify(get_stats(tag), [&](tag_stats_object& s) {
-            if (tag.parent == comment_object::id_type()) {
+            if (tag.parent == content_object::id_type()) {
                 s.total_children_rshares2 += tag.children_rshares2;
                 s.top_posts++;
             } else {
-                s.comments++;
+                s.contents++;
             }
             s.net_votes += tag.net_votes;
         });
@@ -82,49 +82,46 @@ namespace golos { namespace plugins { namespace tags {
     }
 
     void operation_visitor::update_tag(
-        const tag_object& current, const comment_object& comment, double hot, double trending
+        const tag_object& current, const content_object& content, double hot, double trending
     ) const {
-        auto cashout_time = db_.calculate_discussion_payout_time(comment);
+        auto cashout_time = db_.calculate_discussion_payout_time(content);
         remove_stats(current);
         db_.modify(current, [&](tag_object& obj) {
-            obj.active = comment.active;
+            obj.active = content.active;
             obj.cashout = cashout_time;
-            obj.children = comment.children;
-            obj.net_rshares = comment.net_rshares.value;
-            obj.net_votes = comment.net_votes;
-            obj.children_rshares2 = comment.children_rshares2;
+            obj.children = content.children;
+            obj.net_rshares = content.net_rshares.value;
+            obj.net_votes = content.net_votes;
+            obj.children_rshares2 = content.children_rshares2;
             obj.hot = hot;
             obj.trending = trending;
-            if (obj.cashout == fc::time_point_sec()) {
-                obj.promoted_balance = 0;
-            }
         });
         add_stats(current);
     }
 
     void operation_visitor::create_tag(
-        const std::string& name, const tag_type type, const comment_object& comment, double hot, double trending
+        const std::string& name, const tag_type type, const content_object& content, double hot, double trending
     ) const {
-        auto author = db_.get_account(comment.author).id;
+        auto author = db_.get_account(content.author).id;
 
-        comment_object::id_type parent;
-        if (comment.parent_author.size()) {
-            parent = db_.get_comment(comment.parent_author, comment.parent_permlink).id;
+        content_object::id_type parent;
+        if (content.parent_author.size()) {
+            parent = db_.get_content(content.parent_author, content.parent_permlink).id;
         }
 
         const auto& tag_obj = db_.create<tag_object>([&](tag_object& obj) {
             obj.name = name;
             obj.type = type;
-            obj.comment = comment.id;
+            obj.content = content.id;
             obj.parent = parent;
-            obj.created = comment.created;
-            obj.active = comment.active;
-            obj.updated = comment.last_update;
-            obj.cashout = comment.cashout_time;
-            obj.net_votes = comment.net_votes;
-            obj.children = comment.children;
-            obj.net_rshares = comment.net_rshares.value;
-            obj.children_rshares2 = comment.children_rshares2;
+            obj.created = content.created;
+            obj.active = content.active;
+            obj.updated = content.last_update;
+            obj.cashout = content.cashout_time;
+            obj.net_votes = content.net_votes;
+            obj.children = content.children;
+            obj.net_rshares = content.net_rshares.value;
+            obj.children_rshares2 = content.children_rshares2;
             obj.author = author;
             obj.hot = hot;
             obj.trending = trending;
@@ -169,13 +166,13 @@ namespace golos { namespace plugins { namespace tags {
     void operation_visitor::create_update_tags(
         const account_name_type& author, const std::string& permlink
     ) const { try {
-        const auto& comment = db_.get_comment(author, permlink);
-        auto hot = calculate_hot(comment.net_rshares, comment.created);
-        auto trending = calculate_trending(comment.net_rshares, comment.created);
-        const auto& comment_idx = db_.get_index<tag_index>().indices().get<by_comment>();
+        const auto& content = db_.get_content(author, permlink);
+        auto hot = calculate_hot(content.net_rshares, content.created);
+        auto trending = calculate_trending(content.net_rshares, content.created);
+        const auto& content_idx = db_.get_index<tag_index>().indices().get<by_content>();
 
-        auto meta = get_metadata(comment_api_object(comment, db_));
-        auto citr = comment_idx.lower_bound(comment.id);
+        auto meta = get_metadata(content_api_object(content, db_));
+        auto citr = content_idx.lower_bound(content.id);
         const tag_object* language_tag = nullptr;
 
         if (meta.tags.empty()) {
@@ -184,7 +181,7 @@ namespace golos { namespace plugins { namespace tags {
 
         std::map<std::string, const tag_object*> existing_tags;
         std::vector<const tag_object*> remove_queue;
-        for (; citr != comment_idx.end() && citr->comment == comment.id; ++citr) {
+        for (; citr != content_idx.end() && citr->content == content.id; ++citr) {
             const tag_object* tag = &*citr;
             switch (tag->type) {
                 case tag_type::tag:
@@ -207,14 +204,14 @@ namespace golos { namespace plugins { namespace tags {
         for (const auto& name : meta.tags) {
             auto existing = existing_tags.find(name);
             if (existing == existing_tags.end()) {
-                create_tag(name, tag_type::tag, comment, hot, trending);
+                create_tag(name, tag_type::tag, content, hot, trending);
             } else {
-                update_tag(*existing->second, comment, hot, trending);
+                update_tag(*existing->second, content, hot, trending);
             }
         }
 
         if (!meta.language.empty() && (!language_tag || meta.language != language_tag->name)) {
-            create_tag(meta.language, tag_type::language, comment, hot, trending);
+            create_tag(meta.language, tag_type::language, content, hot, trending);
         }
 
         for (const auto& item : remove_queue) {
@@ -223,29 +220,29 @@ namespace golos { namespace plugins { namespace tags {
     } FC_CAPTURE_LOG_AND_RETHROW(()) }
 
     void operation_visitor::update_tags(const account_name_type& author, const std::string& permlink) const {
-        const auto& comment = db_.get_comment(author, permlink);
-        auto hot = calculate_hot(comment.net_rshares, comment.created);
-        auto trending = calculate_trending(comment.net_rshares, comment.created);
-        const auto& comment_idx = db_.get_index<tag_index>().indices().get<by_comment>();
+        const auto& content = db_.get_content(author, permlink);
+        auto hot = calculate_hot(content.net_rshares, content.created);
+        auto trending = calculate_trending(content.net_rshares, content.created);
+        const auto& content_idx = db_.get_index<tag_index>().indices().get<by_content>();
 
-        auto citr = comment_idx.lower_bound(comment.id);
-        for (; citr != comment_idx.end() && citr->comment == comment.id; ++citr) {
-            update_tag(*citr, comment, hot, trending);
+        auto citr = content_idx.lower_bound(content.id);
+        for (; citr != content_idx.end() && citr->content == content.id; ++citr) {
+            update_tag(*citr, content, hot, trending);
         }
 
-        if (comment.parent_author.size()) {
-            update_tags(comment.parent_author, to_string(comment.parent_permlink));
+        if (content.parent_author.size()) {
+            update_tags(content.parent_author, to_string(content.parent_permlink));
         }
     }
 
     void operation_visitor::remove_tags(const account_name_type& author, const std::string& permlink) const {
-        const auto& comment = db_.get_comment(author, permlink);
-        const auto& comment_idx = db_.get_index<tag_index>().indices().get<by_comment>();
+        const auto& content = db_.get_content(author, permlink);
+        const auto& content_idx = db_.get_index<tag_index>().indices().get<by_content>();
         std::vector<const tag_object*> remove_queue;
 
         remove_queue.reserve(10);
-        auto citr = comment_idx.lower_bound(comment.id);
-        for (; citr != comment_idx.end() && citr->comment == comment.id; ++citr) {
+        auto citr = content_idx.lower_bound(content.id);
+        for (; citr != content_idx.end() && citr->content == content.id; ++citr) {
             const tag_object* tag = &*citr;
             remove_queue.push_back(tag);
         }
@@ -254,62 +251,33 @@ namespace golos { namespace plugins { namespace tags {
             remove_tag(*tag);
         }
 
-        if (comment.parent_author.size()) {
-            update_tags(comment.parent_author, to_string(comment.parent_permlink));
+        if (content.parent_author.size()) {
+            update_tags(content.parent_author, to_string(content.parent_permlink));
         }
     }
 
-    void operation_visitor::operator()(const transfer_operation& op) const {
-        if (op.to == STEEMIT_NULL_ACCOUNT && op.amount.symbol == SBD_SYMBOL) {
-            std::vector<std::string> part;
-            part.reserve(4);
-            auto path = op.memo;
-            boost::split(part, path, boost::is_any_of("/"));
-            if (!part[0].empty() && part[0][0] == '@') {
-                auto acnt = part[0].substr(1);
-                auto perm = part[1];
-
-                auto c = db_.find_comment(acnt, perm);
-                if (c && c->parent_author.size() == 0) {
-                    const auto& comment_idx = db_.get_index<tag_index>().indices().get<by_comment>();
-                    auto citr = comment_idx.lower_bound(c->id);
-                    while (citr != comment_idx.end() && citr->comment == c->id) {
-                        db_.modify(*citr, [&](tag_object& t) {
-                            if (t.cashout != fc::time_point_sec::maximum()) {
-                                t.promoted_balance += op.amount.amount;
-                            }
-                        });
-                        ++citr;
-                    }
-                } else {
-                    ilog("unable to find body");
-                }
-            }
-        }
-    }
-
-    void operation_visitor::operator()(const delete_comment_operation& op) const {
+    void operation_visitor::operator()(const delete_content_operation& op) const {
         const auto& author = db_.get_account(op.author).id;
-        const auto& idx = db_.get_index<tag_index>().indices().get<by_author_comment>();
+        const auto& idx = db_.get_index<tag_index>().indices().get<by_author_content>();
         auto itr = idx.lower_bound(author);
         while (itr != idx.end() && itr->author == author) {
             const auto& tag = *itr;
-            const auto* comment = db_.find<comment_object>(itr->comment);
+            const auto* content = db_.find<content_object>(itr->content);
             ++itr;
-            if (!comment) {
+            if (!content) {
                 remove_tag(tag);
             }
         }
     }
 
-    void operation_visitor::operator()(const comment_reward_operation& op) const {
+    void operation_visitor::operator()(const content_reward_operation& op) const {
         // only update existing tags
         update_tags(op.author, op.permlink);
 
-        const auto& comment = db_.get_comment(op.author, op.permlink);
+        const auto& content = db_.get_content(op.author, op.permlink);
         const auto& author = db_.get_account(op.author).id;
 
-        auto meta = get_metadata(comment_api_object(comment, db_));
+        auto meta = get_metadata(content_api_object(content, db_));
         const auto& stats_idx = db_.get_index<tag_stats_index>().indices().get<by_tag>();
         const auto& auth_idx = db_.get_index<author_tag_stats_index>().indices().get<by_author_tag_posts>();
 
@@ -338,10 +306,10 @@ namespace golos { namespace plugins { namespace tags {
         }
     }
 
-    void operation_visitor::operator()(const comment_operation& op) const {
-        const auto& comment = db_.get_comment(op.author, op.permlink);
+    void operation_visitor::operator()(const content_operation& op) const {
+        const auto& content = db_.get_content(op.author, op.permlink);
 
-        if (db_.calculate_discussion_payout_time(comment) != fc::time_point_sec::maximum()) {
+        if (db_.calculate_discussion_payout_time(content) != fc::time_point_sec::maximum()) {
             // in a cashout window
             create_update_tags(op.author, op.permlink);
         }
@@ -352,9 +320,9 @@ namespace golos { namespace plugins { namespace tags {
         update_tags(op.author, op.permlink);
     }
 
-    void operation_visitor::operator()(const comment_payout_update_operation& op) const {
-        const auto& comment = db_.get_comment(op.author, op.permlink);
-        const auto cashout_time = db_.calculate_discussion_payout_time(comment);
+    void operation_visitor::operator()(const content_payout_update_operation& op) const {
+        const auto& content = db_.get_content(op.author, op.permlink);
+        const auto cashout_time = db_.calculate_discussion_payout_time(content);
 
         if (cashout_time != fc::time_point_sec::maximum()) {
             update_tags(op.author, op.permlink);
@@ -364,4 +332,4 @@ namespace golos { namespace plugins { namespace tags {
         }
     }
 
-} } } // golos::plugins::tags
+} } } // graphene::plugins::tags

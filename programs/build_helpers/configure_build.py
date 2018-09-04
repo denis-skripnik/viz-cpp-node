@@ -66,7 +66,7 @@ def parse_arguments(src_default):
                     setattr(args, flag_name, directory)
 
     parser = MyParser(
-        description="Helper function to call cmake with appropriate configuration to build Golos.")
+        description="Helper function to call cmake with appropriate configuration to build Project.")
     parser.add_argument("--sys-root", metavar="SYS_ROOT", type=convert_to_dir,
                         default=argparse.SUPPRESS,
                         help="Root directory to search within for libraries and header files (can alternatively specify with SYS_ROOT environment variable)")
@@ -95,7 +95,7 @@ def parse_arguments(src_default):
                         help="cross compile for Windows using MinGW")
     parser.add_argument("--src", dest="source_dir", metavar="SOURCEDIR",
                         type=convert_to_dir, default=argparse.SUPPRESS,
-                        help="Golos source directory (if omitted, will assume is at ../.. relative to location of this script)")
+                        help="Project source directory (if omitted, will assume is at ../.. relative to location of this script)")
     parser.add_argument("additional_args", metavar="CMAKEOPTS",
                         nargs=argparse.REMAINDER, help=argparse.SUPPRESS)
 
@@ -177,7 +177,7 @@ def main(args):
         command.append("-DCMAKE_FIND_ROOT_PATH_MODE_LIBRARY=ONLY")
         command.append("-DCMAKE_FIND_ROOT_PATH_MODE_INCLUDE=ONLY")
 
-    # Add Golos flags
+    # Add Chain flags
     command.append(
         "-DLOW_MEMORY_NODE=" + ("ON" if args.low_mem_node else "OFF"))
     command.append(

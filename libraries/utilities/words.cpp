@@ -24,7 +24,7 @@
 #include <stdint.h>
 #include <graphene/utilities/words.hpp>
 
-namespace golos {
+namespace graphene {
     namespace words {
 
         const const_char_ptr word_list[] = {
@@ -9371,7 +9371,7 @@ namespace golos {
                 "comma",
                 "command",
                 "commend",
-                "comment",
+                "content",
                 "commie",
                 "commit",
                 "commix",
@@ -49784,4 +49784,4 @@ namespace golos {
         }
 
     }
-} // golos::words
+} // graphene::words

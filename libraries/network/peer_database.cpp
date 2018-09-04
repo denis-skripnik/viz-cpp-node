@@ -30,10 +30,10 @@
 #include <fc/io/raw.hpp>
 #include <fc/io/json.hpp>
 
-#include <golos/network/peer_database.hpp>
+#include <graphene/network/peer_database.hpp>
 
 
-namespace golos {
+namespace graphene {
     namespace network {
         namespace detail {
             using namespace boost::multi_index;
@@ -258,4 +258,4 @@ namespace golos {
         }
 
     }
-} // end namespace golos::network
+} // end namespace graphene::network

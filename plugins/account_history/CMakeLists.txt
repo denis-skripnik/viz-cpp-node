@@ -1,8 +1,8 @@
 set(CURRENT_TARGET account_history)
 
 list(APPEND CURRENT_TARGET_HEADERS
-    include/golos/plugins/account_history/plugin.hpp
-    include/golos/plugins/account_history/history_object.hpp
+    include/graphene/plugins/account_history/plugin.hpp
+    include/graphene/plugins/account_history/history_object.hpp
 )
 
 list(APPEND CURRENT_TARGET_SOURCES
@@ -10,39 +10,39 @@ list(APPEND CURRENT_TARGET_SOURCES
 )
 
 if (BUILD_SHARED_LIBRARIES)
-    add_library(golos_${CURRENT_TARGET} SHARED
+    add_library(graphene_${CURRENT_TARGET} SHARED
         ${CURRENT_TARGET_HEADERS}
         ${CURRENT_TARGET_SOURCES}
     )
 else()
-    add_library(golos_${CURRENT_TARGET} STATIC
+    add_library(graphene_${CURRENT_TARGET} STATIC
         ${CURRENT_TARGET_HEADERS}
         ${CURRENT_TARGET_SOURCES}
     )
 endif()
 
-add_library(golos::${CURRENT_TARGET} ALIAS golos_${CURRENT_TARGET})
+add_library(graphene::${CURRENT_TARGET} ALIAS graphene_${CURRENT_TARGET})
 
 target_link_libraries (
-    golos_${CURRENT_TARGET}
-    golos_chain
-    golos_chain_plugin
-    golos_protocol
-    golos::operation_history
+    graphene_${CURRENT_TARGET}
+    graphene_chain
+    graphene_chain_plugin
+    graphene_protocol
+    graphene::operation_history
     appbase
-    golos_json_rpc
+    graphene_json_rpc
     graphene_time
     chainbase
     fc
 )
 
-target_include_directories(golos_${CURRENT_TARGET}
+target_include_directories(graphene_${CURRENT_TARGET}
     PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include"
     "${CMAKE_CURRENT_SOURCE_DIR}/../../"
 )
 
 install(TARGETS
-    golos_${CURRENT_TARGET}
+    graphene_${CURRENT_TARGET}
 
     RUNTIME DESTINATION bin
     LIBRARY DESTINATION lib

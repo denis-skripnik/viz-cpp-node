@@ -29,9 +29,9 @@
 #include <fc/crypto/aes.hpp>
 #include <fc/network/ip.hpp>
 
-#include <golos/network/stcp_socket.hpp>
+#include <graphene/network/stcp_socket.hpp>
 
-namespace golos {
+namespace graphene {
     namespace network {
 
         stcp_socket::stcp_socket()
@@ -193,5 +193,5 @@ namespace golos {
 
 
     }
-} // namespace golos::network
+} // namespace graphene::network
 

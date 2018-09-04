@@ -1,8 +1,8 @@
-#include <golos/chain/fork_database.hpp>
+#include <graphene/chain/fork_database.hpp>
 
-#include <golos/chain/database_exceptions.hpp>
+#include <graphene/chain/database_exceptions.hpp>
 
-namespace golos {
+namespace graphene {
     namespace chain {
 
         fork_database::fork_database() {
@@ -56,7 +56,7 @@ namespace golos {
             if (_head && item->previous_id() != block_id_type()) {
                 auto &index = _index.get<block_id>();
                 auto itr = index.find(item->previous_id());
-                GOLOS_ASSERT(
+                CHAIN_ASSERT(
                     itr != index.end(),
                     unlinkable_block_exception,
                     "block does not link to known chain");
@@ -241,4 +241,4 @@ namespace golos {
         }
 
     }
-} // golos::chain
+} // graphene::chain

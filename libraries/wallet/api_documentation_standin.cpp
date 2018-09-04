@@ -1,9 +1,9 @@
 #include <iomanip>
 #include <boost/algorithm/string/join.hpp>
-#include <golos/wallet/wallet.hpp>
-#include <golos/wallet/api_documentation.hpp>
+#include <graphene/wallet/wallet.hpp>
+#include <graphene/wallet/api_documentation.hpp>
 
-namespace golos {
+namespace graphene {
     namespace wallet {
         namespace detail {
             namespace {
@@ -60,4 +60,4 @@ namespace golos {
         }
 
     }
-} // end namespace golos::wallet
+} // end namespace graphene::wallet

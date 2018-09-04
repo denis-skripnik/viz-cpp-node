@@ -1,8 +1,8 @@
 #include <boost/algorithm/string.hpp>
-#include <golos/plugins/tags/discussion_query.hpp>
-#include <golos/plugins/tags/tags_object.hpp>
+#include <graphene/plugins/tags/discussion_query.hpp>
+#include <graphene/plugins/tags/tags_object.hpp>
 
-namespace golos { namespace plugins { namespace tags {
+namespace graphene { namespace plugins { namespace tags {
 
     void tags_to_lower(std::set<std::string>& tags) {
         auto src = std::move(tags);
@@ -58,5 +58,5 @@ namespace golos { namespace plugins { namespace tags {
         return result;
     }
 
-} } } // golos::plugins::tags
+} } } // graphene::plugins::tags
 

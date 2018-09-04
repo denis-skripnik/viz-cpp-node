@@ -5,7 +5,7 @@
 #define GRAPHENE_GIT_REVISION_UNIX_TIMESTAMP @GRAPHENE_GIT_REVISION_UNIX_TIMESTAMP@
 #define GRAPHENE_GIT_REVISION_DESCRIPTION "@GRAPHENE_GIT_REVISION_DESCRIPTION@"
 
-namespace golos {
+namespace graphene {
     namespace utilities {
 
         const char *const git_revision_sha = GRAPHENE_GIT_REVISION_SHA;
@@ -13,4 +13,4 @@ namespace golos {
         const char *const git_revision_description = GRAPHENE_GIT_REVISION_DESCRIPTION;
 
     }
-} // end namespace golos::utilities
+} // end namespace graphene::utilities

@@ -1,11 +1,11 @@
 #include <algorithm>
 #include <fstream>
-#include <golos/chain/block_log.hpp>
+#include <graphene/chain/block_log.hpp>
 #include <boost/iostreams/device/mapped_file.hpp>
 #include <boost/filesystem.hpp>
 #include <boost/thread/shared_mutex.hpp>
 
-namespace golos { namespace chain {
+namespace graphene { namespace chain {
     namespace detail {
         using read_write_mutex = boost::shared_mutex;
         using read_lock = boost::shared_lock<read_write_mutex>;
@@ -76,7 +76,7 @@ namespace golos { namespace chain {
 
                 const auto* ptr = block_mapped_file.data() + pos;
                 const auto available_size = file_size - pos;
-                const auto max_block_size = std::min<std::size_t>(available_size, STEEMIT_MAX_BLOCK_SIZE);
+                const auto max_block_size = std::min<std::size_t>(available_size, CHAIN_BLOCK_SIZE);
 
                 fc::datastream<const char*> ds(ptr, max_block_size);
                 fc::raw::unpack(ds, block);
@@ -298,4 +298,4 @@ namespace golos { namespace chain {
         detail::read_lock lock(my->mutex);
         return my->head;
     }
-} } // golos::chain
+} } // graphene::chain

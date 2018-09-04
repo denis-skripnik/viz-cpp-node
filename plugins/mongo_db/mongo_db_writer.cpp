@@ -1,7 +1,7 @@
-#include <golos/plugins/mongo_db/mongo_db_writer.hpp>
-#include <golos/plugins/mongo_db/mongo_db_operations.hpp>
-#include <golos/plugins/chain/plugin.hpp>
-#include <golos/protocol/operations.hpp>
+#include <graphene/plugins/mongo_db/mongo_db_writer.hpp>
+#include <graphene/plugins/mongo_db/mongo_db_operations.hpp>
+#include <graphene/plugins/chain/plugin.hpp>
+#include <graphene/protocol/operations.hpp>
 
 #include <fc/log/logger.hpp>
 #include <appbase/application.hpp>
@@ -17,7 +17,7 @@
 #include <boost/multi_index/random_access_index.hpp>
 #include <boost/multi_index/sequenced_index.hpp>
 
-namespace golos {
+namespace graphene {
 namespace plugins {
 namespace mongo_db {
 
@@ -30,7 +30,7 @@ namespace mongo_db {
     using bsoncxx::builder::stream::close_document;
 
     mongo_db_writer::mongo_db_writer() :
-        _db(appbase::app().get_plugin<golos::plugins::chain::plugin>().db()) {
+        _db(appbase::app().get_plugin<graphene::plugins::chain::plugin>().db()) {
     }
 
     mongo_db_writer::~mongo_db_writer() {
@@ -40,7 +40,7 @@ namespace mongo_db {
         try {
             uri = mongocxx::uri {uri_str};
             mongo_conn = mongocxx::client {uri};
-            db_name = uri.database().empty() ? "Golos" : uri.database();
+            db_name = uri.database().empty() ? "viz" : uri.database();
             mongo_database = mongo_conn[db_name];
             bulk_opts.ordered(false);
             write_raw_blocks = write_raw;
@@ -95,7 +95,7 @@ namespace mongo_db {
                                 op.visit(st_writer);
                             }
                         }
-                        
+
                         write_block_operations(st_writer, head_iter->second, virtual_ops[head_iter->first]);
                     }
                     catch (...) {
@@ -132,7 +132,7 @@ namespace mongo_db {
         }
     }
 
-    void mongo_db_writer::on_operation(const golos::chain::operation_notification& note) {
+    void mongo_db_writer::on_operation(const graphene::chain::operation_notification& note) {
         virtual_ops[note.block].push_back(note.op);
         // remove ops if there were forks and rollbacks
         auto itr = virtual_ops.find(note.block);
@@ -216,9 +216,9 @@ namespace mongo_db {
         } else {
             document filter;
 
-            filter << "_id" << bsoncxx::oid(named_doc.keyval); 
+            filter << "_id" << bsoncxx::oid(named_doc.keyval);
 
-            mongocxx::model::update_one msg{filter.view(), 
+            mongocxx::model::update_one msg{filter.view(),
                 view};
             msg.upsert(true);
             formatted_blocks[named_doc.collection_name]->append(msg);

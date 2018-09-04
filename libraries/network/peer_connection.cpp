@@ -21,7 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#include <golos/network/peer_connection.hpp>
+#include <graphene/network/peer_connection.hpp>
 
 #include <fc/thread/thread.hpp>
 
@@ -36,7 +36,7 @@
 # define VERIFY_CORRECT_THREAD() do {} while (0)
 #endif
 
-namespace golos {
+namespace graphene {
     namespace network {
         message peer_connection::real_queued_message::get_message(peer_connection_delegate *) {
             if (message_send_time_field_offset != (size_t)-1) {
@@ -464,7 +464,7 @@ namespace golos {
                    GRAPHENE_NET_MAX_INVENTORY_SIZE_IN_MINUTES *
                    GRAPHENE_NET_MAX_TRX_PER_SECOND * 60 +
                    (GRAPHENE_NET_MAX_INVENTORY_SIZE_IN_MINUTES + 1) * 60 /
-                   STEEMIT_BLOCK_INTERVAL;
+                   CHAIN_BLOCK_INTERVAL;
         }
 
         bool peer_connection::performing_firewall_check() const {
@@ -480,4 +480,4 @@ namespace golos {
         }
 
     }
-} // end namespace golos::network
+} // end namespace graphene::network

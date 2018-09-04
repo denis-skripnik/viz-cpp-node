@@ -1,24 +1,24 @@
-#include <golos/plugins/account_history/plugin.hpp>
-#include <golos/plugins/account_history/history_object.hpp>
+#include <graphene/plugins/account_history/plugin.hpp>
+#include <graphene/plugins/account_history/history_object.hpp>
 
-#include <golos/plugins/operation_history/history_object.hpp>
+#include <graphene/plugins/operation_history/history_object.hpp>
 
-#include <golos/chain/operation_notification.hpp>
+#include <graphene/chain/operation_notification.hpp>
 
 #include <boost/algorithm/string.hpp>
-#define STEEM_NAMESPACE_PREFIX "golos::protocol::"
+#define NAMESPACE_PREFIX "graphene::protocol::"
 
 #define CHECK_ARG_SIZE(s) \
    FC_ASSERT( args.args->size() == s, "Expected #s argument(s), was ${n}", ("n", args.args->size()) );
 
-namespace golos { namespace plugins { namespace account_history {
+namespace graphene { namespace plugins { namespace account_history {
 
     struct operation_visitor_filter;
-    void operation_get_impacted_accounts(const operation &op, flat_set<golos::chain::account_name_type> &result);
+    void operation_get_impacted_accounts(const operation &op, flat_set<graphene::chain::account_name_type> &result);
 
-using namespace golos::protocol;
-using namespace golos::chain;
-// 
+using namespace graphene::protocol;
+using namespace graphene::chain;
+//
 template<typename T>
 T dejsonify(const string &s) {
     return fc::json::from_string(s).as<T>();
@@ -30,12 +30,12 @@ if( options.count(name) ) { \
     const std::vector<std::string>& ops = options[name].as<std::vector<std::string>>(); \
     std::transform(ops.begin(), ops.end(), std::inserter(container, container.end()), &dejsonify<type>); \
 }
-// 
+//
 
     struct operation_visitor final {
         operation_visitor(
-            golos::chain::database& db,
-            const golos::chain::operation_notification& op_note,
+            graphene::chain::database& db,
+            const graphene::chain::operation_notification& op_note,
             std::string op_account)
             : database(db),
               note(op_note),
@@ -44,8 +44,8 @@ if( options.count(name) ) { \
 
         using result_type = void;
 
-        golos::chain::database& database;
-        const golos::chain::operation_notification& note;
+        graphene::chain::database& database;
+        const graphene::chain::operation_notification& note;
         std::string account;
 
         template<typename Op>
@@ -74,12 +74,12 @@ if( options.count(name) ) { \
 
         ~plugin_impl() = default;
 
-        void on_operation(const golos::chain::operation_notification& note) {
+        void on_operation(const graphene::chain::operation_notification& note) {
             if (!note.stored_in_db) {
                 return;
             }
 
-            fc::flat_set<golos::chain::account_name_type> impacted;
+            fc::flat_set<graphene::chain::account_name_type> impacted;
             operation_get_impacted_accounts(note.op, impacted);
 
             for (const auto& item : impacted) {
@@ -114,7 +114,7 @@ if( options.count(name) ) { \
         }
 
         fc::flat_map<std::string, std::string> tracked_accounts;
-        golos::chain::database& database;
+        graphene::chain::database& database;
     };
 
     DEFINE_API(plugin, get_account_history) {
@@ -129,9 +129,9 @@ if( options.count(name) ) { \
     }
 
     struct get_impacted_account_visitor final {
-        fc::flat_set<golos::chain::account_name_type>& impacted;
+        fc::flat_set<graphene::chain::account_name_type>& impacted;
 
-        get_impacted_account_visitor(fc::flat_set<golos::chain::account_name_type>& impact)
+        get_impacted_account_visitor(fc::flat_set<graphene::chain::account_name_type>& impact)
             : impacted(impact) {
         }
 
@@ -149,11 +149,6 @@ if( options.count(name) ) { \
             impacted.insert(op.creator);
         }
 
-        void operator()(const account_create_with_delegation_operation& op) {
-            impacted.insert(op.new_account_name);
-            impacted.insert(op.creator);
-        }
-
         void operator()(const account_update_operation& op) {
             impacted.insert(op.account);
         }
@@ -162,14 +157,14 @@ if( options.count(name) ) { \
             impacted.insert(op.account);
         }
 
-        void operator()(const comment_operation& op) {
+        void operator()(const content_operation& op) {
             impacted.insert(op.author);
             if (op.parent_author.size()) {
                 impacted.insert(op.parent_author);
             }
         }
 
-        void operator()(const delete_comment_operation& op) {
+        void operator()(const delete_content_operation& op) {
             impacted.insert(op.author);
         }
 
@@ -186,18 +181,6 @@ if( options.count(name) ) { \
             impacted.insert(op.curator);
         }
 
-        void operator()(const liquidity_reward_operation& op) {
-            impacted.insert(op.owner);
-        }
-
-        void operator()(const interest_operation& op) {
-            impacted.insert(op.owner);
-        }
-
-        void operator()(const fill_convert_request_operation& op) {
-            impacted.insert(op.owner);
-        }
-
         void operator()(const transfer_operation& op) {
             impacted.insert(op.from);
             impacted.insert(op.to);
@@ -206,7 +189,7 @@ if( options.count(name) ) { \
         void operator()(const transfer_to_vesting_operation& op) {
             impacted.insert(op.from);
 
-            if (op.to != golos::chain::account_name_type() && op.to != op.from) {
+            if (op.to != graphene::chain::account_name_type() && op.to != op.from) {
                 impacted.insert(op.to);
             }
         }
@@ -229,27 +212,6 @@ if( options.count(name) ) { \
             impacted.insert(op.proxy);
         }
 
-        void operator()(const feed_publish_operation& op) {
-            impacted.insert(op.publisher);
-        }
-
-        void operator()(const limit_order_create_operation& op) {
-            impacted.insert(op.owner);
-        }
-
-        void operator()(const fill_order_operation& op) {
-            impacted.insert(op.current_owner);
-            impacted.insert(op.open_owner);
-        }
-
-        void operator()(const limit_order_cancel_operation& op) {
-            impacted.insert(op.owner);
-        }
-
-        void operator()(const pow_operation& op) {
-            impacted.insert(op.worker_account);
-        }
-
         void operator()(const fill_vesting_withdraw_operation& op) {
             impacted.insert(op.from_account);
             impacted.insert(op.to_account);
@@ -257,12 +219,6 @@ if( options.count(name) ) { \
 
         void operator()(const shutdown_witness_operation& op) {
             impacted.insert(op.owner);
-        }
-
-        void operator()(const custom_operation& op) {
-            for (auto& s: op.required_auths) {
-                impacted.insert(s);
-            }
         }
 
         void operator()(const request_account_recovery_operation& op) {
@@ -301,25 +257,7 @@ if( options.count(name) ) { \
             impacted.insert(op.agent);
         }
 
-        void operator()(const transfer_to_savings_operation& op) {
-            impacted.insert(op.from);
-            impacted.insert(op.to);
-        }
-
-        void operator()(const transfer_from_savings_operation& op) {
-            impacted.insert(op.from);
-            impacted.insert(op.to);
-        }
-
-        void operator()(const cancel_transfer_from_savings_operation& op) {
-            impacted.insert(op.from);
-        }
-
-        void operator()(const decline_voting_rights_operation& op) {
-            impacted.insert(op.account);
-        }
-
-        void operator()(const comment_benefactor_reward_operation& op) {
+        void operator()(const content_benefactor_reward_operation& op) {
             impacted.insert(op.benefactor);
             impacted.insert(op.author);
         }
@@ -349,11 +287,19 @@ if( options.count(name) ) { \
         void operator()(const proposal_delete_operation& op) {
             impacted.insert(op.requester);
         }
+
+        void operator()(const committee_pay_request_operation& op) {
+            impacted.insert(op.worker);
+        }
+
+        void operator()(const witness_reward_operation& op) {
+            impacted.insert(op.witness);
+        }
         //void operator()( const operation& op ){}
     };
 
     void operation_get_impacted_accounts(
-        const operation& op, fc::flat_set<golos::chain::account_name_type>& result
+        const operation& op, fc::flat_set<graphene::chain::account_name_type>& result
     ) {
         get_impacted_account_visitor vtor = get_impacted_account_visitor(result);
         op.visit(vtor);
@@ -376,11 +322,11 @@ if( options.count(name) ) { \
         ilog("account_history plugin: plugin_initialize() begin");
         pimpl = std::make_unique<plugin_impl>();
         // this is worked, because the appbase initialize required plugins at first
-        pimpl->database.pre_apply_operation.connect([&](golos::chain::operation_notification& note){
+        pimpl->database.pre_apply_operation.connect([&](graphene::chain::operation_notification& note){
             pimpl->on_operation(note);
         });
 
-        golos::chain::add_plugin_index<account_history_index>(pimpl->database);
+        graphene::chain::add_plugin_index<account_history_index>(pimpl->database);
 
         using pairstring = std::pair<std::string, std::string>;
         LOAD_VALUE_SET(options, "track-account-range", pimpl->tracked_accounts, pairstring);
@@ -412,4 +358,4 @@ if( options.count(name) ) { \
         return pimpl->tracked_accounts;
     }
 
-} } } // golos::plugins::account_history
+} } } // graphene::plugins::account_history

@@ -1,6 +1,6 @@
 #pragma once
 
-namespace golos {
+namespace graphene {
     namespace words {
 
         typedef const char *const_char_ptr;

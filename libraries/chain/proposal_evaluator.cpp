@@ -1,12 +1,12 @@
 #include <fc/io/datastream.hpp>
 
-#include <golos/protocol/proposal_operations.hpp>
-#include <golos/chain/steem_evaluator.hpp>
-#include <golos/chain/database.hpp>
-#include <golos/chain/steem_objects.hpp>
-#include <golos/chain/proposal_object.hpp>
+#include <graphene/protocol/proposal_operations.hpp>
+#include <graphene/chain/chain_evaluator.hpp>
+#include <graphene/chain/database.hpp>
+#include <graphene/chain/chain_objects.hpp>
+#include <graphene/chain/proposal_object.hpp>
 
-namespace golos { namespace chain {
+namespace graphene { namespace chain {
     namespace {
         template <typename F, typename S>
         void remove_existing(F& first, const S& second) {
@@ -97,15 +97,13 @@ namespace golos { namespace chain {
     }
 
     void proposal_create_evaluator::do_apply(const proposal_create_operation& o) { try {
-        ASSERT_REQ_HF(STEEMIT_HARDFORK_0_18__542, "Proposal transaction creating"); // remove after hf
-
         safe_int_increment depth_increment(depth_);
 
         if (_db.is_producing()) {
             FC_ASSERT(
-                depth_ <= STEEMIT_MAX_PROPOSAL_DEPTH,
+                depth_ <= CHAIN_MAX_PROPOSAL_DEPTH,
                 "You can't create more than ${depth} nested proposals",
-                ("depth", STEEMIT_MAX_PROPOSAL_DEPTH));
+                ("depth", CHAIN_MAX_PROPOSAL_DEPTH));
         }
 
         FC_ASSERT(nullptr == _db.find_proposal(o.author, o.title), "Proposal already exists.");
@@ -115,7 +113,7 @@ namespace golos { namespace chain {
             o.expiration_time > now,
             "Proposal has already expired on creation.");
         FC_ASSERT(
-            o.expiration_time <= now + STEEMIT_MAX_PROPOSAL_LIFETIME_SEC,
+            o.expiration_time <= now + CHAIN_MAX_PROPOSAL_LIFETIME_SEC,
             "Proposal expiration time is too far in the future.");
         FC_ASSERT(
             !o.review_period_time || *o.review_period_time > now,
@@ -162,13 +160,13 @@ namespace golos { namespace chain {
         for (const auto& op : o.proposed_operations) {
             trx.operations.push_back(op.op);
         }
-        trx.set_expiration(_db.head_block_time() + STEEMIT_MAX_TIME_UNTIL_EXPIRATION);
+        trx.set_expiration(_db.head_block_time() + CHAIN_MAX_TIME_UNTIL_EXPIRATION);
 
         const uint32_t skip_steps =
-            golos::chain::database::skip_authority_check |
-            golos::chain::database::skip_transaction_signatures |
-            golos::chain::database::skip_tapos_check |
-            golos::chain::database::skip_database_locking;
+            graphene::chain::database::skip_authority_check |
+            graphene::chain::database::skip_transaction_signatures |
+            graphene::chain::database::skip_tapos_check |
+            graphene::chain::database::skip_database_locking;
 
         _db.validate_transaction(trx, skip_steps);
 
@@ -204,15 +202,13 @@ namespace golos { namespace chain {
     }
 
     void proposal_update_evaluator::do_apply(const proposal_update_operation& o) { try {
-        ASSERT_REQ_HF(STEEMIT_HARDFORK_0_18__542, "Proposal transaction updating"); // remove after hf
-
         safe_int_increment depth_increment(depth_);
 
         if (_db.is_producing()) {
             FC_ASSERT(
-                depth_ <= STEEMIT_MAX_PROPOSAL_DEPTH,
+                depth_ <= CHAIN_MAX_PROPOSAL_DEPTH,
                 "You can't create more than ${depth} nested proposals",
-                ("depth", STEEMIT_MAX_PROPOSAL_DEPTH));
+                ("depth", CHAIN_MAX_PROPOSAL_DEPTH));
         }
 
         auto& proposal = _db.get_proposal(o.author, o.title);
@@ -291,7 +287,6 @@ namespace golos { namespace chain {
     } FC_CAPTURE_AND_RETHROW((o)) }
 
     void proposal_delete_evaluator::do_apply(const proposal_delete_operation& o) { try {
-        ASSERT_REQ_HF(STEEMIT_HARDFORK_0_18__542, "Proposal transaction deleting"); // remove after hf
         const auto& proposal = _db.get_proposal(o.author, o.title);
 
         FC_ASSERT(
@@ -306,4 +301,4 @@ namespace golos { namespace chain {
 
     } FC_CAPTURE_AND_RETHROW((o)) }
 
-} } // golos::chain
+} } // graphene::chain

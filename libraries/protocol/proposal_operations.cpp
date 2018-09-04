@@ -1,12 +1,12 @@
-#include <golos/protocol/proposal_operations.hpp>
-#include <golos/protocol/operations.hpp>
-#include <golos/protocol/types.hpp>
+#include <graphene/protocol/proposal_operations.hpp>
+#include <graphene/protocol/operations.hpp>
+#include <graphene/protocol/types.hpp>
 
 #include <fc/smart_ref_impl.hpp>
 #include <fc/exception/exception.hpp>
 #include <fc/time.hpp>
 
-namespace golos { namespace protocol {
+namespace graphene { namespace protocol {
 
     inline void validate_account_name(const string& name) {
         FC_ASSERT(is_valid_account_name(name), "Account name ${n} is invalid", ("n", name));
@@ -92,4 +92,4 @@ namespace golos { namespace protocol {
         FC_ASSERT(fc::is_utf8(title), "Title not formatted in UTF8");
     }
 
-} } // golos::chain
+} } // graphene::chain

@@ -10,7 +10,7 @@ templates = {
                      {plugin_name}_api.cpp
                    )
 
-        target_link_libraries( {plugin_provider}_{plugin_name} golos_app golos_chain golos_protocol )
+        target_link_libraries( {plugin_provider}_{plugin_name} graphene_app graphene_chain graphene_protocol )
         target_include_directories( {plugin_provider}_{plugin_name}
                                     PUBLIC "${{CMAKE_CURRENT_SOURCE_DIR}}/include" )
         """,
@@ -21,7 +21,7 @@ templates = {
 
         #include <fc/api.hpp>
 
-        namespace golos {{ namespace app {{
+        namespace graphene {{ namespace app {{
            struct api_context;
         }} }}
 
@@ -34,7 +34,7 @@ templates = {
         class {plugin_name}_api
         {{
            public:
-              {plugin_name}_api( const golos::app::api_context& ctx );
+              {plugin_name}_api( const graphene::app::api_context& ctx );
 
               void on_api_startup();
 
@@ -55,7 +55,7 @@ templates = {
         """
         #pragma once
 
-        #include <golos/app/plugin.hpp>
+        #include <graphene/app/plugin.hpp>
 
         namespace {plugin_provider} {{ namespace plugin {{ namespace {plugin_name} {{
 
@@ -63,10 +63,10 @@ templates = {
         class {plugin_name}_plugin_impl;
         }}
 
-        class {plugin_name}_plugin : public golos::app::plugin
+        class {plugin_name}_plugin : public graphene::app::plugin
         {{
            public:
-              {plugin_name}_plugin( golos::app::application* app );
+              {plugin_name}_plugin( graphene::app::application* app );
               virtual ~{plugin_name}_plugin();
 
               virtual std::string plugin_name()const override;
@@ -83,8 +83,8 @@ templates = {
 
     "{plugin_name}_api.cpp":
         """
-        #include <golos/app/api_context.hpp>
-        #include <golos/app/application.hpp>
+        #include <graphene/app/api_context.hpp>
+        #include <graphene/app/application.hpp>
 
         #include <{plugin_provider}/plugins/{plugin_name}/{plugin_name}_api.hpp>
         #include <{plugin_provider}/plugins/{plugin_name}/{plugin_name}_plugin.hpp>
@@ -96,14 +96,14 @@ templates = {
         class {plugin_name}_api_impl
         {{
            public:
-              {plugin_name}_api_impl( golos::app::application& _app );
+              {plugin_name}_api_impl( graphene::app::application& _app );
 
               std::shared_ptr< {plugin_provider}::plugin::{plugin_name}::{plugin_name}_plugin > get_plugin();
 
-              golos::app::application& app;
+              graphene::app::application& app;
         }};
 
-        {plugin_name}_api_impl::{plugin_name}_api_impl( golos::app::application& _app ) : app( _app )
+        {plugin_name}_api_impl::{plugin_name}_api_impl( graphene::app::application& _app ) : app( _app )
         {{}}
 
         std::shared_ptr< {plugin_provider}::plugin::{plugin_name}::{plugin_name}_plugin > {plugin_name}_api_impl::get_plugin()
@@ -113,7 +113,7 @@ templates = {
 
         }} // detail
 
-        {plugin_name}_api::{plugin_name}_api( const golos::app::api_context& ctx )
+        {plugin_name}_api::{plugin_name}_api( const graphene::app::api_context& ctx )
         {{
            my = std::make_shared< detail::{plugin_name}_api_impl >(ctx.app);
         }}
@@ -138,7 +138,7 @@ templates = {
         class {plugin_name}_plugin_impl
         {{
            public:
-              {plugin_name}_plugin_impl( golos::app::application& app );
+              {plugin_name}_plugin_impl( graphene::app::application& app );
               virtual ~{plugin_name}_plugin_impl();
 
               virtual std::string plugin_name()const;
@@ -147,11 +147,11 @@ templates = {
               virtual void plugin_shutdown();
               void on_applied_block( const chain::signed_block& b );
 
-              golos::app::application& _app;
+              graphene::app::application& _app;
               boost::signals2::scoped_connection _applied_block_conn;
         }};
 
-        {plugin_name}_plugin_impl::{plugin_name}_plugin_impl( golos::app::application& app )
+        {plugin_name}_plugin_impl::{plugin_name}_plugin_impl( graphene::app::application& app )
           : _app(app) {{}}
 
         {plugin_name}_plugin_impl::~{plugin_name}_plugin_impl() {{}}
@@ -182,7 +182,7 @@ templates = {
 
         }}
 
-        {plugin_name}_plugin::{plugin_name}_plugin( golos::app::application* app )
+        {plugin_name}_plugin::{plugin_name}_plugin( graphene::app::application* app )
            : plugin(app)
         {{
            FC_ASSERT( app != nullptr );
@@ -213,7 +213,7 @@ templates = {
 
         }} }} }} // {plugin_provider}::plugin::{plugin_name}
 
-        STEEMIT_DEFINE_PLUGIN( {plugin_name}, {plugin_provider}::plugin::{plugin_name}::{plugin_name}_plugin )
+        CHAIN_DEFINE_PLUGIN( {plugin_name}, {plugin_provider}::plugin::{plugin_name}::{plugin_name}_plugin )
         """,
 }
 
@@ -225,7 +225,7 @@ import sys
 def main(argv):
     parser = argparse.ArgumentParser()
     parser.add_argument("provider",
-                        help="Name of plugin provider (golos for plugins developed by Golos)")
+                        help="Name of plugin provider (viz for plugins developed by VIZ)")
     parser.add_argument("name", help="Name of plugin to create")
     args = parser.parse_args(argv[1:])
     ctx = {

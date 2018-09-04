@@ -2,13 +2,13 @@
 
 #include <fc/io/datastream.hpp>
 
-#include <golos/chain/proposal_object.hpp>
-#include <golos/chain/account_object.hpp>
-#include <golos/chain/database.hpp>
+#include <graphene/chain/proposal_object.hpp>
+#include <graphene/chain/account_object.hpp>
+#include <graphene/chain/database.hpp>
 
-#include <golos/protocol/exceptions.hpp>
+#include <graphene/protocol/exceptions.hpp>
 
-namespace golos { namespace chain {
+namespace graphene { namespace chain {
 
     namespace {
         template <typename S> static fc::flat_set<typename S::value_type> copy_to_heap(const S& src) {
@@ -70,10 +70,10 @@ namespace golos { namespace chain {
             return authority(db.get<account_authority_object, by_account>(name).posting);
         };
 
-        golos::protocol::verify_authority(
+        graphene::protocol::verify_authority(
             ops, key_approvals,
-            get_active, get_owner, get_posting, STEEMIT_MAX_SIG_CHECK_DEPTH, false, /* allow committeee */
+            get_active, get_owner, get_posting, CHAIN_MAX_SIG_CHECK_DEPTH, false, /* allow committeee */
             active_approvals, owner_approvals, posting_approvals);
     }
 
-} } // golos::chain
+} } // graphene::chain

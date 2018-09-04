@@ -1,7 +1,7 @@
-#include <golos/protocol/block.hpp>
+#include <graphene/protocol/block.hpp>
 #include <fc/bitutil.hpp>
 
-namespace golos {
+namespace graphene {
     namespace protocol {
         digest_type block_header::digest() const {
             return digest_type::hash(*this);
@@ -64,4 +64,4 @@ namespace golos {
         }
 
     }
-} // golos::protocol
+} // graphene::protocol

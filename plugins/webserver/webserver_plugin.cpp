@@ -1,6 +1,6 @@
-#include <golos/plugins/webserver/webserver_plugin.hpp>
+#include <graphene/plugins/webserver/webserver_plugin.hpp>
 
-#include <golos/plugins/chain/plugin.hpp>
+#include <graphene/plugins/chain/plugin.hpp>
 
 #include <fc/network/ip.hpp>
 #include <fc/log/logger_config.hpp>
@@ -23,9 +23,9 @@
 #include <thread>
 #include <memory>
 #include <iostream>
-#include <golos/plugins/json_rpc/plugin.hpp>
+#include <graphene/plugins/json_rpc/plugin.hpp>
 
-namespace golos {
+namespace graphene {
     namespace plugins {
         namespace webserver {
 
@@ -332,4 +332,4 @@ namespace golos {
 
         }
     }
-} // steem::plugins::webserver
+} // graphene::plugins::webserver

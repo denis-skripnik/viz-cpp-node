@@ -1,8 +1,8 @@
-#include <golos/protocol/version.hpp>
+#include <graphene/protocol/version.hpp>
 
 #include <fc/exception/exception.hpp>
 
-namespace golos {
+namespace graphene {
     namespace protocol {
 
 /* Quick conversion utilities from http://joelverhagen.com/blog/2010/11/convert-an-int-to-a-string-and-vice-versa-in-c/ */
@@ -37,14 +37,14 @@ namespace golos {
         }
 
     }
-} // golos::protocol
+} // graphene::protocol
 
 namespace fc {
-    void to_variant(const golos::protocol::version &v, variant &var) {
+    void to_variant(const graphene::protocol::version &v, variant &var) {
         var = std::string(v);
     }
 
-    void from_variant(const variant &var, golos::protocol::version &v) {
+    void from_variant(const variant &var, graphene::protocol::version &v) {
         uint32_t major = 0, hardfork = 0, revision = 0;
         char dot_a = 0, dot_b = 0;
 
@@ -62,12 +62,12 @@ namespace fc {
         v.v_num = 0 | (major << 24) | (hardfork << 16) | revision;
     }
 
-    void to_variant(const golos::protocol::hardfork_version &hv, variant &var) {
-        to_variant((const golos::protocol::version &)hv, var);
+    void to_variant(const graphene::protocol::hardfork_version &hv, variant &var) {
+        to_variant((const graphene::protocol::version &)hv, var);
     }
 
-    void from_variant(const variant &var, golos::protocol::hardfork_version &hv) {
-        golos::protocol::version ver;
+    void from_variant(const variant &var, graphene::protocol::hardfork_version &hv) {
+        graphene::protocol::version ver;
         from_variant(var, ver);
         hv.v_num = ver.v_num & 0xffff0000;
     }

@@ -26,9 +26,9 @@
 #include <fc/thread/scoped_lock.hpp>
 #include <fc/io/enum_type.hpp>
 
-#include <golos/network/message_oriented_connection.hpp>
-#include <golos/network/stcp_socket.hpp>
-#include <golos/network/config.hpp>
+#include <graphene/network/message_oriented_connection.hpp>
+#include <graphene/network/stcp_socket.hpp>
+#include <graphene/network/config.hpp>
 
 #ifdef DEFAULT_LOGGER
 # undef DEFAULT_LOGGER
@@ -41,7 +41,7 @@
 # define VERIFY_CORRECT_THREAD() do {} while (0)
 #endif
 
-namespace golos {
+namespace graphene {
     namespace network {
         namespace detail {
             class message_oriented_connection_impl {
@@ -337,7 +337,7 @@ namespace golos {
                 return _sock.get_shared_secret();
             }
 
-        } // end namespace golos::network::detail
+        } // end namespace graphene::network::detail
 
 
         message_oriented_connection::message_oriented_connection(message_oriented_connection_delegate *delegate)
@@ -401,4 +401,4 @@ namespace golos {
         }
 
     }
-} // end namespace golos::network
+} // end namespace graphene::network

@@ -1,12 +1,12 @@
-#include <golos/plugins/network_broadcast_api/network_broadcast_api_plugin.hpp>
-#include <golos/plugins/json_rpc/utility.hpp>
+#include <graphene/plugins/network_broadcast_api/network_broadcast_api_plugin.hpp>
+#include <graphene/plugins/json_rpc/utility.hpp>
 
 #include <appbase/application.hpp>
 
 #include <boost/thread/future.hpp>
 #include <boost/thread/lock_guard.hpp>
 
-namespace golos {
+namespace graphene {
     namespace plugins {
         namespace network_broadcast_api {
 
@@ -142,7 +142,7 @@ namespace golos {
 
             void network_broadcast_api_plugin::plugin_initialize(const boost::program_options::variables_map &options) {
                 pimpl.reset(new impl);
-                JSON_RPC_REGISTER_API(STEEM_NETWORK_BROADCAST_API_PLUGIN_NAME);
+                JSON_RPC_REGISTER_API(NETWORK_BROADCAST_API_PLUGIN_NAME);
                 on_applied_block_connection = appbase::app().get_plugin<chain::plugin>().db().applied_block.connect(
                     [&](const signed_block &b) {
                         on_applied_block(b);
@@ -194,4 +194,4 @@ namespace golos {
                 } FC_LOG_AND_RETHROW() }
         }
     }
-} // steem::plugins::network_broadcast_api
+} // graphene::plugins::network_broadcast_api

@@ -1,11 +1,11 @@
-#include <golos/plugins/private_message/private_message_plugin.hpp>
-#include <golos/plugins/private_message/private_message_evaluators.hpp>
-#include <golos/plugins/chain/plugin.hpp>
+#include <graphene/plugins/private_message/private_message_plugin.hpp>
+#include <graphene/plugins/private_message/private_message_evaluators.hpp>
+#include <graphene/plugins/chain/plugin.hpp>
 #include <appbase/application.hpp>
 
-#include <golos/chain/index.hpp>
-#include <golos/chain/custom_operation_interpreter.hpp>
-#include <golos/chain/generic_custom_operation_interpreter.hpp>
+#include <graphene/chain/index.hpp>
+#include <graphene/chain/custom_operation_interpreter.hpp>
+#include <graphene/chain/generic_custom_operation_interpreter.hpp>
 
 #include <fc/smart_ref_impl.hpp>
 
@@ -24,7 +24,7 @@ if( options.count(name) ) { \
 }
 //
 
-namespace golos {
+namespace graphene {
     namespace plugins {
         namespace private_message {
 
@@ -32,7 +32,7 @@ namespace golos {
             public:
                 private_message_plugin_impl(private_message_plugin &_plugin)
                         : _self(_plugin) ,
-                          _db(appbase::app().get_plugin<golos::plugins::chain::plugin>().db()){
+                          _db(appbase::app().get_plugin<graphene::plugins::chain::plugin>().db()){
                     _custom_operation_interpreter = std::make_shared
                             < generic_custom_operation_interpreter <private_message::private_message_plugin_operation>> (_db);
 
@@ -53,7 +53,7 @@ namespace golos {
                 std::shared_ptr <generic_custom_operation_interpreter<private_message_plugin_operation>> _custom_operation_interpreter;
                 flat_map <std::string, std::string> _tracked_accounts;
 
-                golos::chain::database &_db;
+                graphene::chain::database &_db;
             };
 
             vector <message_api_obj> private_message_plugin::private_message_plugin_impl::get_inbox(
@@ -201,4 +201,4 @@ namespace golos {
             }
         }
     }
-} // golos::plugins::private_message
+} // graphene::plugins::private_message

@@ -29,17 +29,16 @@ RUN \
     rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* && \
     pip3 install gcovr
 
-ADD . /usr/local/src/golos
+ADD . /usr/local/src/viz
 
 RUN \
-    cd /usr/local/src/golos && \
+    cd /usr/local/src/viz && \
     git submodule deinit -f . && \
     git submodule update --init --recursive -f && \
     mkdir build && \
     cd build && \
     cmake \
         -DCMAKE_BUILD_TYPE=Release \
-        -DBUILD_GOLOS_TESTNET=FALSE \
         -DBUILD_SHARED_LIBRARIES=FALSE \
         -DLOW_MEMORY_NODE=FALSE \
         -DCHAINBASE_CHECK_LOCKING=FALSE \
@@ -48,7 +47,7 @@ RUN \
     && \
     make -j$(nproc) && \
     make install && \
-    rm -rf /usr/local/src/golos
+    rm -rf /usr/local/src/viz
 
 RUN \
     apt-get remove -y \
@@ -98,18 +97,18 @@ RUN \
         /usr/include \
         /usr/local/include
 
-RUN useradd -s /bin/bash -m -d /var/lib/golosd golosd
+RUN useradd -s /bin/bash -m -d /var/lib/vizd vizd
 
-RUN mkdir /var/cache/golosd && \
-    chown golosd:golosd -R /var/cache/golosd
+RUN mkdir /var/cache/vizd && \
+    chown vizd:vizd -R /var/cache/vizd
 
 # add blockchain cache to image
-#ADD $STEEMD_BLOCKCHAIN /var/cache/golosd/blocks.tbz2
+#ADD $VIZD_BLOCKCHAIN /var/cache/vizd/blocks.tbz2
 
-ENV HOME /var/lib/golosd
-RUN chown golosd:golosd -R /var/lib/golosd
+ENV HOME /var/lib/vizd
+RUN chown vizd:vizd -R /var/lib/vizd
 
-ADD share/golosd/snapshot5392323.json /var/lib/golosd
+ADD share/vizd/snapshot.json /var/lib/vizd
 
 # rpc service:
 # http
@@ -119,12 +118,12 @@ EXPOSE 8091
 # p2p service:
 EXPOSE 2001
 
-RUN mkdir -p /etc/service/golosd
-ADD share/golosd/golosd.sh /etc/service/golosd/run
-RUN chmod +x /etc/service/golosd/run
+RUN mkdir -p /etc/service/vizd
+ADD share/vizd/vizd.sh /etc/service/vizd/run
+RUN chmod +x /etc/service/vizd/run
 
 # add seednodes from documentation to image
-ADD share/golosd/seednodes /etc/golosd/seednodes
+ADD share/vizd/seednodes /etc/vizd/seednodes
 
 # the following adds lots of logging info to stdout
-ADD share/golosd/config/config.ini /etc/golosd/config.ini
+ADD share/vizd/config/config.ini /etc/vizd/config.ini

@@ -1,9 +1,9 @@
-#include <golos/protocol/config.hpp>
-#include <golos/protocol/types.hpp>
+#include <graphene/protocol/config.hpp>
+#include <graphene/protocol/types.hpp>
 
 #include <fc/crypto/base58.hpp>
 
-namespace golos {
+namespace graphene {
     namespace protocol {
 
         public_key_type::public_key_type() : key_data() {
@@ -20,7 +20,7 @@ namespace golos {
         public_key_type::public_key_type(const std::string &base58str) {
             // TODO:  Refactor syntactic checks into static is_valid()
             //        to make public_key_type API more similar to address API
-            std::string prefix(STEEMIT_ADDRESS_PREFIX);
+            std::string prefix(CHAIN_ADDRESS_PREFIX);
 
             const size_t prefix_len = prefix.size();
             FC_ASSERT(base58str.size() > prefix_len);
@@ -48,7 +48,7 @@ namespace golos {
             k.data = key_data;
             k.check = fc::ripemd160::hash(k.data.data, k.data.size())._hash[0];
             auto data = fc::raw::pack(k);
-            return STEEMIT_ADDRESS_PREFIX +
+            return CHAIN_ADDRESS_PREFIX +
                    fc::to_base58(data.data(), data.size());
         }
 
@@ -78,7 +78,7 @@ namespace golos {
         };
 
         extended_public_key_type::extended_public_key_type(const std::string &base58str) {
-            std::string prefix(STEEMIT_ADDRESS_PREFIX);
+            std::string prefix(CHAIN_ADDRESS_PREFIX);
 
             const size_t prefix_len = prefix.size();
             FC_ASSERT(base58str.size() > prefix_len);
@@ -101,7 +101,7 @@ namespace golos {
             k.data = key_data;
             k.check = fc::ripemd160::hash(k.data.data, k.data.size())._hash[0];
             auto data = fc::raw::pack(k);
-            return STEEMIT_ADDRESS_PREFIX +
+            return CHAIN_ADDRESS_PREFIX +
                    fc::to_base58(data.data(), data.size());
         }
 
@@ -131,7 +131,7 @@ namespace golos {
         };
 
         extended_private_key_type::extended_private_key_type(const std::string &base58str) {
-            std::string prefix(STEEMIT_ADDRESS_PREFIX);
+            std::string prefix(CHAIN_ADDRESS_PREFIX);
 
             const size_t prefix_len = prefix.size();
             FC_ASSERT(base58str.size() > prefix_len);
@@ -154,7 +154,7 @@ namespace golos {
             k.data = key_data;
             k.check = fc::ripemd160::hash(k.data.data, k.data.size())._hash[0];
             auto data = fc::raw::pack(k);
-            return STEEMIT_ADDRESS_PREFIX +
+            return CHAIN_ADDRESS_PREFIX +
                    fc::to_base58(data.data(), data.size());
         }
 
@@ -171,32 +171,32 @@ namespace golos {
         }
 
     }
-} // golos::protocol
+} // graphene::protocol
 
 namespace fc {
     using namespace std;
 
-    void to_variant(const golos::protocol::public_key_type &var, fc::variant &vo) {
+    void to_variant(const graphene::protocol::public_key_type &var, fc::variant &vo) {
         vo = std::string(var);
     }
 
-    void from_variant(const fc::variant &var, golos::protocol::public_key_type &vo) {
-        vo = golos::protocol::public_key_type(var.as_string());
+    void from_variant(const fc::variant &var, graphene::protocol::public_key_type &vo) {
+        vo = graphene::protocol::public_key_type(var.as_string());
     }
 
-    void to_variant(const golos::protocol::extended_public_key_type &var, fc::variant &vo) {
+    void to_variant(const graphene::protocol::extended_public_key_type &var, fc::variant &vo) {
         vo = std::string(var);
     }
 
-    void from_variant(const fc::variant &var, golos::protocol::extended_public_key_type &vo) {
-        vo = golos::protocol::extended_public_key_type(var.as_string());
+    void from_variant(const fc::variant &var, graphene::protocol::extended_public_key_type &vo) {
+        vo = graphene::protocol::extended_public_key_type(var.as_string());
     }
 
-    void to_variant(const golos::protocol::extended_private_key_type &var, fc::variant &vo) {
+    void to_variant(const graphene::protocol::extended_private_key_type &var, fc::variant &vo) {
         vo = std::string(var);
     }
 
-    void from_variant(const fc::variant &var, golos::protocol::extended_private_key_type &vo) {
-        vo = golos::protocol::extended_private_key_type(var.as_string());
+    void from_variant(const fc::variant &var, graphene::protocol::extended_private_key_type &vo) {
+        vo = graphene::protocol::extended_private_key_type(var.as_string());
     }
 } // fc

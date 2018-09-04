@@ -1,6 +1,6 @@
-#include <golos/protocol/authority.hpp>
+#include <graphene/protocol/authority.hpp>
 
-namespace golos {
+namespace graphene {
     namespace protocol {
 
 // authority methods
@@ -47,18 +47,40 @@ namespace golos {
             }
         }
 
+        bool is_valid_domain_name( const string& name , const string& creator )
+        {
+           size_t begin = name.find_first_of( '.', 0 );
+           if( begin == std::string::npos ){
+              return true;
+           }
+           else{
+              if( creator == name.substr( begin + 1 ) ){
+                 return true;
+              }
+              else{
+                 return false;
+              }
+           }
+        }
+
+        bool is_valid_create_account_name( const string& name )
+        {
+           const size_t len = name.size();
+           if( len < CHAIN_CREATE_MIN_ACCOUNT_NAME_LENGTH )
+              return false;
+
+           if( len > CHAIN_MAX_ACCOUNT_NAME_LENGTH )
+              return false;
+          return true;
+        }
 
         bool is_valid_account_name(const string &name) {
-#if STEEMIT_MIN_ACCOUNT_NAME_LENGTH < 3
-#error This is_valid_account_name implementation implicitly enforces minimum name length of 3.
-#endif
-
             const size_t len = name.size();
-            if (len < STEEMIT_MIN_ACCOUNT_NAME_LENGTH) {
+            if (len < CHAIN_MIN_ACCOUNT_NAME_LENGTH) {
                 return false;
             }
 
-            if (len > STEEMIT_MAX_ACCOUNT_NAME_LENGTH) {
+            if (len > CHAIN_MAX_ACCOUNT_NAME_LENGTH) {
                 return false;
             }
 
@@ -68,7 +90,7 @@ namespace golos {
                 if (end == std::string::npos) {
                     end = len;
                 }
-                if (end - begin < 3) {
+                if (end - begin < CHAIN_MIN_ACCOUNT_NAME_LENGTH) {
                     return false;
                 }
                 switch (name[begin]) {
@@ -202,4 +224,4 @@ namespace golos {
         }
 
     }
-} // golos::protocol
+} // graphene::protocol

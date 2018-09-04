@@ -1,20 +1,20 @@
-#include <golos/api/discussion_helper.hpp>
-#include <golos/chain/account_object.hpp>
-// #include <golos/plugins/follow/follow_objects.hpp>
-#include <golos/chain/steem_objects.hpp>
+#include <graphene/api/discussion_helper.hpp>
+#include <graphene/chain/account_object.hpp>
+// #include <graphene/plugins/follow/follow_objects.hpp>
+#include <graphene/chain/chain_objects.hpp>
 #include <fc/io/json.hpp>
 #include <boost/algorithm/string.hpp>
 
 
-namespace golos { namespace api {
+namespace graphene { namespace api {
 
-    comment_metadata get_metadata(const comment_api_object &c) {
+    content_metadata get_metadata(const content_api_object &c) {
 
-        comment_metadata meta;
+        content_metadata meta;
 
         if (!c.json_metadata.empty()) {
             try {
-                meta = fc::json::from_string(c.json_metadata).as<comment_metadata>();
+                meta = fc::json::from_string(c.json_metadata).as<content_metadata>();
             } catch (const fc::exception& e) {
                 // Do nothing on malformed json_metadata
             }
@@ -54,17 +54,10 @@ namespace golos { namespace api {
     struct discussion_helper::impl final {
     public:
         impl() = delete;
-        impl(
-            golos::chain::database& db,
-            std::function<void(const golos::chain::database&, const account_name_type&, fc::optional<share_type>&)> fill_reputation,
-            std::function<void(const golos::chain::database&, discussion&)> fill_promoted)
-            : database_(db),
-              fill_reputation_(fill_reputation),
-              fill_promoted_(fill_promoted) {
-        }
+        impl(graphene::chain::database& db):database_(db){}
         ~impl() = default;
 
-        discussion create_discussion(const comment_object& o) const ;
+        discussion create_discussion(const content_object& o) const ;
 
         void select_active_votes(
             std::vector<vote_state>& result, uint32_t& total_count,
@@ -75,24 +68,22 @@ namespace golos { namespace api {
 
         void set_url(discussion& d) const;
 
-        golos::chain::database& database() {
+        graphene::chain::database& database() {
             return database_;
         }
 
-        golos::chain::database& database() const {
+        graphene::chain::database& database() const {
             return database_;
         }
 
-        discussion get_discussion(const comment_object& c, uint32_t vote_limit) const;
+        discussion get_discussion(const content_object& c, uint32_t vote_limit) const;
 
     private:
-        golos::chain::database& database_;
-        std::function<void(const golos::chain::database&, const account_name_type&, fc::optional<share_type>&)> fill_reputation_;
-        std::function<void(const golos::chain::database&, discussion&)> fill_promoted_;
+        graphene::chain::database& database_;
     };
 
 // get_discussion
-    discussion discussion_helper::impl::get_discussion(const comment_object& c, uint32_t vote_limit) const {
+    discussion discussion_helper::impl::get_discussion(const content_object& c, uint32_t vote_limit) const {
         discussion d = create_discussion(c);
         set_url(d);
         set_pending_payout(d);
@@ -100,7 +91,7 @@ namespace golos { namespace api {
         return d;
     }
 
-    discussion discussion_helper::get_discussion(const comment_object& c, uint32_t vote_limit) const {
+    discussion discussion_helper::get_discussion(const content_object& c, uint32_t vote_limit) const {
         return pimpl->get_discussion(c, vote_limit);
     }
 //
@@ -110,12 +101,12 @@ namespace golos { namespace api {
         std::vector<vote_state>& result, uint32_t& total_count,
         const std::string& author, const std::string& permlink, uint32_t limit
     ) const {
-        const auto& comment = database().get_comment(author, permlink);
-        const auto& idx = database().get_index<comment_vote_index>().indices().get<by_comment_voter>();
-        comment_object::id_type cid(comment.id);
+        const auto& content = database().get_content(author, permlink);
+        const auto& idx = database().get_index<content_vote_index>().indices().get<by_content_voter>();
+        content_object::id_type cid(content.id);
         total_count = 0;
         result.clear();
-        for (auto itr = idx.lower_bound(cid); itr != idx.end() && itr->comment == cid; ++itr, ++total_count) {
+        for (auto itr = idx.lower_bound(cid); itr != idx.end() && itr->content == cid; ++itr, ++total_count) {
             if (result.size() < limit) {
                 const auto& vo = database().get(itr->voter);
                 vote_state vstate;
@@ -124,7 +115,6 @@ namespace golos { namespace api {
                 vstate.rshares = itr->rshares;
                 vstate.percent = itr->vote_percent;
                 vstate.time = itr->last_update;
-                fill_reputation_(database(), vo.name, vstate.reputation);
                 result.emplace_back(vstate);
             }
         }
@@ -141,19 +131,13 @@ namespace golos { namespace api {
     void discussion_helper::impl::set_pending_payout(discussion& d) const {
         auto& db = database();
 
-        fill_promoted_(db, d);
-
         const auto& props = db.get_dynamic_global_properties();
-        const auto& hist = db.get_feed_history();
-        asset pot = props.total_reward_fund_steem;
-        if (!hist.current_median_history.is_null()) {
-            pot = pot * hist.current_median_history;
-        }
+        asset pot = props.total_reward_fund;
 
         u256 total_r2 = to256(props.total_reward_shares2);
 
         if (props.total_reward_shares2 > 0) {
-            auto vshares = db.calculate_vshares(d.net_rshares.value > 0 ? d.net_rshares.value : 0);
+            auto vshares = d.net_rshares.value > 0 ? d.net_rshares.value : 0;
 
             u256 r2 = to256(vshares); //to256(abs_net_rshares);
             r2 *= pot.amount.value;
@@ -167,17 +151,15 @@ namespace golos { namespace api {
             d.total_pending_payout_value = asset(static_cast<uint64_t>(tpp), pot.symbol);
         }
 
-        fill_reputation_(db, d.author, d.author_reputation);
-
-        if (d.parent_author != STEEMIT_ROOT_POST_PARENT) {
-            d.cashout_time = db.calculate_discussion_payout_time(db.get<comment_object>(d.id));
+        if (d.parent_author != CHAIN_ROOT_POST_PARENT) {
+            d.cashout_time = db.calculate_discussion_payout_time(db.get<content_object>(d.id));
         }
 
         if (d.body.size() > 1024 * 128) {
             d.body = "body pruned due to size";
         }
         if (d.parent_author.size() > 0 && d.body.size() > 1024 * 16) {
-            d.body = "comment pruned due to size";
+            d.body = "content pruned due to size";
         }
 
         set_url(d);
@@ -189,10 +171,10 @@ namespace golos { namespace api {
 //
 // set_url
     void discussion_helper::impl::set_url(discussion& d) const {
-        const comment_api_object root(database().get<comment_object, by_id>(d.root_comment), database());
+        const content_api_object root(database().get<content_object, by_id>(d.root_content), database());
 
         d.root_title = root.title;
-        d.url = "/" + root.category + "/@" + root.author + "/" + root.permlink;
+        d.url = "/@" + root.author + "/" + root.permlink;
 
         if (root.id != d.id) {
             d.url += "#@" + d.author + "/" + d.permlink;
@@ -204,23 +186,21 @@ namespace golos { namespace api {
     }
 //
 // create_discussion
-    discussion discussion_helper::impl::create_discussion(const comment_object& o) const {
+    discussion discussion_helper::impl::create_discussion(const content_object& o) const {
         return discussion(o, database_);
     }
 
-    discussion discussion_helper::create_discussion(const comment_object& o) const {
+    discussion discussion_helper::create_discussion(const content_object& o) const {
         return pimpl->create_discussion(o);
     }
 
     discussion_helper::discussion_helper(
-        golos::chain::database& db,
-        std::function<void(const golos::chain::database&, const account_name_type&, fc::optional<share_type>&)> fill_reputation,
-        std::function<void(const golos::chain::database&, discussion&)> fill_promoted
+        graphene::chain::database& db
     ) {
-        pimpl = std::make_unique<impl>(db, fill_reputation, fill_promoted);
+        pimpl = std::make_unique<impl>(db);
     }
 
     discussion_helper::~discussion_helper() = default;
 
 //
-} } // golos::api
+} } // graphene::api
