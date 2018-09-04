@@ -1003,7 +1003,7 @@ namespace graphene { namespace chain {
 
             static const size_t max_block_header_size =
                     fc::raw::pack_size(signed_block_header()) + 4;
-            auto maximum_block_size = get_dynamic_global_properties().maximum_block_size; //CHAIN_MAX_BLOCK_SIZE;
+            auto maximum_block_size = get_dynamic_global_properties().maximum_block_size; //CHAIN_BLOCK_SIZE;
             size_t total_block_size = max_block_header_size;
 
             signed_block pending_block;
@@ -1111,7 +1111,7 @@ namespace graphene { namespace chain {
 
             // TODO: Move this to _push_block() so session is restored.
             if (!(skip & skip_block_size_check)) {
-                FC_ASSERT(fc::raw::pack_size(pending_block) <= CHAIN_MAX_BLOCK_SIZE);
+                FC_ASSERT(fc::raw::pack_size(pending_block) <= CHAIN_BLOCK_SIZE);
             }
 
             push_block(pending_block, skip);
@@ -2566,7 +2566,7 @@ namespace graphene { namespace chain {
                     p.participation_count = 128;
                     p.committee_supply = asset(0, TOKEN_SYMBOL);
                     p.current_supply = asset(init_supply, TOKEN_SYMBOL);
-                    p.maximum_block_size = CHAIN_MAX_BLOCK_SIZE;
+                    p.maximum_block_size = CHAIN_BLOCK_SIZE;
                     p.bandwidth_reserve_candidates = bandwidth_reserve_candidates;
                 });
 

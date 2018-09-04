@@ -396,6 +396,7 @@ namespace graphene { namespace protocol {
                 FC_ASSERT(account_creation_fee.amount >= CHAIN_MIN_ACCOUNT_CREATION_FEE);
                 FC_ASSERT(account_creation_fee.symbol == TOKEN_SYMBOL);
                 FC_ASSERT(maximum_block_size >= CHAIN_MIN_BLOCK_SIZE_LIMIT);
+                FC_ASSERT(maximum_block_size <= CHAIN_MAX_BLOCK_SIZE_LIMIT);
                 FC_ASSERT(create_account_delegation_ratio > 0);
                 FC_ASSERT(create_account_delegation_time >= 0);
                 FC_ASSERT(create_account_delegation_time >= CHAIN_VOTE_REGENERATION_SECONDS);//prevent delegation abuse (energy double use)

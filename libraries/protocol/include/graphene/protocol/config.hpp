@@ -96,7 +96,8 @@
 
 #define CHAIN_MAX_TRANSACTION_SIZE            (1024*64)
 #define CHAIN_MIN_BLOCK_SIZE_LIMIT            (CHAIN_MAX_TRANSACTION_SIZE)
-#define CHAIN_MAX_BLOCK_SIZE                  (CHAIN_MAX_TRANSACTION_SIZE*CHAIN_BLOCK_INTERVAL*2000)
+#define CHAIN_MAX_BLOCK_SIZE_LIMIT            (2*1024*1024) // 2Mb p2p graphene limit : /libraries/net/include/graphene/net/config.hpp#L39
+#define CHAIN_BLOCK_SIZE                      (CHAIN_MAX_BLOCK_SIZE_LIMIT*CHAIN_BLOCK_INTERVAL) // initial block size, preset to max block size limit
 
 #define CHAIN_MAX_UNDO_HISTORY                10000
 
