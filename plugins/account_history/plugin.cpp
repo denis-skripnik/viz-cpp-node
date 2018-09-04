@@ -287,6 +287,10 @@ if( options.count(name) ) { \
         void operator()(const proposal_delete_operation& op) {
             impacted.insert(op.requester);
         }
+
+        void operator()(const committee_pay_request_operation& op) {
+            impacted.insert(op.worker);
+        }
         //void operator()( const operation& op ){}
     };
 
