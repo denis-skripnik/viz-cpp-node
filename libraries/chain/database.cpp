@@ -2195,7 +2195,8 @@ namespace graphene { namespace chain {
                p.current_supply += asset( inflation_per_block, TOKEN_SYMBOL );
             });
 
-            create_vesting(get_account(cwit.owner), asset(witness_reward, TOKEN_SYMBOL));
+            auto witness_reward_shares = create_vesting(get_account(cwit.owner), asset(witness_reward, TOKEN_SYMBOL));
+            push_virtual_operation(witness_reward_operation(cwit.owner,witness_reward_shares));
         }
 
 /**

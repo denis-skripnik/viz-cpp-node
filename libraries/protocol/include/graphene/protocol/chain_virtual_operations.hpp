@@ -173,6 +173,18 @@ namespace graphene { namespace protocol {
             uint32_t request_id;
             asset tokens;
         };
+
+        struct witness_reward_operation : public virtual_operation {
+            witness_reward_operation() {
+            }
+
+            witness_reward_operation(const account_name_type& w, const asset& s)
+                    : witness(w), shares(s) {
+            }
+
+            account_name_type witness;
+            asset shares;
+        };
 } } //graphene::protocol
 
 FC_REFLECT((graphene::protocol::author_reward_operation), (author)(permlink)(token_payout)(vesting_payout))
@@ -188,3 +200,4 @@ FC_REFLECT((graphene::protocol::committee_cancel_request_operation), (request_id
 FC_REFLECT((graphene::protocol::committee_approve_request_operation), (request_id))
 FC_REFLECT((graphene::protocol::committee_payout_request_operation), (request_id))
 FC_REFLECT((graphene::protocol::committee_pay_request_operation), (worker)(request_id)(tokens))
+FC_REFLECT((graphene::protocol::witness_reward_operation), (witness)(shares))

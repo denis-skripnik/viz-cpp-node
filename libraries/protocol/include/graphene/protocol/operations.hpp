@@ -61,7 +61,9 @@ namespace graphene { namespace protocol {
                 committee_cancel_request_operation,
                 committee_approve_request_operation,
                 committee_payout_request_operation,
-                committee_pay_request_operation
+                committee_pay_request_operation,
+
+                witness_reward_operation
         > operation;
 
         /*void operation_get_required_authorities( const operation& op,
