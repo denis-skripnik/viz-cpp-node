@@ -1240,19 +1240,21 @@ namespace graphene { namespace chain {
 
         void database::shares_sender_recalc_energy(const account_object &sender, asset tokens) {
             try {
-                asset shares = tokens;
-                if(tokens.symbol != SHARES_SYMBOL){
-                    const auto &cprops = get_dynamic_global_properties();
-                    asset shares = shares * cprops.get_vesting_share_price();
-                }
-                modify(sender, [&](account_object &s) {
-                    int64_t elapsed_seconds = (head_block_time() - s.last_vote_time).to_seconds();
-                    int64_t regenerated_power = (CHAIN_100_PERCENT * elapsed_seconds) / CHAIN_VOTE_REGENERATION_SECONDS;
-                    int64_t current_power = std::min(int64_t(s.voting_power + regenerated_power), int64_t(CHAIN_100_PERCENT));
-                    int64_t new_power = std::max(int64_t(current_power - ((CHAIN_100_PERCENT * shares.amount.value) / s.effective_vesting_shares().amount.value)), int64_t(-CHAIN_100_PERCENT));
-                    s.voting_power = new_power;
-                    s.last_vote_time = head_block_time();
-                });
+                if(sender.effective_vesting_shares().amount.value>0){
+	                asset shares = tokens;
+	                if(tokens.symbol != SHARES_SYMBOL){
+	                    const auto &cprops = get_dynamic_global_properties();
+	                    asset shares = shares * cprops.get_vesting_share_price();
+	                }
+	                modify(sender, [&](account_object &s) {
+	                    int64_t elapsed_seconds = (head_block_time() - s.last_vote_time).to_seconds();
+	                    int64_t regenerated_power = (CHAIN_100_PERCENT * elapsed_seconds) / CHAIN_VOTE_REGENERATION_SECONDS;
+	                    int64_t current_power = std::min(int64_t(s.voting_power + regenerated_power), int64_t(CHAIN_100_PERCENT));
+	                    int64_t new_power = std::max(int64_t(current_power - ((CHAIN_100_PERCENT * shares.amount.value) / s.effective_vesting_shares().amount.value)), int64_t(-CHAIN_100_PERCENT));
+	                    s.voting_power = new_power;
+	                    s.last_vote_time = head_block_time();
+	                });
+	            }
             }
             FC_CAPTURE_AND_RETHROW((sender.name)(tokens))
         }
