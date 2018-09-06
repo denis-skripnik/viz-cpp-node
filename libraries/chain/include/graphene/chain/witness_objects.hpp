@@ -122,7 +122,7 @@ namespace graphene { namespace chain {
         version running_version;
 
         hardfork_version hardfork_version_vote;
-        time_point_sec hardfork_time_vote = CHAIN_GENESIS_TIME;
+        time_point_sec hardfork_time_vote;
     };
 
 

@@ -214,12 +214,6 @@ namespace graphene {
             }
 
             block_production_condition::block_production_condition_enum witness_plugin::impl::block_production_loop() {
-                if (fc::time_point::now() < fc::time_point(CHAIN_GENESIS_TIME)) {
-                    wlog("waiting until genesis time to produce block: ${t}", ("t", CHAIN_GENESIS_TIME));
-                    schedule_production_loop();
-                    return block_production_condition::wait_for_genesis;
-                }
-
                 block_production_condition::block_production_condition_enum result;
                 fc::mutable_variant_object capture;
                 try {
@@ -271,8 +265,6 @@ namespace graphene {
                         break;
                     case block_production_condition::exception_producing_block:
                         elog("Failure when producing block with no transactions");
-                        break;
-                    case block_production_condition::wait_for_genesis:
                         break;
                 }
 
