@@ -21,12 +21,12 @@
 #define CHAIN_ACCOUNT_RECOVERY_REQUEST_EXPIRATION_PERIOD  fc::days(1)
 #define CHAIN_OWNER_UPDATE_LIMIT                          fc::minutes(60)
 
-#define CHAIN_BLOCK_INTERVAL                  1
-#define CHAIN_BLOCK_WITNESS_REPEAT            3
+#define CHAIN_BLOCK_INTERVAL                  3
+#define CHAIN_BLOCK_WITNESS_REPEAT            1
 #define CHAIN_BLOCKS_PER_YEAR                 (365*24*60*60/CHAIN_BLOCK_INTERVAL)
 #define CHAIN_BLOCKS_PER_DAY                  (24*60*60/CHAIN_BLOCK_INTERVAL)
 #define CHAIN_BLOCKS_PER_HOUR                 (60*60/CHAIN_BLOCK_INTERVAL)
-#define CHAIN_MAX_WITNESS_MISSED_BLOCKS       200
+#define CHAIN_MAX_WITNESS_MISSED_BLOCKS       200 // 10 min after missed block
 
 #define CHAIN_INITIATOR_NAME                 "viz"
 #define CHAIN_INITIATOR_PUBLIC_KEY_STR       "VIZ6MyX5QiXAXRZk7SYCiqpi6Mtm8UbHWDFSV8HPpt7FJyahCnc2T"
