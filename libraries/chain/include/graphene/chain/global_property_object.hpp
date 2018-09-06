@@ -36,6 +36,7 @@ namespace graphene {
 
             uint32_t head_block_number = 0;
             block_id_type head_block_id;
+            time_point_sec genesis_time;
             time_point_sec time;
             account_name_type current_witness;
 
@@ -141,6 +142,7 @@ FC_REFLECT((graphene::chain::dynamic_global_property_object),
         (id)
                 (head_block_number)
                 (head_block_id)
+                (genesis_time)
                 (time)
                 (current_witness)
                 (committee_supply)

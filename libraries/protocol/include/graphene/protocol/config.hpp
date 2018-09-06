@@ -10,7 +10,6 @@
 #define SHARES_SYMBOL  (uint64_t(6) | (uint64_t('S') << 8) | (uint64_t('H') << 16) | (uint64_t('A') << 24) | (uint64_t('R') << 32) | (uint64_t('E') << 40) | (uint64_t('S') << 48))
 #define TOKEN_SYMBOL  (uint64_t(3) | (uint64_t('V') << 8) | (uint64_t('I') << 16) | (uint64_t('Z') << 24))
 
-#define CHAIN_GENESIS_TIME                    (fc::time_point_sec(1538352000))
 #define CHAIN_CASHOUT_WINDOW_SECONDS          (60*60*24)  // 1 day
 
 #define CHAIN_MAX_PROPOSAL_LIFETIME_SEC       (60*60*24*7*4) /// 4 weeks
@@ -22,12 +21,12 @@
 #define CHAIN_ACCOUNT_RECOVERY_REQUEST_EXPIRATION_PERIOD  fc::days(1)
 #define CHAIN_OWNER_UPDATE_LIMIT                          fc::minutes(60)
 
-#define CHAIN_BLOCK_INTERVAL                  1
-#define CHAIN_BLOCK_WITNESS_REPEAT            3
+#define CHAIN_BLOCK_INTERVAL                  3
+#define CHAIN_BLOCK_WITNESS_REPEAT            1
 #define CHAIN_BLOCKS_PER_YEAR                 (365*24*60*60/CHAIN_BLOCK_INTERVAL)
 #define CHAIN_BLOCKS_PER_DAY                  (24*60*60/CHAIN_BLOCK_INTERVAL)
 #define CHAIN_BLOCKS_PER_HOUR                 (60*60/CHAIN_BLOCK_INTERVAL)
-#define CHAIN_MAX_WITNESS_MISSED_BLOCKS       200
+#define CHAIN_MAX_WITNESS_MISSED_BLOCKS       200 // 10 min after missed block
 
 #define CHAIN_INITIATOR_NAME                 "viz"
 #define CHAIN_INITIATOR_PUBLIC_KEY_STR       "VIZ6MyX5QiXAXRZk7SYCiqpi6Mtm8UbHWDFSV8HPpt7FJyahCnc2T"

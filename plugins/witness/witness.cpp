@@ -204,9 +204,9 @@ namespace graphene {
                 //Schedule for the next second's tick regardless of chain state
                 // If we would wait less than 50ms, wait for the whole second.
                 int64_t ntp_microseconds = graphene::time::now().time_since_epoch().count();
-                int64_t next_microseconds = 1000000 - (ntp_microseconds % 1000000);
+                int64_t next_microseconds = 1000000 * CHAIN_BLOCK_INTERVAL - ( ntp_microseconds % ( 1000000 * CHAIN_BLOCK_INTERVAL ) );
                 if (next_microseconds < 50000) { // we must sleep for at least 50ms
-                    next_microseconds += 500000;
+                    next_microseconds += 1000000 * CHAIN_BLOCK_INTERVAL / 2;
                 }
 
                 production_timer_.expires_from_now( posix_time::microseconds(next_microseconds) );
@@ -214,12 +214,6 @@ namespace graphene {
             }
 
             block_production_condition::block_production_condition_enum witness_plugin::impl::block_production_loop() {
-                if (fc::time_point::now() < fc::time_point(CHAIN_GENESIS_TIME)) {
-                    wlog("waiting until genesis time to produce block: ${t}", ("t", CHAIN_GENESIS_TIME));
-                    schedule_production_loop();
-                    return block_production_condition::wait_for_genesis;
-                }
-
                 block_production_condition::block_production_condition_enum result;
                 fc::mutable_variant_object capture;
                 try {
@@ -272,8 +266,6 @@ namespace graphene {
                     case block_production_condition::exception_producing_block:
                         elog("Failure when producing block with no transactions");
                         break;
-                    case block_production_condition::wait_for_genesis:
-                        break;
                 }
 
                 schedule_production_loop();
@@ -283,7 +275,7 @@ namespace graphene {
             block_production_condition::block_production_condition_enum witness_plugin::impl::maybe_produce_block(fc::mutable_variant_object &capture) {
                 auto &db = database();
                 fc::time_point now_fine = graphene::time::now();
-                fc::time_point_sec now = now_fine + fc::microseconds(1100000);
+                fc::time_point_sec now = now_fine + fc::microseconds( 1000000 * CHAIN_BLOCK_INTERVAL + ( 1000000 * CHAIN_BLOCK_INTERVAL / 10 ) );
 
                 // If the next block production opportunity is in the present or future, we're synced.
                 if (!_production_enabled) {
