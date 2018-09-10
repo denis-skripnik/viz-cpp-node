@@ -44,7 +44,7 @@ public:
     uint32_t post_count = 0;
     uint64_t awarded_rshares = 0;
 
-    int16_t voting_power = CHAIN_100_PERCENT;   ///< current voting power of this account, it falls after every vote
+    int16_t energy = CHAIN_100_PERCENT;   ///< current voting power of this account, it falls after every vote
     time_point_sec last_vote_time; ///< used to increase the voting power of this account the longer it goes without voting.
 
     asset balance = asset(0, TOKEN_SYMBOL);  ///< total liquid shares held by this account
@@ -430,7 +430,7 @@ FC_REFLECT((graphene::chain::account_object),
         (id)(name)(memo_key)(proxy)(referrer)(last_account_update)
                 (created)
                 (recovery_account)(last_account_recovery)
-                (content_count)(vote_count)(post_count)(awarded_rshares)(voting_power)(last_vote_time)
+                (content_count)(vote_count)(post_count)(awarded_rshares)(energy)(last_vote_time)
                 (balance)(vesting_shares)(delegated_vesting_shares)(received_vesting_shares)
                 (vesting_withdraw_rate)(next_vesting_withdrawal)(withdrawn)(to_withdraw)(withdraw_routes)
                 (curation_rewards)

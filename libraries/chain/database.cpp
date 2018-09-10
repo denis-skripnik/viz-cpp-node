@@ -1248,10 +1248,10 @@ namespace graphene { namespace chain {
                     }
                     modify(sender, [&](account_object &s) {
                         int64_t elapsed_seconds = (head_block_time() - s.last_vote_time).to_seconds();
-                        int64_t regenerated_power = (CHAIN_100_PERCENT * elapsed_seconds) / CHAIN_VOTE_REGENERATION_SECONDS;
-                        int64_t current_power = std::min(int64_t(s.voting_power + regenerated_power), int64_t(CHAIN_100_PERCENT));
-                        int64_t new_power = std::max(int64_t(current_power - ((CHAIN_100_PERCENT * shares.amount.value) / s.effective_vesting_shares().amount.value)), int64_t(-CHAIN_100_PERCENT));
-                        s.voting_power = new_power;
+                        int64_t regenerated_energy = (CHAIN_100_PERCENT * elapsed_seconds) / CHAIN_ENERGY_REGENERATION_SECONDS;
+                        int64_t current_energy = std::min(int64_t(s.energy + regenerated_energy), int64_t(CHAIN_100_PERCENT));
+                        int64_t new_energy = std::max(int64_t(current_energy - ((CHAIN_100_PERCENT * shares.amount.value) / s.effective_vesting_shares().amount.value)), int64_t(-CHAIN_100_PERCENT));
+                        s.energy = new_energy;
                         s.last_vote_time = head_block_time();
                     });
                 }

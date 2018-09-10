@@ -84,7 +84,7 @@ namespace graphene { namespace chain {
                 acc.name = o.new_account_name;
                 acc.memo_key = o.memo_key;
                 acc.created = now;
-                acc.voting_power=0;
+                acc.energy=0;
                 acc.last_vote_time = now;
                 acc.recovery_account = o.creator;
                 acc.received_vesting_shares = o.delegation;
@@ -844,33 +844,33 @@ namespace graphene { namespace chain {
                 FC_ASSERT(elapsed_seconds >=
                           CHAIN_MIN_VOTE_INTERVAL_SEC, "Can only vote once every 1 second.");
 
-                int64_t regenerated_power =
+                int64_t regenerated_energy =
                         (CHAIN_100_PERCENT * elapsed_seconds) /
-                        CHAIN_VOTE_REGENERATION_SECONDS;
-                int64_t current_power = std::min(int64_t(voter.voting_power +
-                                                         regenerated_power), int64_t(CHAIN_100_PERCENT));
-                FC_ASSERT(current_power >
-                          0, "Account currently does not have voting power.");
+                        CHAIN_ENERGY_REGENERATION_SECONDS;
+                int64_t current_energy = std::min(int64_t(voter.energy +
+                                                         regenerated_energy), int64_t(CHAIN_100_PERCENT));
+                FC_ASSERT(current_energy >
+                          0, "Account currently does not have voting energy.");
 
                 int64_t abs_weight = abs(o.weight);
-                int64_t used_power = abs_weight;
+                int64_t used_energy = abs_weight;
 
                 const dynamic_global_property_object &dgpo = _db.get_dynamic_global_properties();
 
-                // used_power = (current_power * abs_weight / CHAIN_100_PERCENT) * (reserve / max_vote_denom)
+                // used_energy = (current_energy * abs_weight / CHAIN_100_PERCENT) * (reserve / max_vote_denom)
                 // The second multiplication is rounded up as of HF 259
                 int64_t max_vote_denom = dgpo.vote_regeneration_per_day *
-                                         CHAIN_VOTE_REGENERATION_SECONDS /
+                                         CHAIN_ENERGY_REGENERATION_SECONDS /
                                          (60 * 60 * 24);//5
                 FC_ASSERT(max_vote_denom > 0);
 
 
-                used_power = used_power / max_vote_denom;
-                FC_ASSERT(used_power <=
-                          current_power, "Account does not have enough power to vote.");
+                used_energy = used_energy / max_vote_denom;
+                FC_ASSERT(used_energy <=
+                          current_energy, "Account does not have enough energy to vote.");
 
                 int64_t abs_rshares = (
-                    (uint128_t(voter.effective_vesting_shares().amount.value) * used_power) /
+                    (uint128_t(voter.effective_vesting_shares().amount.value) * used_energy) /
                     (CHAIN_100_PERCENT)).to_uint64();
 
                 FC_ASSERT(abs_rshares > 1000000 || o.weight ==
@@ -907,7 +907,7 @@ namespace graphene { namespace chain {
                     }
                     else{
                         _db.modify(voter, [&](account_object &a) {
-                            a.voting_power = current_power - used_power;
+                            a.energy = current_energy - used_energy;
                             a.last_vote_time = _db.head_block_time();
                             a.vote_count++;
                         });
@@ -994,7 +994,7 @@ namespace graphene { namespace chain {
 
                     _db.modify(voter, [&](account_object &a) {
                     	if(itr->vote_percent < o.weight){
-	                        a.voting_power = current_power - used_power;
+	                        a.energy = current_energy - used_energy;
 	                    }
                         a.last_vote_time = _db.head_block_time();
                     });

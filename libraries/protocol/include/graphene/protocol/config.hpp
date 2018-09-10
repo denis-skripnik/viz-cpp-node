@@ -42,12 +42,12 @@
 #define CHAIN_VESTING_WITHDRAW_INTERVALS      28
 #define CHAIN_VESTING_WITHDRAW_INTERVAL_SECONDS (60*60*24) // 1 day per interval
 #define CHAIN_MAX_WITHDRAW_ROUTES             10
-#define CHAIN_VOTE_REGENERATION_SECONDS       (5*60*60*24) // 5 days
+#define CHAIN_ENERGY_REGENERATION_SECONDS       (5*60*60*24) // 5 days
 #define CHAIN_MAX_VOTE_CHANGES                5
 #define CHAIN_UPVOTE_LOCKOUT                  (fc::minutes(1))
 #define CHAIN_MIN_VOTE_INTERVAL_SEC           1
 #define CHAIN_MAX_COMMENT_BENEFICIARIES       64
-#define CHAIN_VOTE_POWER_RATE					1
+#define CHAIN_VOTE_ENERGY_RATE					1
 
 #define CHAIN_MIN_ROOT_COMMENT_INTERVAL       (fc::seconds(1))
 #define CHAIN_MIN_REPLY_INTERVAL              (fc::seconds(1))
