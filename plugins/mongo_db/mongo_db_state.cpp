@@ -156,7 +156,7 @@ namespace mongo_db {
             format_value(body, "vote_count", account.vote_count);
             format_value(body, "post_count", account.post_count);
 
-            format_value(body, "voting_power", account.voting_power);
+            format_value(body, "energy", account.energy);
             format_value(body, "last_vote_time", account.last_vote_time);
 
             format_value(body, "balance", account.balance);

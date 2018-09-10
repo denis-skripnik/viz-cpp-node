@@ -42,7 +42,7 @@ struct account_api_object {
     uint32_t post_count;
     uint64_t awarded_rshares;
 
-    int16_t voting_power;
+    int16_t energy;
     time_point_sec last_vote_time;
 
     asset balance;
@@ -79,7 +79,7 @@ FC_REFLECT((graphene::api::account_api_object),
     (id)(name)(owner)(active)(posting)(memo_key)(json_metadata)(proxy)(referrer)(last_owner_update)(last_account_update)
     (created)
     (recovery_account)(last_account_recovery)(content_count)(vote_count)
-    (post_count)(awarded_rshares)(voting_power)(last_vote_time)(balance)
+    (post_count)(awarded_rshares)(energy)(last_vote_time)(balance)
     (vesting_shares)(delegated_vesting_shares)(received_vesting_shares)
     (vesting_withdraw_rate)(next_vesting_withdrawal)(withdrawn)(to_withdraw)(withdraw_routes)
     (curation_rewards)(posting_rewards)(proxied_vsf_votes)(witnesses_voted_for)

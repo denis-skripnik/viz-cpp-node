@@ -117,7 +117,7 @@ namespace graphene {
              * "wasting" voting power through spillover; any user voting faster than this rate will have
              * their votes reduced.
              */
-            uint32_t vote_regeneration_per_day = CHAIN_VOTE_POWER_RATE;
+            uint32_t vote_regeneration_per_day = CHAIN_VOTE_ENERGY_RATE;
 
             /**
              * The number of accounts who can use bandwidth reserve assigned by witnesses consensus

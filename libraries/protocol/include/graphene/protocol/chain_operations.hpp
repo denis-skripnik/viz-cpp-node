@@ -399,7 +399,7 @@ namespace graphene { namespace protocol {
                 FC_ASSERT(maximum_block_size <= CHAIN_MAX_BLOCK_SIZE_LIMIT);
                 FC_ASSERT(create_account_delegation_ratio > 0);
                 FC_ASSERT(create_account_delegation_time >= 0);
-                FC_ASSERT(create_account_delegation_time >= CHAIN_VOTE_REGENERATION_SECONDS);//prevent delegation abuse (energy double use)
+                FC_ASSERT(create_account_delegation_time >= CHAIN_ENERGY_REGENERATION_SECONDS);//prevent delegation abuse (energy double use)
                 FC_ASSERT(min_delegation.amount > 0);
                 FC_ASSERT(min_delegation.symbol == TOKEN_SYMBOL);
                 FC_ASSERT(min_curation_percent >= 0);
