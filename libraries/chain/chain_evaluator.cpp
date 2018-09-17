@@ -919,6 +919,7 @@ namespace graphene { namespace chain {
 
                     if (_db.calculate_discussion_payout_time(content) ==
                         fc::time_point_sec::maximum()) {
+                        FC_ASSERT(o.weight > 0,"Cannot flag post after payout window");
                         // VIZ: if payout window closed then award author with rshares and create unchangable vote
                         const auto &content_author = _db.get_account(content.author);
                         _db.modify(content_author, [&](account_object &a) {
