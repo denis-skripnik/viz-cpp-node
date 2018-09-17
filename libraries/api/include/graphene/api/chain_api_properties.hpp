@@ -22,6 +22,7 @@ namespace graphene { namespace api {
         int16_t max_curation_percent;
         int16_t bandwidth_reserve_percent;
         asset bandwidth_reserve_below;
+        int16_t flag_energy_additional_cost;
     };
 
 } } // graphene::api
@@ -30,4 +31,5 @@ FC_REFLECT(
     (graphene::api::chain_api_properties),
     (account_creation_fee)(maximum_block_size)(maximum_block_size)
     (create_account_delegation_ratio)(create_account_delegation_time)(min_delegation)
-    (min_curation_percent)(max_curation_percent)(bandwidth_reserve_percent)(bandwidth_reserve_below))
+    (min_curation_percent)(max_curation_percent)(bandwidth_reserve_percent)(bandwidth_reserve_below)
+    (flag_energy_additional_cost))

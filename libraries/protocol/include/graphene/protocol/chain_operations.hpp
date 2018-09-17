@@ -392,6 +392,11 @@ namespace graphene { namespace protocol {
             int16_t bandwidth_reserve_percent = CONSENSUS_BANDWIDTH_RESERVE_PERCENT;
             asset bandwidth_reserve_below = asset(CONSENSUS_BANDWIDTH_RESERVE_BELOW, SHARES_SYMBOL);
 
+            /**
+             *  Consensus - Flag/Downvote energy cost may be higher from 0 to CHAIN_100_PERCENT
+             */
+            int16_t flag_energy_additional_cost = CONSENSUS_FLAG_ENERGY_ADDITIONAL_COST;
+
             void validate() const {
                 FC_ASSERT(account_creation_fee.amount >= CHAIN_MIN_ACCOUNT_CREATION_FEE);
                 FC_ASSERT(account_creation_fee.symbol == TOKEN_SYMBOL);
@@ -409,6 +414,8 @@ namespace graphene { namespace protocol {
                 FC_ASSERT(bandwidth_reserve_percent <= CHAIN_100_PERCENT);
                 FC_ASSERT(bandwidth_reserve_below.amount >= 0);
                 FC_ASSERT(bandwidth_reserve_below.symbol == SHARES_SYMBOL);
+                FC_ASSERT(flag_energy_additional_cost >= 0);
+                FC_ASSERT(flag_energy_additional_cost <= CHAIN_100_PERCENT);
             }
 
             chain_properties& operator=(const chain_properties&) = default;

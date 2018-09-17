@@ -1627,6 +1627,7 @@ namespace graphene { namespace chain {
             calc_median(&chain_properties::min_curation_percent);
             calc_median(&chain_properties::bandwidth_reserve_percent);
             calc_median(&chain_properties::bandwidth_reserve_below);
+            calc_median(&chain_properties::flag_energy_additional_cost);
 
             modify(wso, [&](witness_schedule_object &_wso) {
                 _wso.median_props = median_props;

@@ -107,6 +107,8 @@
 #define COMMITTEE_REQUEST_PER_TIME              (60*60*24)
 #define COMMITTEE_REQUEST_PROCESSING            (CHAIN_BLOCKS_PER_HOUR/6) //every 10 minutes
 
+#define CONSENSUS_FLAG_ENERGY_ADDITIONAL_COST 0
+
 /**
  *  Reserved Account IDs with special meaning
  */

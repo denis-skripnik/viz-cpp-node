@@ -834,6 +834,7 @@ namespace graphene { namespace chain {
 
                 const auto &content = _db.get_content(o.author, o.permlink);
                 const auto &voter = _db.get_account(o.voter);
+                const auto& median_props = _db.get_witness_schedule_object().median_props;
 
                 const auto &content_vote_idx = _db.get_index<content_vote_index>().indices().get<by_content_voter>();
                 auto itr = content_vote_idx.find(std::make_tuple(content.id, voter.id));
@@ -864,7 +865,10 @@ namespace graphene { namespace chain {
                                          (60 * 60 * 24);//5
                 FC_ASSERT(max_vote_denom > 0);
 
-
+                // Consensus by median props - flag energy additional cost
+                if(o.weight < 0){
+                    used_energy=used_energy + (used_energy * median_props.flag_energy_additional_cost / CHAIN_100_PERCENT);
+                }
                 used_energy = used_energy / max_vote_denom;
                 FC_ASSERT(used_energy <=
                           current_energy, "Account does not have enough energy to vote.");
