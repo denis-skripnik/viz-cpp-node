@@ -297,13 +297,6 @@ namespace graphene { namespace chain {
                 auto now = _db.head_block_time();
 
                 if (itr == by_permlink_idx.end()) {
-                    if (o.parent_author == CHAIN_ROOT_POST_PARENT)
-                        FC_ASSERT((now - auth.last_root_post) >
-                                  CHAIN_MIN_ROOT_COMMENT_INTERVAL, "You may only post content once every 1 second.", ("now", now)("last_root_post", auth.last_root_post));
-                    else
-                        FC_ASSERT((now - auth.last_post) >
-                                  CHAIN_MIN_REPLY_INTERVAL, "You may only post subcontent once every 1 second.", ("now", now)("auth.last_post", auth.last_post));
-
                     db().modify(auth, [&](account_object &a) {
                         a.last_post = now;
                         if( o.parent_author == CHAIN_ROOT_POST_PARENT ) {
@@ -841,9 +834,6 @@ namespace graphene { namespace chain {
 
                 int64_t elapsed_seconds = (_db.head_block_time() -
                                            voter.last_vote_time).to_seconds();
-
-                FC_ASSERT(elapsed_seconds >=
-                          CHAIN_MIN_VOTE_INTERVAL_SEC, "Can only vote once every 1 second.");
 
                 int64_t regenerated_energy =
                         (CHAIN_100_PERCENT * elapsed_seconds) /
