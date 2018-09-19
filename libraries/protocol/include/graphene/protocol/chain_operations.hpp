@@ -668,8 +668,8 @@ namespace graphene { namespace protocol {
             uint32_t duration;
 
             void validate() const {
-            	FC_ASSERT(url.size() > 0, "URL size must be greater than 0");
-            	FC_ASSERT(url.size() < 256, "URL size must be lesser than 256");
+                FC_ASSERT(url.size() > 0, "URL size must be greater than 0");
+                FC_ASSERT(url.size() < 256, "URL size must be lesser than 256");
                 FC_ASSERT(required_amount_min.amount >= 0);
                 FC_ASSERT(required_amount_min.symbol == TOKEN_SYMBOL);
                 FC_ASSERT(required_amount_max.amount > required_amount_min.amount);
@@ -709,6 +709,44 @@ namespace graphene { namespace protocol {
 
             void get_required_posting_authorities(flat_set<account_name_type> &a) const {
                 a.insert(voter);
+            }
+        };
+
+
+        struct create_invite_operation : public base_operation {
+            account_name_type creator;
+            asset balance;
+            public_key_type invite_key;
+
+            void validate() const;
+
+            void get_required_active_authorities(flat_set<account_name_type> &a) const {
+                a.insert(creator);
+            }
+        };
+
+        struct claim_invite_balance_operation : public base_operation {
+            account_name_type initiator;
+            account_name_type receiver;
+            string invite_secret;
+
+            void validate() const;
+
+            void get_required_active_authorities(flat_set<account_name_type> &a) const {
+                a.insert(initiator);
+            }
+        };
+
+        struct invite_registration_operation : public base_operation {
+            account_name_type initiator;
+            account_name_type new_account_name;
+            string invite_secret;
+            public_key_type new_account_key;
+
+            void validate() const;
+
+            void get_required_active_authorities(flat_set<account_name_type> &a) const {
+                a.insert(initiator);
             }
         };
 } } // graphene::protocol
@@ -763,3 +801,6 @@ FC_REFLECT((graphene::protocol::chain_properties_update_operation), (owner)(prop
 FC_REFLECT((graphene::protocol::committee_worker_create_request_operation), (creator)(url)(worker)(required_amount_min)(required_amount_max)(duration));
 FC_REFLECT((graphene::protocol::committee_worker_cancel_request_operation), (creator)(request_id));
 FC_REFLECT((graphene::protocol::committee_vote_request_operation), (voter)(request_id)(vote_percent));
+FC_REFLECT((graphene::protocol::create_invite_operation), (creator)(balance)(invite_key));
+FC_REFLECT((graphene::protocol::claim_invite_balance_operation), (initiator)(receiver)(invite_secret));
+FC_REFLECT((graphene::protocol::invite_registration_operation), (initiator)(new_account_name)(invite_secret)(new_account_key));

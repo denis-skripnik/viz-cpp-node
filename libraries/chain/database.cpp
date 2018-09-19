@@ -19,6 +19,7 @@
 #include <graphene/chain/operation_notification.hpp>
 #include <graphene/chain/proposal_object.hpp>
 #include <graphene/chain/committee_objects.hpp>
+#include <graphene/chain/invite_objects.hpp>
 
 #include <fc/smart_ref_impl.hpp>
 
@@ -2332,6 +2333,9 @@ namespace graphene { namespace chain {
             _my->_evaluator_registry.register_evaluator<committee_worker_create_request_evaluator>();
             _my->_evaluator_registry.register_evaluator<committee_worker_cancel_request_evaluator>();
             _my->_evaluator_registry.register_evaluator<committee_vote_request_evaluator>();
+            _my->_evaluator_registry.register_evaluator<create_invite_evaluator>();
+            _my->_evaluator_registry.register_evaluator<claim_invite_balance_evaluator>();
+            _my->_evaluator_registry.register_evaluator<invite_registration_evaluator>();
         }
 
         void database::set_custom_operation_interpreter(const std::string &id, std::shared_ptr<custom_operation_interpreter> registry) {
@@ -2373,6 +2377,7 @@ namespace graphene { namespace chain {
             add_core_index<required_approval_index>(*this);
             add_core_index<committee_request_index>(*this);
             add_core_index<committee_vote_index>(*this);
+            add_core_index<invite_index>(*this);
 
             _plugin_index_signal();
         }
@@ -2499,18 +2504,27 @@ namespace graphene { namespace chain {
                     auth.posting.weight_threshold = 1;
                 });
 
-                create<account_object>([&](account_object &a) {
-                    a.name = CHAIN_TEMP_ACCOUNT;
+                // VIZ: invite account
+                public_key_type invite_public_key(CHAIN_INVITE_PUBLIC_KEY);
+                create<account_object>([&](account_object& a)
+                {
+                    a.name = CHAIN_INVITE_ACCOUNT;
+                    a.balance = asset(0, TOKEN_SYMBOL);
                 });
-#ifndef IS_LOW_MEM
-                create<account_metadata_object>([&](account_metadata_object& m) {
-                    m.account = CHAIN_TEMP_ACCOUNT;
+                ++bandwidth_reserve_candidates;
+
+                #ifndef IS_LOW_MEM
+                create< account_metadata_object >([&](account_metadata_object& m) {
+                    m.account = CHAIN_INVITE_ACCOUNT;
                 });
-#endif
-                create<account_authority_object>([&](account_authority_object &auth) {
-                    auth.account = CHAIN_TEMP_ACCOUNT;
-                    auth.owner.weight_threshold = 0;
-                    auth.active.weight_threshold = 0;
+                #endif
+
+                create<account_authority_object>([&](account_authority_object& auth)
+                {
+                    auth.account = CHAIN_INVITE_ACCOUNT;
+                    auth.owner.weight_threshold = 1;
+                    auth.active.add_authority( invite_public_key, 1 );
+                    auth.active.weight_threshold = 1;
                     auth.posting.weight_threshold = 1;
                 });
 

@@ -116,13 +116,15 @@
 /// Private key 5Hw9YPABaFxa2LooiANLrhUK5TPryy8f7v9Y1rk923PuYqbYdfC (committee viz sign)
 #define CHAIN_COMMITTEE_PUBLIC_KEY_STR        "VIZ6Yt7d6LsngBoXQr47aLv97bJVs7jyr7esZTM4UUSpLUf3nbRKS"
 #define CHAIN_COMMITTEE_PUBLIC_KEY            (graphene::protocol::public_key_type(CHAIN_COMMITTEE_PUBLIC_KEY_STR))
-
-/// Represents the canonical account with WILDCARD authority (anybody can access funds in temp account)
-#define CHAIN_TEMP_ACCOUNT                    "temp"
 /// Represents the canonical account with NO authority (nobody can access funds in committee account, all income transfers going to new anonymous sub-account)
 #define CHAIN_ANONYMOUS_ACCOUNT                    "anonymous"
 /// Represents the canonical account for specifying you will vote for directly (as opposed to a proxy)
 #define CHAIN_PROXY_TO_SELF_ACCOUNT           ""
+/// Represents the canonical account with ACTIVE authority for invite activity
+#define CHAIN_INVITE_ACCOUNT                    "invite"
+/// Private key 5KcfoRuDfkhrLCxVcE9x51J6KN9aM9fpb78tLrvvFckxVV6FyFW (invite viz active)
+#define CHAIN_INVITE_PUBLIC_KEY              "VIZ6LiKWipnNoBSDafStzSUgo9ihGawo25WW9kMvfTpGMwKp2qfG9"
+
 /// Represents the canonical root post parent account
 #define CHAIN_ROOT_POST_PARENT                (account_name_type())
 ///@}

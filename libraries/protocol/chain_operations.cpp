@@ -298,4 +298,21 @@ namespace graphene { namespace protocol {
             FC_ASSERT(vesting_shares.amount >= 0, "Delegation cannot be negative");
         }
 
+        void create_invite_operation::validate() const {
+            validate_account_name(creator);
+            FC_ASSERT(is_asset_type(balance, TOKEN_SYMBOL), "Invite creation balance must be TOKEN_SYMBOL");
+            FC_ASSERT(balance > asset(0, TOKEN_SYMBOL), "Invite creation balance must be nonzero amount");
+        }
+
+        void claim_invite_balance_operation::validate() const {
+            validate_account_name(initiator);
+            validate_account_name(receiver);
+        }
+
+        void invite_registration_operation::validate() const {
+            validate_account_name(initiator);
+            validate_account_name(new_account_name);
+            validate_domain_name(new_account_name, initiator);
+        }
+
 } } // graphene::protocol

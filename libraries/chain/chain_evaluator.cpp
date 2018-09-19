@@ -117,7 +117,7 @@ namespace graphene { namespace chain {
 
         void account_update_evaluator::do_apply(const account_update_operation &o) {
             database &_db = db();
-            FC_ASSERT(o.account != CHAIN_TEMP_ACCOUNT, "Cannot update temp account.");
+            FC_ASSERT(o.account != CHAIN_INVITE_ACCOUNT, "Cannot update invite account.");
 
             if (o.posting) {
                      o.posting->validate();
