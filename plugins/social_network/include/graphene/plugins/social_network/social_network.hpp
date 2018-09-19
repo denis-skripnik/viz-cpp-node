@@ -7,6 +7,7 @@
 #include <graphene/api/account_vote.hpp>
 #include <graphene/api/vote_state.hpp>
 #include <graphene/api/committee_api_object.hpp>
+#include <graphene/api/invite_api_object.hpp>
 
 namespace graphene { namespace plugins { namespace social_network {
     using plugins::json_rpc::msg_pack;
@@ -16,6 +17,7 @@ namespace graphene { namespace plugins { namespace social_network {
     using graphene::api::content_api_object;
     using graphene::api::committee_api_object;
     using graphene::api::committee_vote_state;
+    using graphene::api::invite_api_object;
     using namespace graphene::chain;
 
     DEFINE_API_ARGS(get_content,                msg_pack, discussion)
@@ -27,6 +29,9 @@ namespace graphene { namespace plugins { namespace social_network {
     DEFINE_API_ARGS(get_committee_request,      msg_pack, committee_api_object)
     DEFINE_API_ARGS(get_committee_request_votes,msg_pack, std::vector<committee_vote_state>)
     DEFINE_API_ARGS(get_committee_requests_list,msg_pack, std::vector<uint16_t>)
+    DEFINE_API_ARGS(get_invites_list,           msg_pack, std::vector<int64_t>)
+    DEFINE_API_ARGS(get_invite_by_id,           msg_pack, invite_api_object)
+    DEFINE_API_ARGS(get_invite_by_key,          msg_pack, invite_api_object)
 
     class social_network final: public appbase::plugin<social_network> {
     public:
@@ -45,6 +50,9 @@ namespace graphene { namespace plugins { namespace social_network {
             (get_committee_request)
             (get_committee_request_votes)
             (get_committee_requests_list)
+            (get_invites_list)
+            (get_invite_by_id)
+            (get_invite_by_key)
         )
 
         social_network();

@@ -10,6 +10,7 @@ list(APPEND CURRENT_TARGET_HEADERS
     include/graphene/api/account_vote.hpp
     include/graphene/api/discussion_helper.hpp
     include/graphene/api/committee_api_object.hpp
+    include/graphene/api/invite_api_object.hpp
 )
 
 list(APPEND CURRENT_TARGET_SOURCES
@@ -19,6 +20,7 @@ list(APPEND CURRENT_TARGET_SOURCES
     chain_api_properties.cpp
     witness_api_object.cpp
     committee_api_object.cpp
+    invite_api_object.cpp
 )
 
 if(BUILD_SHARED_LIBRARIES)
