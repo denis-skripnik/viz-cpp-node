@@ -47,6 +47,7 @@ namespace graphene { namespace chain {
         if(itr->status == 0){
             _db.modify(*itr, [&](invite_object& c) {
                 c.status = 1;
+                c.invite_secret.append(o.invite_secret.c_str());
                 c.receiver = o.receiver;
                 c.claimed_balance=c.balance;
                 c.balance=asset(0, TOKEN_SYMBOL);
@@ -94,6 +95,7 @@ namespace graphene { namespace chain {
         	_db.create_vesting(new_account, itr->balance);
             _db.modify(*itr, [&](invite_object& c) {
                 c.status = 2;
+                c.invite_secret.append(o.invite_secret.c_str());
                 c.receiver = o.new_account_name;
                 c.claimed_balance=c.balance;
                 c.balance=asset(0, TOKEN_SYMBOL);
