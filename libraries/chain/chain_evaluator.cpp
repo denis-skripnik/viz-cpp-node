@@ -867,8 +867,10 @@ namespace graphene { namespace chain {
                     (uint128_t(voter.effective_vesting_shares().amount.value) * used_energy) /
                     (CHAIN_100_PERCENT)).to_uint64();
 
-                FC_ASSERT(abs_rshares > 1000000 || o.weight ==
-                                                    0, "Voting weight is too small, please accumulate more Shares");
+                // Consensus by median props - vote accounting affects only with abs_rshares greater than vote_accounting_min_rshares
+                if(abs_rshares < int64_t(median_props.vote_accounting_min_rshares)){
+                    abs_rshares=0;
+                }
 
                 // Lazily delete vote
                 if (itr != content_vote_idx.end() && itr->num_changes == -1) {
@@ -889,8 +891,6 @@ namespace graphene { namespace chain {
                                   _db.calculate_discussion_payout_time(content) - CHAIN_UPVOTE_LOCKOUT,
                                   "Cannot increase reward of post within the last minute before payout.");
                     }
-
-                    FC_ASSERT(abs_rshares > 0, "Cannot vote with 0 rshares.");
 
                     if(voter.awarded_rshares >= static_cast< uint64_t >(abs_rshares)){
                         _db.modify(voter, [&](account_object &a) {

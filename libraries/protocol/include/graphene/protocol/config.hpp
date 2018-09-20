@@ -104,6 +104,7 @@
 #define COMMITTEE_REQUEST_PROCESSING          (CHAIN_BLOCKS_PER_HOUR/6) //every 10 minutes
 
 #define CONSENSUS_FLAG_ENERGY_ADDITIONAL_COST 0
+#define CONSENSUS_VOTE_ACCOUNTING_MIN_RSHARES uint32_t(5000000)
 
 /**
  *  Reserved Account IDs with special meaning

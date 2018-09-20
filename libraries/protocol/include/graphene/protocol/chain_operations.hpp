@@ -397,6 +397,11 @@ namespace graphene { namespace protocol {
              */
             int16_t flag_energy_additional_cost = CONSENSUS_FLAG_ENERGY_ADDITIONAL_COST;
 
+            /**
+             *  Consensus - Minimal vote rshares amount for accounting by payout from reward pool
+             */
+            uint32_t vote_accounting_min_rshares = CONSENSUS_VOTE_ACCOUNTING_MIN_RSHARES;
+
             void validate() const {
                 FC_ASSERT(account_creation_fee.amount >= CHAIN_MIN_ACCOUNT_CREATION_FEE);
                 FC_ASSERT(account_creation_fee.symbol == TOKEN_SYMBOL);
