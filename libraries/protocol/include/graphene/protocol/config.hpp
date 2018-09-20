@@ -44,7 +44,6 @@
 #define CHAIN_MAX_WITHDRAW_ROUTES             10
 #define CHAIN_ENERGY_REGENERATION_SECONDS     (5*60*60*24) // 5 days
 #define CHAIN_MAX_VOTE_CHANGES                5
-#define CHAIN_UPVOTE_LOCKOUT                  (fc::minutes(1))
 #define CHAIN_MAX_COMMENT_BENEFICIARIES       64
 #define CHAIN_VOTE_ENERGY_RATE                1
 

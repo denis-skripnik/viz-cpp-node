@@ -886,12 +886,6 @@ namespace graphene { namespace chain {
                     /// this is the rshares voting for or against the post
                     int64_t rshares = o.weight < 0 ? -abs_rshares : abs_rshares;
 
-                    if (rshares > 0) {
-                        FC_ASSERT(_db.head_block_time() <
-                                  _db.calculate_discussion_payout_time(content) - CHAIN_UPVOTE_LOCKOUT,
-                                  "Cannot increase reward of post within the last minute before payout.");
-                    }
-
                     if(voter.awarded_rshares >= static_cast< uint64_t >(abs_rshares)){
                         _db.modify(voter, [&](account_object &a) {
                             a.awarded_rshares -= static_cast< uint64_t >(abs_rshares);
@@ -980,12 +974,6 @@ namespace graphene { namespace chain {
 
                     /// this is the rshares voting for or against the post
                     int64_t rshares = o.weight < 0 ? -abs_rshares : abs_rshares;
-
-                    if (itr->rshares < rshares) {
-                        FC_ASSERT(_db.head_block_time() <
-                                  _db.calculate_discussion_payout_time(content) - CHAIN_UPVOTE_LOCKOUT,
-                                  "Cannot increase reward of post within the last minute before payout.");
-                    }
 
                     _db.modify(voter, [&](account_object &a) {
                     	if(itr->vote_percent < o.weight){
