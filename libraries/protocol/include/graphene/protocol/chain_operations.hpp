@@ -402,6 +402,11 @@ namespace graphene { namespace protocol {
              */
             uint32_t vote_accounting_min_rshares = CONSENSUS_VOTE_ACCOUNTING_MIN_RSHARES;
 
+            /**
+             *  Consensus - Minimal shares percent for approving committee request
+             */
+            int16_t committee_request_approve_min_percent = CONSENSUS_COMMITTEE_REQUEST_APPROVE_MIN_PERCENT;
+
             void validate() const {
                 FC_ASSERT(account_creation_fee.amount >= CHAIN_MIN_ACCOUNT_CREATION_FEE);
                 FC_ASSERT(account_creation_fee.symbol == TOKEN_SYMBOL);
@@ -421,6 +426,8 @@ namespace graphene { namespace protocol {
                 FC_ASSERT(bandwidth_reserve_below.symbol == SHARES_SYMBOL);
                 FC_ASSERT(flag_energy_additional_cost >= 0);
                 FC_ASSERT(flag_energy_additional_cost <= CHAIN_100_PERCENT);
+                FC_ASSERT(committee_request_approve_min_percent >= 0);
+                FC_ASSERT(committee_request_approve_min_percent <= CHAIN_100_PERCENT);
             }
 
             chain_properties& operator=(const chain_properties&) = default;
@@ -762,7 +769,10 @@ FC_REFLECT(
     (account_creation_fee)(maximum_block_size)
     (create_account_delegation_ratio)
     (create_account_delegation_time)(min_delegation)
-    (min_curation_percent)(max_curation_percent))
+    (min_curation_percent)(max_curation_percent)
+    (bandwidth_reserve_percent)(bandwidth_reserve_below)
+    (flag_energy_additional_cost)(vote_accounting_min_rshares)
+    (committee_request_approve_min_percent))
 
 FC_REFLECT((graphene::protocol::account_create_operation),
     (fee)(delegation)(creator)(new_account_name)(owner)(active)(posting)(memo_key)(json_metadata)(referrer)(extensions));
