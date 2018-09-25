@@ -1307,7 +1307,9 @@ namespace graphene { namespace chain {
             const auto &widx = get_index<account_index>().indices().get<by_id>();
             for (auto itr = widx.begin(); itr != widx.end(); ++itr) {
                 if(itr->effective_vesting_shares().amount.value < consensus.median_props.bandwidth_reserve_below.amount.value){
-                    ++bandwidth_reserve_candidates;
+                    if(time_point_sec(itr->last_bandwidth_update + CHAIN_BANDWIDTH_RESERVE_ACTIVE_TIME) >= head_block_time()){
+	                    ++bandwidth_reserve_candidates;
+	                }
                 }
             }
             modify(gprops, [&](dynamic_global_property_object &dgp) {
