@@ -1862,8 +1862,8 @@ namespace graphene { namespace chain {
             } else {
                 const auto &cprops = get_dynamic_global_properties();
                 modify(cprops, [&](dynamic_global_property_object &p) {
-                    p.total_reward_shares2 -= old_rshares2;
-                    p.total_reward_shares2 += new_rshares2;
+                    p.total_reward_shares -= old_rshares2;
+                    p.total_reward_shares += new_rshares2;
                 });
             }
         }
@@ -2232,7 +2232,7 @@ namespace graphene { namespace chain {
 
                 u256 rs(rshares.value);
                 u256 rf(props.total_reward_fund.amount.value);
-                u256 total_rshares2 = to256(props.total_reward_shares2);
+                u256 total_rshares2 = to256(props.total_reward_shares);
 
                 u256 rs2 = to256(rshares.value);
 

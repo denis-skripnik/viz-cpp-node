@@ -46,7 +46,7 @@ namespace graphene {
             asset total_vesting_fund = asset(0, TOKEN_SYMBOL);
             asset total_vesting_shares = asset(0, SHARES_SYMBOL);
             asset total_reward_fund = asset(0, TOKEN_SYMBOL);
-            fc::uint128_t total_reward_shares2; ///< the running total of REWARD^2
+            fc::uint128_t total_reward_shares;
 
             price get_vesting_share_price() const {
                 if (total_vesting_fund.amount == 0 ||
@@ -150,7 +150,7 @@ FC_REFLECT((graphene::chain::dynamic_global_property_object),
                 (total_vesting_fund)
                 (total_vesting_shares)
                 (total_reward_fund)
-                (total_reward_shares2)
+                (total_reward_shares)
                 (average_block_size)
                 (maximum_block_size)
                 (current_aslot)
