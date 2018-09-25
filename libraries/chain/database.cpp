@@ -1852,13 +1852,13 @@ namespace graphene { namespace chain {
  * This method recursively tallies children_rshares2 for this post plus all of its parents,
  * TODO: this method can be skipped for validation-only nodes
  */
-        void database::adjust_rshares2(const content_object &c, fc::uint128_t old_rshares2, fc::uint128_t new_rshares2) {
+        void database::adjust_rshares(const content_object &c, fc::uint128_t old_rshares2, fc::uint128_t new_rshares2) {
             modify(c, [&](content_object &content) {
                 content.children_rshares2 -= old_rshares2;
                 content.children_rshares2 += new_rshares2;
             });
             if (c.depth) {
-                adjust_rshares2(get_content(c.parent_author, c.parent_permlink), old_rshares2, new_rshares2);
+                adjust_rshares(get_content(c.parent_author, c.parent_permlink), old_rshares2, new_rshares2);
             } else {
                 const auto &cprops = get_dynamic_global_properties();
                 modify(cprops, [&](dynamic_global_property_object &p) {
@@ -2125,7 +2125,7 @@ namespace graphene { namespace chain {
                     }
 
                     fc::uint128_t old_rshares2 = content.net_rshares.value;
-                    adjust_rshares2(content, old_rshares2, 0);
+                    adjust_rshares(content, old_rshares2, 0);
                 }
 
                 modify(content, [&](content_object &c) {

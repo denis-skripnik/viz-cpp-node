@@ -965,7 +965,7 @@ namespace graphene { namespace chain {
                             });
                         }
 
-                        _db.adjust_rshares2(content, old_rshares, new_rshares);
+                        _db.adjust_rshares(content, old_rshares, new_rshares);
                     }
                 } else {
                     FC_ASSERT(itr->num_changes <
@@ -1022,7 +1022,7 @@ namespace graphene { namespace chain {
                         cv.num_changes += 1;
                     });
 
-                    _db.adjust_rshares2(content, old_rshares, new_rshares);
+                    _db.adjust_rshares(content, old_rshares, new_rshares);
                 }
 
             } FC_CAPTURE_AND_RETHROW((o))
