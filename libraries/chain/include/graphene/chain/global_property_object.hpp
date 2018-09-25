@@ -40,7 +40,7 @@ namespace graphene {
             time_point_sec time;
             account_name_type current_witness;
 
-            asset committee_supply = asset(0, TOKEN_SYMBOL);
+            asset committee_fund = asset(0, TOKEN_SYMBOL);
             uint32_t committee_requests = 0;
             asset current_supply = asset(0, TOKEN_SYMBOL);
             asset confidential_supply = asset(0, TOKEN_SYMBOL); ///< total asset held in confidential balances
@@ -145,7 +145,7 @@ FC_REFLECT((graphene::chain::dynamic_global_property_object),
                 (genesis_time)
                 (time)
                 (current_witness)
-                (committee_supply)
+                (committee_fund)
                 (committee_requests)
                 (current_supply)
                 (confidential_supply)

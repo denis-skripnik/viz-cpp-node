@@ -1383,7 +1383,7 @@ namespace graphene { namespace chain {
             }
 
             const auto &dgp = get_dynamic_global_properties();
-            asset max_payment_per_request=asset(dgp.committee_supply.amount/committee_payment_request_count, TOKEN_SYMBOL);
+            asset max_payment_per_request=asset(dgp.committee_fund.amount/committee_payment_request_count, TOKEN_SYMBOL);
 
             const auto &idx3 = get_index<committee_request_index>().indices().get<by_status>();
             auto itr = idx3.lower_bound(3);
@@ -1397,7 +1397,7 @@ namespace graphene { namespace chain {
                     w.balance += current_payment;
                 });
                 modify(dgp, [&](dynamic_global_property_object& dgpo) {
-                    dgpo.committee_supply.amount -= current_payment;
+                    dgpo.committee_fund.amount -= current_payment;
                 });
                 push_virtual_operation(committee_pay_request_operation(cur_request.worker, cur_request.request_id, asset(current_payment, TOKEN_SYMBOL)));
                 modify(cur_request, [&](committee_request_object& c) {
@@ -1843,7 +1843,7 @@ namespace graphene { namespace chain {
             if (total_tokens.amount > 0) {
                 burn_asset(-total_tokens);
                 modify(gpo, [&](dynamic_global_property_object &g) {
-                    g.committee_supply += total_tokens;
+                    g.committee_fund += total_tokens;
                 });
             }
         }
@@ -2211,7 +2211,7 @@ namespace graphene { namespace chain {
             modify( props, [&]( dynamic_global_property_object& p )
             {
                p.total_vesting_fund += asset( vesting_reward, TOKEN_SYMBOL );
-               p.committee_supply += asset( committee_reward, TOKEN_SYMBOL );
+               p.committee_fund += asset( committee_reward, TOKEN_SYMBOL );
                p.total_reward_fund += asset( content_reward, TOKEN_SYMBOL );
                p.current_supply += asset( inflation_per_block, TOKEN_SYMBOL );
             });
@@ -2597,7 +2597,7 @@ namespace graphene { namespace chain {
                     p.current_witness = CHAIN_COMMITTEE_ACCOUNT;
                     p.recent_slots_filled = fc::uint128_t::max_value();
                     p.participation_count = 128;
-                    p.committee_supply = asset(0, TOKEN_SYMBOL);
+                    p.committee_fund = asset(0, TOKEN_SYMBOL);
                     p.current_supply = asset(init_supply, TOKEN_SYMBOL);
                     p.maximum_block_size = CHAIN_BLOCK_SIZE;
                     p.bandwidth_reserve_candidates = bandwidth_reserve_candidates;
