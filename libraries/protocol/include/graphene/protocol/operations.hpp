@@ -63,7 +63,12 @@ namespace graphene { namespace protocol {
                 committee_payout_request_operation,
                 committee_pay_request_operation,
 
-                witness_reward_operation
+                witness_reward_operation,
+
+                // VIZ Invite operations:
+                create_invite_operation,
+                claim_invite_balance_operation,
+                invite_registration_operation
         > operation;
 
         /*void operation_get_required_authorities( const operation& op,

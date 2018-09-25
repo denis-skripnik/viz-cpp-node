@@ -66,7 +66,8 @@ namespace graphene { namespace chain {
             proposal_object_type,
             required_approval_object_type,
             committee_request_object_type,
-            committee_vote_object_type
+            committee_vote_object_type,
+            invite_object_type
         };
 
         class dynamic_global_property_object;
@@ -95,6 +96,7 @@ namespace graphene { namespace chain {
         class proposal_object;
         class committee_request_object;
         class committee_vote_object;
+        class invite_object;
 
         typedef object_id<dynamic_global_property_object> dynamic_global_property_id_type;
         typedef object_id<account_object> account_id_type;
@@ -121,6 +123,7 @@ namespace graphene { namespace chain {
         typedef object_id<required_approval_object> required_approval_object_id_type;
         typedef object_id<committee_request_object> committee_request_object_id_type;
         typedef object_id<committee_vote_object> committee_vote_object_id_type;
+        typedef object_id<invite_object> invite_object_id_type;
 
 } } //graphene::chain
 
@@ -211,6 +214,7 @@ FC_REFLECT_ENUM(graphene::chain::object_type,
                 (required_approval_object_type)
                 (committee_request_object_type)
                 (committee_vote_object_type)
+                (invite_object_type)
 )
 
 FC_REFLECT_TYPENAME((graphene::chain::shared_string))

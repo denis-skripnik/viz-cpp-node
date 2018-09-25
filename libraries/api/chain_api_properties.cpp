@@ -13,13 +13,10 @@ namespace graphene { namespace api {
         min_curation_percent(src.min_curation_percent),
         max_curation_percent(src.max_curation_percent),
         bandwidth_reserve_percent(src.bandwidth_reserve_percent),
-        bandwidth_reserve_below(src.bandwidth_reserve_below)
-    {
-        create_account_delegation_ratio = src.create_account_delegation_ratio;
-        create_account_delegation_time = src.create_account_delegation_time;
-        min_delegation = src.min_delegation;
-        min_curation_percent = src.min_curation_percent;
-        max_curation_percent = src.max_curation_percent;
-    }
+        bandwidth_reserve_below(src.bandwidth_reserve_below),
+        flag_energy_additional_cost(src.flag_energy_additional_cost),
+        vote_accounting_min_rshares(src.vote_accounting_min_rshares),
+        committee_request_approve_min_percent(src.committee_request_approve_min_percent)
+    {}
 
 } } // graphene::api

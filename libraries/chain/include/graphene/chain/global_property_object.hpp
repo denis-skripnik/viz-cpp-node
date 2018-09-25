@@ -40,14 +40,13 @@ namespace graphene {
             time_point_sec time;
             account_name_type current_witness;
 
-            asset committee_supply = asset(0, TOKEN_SYMBOL);
+            asset committee_fund = asset(0, TOKEN_SYMBOL);
             uint32_t committee_requests = 0;
             asset current_supply = asset(0, TOKEN_SYMBOL);
-            asset confidential_supply = asset(0, TOKEN_SYMBOL); ///< total asset held in confidential balances
             asset total_vesting_fund = asset(0, TOKEN_SYMBOL);
             asset total_vesting_shares = asset(0, SHARES_SYMBOL);
             asset total_reward_fund = asset(0, TOKEN_SYMBOL);
-            fc::uint128_t total_reward_shares2; ///< the running total of REWARD^2
+            fc::uint128_t total_reward_shares;
 
             price get_vesting_share_price() const {
                 if (total_vesting_fund.amount == 0 ||
@@ -145,14 +144,13 @@ FC_REFLECT((graphene::chain::dynamic_global_property_object),
                 (genesis_time)
                 (time)
                 (current_witness)
-                (committee_supply)
+                (committee_fund)
                 (committee_requests)
                 (current_supply)
-                (confidential_supply)
                 (total_vesting_fund)
                 (total_vesting_shares)
                 (total_reward_fund)
-                (total_reward_shares2)
+                (total_reward_shares)
                 (average_block_size)
                 (maximum_block_size)
                 (current_aslot)

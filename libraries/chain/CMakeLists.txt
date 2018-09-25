@@ -21,6 +21,7 @@ if(BUILD_SHARED_LIBRARIES)
             fork_database.cpp
 
             chain_evaluator.cpp
+            invite_evaluator.cpp
 
             chain_objects.cpp
             shared_authority.cpp
@@ -31,6 +32,7 @@ if(BUILD_SHARED_LIBRARIES)
             database_proposal_object.cpp
             chain_properties_evaluators.cpp
             committee_evaluator.cpp
+            invite_evaluator.cpp
 
             include/graphene/chain/account_object.hpp
             include/graphene/chain/block_log.hpp
@@ -59,6 +61,7 @@ if(BUILD_SHARED_LIBRARIES)
             include/graphene/chain/transaction_object.hpp
             include/graphene/chain/witness_objects.hpp
             include/graphene/chain/committee_objects.hpp
+            include/graphene/chain/invite_objects.hpp
 
             ${hardfork_hpp_file}
             "${CMAKE_CURRENT_BINARY_DIR}/include/graphene/chain/hardfork.hpp"
@@ -81,6 +84,7 @@ else()
             database_proposal_object.cpp
             chain_properties_evaluators.cpp
             committee_evaluator.cpp
+            invite_evaluator.cpp
 
             include/graphene/chain/account_object.hpp
             include/graphene/chain/block_log.hpp
@@ -109,14 +113,15 @@ else()
             include/graphene/chain/transaction_object.hpp
             include/graphene/chain/witness_objects.hpp
             include/graphene/chain/committee_objects.hpp
+            include/graphene/chain/invite_objects.hpp
 
             ${hardfork_hpp_file}
             "${CMAKE_CURRENT_BINARY_DIR}/include/graphene/chain/hardfork.hpp"
             )
 endif()
 
-add_dependencies(graphene_chain graphene_protocol build_hardfork_hpp)
-target_link_libraries(graphene_chain graphene_protocol fc chainbase appbase ${PATCH_MERGE_LIB})
+add_dependencies(graphene_chain graphene_protocol graphene_utilities build_hardfork_hpp)
+target_link_libraries(graphene_chain graphene_protocol graphene_utilities fc chainbase appbase ${PATCH_MERGE_LIB})
 target_include_directories(graphene_chain PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include" "${CMAKE_CURRENT_BINARY_DIR}/include")
 
 if(MSVC)

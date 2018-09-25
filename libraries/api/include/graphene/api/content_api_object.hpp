@@ -32,7 +32,7 @@ namespace graphene { namespace api {
         uint8_t depth;
         uint32_t children;
 
-        uint128_t children_rshares2;
+        uint128_t children_rshares;
 
         share_type net_rshares;
         share_type abs_rshares;
@@ -62,7 +62,7 @@ namespace graphene { namespace api {
 FC_REFLECT(
     (graphene::api::content_api_object),
     (id)(author)(permlink)(parent_author)(parent_permlink)(title)(body)(json_metadata)(last_update)
-    (created)(active)(last_payout)(depth)(children)(children_rshares2)(net_rshares)(abs_rshares)
+    (created)(active)(last_payout)(depth)(children)(children_rshares)(net_rshares)(abs_rshares)
     (vote_rshares)(cashout_time)(total_vote_weight)(curation_percent)(consensus_curation_percent)
     (payout_value)(shares_payout_value)(curator_payout_value)(beneficiary_payout_value)(author_rewards)(net_votes)
     (root_content)(beneficiaries))

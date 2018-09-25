@@ -134,16 +134,16 @@ namespace graphene { namespace api {
         const auto& props = db.get_dynamic_global_properties();
         asset pot = props.total_reward_fund;
 
-        u256 total_r2 = to256(props.total_reward_shares2);
+        u256 total_r2 = to256(props.total_reward_shares);
 
-        if (props.total_reward_shares2 > 0) {
+        if (props.total_reward_shares > 0) {
             auto vshares = d.net_rshares.value > 0 ? d.net_rshares.value : 0;
 
             u256 r2 = to256(vshares); //to256(abs_net_rshares);
             r2 *= pot.amount.value;
             r2 /= total_r2;
 
-            u256 tpp = to256(d.children_rshares2);
+            u256 tpp = to256(d.children_rshares);
             tpp *= pot.amount.value;
             tpp /= total_r2;
 

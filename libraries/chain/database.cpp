@@ -19,6 +19,7 @@
 #include <graphene/chain/operation_notification.hpp>
 #include <graphene/chain/proposal_object.hpp>
 #include <graphene/chain/committee_objects.hpp>
+#include <graphene/chain/invite_objects.hpp>
 
 #include <fc/smart_ref_impl.hpp>
 
@@ -1306,7 +1307,9 @@ namespace graphene { namespace chain {
             const auto &widx = get_index<account_index>().indices().get<by_id>();
             for (auto itr = widx.begin(); itr != widx.end(); ++itr) {
                 if(itr->effective_vesting_shares().amount.value < consensus.median_props.bandwidth_reserve_below.amount.value){
-                    ++bandwidth_reserve_candidates;
+                    if(time_point_sec(itr->last_bandwidth_update + CHAIN_BANDWIDTH_RESERVE_ACTIVE_TIME) >= head_block_time()){
+	                    ++bandwidth_reserve_candidates;
+	                }
                 }
             }
             modify(gprops, [&](dynamic_global_property_object &dgp) {
@@ -1315,6 +1318,8 @@ namespace graphene { namespace chain {
         }
 
         void database::committee_processing() {
+            const auto &props = get_dynamic_global_properties();
+            const witness_schedule_object &consensus = get_witness_schedule_object();
             const auto &idx0 = get_index<committee_request_index>().indices().get<by_status>();
             auto itr0 = idx0.lower_bound(0);
             while (itr0 != idx0.end() &&
@@ -1325,6 +1330,7 @@ namespace graphene { namespace chain {
                     share_type max_rshares = 0;
                     share_type actual_rshares = 0;
                     share_type calculated_payment = 0;
+                    share_type approve_min_shares = 0;
                     const auto &vote_idx = get_index<committee_vote_index>().indices().get<by_request_id>();
                     auto vote_itr = vote_idx.lower_bound(cur_request.request_id);
                     while (vote_itr != vote_idx.end() &&
@@ -1335,44 +1341,54 @@ namespace graphene { namespace chain {
                         max_rshares+=voter_account.effective_vesting_shares().amount.value;
                         actual_rshares+=voter_account.effective_vesting_shares().amount.value*cur_vote.vote_percent/CHAIN_100_PERCENT;
                     }
-                    calculated_payment=cur_request.required_amount_max.amount*actual_rshares/max_rshares;
-                    asset conclusion_payout_amount = asset(calculated_payment, TOKEN_SYMBOL);
-                    if(cur_request.required_amount_min.amount > conclusion_payout_amount.amount){
+                    approve_min_shares=props.total_vesting_shares.amount * consensus.median_props.committee_request_approve_min_percent / CHAIN_100_PERCENT;
+                    if(approve_min_shares <= max_rshares){
                         modify(cur_request, [&](committee_request_object &c) {
-                            c.conclusion_payout_amount=conclusion_payout_amount;
                             c.conclusion_time = head_block_time();
                             c.status = 2;
                         });
                         push_virtual_operation(committee_cancel_request_operation(cur_request.request_id));
                     }
                     else{
-                        modify(cur_request, [&](committee_request_object &c) {
-                            c.conclusion_payout_amount=conclusion_payout_amount;
-                            c.conclusion_time = head_block_time();
-                            c.remain_payout_amount=conclusion_payout_amount;
-                            c.status = 3;
-                        });
-                        push_virtual_operation(committee_approve_request_operation(cur_request.request_id));
-                    }
+	                    calculated_payment=cur_request.required_amount_max.amount*actual_rshares/max_rshares;
+	                    asset conclusion_payout_amount = asset(calculated_payment, TOKEN_SYMBOL);
+	                    if(cur_request.required_amount_min.amount > conclusion_payout_amount.amount){
+	                        modify(cur_request, [&](committee_request_object &c) {
+	                            c.conclusion_payout_amount=conclusion_payout_amount;
+	                            c.conclusion_time = head_block_time();
+	                            c.status = 3;
+	                        });
+	                        push_virtual_operation(committee_cancel_request_operation(cur_request.request_id));
+	                    }
+	                    else{
+	                        modify(cur_request, [&](committee_request_object &c) {
+	                            c.conclusion_payout_amount=conclusion_payout_amount;
+	                            c.conclusion_time = head_block_time();
+	                            c.remain_payout_amount=conclusion_payout_amount;
+	                            c.status = 4;
+	                        });
+	                        push_virtual_operation(committee_approve_request_operation(cur_request.request_id));
+	                    }
+	                }
                 }
             }
             if ((head_block_num() % COMMITTEE_REQUEST_PROCESSING ) != 0) return;
             uint32_t committee_payment_request_count = 1;
-            const auto &idx3_count = get_index<committee_request_index>().indices().get<by_status>();
-            auto itr3 = idx3_count.lower_bound(3);
-            while (itr3 != idx3_count.end() &&
-                   itr3->status == 3) {
+            const auto &idx4_count = get_index<committee_request_index>().indices().get<by_status>();
+            auto itr3 = idx4_count.lower_bound(4);
+            while (itr3 != idx4_count.end() &&
+                   itr3->status == 4) {
                 committee_payment_request_count++;
                 ++itr3;
             }
 
             const auto &dgp = get_dynamic_global_properties();
-            asset max_payment_per_request=asset(dgp.committee_supply.amount/committee_payment_request_count, TOKEN_SYMBOL);
+            asset max_payment_per_request=asset(dgp.committee_fund.amount/committee_payment_request_count, TOKEN_SYMBOL);
 
-            const auto &idx3 = get_index<committee_request_index>().indices().get<by_status>();
-            auto itr = idx3.lower_bound(3);
-            while (itr != idx3.end() &&
-                   itr->status == 3) {
+            const auto &idx4 = get_index<committee_request_index>().indices().get<by_status>();
+            auto itr = idx4.lower_bound(4);
+            while (itr != idx4.end() &&
+                   itr->status == 4) {
                 const auto &cur_request = *itr;
                 ++itr;
                 share_type current_payment=std::min(max_payment_per_request.amount, cur_request.remain_payout_amount.amount).value;//int64
@@ -1381,7 +1397,7 @@ namespace graphene { namespace chain {
                     w.balance += current_payment;
                 });
                 modify(dgp, [&](dynamic_global_property_object& dgpo) {
-                    dgpo.committee_supply.amount -= current_payment;
+                    dgpo.committee_fund.amount -= current_payment;
                 });
                 push_virtual_operation(committee_pay_request_operation(cur_request.worker, cur_request.request_id, asset(current_payment, TOKEN_SYMBOL)));
                 modify(cur_request, [&](committee_request_object& c) {
@@ -1389,7 +1405,7 @@ namespace graphene { namespace chain {
                     c.remain_payout_amount.amount -= current_payment;
                     c.last_payout_time = head_block_time();
                     if(c.remain_payout_amount.amount.value<=0){
-                        c.status = 4;
+                        c.status = 5;
                         c.payout_time = head_block_time();
                         push_virtual_operation(committee_payout_request_operation(cur_request.request_id));
                     }
@@ -1627,6 +1643,9 @@ namespace graphene { namespace chain {
             calc_median(&chain_properties::min_curation_percent);
             calc_median(&chain_properties::bandwidth_reserve_percent);
             calc_median(&chain_properties::bandwidth_reserve_below);
+            calc_median(&chain_properties::flag_energy_additional_cost);
+            calc_median(&chain_properties::vote_accounting_min_rshares);
+            calc_median(&chain_properties::committee_request_approve_min_percent);
 
             modify(wso, [&](witness_schedule_object &_wso) {
                 _wso.median_props = median_props;
@@ -1824,27 +1843,27 @@ namespace graphene { namespace chain {
             if (total_tokens.amount > 0) {
                 burn_asset(-total_tokens);
                 modify(gpo, [&](dynamic_global_property_object &g) {
-                    g.committee_supply += total_tokens;
+                    g.committee_fund += total_tokens;
                 });
             }
         }
 
 /**
- * This method recursively tallies children_rshares2 for this post plus all of its parents,
+ * This method recursively tallies children_rshares for this post plus all of its parents,
  * TODO: this method can be skipped for validation-only nodes
  */
-        void database::adjust_rshares2(const content_object &c, fc::uint128_t old_rshares2, fc::uint128_t new_rshares2) {
+        void database::adjust_rshares(const content_object &c, fc::uint128_t old_rshares, fc::uint128_t new_rshares) {
             modify(c, [&](content_object &content) {
-                content.children_rshares2 -= old_rshares2;
-                content.children_rshares2 += new_rshares2;
+                content.children_rshares -= old_rshares;
+                content.children_rshares += new_rshares;
             });
             if (c.depth) {
-                adjust_rshares2(get_content(c.parent_author, c.parent_permlink), old_rshares2, new_rshares2);
+                adjust_rshares(get_content(c.parent_author, c.parent_permlink), old_rshares, new_rshares);
             } else {
                 const auto &cprops = get_dynamic_global_properties();
                 modify(cprops, [&](dynamic_global_property_object &p) {
-                    p.total_reward_shares2 -= old_rshares2;
-                    p.total_reward_shares2 += new_rshares2;
+                    p.total_reward_shares -= old_rshares;
+                    p.total_reward_shares += new_rshares;
                 });
             }
         }
@@ -2105,8 +2124,8 @@ namespace graphene { namespace chain {
 
                     }
 
-                    fc::uint128_t old_rshares2 = content.net_rshares.value;
-                    adjust_rshares2(content, old_rshares2, 0);
+                    fc::uint128_t old_rshares = content.net_rshares.value;
+                    adjust_rshares(content, old_rshares, 0);
                 }
 
                 modify(content, [&](content_object &c) {
@@ -2176,7 +2195,7 @@ namespace graphene { namespace chain {
             /*ilog( "Inflation status: props.head_block_number=${h1}, inflation_per_year=${h2}, new_supply=${h3}, inflation_per_block=${h4}",
                ("h1",props.head_block_number)("h2", inflation_per_year)("h3",new_supply)("h4",inflation_per_block)
             );*/
-            auto content_reward = ( inflation_per_block * CHAIN_CONTENT_REWARD_PERCENT ) / CHAIN_100_PERCENT;
+            auto content_reward = ( inflation_per_block * CHAIN_REWARD_FUND_PERCENT ) / CHAIN_100_PERCENT;
             auto vesting_reward = ( inflation_per_block * CHAIN_VESTING_FUND_PERCENT ) / CHAIN_100_PERCENT; /// 15% to vesting fund
             auto committee_reward = ( inflation_per_block * CHAIN_COMMITTEE_FUND_PERCENT ) / CHAIN_100_PERCENT;
             auto witness_reward = inflation_per_block - content_reward - vesting_reward - committee_reward; /// Remaining 10% to witness pay
@@ -2192,7 +2211,7 @@ namespace graphene { namespace chain {
             modify( props, [&]( dynamic_global_property_object& p )
             {
                p.total_vesting_fund += asset( vesting_reward, TOKEN_SYMBOL );
-               p.committee_supply += asset( committee_reward, TOKEN_SYMBOL );
+               p.committee_fund += asset( committee_reward, TOKEN_SYMBOL );
                p.total_reward_fund += asset( content_reward, TOKEN_SYMBOL );
                p.current_supply += asset( inflation_per_block, TOKEN_SYMBOL );
             });
@@ -2213,11 +2232,11 @@ namespace graphene { namespace chain {
 
                 u256 rs(rshares.value);
                 u256 rf(props.total_reward_fund.amount.value);
-                u256 total_rshares2 = to256(props.total_reward_shares2);
+                u256 total_rshares = to256(props.total_reward_shares);
 
                 u256 rs2 = to256(rshares.value);
 
-                u256 payout_u256 = (rf * rs2) / total_rshares2;
+                u256 payout_u256 = (rf * rs2) / total_rshares;
                 FC_ASSERT(payout_u256 <=
                           u256(uint64_t(std::numeric_limits<int64_t>::max())));
                 uint64_t payout = static_cast< uint64_t >( payout_u256 );
@@ -2331,6 +2350,9 @@ namespace graphene { namespace chain {
             _my->_evaluator_registry.register_evaluator<committee_worker_create_request_evaluator>();
             _my->_evaluator_registry.register_evaluator<committee_worker_cancel_request_evaluator>();
             _my->_evaluator_registry.register_evaluator<committee_vote_request_evaluator>();
+            _my->_evaluator_registry.register_evaluator<create_invite_evaluator>();
+            _my->_evaluator_registry.register_evaluator<claim_invite_balance_evaluator>();
+            _my->_evaluator_registry.register_evaluator<invite_registration_evaluator>();
         }
 
         void database::set_custom_operation_interpreter(const std::string &id, std::shared_ptr<custom_operation_interpreter> registry) {
@@ -2372,6 +2394,7 @@ namespace graphene { namespace chain {
             add_core_index<required_approval_index>(*this);
             add_core_index<committee_request_index>(*this);
             add_core_index<committee_vote_index>(*this);
+            add_core_index<invite_index>(*this);
 
             _plugin_index_signal();
         }
@@ -2498,18 +2521,27 @@ namespace graphene { namespace chain {
                     auth.posting.weight_threshold = 1;
                 });
 
-                create<account_object>([&](account_object &a) {
-                    a.name = CHAIN_TEMP_ACCOUNT;
+                // VIZ: invite account
+                public_key_type invite_public_key(CHAIN_INVITE_PUBLIC_KEY);
+                create<account_object>([&](account_object& a)
+                {
+                    a.name = CHAIN_INVITE_ACCOUNT;
+                    a.balance = asset(0, TOKEN_SYMBOL);
                 });
-#ifndef IS_LOW_MEM
-                create<account_metadata_object>([&](account_metadata_object& m) {
-                    m.account = CHAIN_TEMP_ACCOUNT;
+                ++bandwidth_reserve_candidates;
+
+                #ifndef IS_LOW_MEM
+                create< account_metadata_object >([&](account_metadata_object& m) {
+                    m.account = CHAIN_INVITE_ACCOUNT;
                 });
-#endif
-                create<account_authority_object>([&](account_authority_object &auth) {
-                    auth.account = CHAIN_TEMP_ACCOUNT;
-                    auth.owner.weight_threshold = 0;
-                    auth.active.weight_threshold = 0;
+                #endif
+
+                create<account_authority_object>([&](account_authority_object& auth)
+                {
+                    auth.account = CHAIN_INVITE_ACCOUNT;
+                    auth.owner.weight_threshold = 1;
+                    auth.active.add_authority( invite_public_key, 1 );
+                    auth.active.weight_threshold = 1;
                     auth.posting.weight_threshold = 1;
                 });
 
@@ -2565,7 +2597,7 @@ namespace graphene { namespace chain {
                     p.current_witness = CHAIN_COMMITTEE_ACCOUNT;
                     p.recent_slots_filled = fc::uint128_t::max_value();
                     p.participation_count = 128;
-                    p.committee_supply = asset(0, TOKEN_SYMBOL);
+                    p.committee_fund = asset(0, TOKEN_SYMBOL);
                     p.current_supply = asset(init_supply, TOKEN_SYMBOL);
                     p.maximum_block_size = CHAIN_BLOCK_SIZE;
                     p.bandwidth_reserve_candidates = bandwidth_reserve_candidates;

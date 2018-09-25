@@ -17,7 +17,7 @@ namespace graphene { namespace plugins { namespace tags {
         bool need_remove = false;
         db_.modify(*itr, [&](tag_stats_object& s) {
             if (tag.parent == content_object::id_type()) {
-                s.total_children_rshares2 -= tag.children_rshares2;
+                s.total_children_rshares -= tag.children_rshares;
                 s.top_posts--;
             } else {
                 s.contents--;
@@ -55,7 +55,7 @@ namespace graphene { namespace plugins { namespace tags {
     void operation_visitor::add_stats(const tag_object& tag) const {
         db_.modify(get_stats(tag), [&](tag_stats_object& s) {
             if (tag.parent == content_object::id_type()) {
-                s.total_children_rshares2 += tag.children_rshares2;
+                s.total_children_rshares += tag.children_rshares;
                 s.top_posts++;
             } else {
                 s.contents++;
@@ -92,7 +92,7 @@ namespace graphene { namespace plugins { namespace tags {
             obj.children = content.children;
             obj.net_rshares = content.net_rshares.value;
             obj.net_votes = content.net_votes;
-            obj.children_rshares2 = content.children_rshares2;
+            obj.children_rshares = content.children_rshares;
             obj.hot = hot;
             obj.trending = trending;
         });
@@ -121,7 +121,7 @@ namespace graphene { namespace plugins { namespace tags {
             obj.net_votes = content.net_votes;
             obj.children = content.children;
             obj.net_rshares = content.net_rshares.value;
-            obj.children_rshares2 = content.children_rshares2;
+            obj.children_rshares = content.children_rshares;
             obj.author = author;
             obj.hot = hot;
             obj.trending = trending;

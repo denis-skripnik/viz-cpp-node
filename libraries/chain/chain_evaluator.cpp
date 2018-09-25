@@ -84,7 +84,7 @@ namespace graphene { namespace chain {
                 acc.name = o.new_account_name;
                 acc.memo_key = o.memo_key;
                 acc.created = now;
-                acc.energy=0;
+                acc.energy = CHAIN_100_PERCENT;
                 acc.last_vote_time = now;
                 acc.recovery_account = o.creator;
                 acc.received_vesting_shares = o.delegation;
@@ -117,7 +117,7 @@ namespace graphene { namespace chain {
 
         void account_update_evaluator::do_apply(const account_update_operation &o) {
             database &_db = db();
-            FC_ASSERT(o.account != CHAIN_TEMP_ACCOUNT, "Cannot update temp account.");
+            FC_ASSERT(o.account != CHAIN_INVITE_ACCOUNT, "Cannot update invite account.");
 
             if (o.posting) {
                      o.posting->validate();
@@ -297,13 +297,6 @@ namespace graphene { namespace chain {
                 auto now = _db.head_block_time();
 
                 if (itr == by_permlink_idx.end()) {
-                    if (o.parent_author == CHAIN_ROOT_POST_PARENT)
-                        FC_ASSERT((now - auth.last_root_post) >
-                                  CHAIN_MIN_ROOT_COMMENT_INTERVAL, "You may only post content once every 1 second.", ("now", now)("last_root_post", auth.last_root_post));
-                    else
-                        FC_ASSERT((now - auth.last_post) >
-                                  CHAIN_MIN_REPLY_INTERVAL, "You may only post subcontent once every 1 second.", ("now", now)("auth.last_post", auth.last_post));
-
                     db().modify(auth, [&](account_object &a) {
                         a.last_post = now;
                         if( o.parent_author == CHAIN_ROOT_POST_PARENT ) {
@@ -609,6 +602,8 @@ namespace graphene { namespace chain {
                         acc.name = new_account_name;
                         acc.memo_key = key_from_memo;
                         acc.created = now;
+                        acc.energy = CHAIN_100_PERCENT;
+                        acc.last_vote_time = now;
                         acc.recovery_account = "";
                     });
                     _db.create<account_authority_object>([&](account_authority_object &auth) {
@@ -834,15 +829,13 @@ namespace graphene { namespace chain {
 
                 const auto &content = _db.get_content(o.author, o.permlink);
                 const auto &voter = _db.get_account(o.voter);
+                const auto& median_props = _db.get_witness_schedule_object().median_props;
 
                 const auto &content_vote_idx = _db.get_index<content_vote_index>().indices().get<by_content_voter>();
                 auto itr = content_vote_idx.find(std::make_tuple(content.id, voter.id));
 
                 int64_t elapsed_seconds = (_db.head_block_time() -
                                            voter.last_vote_time).to_seconds();
-
-                FC_ASSERT(elapsed_seconds >=
-                          CHAIN_MIN_VOTE_INTERVAL_SEC, "Can only vote once every 1 second.");
 
                 int64_t regenerated_energy =
                         (CHAIN_100_PERCENT * elapsed_seconds) /
@@ -864,7 +857,10 @@ namespace graphene { namespace chain {
                                          (60 * 60 * 24);//5
                 FC_ASSERT(max_vote_denom > 0);
 
-
+                // Consensus by median props - flag energy additional cost
+                if(o.weight < 0){
+                    used_energy=used_energy + (used_energy * median_props.flag_energy_additional_cost / CHAIN_100_PERCENT);
+                }
                 used_energy = used_energy / max_vote_denom;
                 FC_ASSERT(used_energy <=
                           current_energy, "Account does not have enough energy to vote.");
@@ -873,8 +869,10 @@ namespace graphene { namespace chain {
                     (uint128_t(voter.effective_vesting_shares().amount.value) * used_energy) /
                     (CHAIN_100_PERCENT)).to_uint64();
 
-                FC_ASSERT(abs_rshares > 1000000 || o.weight ==
-                                                    0, "Voting weight is too small, please accumulate more Shares");
+                // Consensus by median props - vote accounting affects only with abs_rshares greater than vote_accounting_min_rshares
+                if(abs_rshares < int64_t(median_props.vote_accounting_min_rshares)){
+                    abs_rshares=0;
+                }
 
                 // Lazily delete vote
                 if (itr != content_vote_idx.end() && itr->num_changes == -1) {
@@ -889,14 +887,6 @@ namespace graphene { namespace chain {
                     FC_ASSERT(o.weight != 0, "Vote weight cannot be 0.");
                     /// this is the rshares voting for or against the post
                     int64_t rshares = o.weight < 0 ? -abs_rshares : abs_rshares;
-
-                    if (rshares > 0) {
-                        FC_ASSERT(_db.head_block_time() <
-                                  _db.calculate_discussion_payout_time(content) - CHAIN_UPVOTE_LOCKOUT,
-                                  "Cannot increase reward of post within the last minute before payout.");
-                    }
-
-                    FC_ASSERT(abs_rshares > 0, "Cannot vote with 0 rshares.");
 
                     if(voter.awarded_rshares >= static_cast< uint64_t >(abs_rshares)){
                         _db.modify(voter, [&](account_object &a) {
@@ -915,6 +905,7 @@ namespace graphene { namespace chain {
 
                     if (_db.calculate_discussion_payout_time(content) ==
                         fc::time_point_sec::maximum()) {
+                        FC_ASSERT(o.weight > 0,"Cannot flag post after payout window");
                         // VIZ: if payout window closed then award author with rshares and create unchangable vote
                         const auto &content_author = _db.get_account(content.author);
                         _db.modify(content_author, [&](account_object &a) {
@@ -974,7 +965,7 @@ namespace graphene { namespace chain {
                             });
                         }
 
-                        _db.adjust_rshares2(content, old_rshares, new_rshares);
+                        _db.adjust_rshares(content, old_rshares, new_rshares);
                     }
                 } else {
                     FC_ASSERT(itr->num_changes <
@@ -985,12 +976,6 @@ namespace graphene { namespace chain {
 
                     /// this is the rshares voting for or against the post
                     int64_t rshares = o.weight < 0 ? -abs_rshares : abs_rshares;
-
-                    if (itr->rshares < rshares) {
-                        FC_ASSERT(_db.head_block_time() <
-                                  _db.calculate_discussion_payout_time(content) - CHAIN_UPVOTE_LOCKOUT,
-                                  "Cannot increase reward of post within the last minute before payout.");
-                    }
 
                     _db.modify(voter, [&](account_object &a) {
                     	if(itr->vote_percent < o.weight){
@@ -1037,7 +1022,7 @@ namespace graphene { namespace chain {
                         cv.num_changes += 1;
                     });
 
-                    _db.adjust_rshares2(content, old_rshares, new_rshares);
+                    _db.adjust_rshares(content, old_rshares, new_rshares);
                 }
 
             } FC_CAPTURE_AND_RETHROW((o))

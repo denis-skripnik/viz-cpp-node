@@ -6,6 +6,8 @@
 #include <graphene/api/discussion_helper.hpp>
 #include <graphene/chain/committee_objects.hpp>
 #include <graphene/api/committee_api_object.hpp>
+#include <graphene/chain/invite_objects.hpp>
+#include <graphene/api/invite_api_object.hpp>
 
 // These visitors creates additional tables, we don't really need them in LOW_MEM mode
 #include <graphene/plugins/tags/plugin.hpp>
@@ -291,6 +293,49 @@ namespace graphene { namespace plugins { namespace social_network {
                 ++itr;
             }
             return requests_list;
+        });
+    }
+
+    DEFINE_API(social_network, get_invites_list) {
+        CHECK_ARG_MIN_SIZE(1, 1)
+        auto status = args.args->at(0).as<uint16_t>();
+        auto& db = pimpl->database();
+        return db.with_weak_read_lock([&]() {
+            const auto &idx = db.get_index<invite_index>().indices().get<by_status>();
+            std::vector<int64_t> invites_list;
+            auto itr = idx.lower_bound(status);
+            while (itr != idx.end() &&
+                   itr->status == status) {
+                invites_list.emplace_back(itr->id._id);
+                ++itr;
+            }
+            return invites_list;
+        });
+    }
+
+    DEFINE_API(social_network, get_invite_by_id) {
+        CHECK_ARG_MIN_SIZE(1, 1)
+        auto search_id = args.args->at(0).as<int64_t>();
+        auto& db = pimpl->database();
+        return db.with_weak_read_lock([&]() {
+            const auto &idx = db.get_index<invite_index>().indices().get<by_id>();
+            auto itr = idx.find(search_id);
+            FC_ASSERT(itr != idx.end(), "Invite id not found.");
+            invite_api_object result = invite_api_object(*itr);
+            return result;
+        });
+    }
+
+    DEFINE_API(social_network, get_invite_by_key) {
+        CHECK_ARG_MIN_SIZE(1, 1)
+        auto search_key = args.args->at(0).as<public_key_type>();
+        auto& db = pimpl->database();
+        return db.with_weak_read_lock([&]() {
+            const auto &idx = db.get_index<invite_index>().indices().get<by_invite_key>();
+            auto itr = idx.find(search_key);
+            FC_ASSERT(itr != idx.end(), "Invite key not found.");
+            invite_api_object result = invite_api_object(*itr);
+            return result;
         });
     }
 

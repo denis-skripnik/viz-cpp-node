@@ -84,7 +84,7 @@ namespace graphene {
              *  that has a nested content of high value should promote the entire discussion so that the content can
              *  be reviewed.
              */
-            fc::uint128_t children_rshares2;
+            fc::uint128_t children_rshares;
 
             /// index on pending_payout for "things happning now... needs moderation"
             /// TRENDING = UNCLAIMED + PENDING
