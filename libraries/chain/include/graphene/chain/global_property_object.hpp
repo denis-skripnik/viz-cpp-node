@@ -43,7 +43,6 @@ namespace graphene {
             asset committee_fund = asset(0, TOKEN_SYMBOL);
             uint32_t committee_requests = 0;
             asset current_supply = asset(0, TOKEN_SYMBOL);
-            asset confidential_supply = asset(0, TOKEN_SYMBOL); ///< total asset held in confidential balances
             asset total_vesting_fund = asset(0, TOKEN_SYMBOL);
             asset total_vesting_shares = asset(0, SHARES_SYMBOL);
             asset total_reward_fund = asset(0, TOKEN_SYMBOL);
@@ -148,7 +147,6 @@ FC_REFLECT((graphene::chain::dynamic_global_property_object),
                 (committee_fund)
                 (committee_requests)
                 (current_supply)
-                (confidential_supply)
                 (total_vesting_fund)
                 (total_vesting_shares)
                 (total_reward_fund)
