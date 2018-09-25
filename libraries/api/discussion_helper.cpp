@@ -143,7 +143,7 @@ namespace graphene { namespace api {
             r2 *= pot.amount.value;
             r2 /= total_r2;
 
-            u256 tpp = to256(d.children_rshares2);
+            u256 tpp = to256(d.children_rshares);
             tpp *= pot.amount.value;
             tpp /= total_r2;
 

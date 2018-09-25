@@ -16,7 +16,7 @@ namespace graphene { namespace api {
           last_payout(o.last_payout),
           depth(o.depth),
           children(o.children),
-          children_rshares2(o.children_rshares2),
+          children_rshares(o.children_rshares),
           net_rshares(o.net_rshares),
           abs_rshares(o.abs_rshares),
           vote_rshares(o.vote_rshares),

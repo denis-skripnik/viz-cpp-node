@@ -338,7 +338,7 @@ namespace graphene { namespace chain {
 
             void burn_asset(const asset &delta);
 
-            void adjust_rshares(const content_object &content, fc::uint128_t old_rshares2, fc::uint128_t new_rshares2);
+            void adjust_rshares(const content_object &content, fc::uint128_t old_rshares, fc::uint128_t new_rshares);
 
             void update_owner_authority(const account_object &account, const authority &owner_authority);
 

@@ -95,7 +95,7 @@ namespace graphene { namespace plugins { namespace tags {
          *  that has a nested content of high value should promote the entire discussion so that the content can
          *  be reviewed.
          */
-        fc::uint128_t children_rshares2;
+        fc::uint128_t children_rshares;
 
         account_object::id_type author;
         content_object::id_type parent;
@@ -249,7 +249,7 @@ namespace graphene { namespace plugins { namespace tags {
 
         tag_name_type name;
         tag_type type;
-        fc::uint128_t total_children_rshares2;
+        fc::uint128_t total_children_rshares;
         asset total_payout = asset(0, TOKEN_SYMBOL);
         int32_t net_votes = 0;
         uint32_t top_posts = 0;
@@ -280,7 +280,7 @@ namespace graphene { namespace plugins { namespace tags {
                 composite_key<
                     tag_stats_object,
                     member<tag_stats_object, tag_type, &tag_stats_object::type>,
-                    member<tag_stats_object, fc::uint128_t, &tag_stats_object::total_children_rshares2>,
+                    member<tag_stats_object, fc::uint128_t, &tag_stats_object::total_children_rshares>,
                     member<tag_stats_object, tag_name_type, &tag_stats_object::name>>,
                 composite_key_compare<
                     std::less<tag_type>,
