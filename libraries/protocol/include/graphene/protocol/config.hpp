@@ -54,10 +54,11 @@
 #define CHAIN_1_TENTH_PERCENT                 (CHAIN_100_PERCENT/1000)
 
 #define CHAIN_FIXED_INFLATION                 (1000) //10%
-#define CHAIN_CONTENT_REWARD_PERCENT          (30*CHAIN_1_PERCENT) //30% of inflation
+#define CHAIN_VESTING_FUND_PERCENT            (10*CHAIN_1_PERCENT) //10% of inflation
+#define CHAIN_REWARD_FUND_PERCENT             (35*CHAIN_1_PERCENT) //35% of inflation
+#define CHAIN_COMMITTEE_FUND_PERCENT          (35*CHAIN_1_PERCENT) //35% of inflation
+
 #define CHAIN_REWARD_FUND_CURATOR_PERCENT     (5*100/30*CHAIN_1_PERCENT) //5% of inflation from reward fund
-#define CHAIN_VESTING_FUND_PERCENT            (40*CHAIN_1_PERCENT) //40% of inflation
-#define CHAIN_COMMITTEE_FUND_PERCENT          (15*CHAIN_1_PERCENT) //15% of inflation
 
 #define CHAIN_BANDWIDTH_AVERAGE_WINDOW_SECONDS (60*60*24*7) ///< 1 week
 #define CHAIN_BANDWIDTH_PRECISION             1000000ll ///< 1 million
