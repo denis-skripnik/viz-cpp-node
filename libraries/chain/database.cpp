@@ -1374,9 +1374,9 @@ namespace graphene { namespace chain {
             }
             if ((head_block_num() % COMMITTEE_REQUEST_PROCESSING ) != 0) return;
             uint32_t committee_payment_request_count = 1;
-            const auto &idx3_count = get_index<committee_request_index>().indices().get<by_status>();
-            auto itr3 = idx3_count.lower_bound(4);
-            while (itr3 != idx3_count.end() &&
+            const auto &idx4_count = get_index<committee_request_index>().indices().get<by_status>();
+            auto itr3 = idx4_count.lower_bound(4);
+            while (itr3 != idx4_count.end() &&
                    itr3->status == 4) {
                 committee_payment_request_count++;
                 ++itr3;
@@ -1385,10 +1385,10 @@ namespace graphene { namespace chain {
             const auto &dgp = get_dynamic_global_properties();
             asset max_payment_per_request=asset(dgp.committee_fund.amount/committee_payment_request_count, TOKEN_SYMBOL);
 
-            const auto &idx3 = get_index<committee_request_index>().indices().get<by_status>();
-            auto itr = idx3.lower_bound(3);
-            while (itr != idx3.end() &&
-                   itr->status == 3) {
+            const auto &idx4 = get_index<committee_request_index>().indices().get<by_status>();
+            auto itr = idx4.lower_bound(4);
+            while (itr != idx4.end() &&
+                   itr->status == 4) {
                 const auto &cur_request = *itr;
                 ++itr;
                 share_type current_payment=std::min(max_payment_per_request.amount, cur_request.remain_payout_amount.amount).value;//int64
@@ -1849,21 +1849,21 @@ namespace graphene { namespace chain {
         }
 
 /**
- * This method recursively tallies children_rshares for this post plus all of its parents,
+ * This method recursively tallies children_rshares2 for this post plus all of its parents,
  * TODO: this method can be skipped for validation-only nodes
  */
-        void database::adjust_rshares(const content_object &c, fc::uint128_t old_rshares, fc::uint128_t new_rshares) {
+        void database::adjust_rshares(const content_object &c, fc::uint128_t old_rshares2, fc::uint128_t new_rshares2) {
             modify(c, [&](content_object &content) {
-                content.children_rshares -= old_rshares;
-                content.children_rshares += new_rshares;
+                content.children_rshares2 -= old_rshares2;
+                content.children_rshares2 += new_rshares2;
             });
             if (c.depth) {
-                adjust_rshares(get_content(c.parent_author, c.parent_permlink), old_rshares, new_rshares);
+                adjust_rshares(get_content(c.parent_author, c.parent_permlink), old_rshares2, new_rshares2);
             } else {
                 const auto &cprops = get_dynamic_global_properties();
                 modify(cprops, [&](dynamic_global_property_object &p) {
-                    p.total_reward_shares -= old_rshares;
-                    p.total_reward_shares += new_rshares;
+                    p.total_reward_shares -= old_rshares2;
+                    p.total_reward_shares += new_rshares2;
                 });
             }
         }
@@ -2124,8 +2124,8 @@ namespace graphene { namespace chain {
 
                     }
 
-                    fc::uint128_t old_rshares = content.net_rshares.value;
-                    adjust_rshares(content, old_rshares, 0);
+                    fc::uint128_t old_rshares2 = content.net_rshares.value;
+                    adjust_rshares(content, old_rshares2, 0);
                 }
 
                 modify(content, [&](content_object &c) {
@@ -2232,11 +2232,11 @@ namespace graphene { namespace chain {
 
                 u256 rs(rshares.value);
                 u256 rf(props.total_reward_fund.amount.value);
-                u256 total_rshares = to256(props.total_reward_shares);
+                u256 total_rshares2 = to256(props.total_reward_shares);
 
                 u256 rs2 = to256(rshares.value);
 
-                u256 payout_u256 = (rf * rs2) / total_rshares;
+                u256 payout_u256 = (rf * rs2) / total_rshares2;
                 FC_ASSERT(payout_u256 <=
                           u256(uint64_t(std::numeric_limits<int64_t>::max())));
                 uint64_t payout = static_cast< uint64_t >( payout_u256 );
