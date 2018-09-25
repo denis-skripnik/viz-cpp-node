@@ -1375,9 +1375,9 @@ namespace graphene { namespace chain {
             if ((head_block_num() % COMMITTEE_REQUEST_PROCESSING ) != 0) return;
             uint32_t committee_payment_request_count = 1;
             const auto &idx3_count = get_index<committee_request_index>().indices().get<by_status>();
-            auto itr3 = idx3_count.lower_bound(3);
+            auto itr3 = idx3_count.lower_bound(4);
             while (itr3 != idx3_count.end() &&
-                   itr3->status == 3) {
+                   itr3->status == 4) {
                 committee_payment_request_count++;
                 ++itr3;
             }
