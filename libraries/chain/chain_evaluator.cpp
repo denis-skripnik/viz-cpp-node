@@ -84,7 +84,7 @@ namespace graphene { namespace chain {
                 acc.name = o.new_account_name;
                 acc.memo_key = o.memo_key;
                 acc.created = now;
-                acc.energy=0;
+                acc.energy = CHAIN_100_PERCENT;
                 acc.last_vote_time = now;
                 acc.recovery_account = o.creator;
                 acc.received_vesting_shares = o.delegation;
@@ -602,6 +602,8 @@ namespace graphene { namespace chain {
                         acc.name = new_account_name;
                         acc.memo_key = key_from_memo;
                         acc.created = now;
+                        acc.energy = CHAIN_100_PERCENT;
+                        acc.last_vote_time = now;
                         acc.recovery_account = "";
                     });
                     _db.create<account_authority_object>([&](account_authority_object &auth) {
