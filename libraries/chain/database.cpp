@@ -1849,21 +1849,21 @@ namespace graphene { namespace chain {
         }
 
 /**
- * This method recursively tallies children_rshares2 for this post plus all of its parents,
+ * This method recursively tallies children_rshares for this post plus all of its parents,
  * TODO: this method can be skipped for validation-only nodes
  */
-        void database::adjust_rshares(const content_object &c, fc::uint128_t old_rshares2, fc::uint128_t new_rshares2) {
+        void database::adjust_rshares(const content_object &c, fc::uint128_t old_rshares, fc::uint128_t new_rshares) {
             modify(c, [&](content_object &content) {
-                content.children_rshares2 -= old_rshares2;
-                content.children_rshares2 += new_rshares2;
+                content.children_rshares -= old_rshares;
+                content.children_rshares += new_rshares;
             });
             if (c.depth) {
-                adjust_rshares(get_content(c.parent_author, c.parent_permlink), old_rshares2, new_rshares2);
+                adjust_rshares(get_content(c.parent_author, c.parent_permlink), old_rshares, new_rshares);
             } else {
                 const auto &cprops = get_dynamic_global_properties();
                 modify(cprops, [&](dynamic_global_property_object &p) {
-                    p.total_reward_shares -= old_rshares2;
-                    p.total_reward_shares += new_rshares2;
+                    p.total_reward_shares -= old_rshares;
+                    p.total_reward_shares += new_rshares;
                 });
             }
         }
@@ -2124,8 +2124,8 @@ namespace graphene { namespace chain {
 
                     }
 
-                    fc::uint128_t old_rshares2 = content.net_rshares.value;
-                    adjust_rshares(content, old_rshares2, 0);
+                    fc::uint128_t old_rshares = content.net_rshares.value;
+                    adjust_rshares(content, old_rshares, 0);
                 }
 
                 modify(content, [&](content_object &c) {
@@ -2232,11 +2232,11 @@ namespace graphene { namespace chain {
 
                 u256 rs(rshares.value);
                 u256 rf(props.total_reward_fund.amount.value);
-                u256 total_rshares2 = to256(props.total_reward_shares);
+                u256 total_rshares = to256(props.total_reward_shares);
 
                 u256 rs2 = to256(rshares.value);
 
-                u256 payout_u256 = (rf * rs2) / total_rshares2;
+                u256 payout_u256 = (rf * rs2) / total_rshares;
                 FC_ASSERT(payout_u256 <=
                           u256(uint64_t(std::numeric_limits<int64_t>::max())));
                 uint64_t payout = static_cast< uint64_t >( payout_u256 );
