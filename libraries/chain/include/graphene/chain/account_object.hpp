@@ -39,9 +39,9 @@ public:
     time_point_sec created;
     account_name_type recovery_account;
     time_point_sec last_account_recovery;
-    uint32_t content_count = 0;
+    uint32_t subcontent_count = 0;
     uint32_t vote_count = 0;
-    uint32_t post_count = 0;
+    uint32_t content_count = 0;
     uint64_t awarded_rshares = 0;
 
     int16_t energy = CHAIN_100_PERCENT;   ///< current voting power of this account, it falls after every vote
@@ -430,7 +430,7 @@ FC_REFLECT((graphene::chain::account_object),
         (id)(name)(memo_key)(proxy)(referrer)(last_account_update)
                 (created)
                 (recovery_account)(last_account_recovery)
-                (content_count)(vote_count)(post_count)(awarded_rshares)(energy)(last_vote_time)
+                (subcontent_count)(vote_count)(content_count)(awarded_rshares)(energy)(last_vote_time)
                 (balance)(vesting_shares)(delegated_vesting_shares)(received_vesting_shares)
                 (vesting_withdraw_rate)(next_vesting_withdrawal)(withdrawn)(to_withdraw)(withdraw_routes)
                 (curation_rewards)
