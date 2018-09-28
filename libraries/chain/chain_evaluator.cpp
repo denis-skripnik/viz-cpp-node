@@ -210,10 +210,10 @@ namespace graphene { namespace chain {
             const auto &auth = _db.get_account(content.author); /// prove it exists
             db().modify(auth, [&](account_object &a) {
                 if( content.parent_author == CHAIN_ROOT_POST_PARENT ) {
-                    a.post_count--;
+                    a.content_count--;
                 }
                 else{
-                    a.content_count--;
+                    a.subcontent_count--;
                 }
             });
 
@@ -301,10 +301,10 @@ namespace graphene { namespace chain {
                         a.last_post = now;
                         if( o.parent_author == CHAIN_ROOT_POST_PARENT ) {
                             a.last_root_post = now;
-                            a.post_count++;
+                            a.content_count++;
                         }
                         else{
-                            a.content_count++;
+                            a.subcontent_count++;
                         }
                     });
 

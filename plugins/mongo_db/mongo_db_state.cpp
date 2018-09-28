@@ -152,9 +152,9 @@ namespace mongo_db {
             format_value(body, "created", account.created);
             format_value(body, "recovery_account", account.recovery_account);
             format_value(body, "last_account_recovery", account.last_account_recovery);
-            format_value(body, "content_count", account.content_count);
+            format_value(body, "subcontent_count", account.subcontent_count);
             format_value(body, "vote_count", account.vote_count);
-            format_value(body, "post_count", account.post_count);
+            format_value(body, "content_count", account.content_count);
 
             format_value(body, "energy", account.energy);
             format_value(body, "last_vote_time", account.last_vote_time);
