@@ -1216,7 +1216,7 @@ namespace graphene { namespace chain {
 
             if (head_block_num() == 0) {
                 // n.b. first block is at genesis_time plus one block interval
-                fc::time_point_sec genesis_time = dpo.time;
+                fc::time_point_sec genesis_time = dpo.time - fc::seconds(CHAIN_BLOCK_INTERVAL);;
                 return genesis_time + slot_num * interval;
             }
 
@@ -2833,7 +2833,7 @@ namespace graphene { namespace chain {
                 if( BOOST_UNLIKELY( next_block_num == 1 ) )//init hardforks
                 {
                     const hardfork_property_object& hardfork_state = get_hardfork_property_object();
-                	time_point_sec genesis_time=next_block.timestamp-fc::seconds(CHAIN_BLOCK_INTERVAL);
+                	time_point_sec genesis_time=next_block.timestamp - fc::seconds(CHAIN_BLOCK_INTERVAL);
                     modify(gprops, [&](dynamic_global_property_object &dgp) {
                     	dgp.genesis_time=genesis_time;
                     });
