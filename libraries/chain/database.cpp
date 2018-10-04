@@ -1637,6 +1637,7 @@ namespace graphene { namespace chain {
             calc_median(&chain_properties::create_account_delegation_time);
             calc_median(&chain_properties::min_delegation);
             calc_median(&chain_properties::min_curation_percent);
+            calc_median(&chain_properties::max_curation_percent);
             calc_median(&chain_properties::bandwidth_reserve_percent);
             calc_median(&chain_properties::bandwidth_reserve_below);
             calc_median(&chain_properties::flag_energy_additional_cost);
