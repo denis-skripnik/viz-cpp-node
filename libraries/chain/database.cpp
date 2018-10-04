@@ -2842,6 +2842,29 @@ namespace graphene { namespace chain {
                         hpo.processed_hardforks.push_back(genesis_time);
                     });
 
+                    uint32_t n=0;
+                    for(n=0;n<CHAIN_STARTUP_HARDFORKS;n++){
+                        ilog( "Processing ${n} hardfork", ("n", n) );
+                        set_hardfork( n, true );
+                    }
+
+                    FC_ASSERT( hardfork_state.current_hardfork_version == _hardfork_versions[n], "Unexpected genesis hardfork state" );
+
+                    const auto& witness_idx = get_index<witness_index>().indices().get<by_id>();
+                    vector<witness_id_type> wit_ids_to_update;
+                    for( auto it=witness_idx.begin(); it!=witness_idx.end(); ++it )
+                     wit_ids_to_update.push_back(it->id);
+
+                    for( witness_id_type wit_id : wit_ids_to_update )
+                    {
+                        modify( get( wit_id ), [&]( witness_object& wit )
+                        {
+                            wit.running_version = _hardfork_versions[n];
+                            wit.hardfork_version_vote = _hardfork_versions[n];
+                            wit.hardfork_time_vote = _hardfork_times[n];
+                        } );
+                    }
+
                     /* VIZ Snapshot */
                     auto snapshot_json = fc::path(string("./snapshot.json"));
 
