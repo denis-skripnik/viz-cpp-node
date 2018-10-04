@@ -51,4 +51,4 @@ FC_REFLECT((graphene::chain::hardfork_property_object),
                 (next_hardfork)(next_hardfork_time))
 CHAINBASE_SET_INDEX_TYPE( graphene::chain::hardfork_property_object, graphene::chain::hardfork_property_index)
 
-#define CHAIN_NUM_HARDFORKS 0
+#define CHAIN_NUM_HARDFORKS 1

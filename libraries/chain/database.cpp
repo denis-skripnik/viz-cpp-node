@@ -1637,6 +1637,9 @@ namespace graphene { namespace chain {
             calc_median(&chain_properties::create_account_delegation_time);
             calc_median(&chain_properties::min_delegation);
             calc_median(&chain_properties::min_curation_percent);
+            if(has_hardfork(CHAIN_HARDFORK_1)){
+                calc_median(&chain_properties::max_curation_percent);
+            }
             calc_median(&chain_properties::bandwidth_reserve_percent);
             calc_median(&chain_properties::bandwidth_reserve_below);
             calc_median(&chain_properties::flag_energy_additional_cost);
@@ -3356,6 +3359,9 @@ namespace graphene { namespace chain {
             _hardfork_times[0] = dpo.genesis_time;
             _hardfork_versions[0] = hardfork_version(CHAIN_VERSION);
 
+            _hardfork_times[CHAIN_HARDFORK_1] = fc::time_point_sec(CHAIN_HARDFORK_1_TIME);
+            _hardfork_versions[CHAIN_HARDFORK_1] = CHAIN_HARDFORK_1_VERSION;
+
             const auto &hardforks = get_hardfork_property_object();
             FC_ASSERT(
                 hardforks.last_hardfork <= CHAIN_NUM_HARDFORKS,
@@ -3431,6 +3437,8 @@ namespace graphene { namespace chain {
             }
 
             switch (hardfork) {
+                case CHAIN_HARDFORK_1:
+                    break;
                 default:
                     break;
             }
