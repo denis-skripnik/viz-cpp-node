@@ -1082,8 +1082,6 @@ namespace graphene { namespace chain {
             }
 
             const auto &hfp = get_hardfork_property_object();
-            //ilog("hfp.current_hardfork_version=${q}, CHAIN_HARDFORK_VERSION=${y}, hfp.last_hardfork=${r}, hpo.next_hardfork=${i}, hpo.next_hardfork_time=${o}, witness.running_version=${t}, witness.hardfork_version_vote=${w}, _hardfork_versions[hfp.last_hardfork + 1]=${u}, witness.hardfork_time_vote=${e}",
-            //    ("q",hfp.current_hardfork_version)("y",CHAIN_HARDFORK_VERSION)("r",hfp.last_hardfork)("i",hfp.next_hardfork)("o",hfp.next_hardfork_time)("t",witness.running_version)("w",witness.hardfork_version_vote)("u",_hardfork_versions[hfp.last_hardfork + 1])("e",witness.hardfork_time_vote));
 
             if (hfp.current_hardfork_version <
                 CHAIN_HARDFORK_VERSION // Binary is newer hardfork than has been applied
@@ -1304,8 +1302,8 @@ namespace graphene { namespace chain {
             for (auto itr = widx.begin(); itr != widx.end(); ++itr) {
                 if(itr->effective_vesting_shares().amount.value < consensus.median_props.bandwidth_reserve_below.amount.value){
                     if(time_point_sec(itr->last_bandwidth_update + CHAIN_BANDWIDTH_RESERVE_ACTIVE_TIME) >= head_block_time()){
-	                    ++bandwidth_reserve_candidates;
-	                }
+                        ++bandwidth_reserve_candidates;
+                    }
                 }
             }
             modify(gprops, [&](dynamic_global_property_object &dgp) {
@@ -1346,26 +1344,26 @@ namespace graphene { namespace chain {
                         push_virtual_operation(committee_cancel_request_operation(cur_request.request_id));
                     }
                     else{
-	                    calculated_payment=cur_request.required_amount_max.amount*actual_rshares/max_rshares;
-	                    asset conclusion_payout_amount = asset(calculated_payment, TOKEN_SYMBOL);
-	                    if(cur_request.required_amount_min.amount > conclusion_payout_amount.amount){
-	                        modify(cur_request, [&](committee_request_object &c) {
-	                            c.conclusion_payout_amount=conclusion_payout_amount;
-	                            c.conclusion_time = head_block_time();
-	                            c.status = 3;
-	                        });
-	                        push_virtual_operation(committee_cancel_request_operation(cur_request.request_id));
-	                    }
-	                    else{
-	                        modify(cur_request, [&](committee_request_object &c) {
-	                            c.conclusion_payout_amount=conclusion_payout_amount;
-	                            c.conclusion_time = head_block_time();
-	                            c.remain_payout_amount=conclusion_payout_amount;
-	                            c.status = 4;
-	                        });
-	                        push_virtual_operation(committee_approve_request_operation(cur_request.request_id));
-	                    }
-	                }
+                        calculated_payment=cur_request.required_amount_max.amount*actual_rshares/max_rshares;
+                        asset conclusion_payout_amount = asset(calculated_payment, TOKEN_SYMBOL);
+                        if(cur_request.required_amount_min.amount > conclusion_payout_amount.amount){
+                            modify(cur_request, [&](committee_request_object &c) {
+                                c.conclusion_payout_amount=conclusion_payout_amount;
+                                c.conclusion_time = head_block_time();
+                                c.status = 3;
+                            });
+                            push_virtual_operation(committee_cancel_request_operation(cur_request.request_id));
+                        }
+                        else{
+                            modify(cur_request, [&](committee_request_object &c) {
+                                c.conclusion_payout_amount=conclusion_payout_amount;
+                                c.conclusion_time = head_block_time();
+                                c.remain_payout_amount=conclusion_payout_amount;
+                                c.status = 4;
+                            });
+                            push_virtual_operation(committee_approve_request_operation(cur_request.request_id));
+                        }
+                    }
                 }
             }
             if ((head_block_num() % COMMITTEE_REQUEST_PROCESSING ) != 0) return;
@@ -2591,6 +2589,64 @@ namespace graphene { namespace chain {
                         auth.posting = auth.active;
                     });
                 }
+
+                time_point_sec genesis_time=fc::time_point::now();
+
+                for (int i = 0; i < 0x10000; i++) {
+                    create<block_summary_object>([&](block_summary_object &) {});
+                }
+                create<hardfork_property_object>([&](hardfork_property_object &hpo) {
+                    hpo.current_hardfork_version=CHAIN_HARDFORK_STARTUP_VERSION;
+                    hpo.processed_hardforks.push_back(genesis_time);
+                });
+
+                // Create witness scheduler
+                create<witness_schedule_object>([&](witness_schedule_object &wso) {
+                    wso.current_shuffled_witnesses[0] = CHAIN_COMMITTEE_ACCOUNT;
+                });
+
+                if(CHAIN_STARTUP_HARDFORKS>0){
+                    const hardfork_property_object& hardfork_state = get_hardfork_property_object();
+                    uint32_t n=0;
+                    for(n=0;n<=CHAIN_STARTUP_HARDFORKS;n++){
+                        ilog( "Processing ${n} hardfork", ("n", n) );
+                        set_hardfork( n, true );
+                    }
+
+                    FC_ASSERT( hardfork_state.current_hardfork_version == _hardfork_versions[n], "Unexpected genesis hardfork state" );
+
+                    const auto& witness_idx = get_index<witness_index>().indices().get<by_id>();
+                    vector<witness_id_type> wit_ids_to_update;
+                    for( auto it=witness_idx.begin(); it!=witness_idx.end(); ++it )
+                     wit_ids_to_update.push_back(it->id);
+
+                    for( witness_id_type wit_id : wit_ids_to_update )
+                    {
+                        modify( get( wit_id ), [&]( witness_object& wit )
+                        {
+                            wit.running_version = _hardfork_versions[n];
+                            wit.hardfork_version_vote = _hardfork_versions[n];
+                            wit.hardfork_time_vote = _hardfork_times[n];
+                        } );
+                    }
+                }
+                else{
+                    const auto& witness_idx = get_index<witness_index>().indices().get<by_id>();
+                    vector<witness_id_type> wit_ids_to_update;
+                    for( auto it=witness_idx.begin(); it!=witness_idx.end(); ++it )
+                     wit_ids_to_update.push_back(it->id);
+
+                    for( witness_id_type wit_id : wit_ids_to_update )
+                    {
+                        modify( get( wit_id ), [&]( witness_object& wit )
+                        {
+                            wit.running_version = _hardfork_versions[0];
+                            wit.hardfork_version_vote = _hardfork_versions[0];
+                            //wit.hardfork_time_vote = genesis_time;
+                        } );
+                    }
+                }
+
                 create<dynamic_global_property_object>([&](dynamic_global_property_object &p) {
                     p.current_witness = CHAIN_COMMITTEE_ACCOUNT;
                     p.recent_slots_filled = fc::uint128_t::max_value();
@@ -2599,19 +2655,57 @@ namespace graphene { namespace chain {
                     p.current_supply = asset(init_supply, TOKEN_SYMBOL);
                     p.maximum_block_size = CHAIN_BLOCK_SIZE;
                     p.bandwidth_reserve_candidates = bandwidth_reserve_candidates;
+                    p.genesis_time=genesis_time;
                 });
 
-                for (int i = 0; i < 0x10000; i++) {
-                    create<block_summary_object>([&](block_summary_object &) {});
+                /* VIZ Snapshot */
+                auto snapshot_json = fc::path(string("./snapshot.json"));
+                 if(fc::exists(snapshot_json))
+                {
+                    share_type init_supply = int64_t( CHAIN_INIT_SUPPLY );
+                    ilog("Import snapshot.json");
+                    snapshot_items snapshot=fc::json::from_file(snapshot_json).as<snapshot_items>();;
+                    for(snapshot_account &account : snapshot.accounts)
+                    {
+                        public_key_type account_public_key(account.public_key);
+                        create< account_object >( [&]( account_object& a )
+                        {
+                            a.name = account.login;
+                            a.memo_key = account_public_key;
+                            a.recovery_account = CHAIN_INITIATOR_NAME;
+                        } );
+                        ++bandwidth_reserve_candidates;
+
+                        create< account_authority_object >( [&]( account_authority_object& auth )
+                        {
+                            auth.account = account.login;
+                            auth.owner.add_authority( account_public_key, 1 );
+                            auth.owner.weight_threshold = 1;
+                            auth.active  = auth.owner;
+                            auth.posting = auth.active;
+                            auth.last_owner_update = fc::time_point_sec::min();
+                        });
+                        #ifndef IS_LOW_MEM
+                        create< account_metadata_object >([&](account_metadata_object& m) {
+                            m.account = account.login;
+                        });
+                        #endif
+                        create_vesting( get_account( account.login ), asset( account.shares_ammount, TOKEN_SYMBOL ) );
+                        init_supply-=account.shares_ammount;
+
+                        ilog( "Import account ${a} with public key ${k}, shares: ${s} (remaining init supply: ${i})", ("a", account.login)("k", account.public_key)("s", account.shares_ammount)("i", init_supply) );
+                    }
+                    const auto& initiator = get_account( CHAIN_INITIATOR_NAME );
+                    modify( initiator, [&]( account_object& a )
+                    {
+                        a.balance  = asset( init_supply, TOKEN_SYMBOL );
+                    } );
+                    ilog( "Modify initiator account ${a}, remaining balance: ${i}", ("a", CHAIN_INITIATOR_NAME)("i", init_supply) );
+                    const auto &gprops = get_dynamic_global_properties();
+                    modify(gprops, [&](dynamic_global_property_object &dgp) {
+                        dgp.bandwidth_reserve_candidates = bandwidth_reserve_candidates;
+                    });
                 }
-                create<hardfork_property_object>([&](hardfork_property_object &hpo) {
-                    hpo.current_hardfork_version=CHAIN_HARDFORK_VERSION;
-                });
-
-                // Create witness scheduler
-                create<witness_schedule_object>([&](witness_schedule_object &wso) {
-                    wso.current_shuffled_witnesses[0] = CHAIN_COMMITTEE_ACCOUNT;
-                });
             }
             FC_CAPTURE_AND_RETHROW()
         }
@@ -2811,7 +2905,7 @@ namespace graphene { namespace chain {
             try {
                 uint32_t next_block_num = next_block.block_num();
                 const auto &gprops = get_dynamic_global_properties();
-                uint32_t bandwidth_reserve_candidates = gprops.bandwidth_reserve_candidates;
+                const auto &hardfork_state = get_hardfork_property_object();
                 //block_id_type next_block_id = next_block.id();
 
                 _validate_block(next_block, skip);
@@ -2828,90 +2922,15 @@ namespace graphene { namespace chain {
                     dgp.current_witness = next_block.witness;
                 });
 
-                if( BOOST_UNLIKELY( next_block_num == 1 ) )//init hardforks
+                if( BOOST_UNLIKELY( next_block_num == 1 ) )//change genesis
                 {
-                    const hardfork_property_object& hardfork_state = get_hardfork_property_object();
-                	time_point_sec genesis_time=next_block.timestamp - fc::seconds(CHAIN_BLOCK_INTERVAL);
+                    time_point_sec genesis_time=next_block.timestamp - fc::seconds(CHAIN_BLOCK_INTERVAL);
                     modify(gprops, [&](dynamic_global_property_object &dgp) {
-                    	dgp.genesis_time=genesis_time;
+                        dgp.genesis_time=genesis_time;
                     });
-
                     modify(hardfork_state, [&](hardfork_property_object &hpo) {
-                        hpo.processed_hardforks.push_back(genesis_time);
+                        hpo.processed_hardforks[0]=genesis_time;
                     });
-
-                    uint32_t n=0;
-                    for(n=0;n<CHAIN_NUM_HARDFORKS;n++){
-                        ilog( "Processing ${n} hardfork", ("n", n) );
-                        set_hardfork( n, true );
-                    }
-
-                    FC_ASSERT( hardfork_state.current_hardfork_version == _hardfork_versions[n], "Unexpected genesis hardfork state" );
-
-                    const auto& witness_idx = get_index<witness_index>().indices().get<by_id>();
-                    vector<witness_id_type> wit_ids_to_update;
-                    for( auto it=witness_idx.begin(); it!=witness_idx.end(); ++it )
-                     wit_ids_to_update.push_back(it->id);
-
-                    for( witness_id_type wit_id : wit_ids_to_update )
-                    {
-                        modify( get( wit_id ), [&]( witness_object& wit )
-                        {
-                            wit.running_version = _hardfork_versions[n];
-                            wit.hardfork_version_vote = _hardfork_versions[n];
-                            wit.hardfork_time_vote = _hardfork_times[n];
-                        } );
-                    }
-                    /* VIZ Snapshot */
-                    auto snapshot_json = fc::path(string("./snapshot.json"));
-
-                    if(fc::exists(snapshot_json))
-                    {
-                        share_type init_supply = int64_t( CHAIN_INIT_SUPPLY );
-                        ilog("Import snapshot.json");
-                        snapshot_items snapshot=fc::json::from_file(snapshot_json).as<snapshot_items>();;
-                        for(snapshot_account &account : snapshot.accounts)
-                        {
-                            public_key_type account_public_key(account.public_key);
-                            create< account_object >( [&]( account_object& a )
-                            {
-                                a.name = account.login;
-                                a.memo_key = account_public_key;
-                                a.recovery_account = CHAIN_INITIATOR_NAME;
-                                a.created = genesis_time;
-                                a.last_vote_time = genesis_time;
-                            } );
-                            ++bandwidth_reserve_candidates;
-
-                            create< account_authority_object >( [&]( account_authority_object& auth )
-                            {
-                                auth.account = account.login;
-                                auth.owner.add_authority( account_public_key, 1 );
-                                auth.owner.weight_threshold = 1;
-                                auth.active  = auth.owner;
-                                auth.posting = auth.active;
-                                auth.last_owner_update = fc::time_point_sec::min();
-                            });
-                            #ifndef IS_LOW_MEM
-                            create< account_metadata_object >([&](account_metadata_object& m) {
-                                m.account = account.login;
-                            });
-                            #endif
-                            create_vesting( get_account( account.login ), asset( account.shares_ammount, TOKEN_SYMBOL ) );
-                            init_supply-=account.shares_ammount;
-
-                            ilog( "Import account ${a} with public key ${k}, shares: ${s} (remaining init supply: ${i})", ("a", account.login)("k", account.public_key)("s", account.shares_ammount)("i", init_supply) );
-                        }
-                        const auto& initiator = get_account( CHAIN_INITIATOR_NAME );
-                        modify( initiator, [&]( account_object& a )
-                        {
-                            a.balance  = asset( init_supply, TOKEN_SYMBOL );
-                        } );
-                        ilog( "Modify initiator account ${a}, remaining balance: ${i}", ("a", CHAIN_INITIATOR_NAME)("i", init_supply) );
-                        modify(gprops, [&](dynamic_global_property_object &dgp) {
-                            dgp.bandwidth_reserve_candidates = bandwidth_reserve_candidates;
-                        });
-                    }
                 }
 
                 /// parse witness version reporting
@@ -3355,7 +3374,14 @@ namespace graphene { namespace chain {
         void database::init_hardforks() {
             const dynamic_global_property_object &dpo = get_dynamic_global_properties();
             _hardfork_times[0] = dpo.genesis_time;
-            _hardfork_versions[0] = hardfork_version(CHAIN_VERSION);
+            _hardfork_versions[0] = hardfork_version(CHAIN_STARTUP_VERSION);
+
+            /* HARDFORK EXAMPLE */
+            /* HF 1 TIME AND VERSION */
+            /*
+            _hardfork_times[CHAIN_HARDFORK_1] = fc::time_point_sec(CHAIN_HARDFORK_1_TIME);
+            _hardfork_versions[CHAIN_HARDFORK_1] = CHAIN_HARDFORK_1_VERSION;
+            */
 
             const auto &hardforks = get_hardfork_property_object();
             FC_ASSERT(
@@ -3432,6 +3458,11 @@ namespace graphene { namespace chain {
             }
 
             switch (hardfork) {
+                /* HARDFORK EXAMPLE */
+                /*
+                case CHAIN_HARDFORK_1:
+                    break;
+                */
                 default:
                     break;
             }
