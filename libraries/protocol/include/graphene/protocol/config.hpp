@@ -1,6 +1,8 @@
 #pragma once
 
-#define CHAIN_VERSION                         (version(1, 0, 0))
+#define CHAIN_STARTUP_VERSION                 (version(1, 0, 0))
+#define CHAIN_HARDFORK_STARTUP_VERSION        (hardfork_version(CHAIN_STARTUP_VERSION))
+#define CHAIN_VERSION                         (version(1, 1, 0))
 #define CHAIN_HARDFORK_VERSION                (hardfork_version(CHAIN_VERSION))
 
 #define CHAIN_NAME                            "VIZ"

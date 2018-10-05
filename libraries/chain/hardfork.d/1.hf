@@ -1,0 +1,6 @@
+// 1 Hardfork on VIZ mainnet, fix missed calc_median max_curator_percent
+#ifndef CHAIN_HARDFORK_1
+#define CHAIN_HARDFORK_1 1
+#define CHAIN_HARDFORK_1_TIME 1538647200 // 04 Oct 2018 10:00:00 GMT
+#define CHAIN_HARDFORK_1_VERSION hardfork_version( version(1, 1, 0) )
+#endif
