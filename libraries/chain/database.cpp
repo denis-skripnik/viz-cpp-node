@@ -1336,33 +1336,42 @@ namespace graphene { namespace chain {
                         actual_rshares+=voter_account.effective_vesting_shares().amount.value*cur_vote.vote_percent/CHAIN_100_PERCENT;
                     }
                     approve_min_shares=props.total_vesting_shares.amount * consensus.median_props.committee_request_approve_min_percent / CHAIN_100_PERCENT;
-                    if(approve_min_shares <= max_rshares){
+                    if(has_hardfork(CHAIN_HARDFORK_2)){
+                        if(approve_min_shares > max_rshares){
+                            modify(cur_request, [&](committee_request_object &c) {
+                                c.conclusion_time = head_block_time();
+                                c.status = 2;
+                            });
+                            push_virtual_operation(committee_cancel_request_operation(cur_request.request_id));
+                        }
+                        else{
+                            calculated_payment=cur_request.required_amount_max.amount*actual_rshares/max_rshares;
+                            asset conclusion_payout_amount = asset(calculated_payment, TOKEN_SYMBOL);
+                            if(cur_request.required_amount_min.amount > conclusion_payout_amount.amount){
+                                modify(cur_request, [&](committee_request_object &c) {
+                                    c.conclusion_payout_amount=conclusion_payout_amount;
+                                    c.conclusion_time = head_block_time();
+                                    c.status = 3;
+                                });
+                                push_virtual_operation(committee_cancel_request_operation(cur_request.request_id));
+                            }
+                            else{
+                                modify(cur_request, [&](committee_request_object &c) {
+                                    c.conclusion_payout_amount=conclusion_payout_amount;
+                                    c.conclusion_time = head_block_time();
+                                    c.remain_payout_amount=conclusion_payout_amount;
+                                    c.status = 4;
+                                });
+                                push_virtual_operation(committee_approve_request_operation(cur_request.request_id));
+                            }
+                        }
+                    }
+                    else{
                         modify(cur_request, [&](committee_request_object &c) {
                             c.conclusion_time = head_block_time();
                             c.status = 2;
                         });
                         push_virtual_operation(committee_cancel_request_operation(cur_request.request_id));
-                    }
-                    else{
-                        calculated_payment=cur_request.required_amount_max.amount*actual_rshares/max_rshares;
-                        asset conclusion_payout_amount = asset(calculated_payment, TOKEN_SYMBOL);
-                        if(cur_request.required_amount_min.amount > conclusion_payout_amount.amount){
-                            modify(cur_request, [&](committee_request_object &c) {
-                                c.conclusion_payout_amount=conclusion_payout_amount;
-                                c.conclusion_time = head_block_time();
-                                c.status = 3;
-                            });
-                            push_virtual_operation(committee_cancel_request_operation(cur_request.request_id));
-                        }
-                        else{
-                            modify(cur_request, [&](committee_request_object &c) {
-                                c.conclusion_payout_amount=conclusion_payout_amount;
-                                c.conclusion_time = head_block_time();
-                                c.remain_payout_amount=conclusion_payout_amount;
-                                c.status = 4;
-                            });
-                            push_virtual_operation(committee_approve_request_operation(cur_request.request_id));
-                        }
                     }
                 }
             }
@@ -3381,6 +3390,9 @@ namespace graphene { namespace chain {
             _hardfork_times[CHAIN_HARDFORK_1] = fc::time_point_sec(CHAIN_HARDFORK_1_TIME);
             _hardfork_versions[CHAIN_HARDFORK_1] = CHAIN_HARDFORK_1_VERSION;
 
+            _hardfork_times[CHAIN_HARDFORK_2] = fc::time_point_sec(CHAIN_HARDFORK_2_TIME);
+            _hardfork_versions[CHAIN_HARDFORK_2] = CHAIN_HARDFORK_2_VERSION;
+
             const auto &hardforks = get_hardfork_property_object();
             FC_ASSERT(
                 hardforks.last_hardfork <= CHAIN_NUM_HARDFORKS,
@@ -3457,6 +3469,8 @@ namespace graphene { namespace chain {
 
             switch (hardfork) {
                 case CHAIN_HARDFORK_1:
+                    break;
+                case CHAIN_HARDFORK_2:
                     break;
                 default:
                     break;

@@ -1,0 +1,6 @@
+// 1 Hardfork on VIZ mainnet, fix committee check for approve_min_shares
+#ifndef CHAIN_HARDFORK_2
+#define CHAIN_HARDFORK_2 2
+#define CHAIN_HARDFORK_2_TIME 1538906400 // 07 Oct 2018 10:00:00 GMT
+#define CHAIN_HARDFORK_2_VERSION hardfork_version( version(1, 2, 0) )
+#endif
