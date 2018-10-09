@@ -1336,7 +1336,7 @@ namespace graphene { namespace chain {
                         actual_rshares+=voter_account.effective_vesting_shares().amount.value*cur_vote.vote_percent/CHAIN_100_PERCENT;
                     }
                     approve_min_shares=props.total_vesting_shares.amount * consensus.median_props.committee_request_approve_min_percent / CHAIN_100_PERCENT;
-                    if(approve_min_shares <= max_rshares){
+                    if(approve_min_shares > max_rshares){
                         modify(cur_request, [&](committee_request_object &c) {
                             c.conclusion_time = head_block_time();
                             c.status = 2;
