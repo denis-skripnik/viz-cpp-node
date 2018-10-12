@@ -1349,7 +1349,7 @@ namespace graphene { namespace chain {
                         push_virtual_operation(committee_cancel_request_operation(cur_request.request_id));
                     }
                     else{
-                        calculated_payment=cur_request.required_amount_max.amount*actual_rshares/max_rshares;
+                        calculated_payment=( ( fc::uint128_t(cur_request.required_amount_max.amount) * ( fc::uint128_t(CHAIN_100_PERCENT) * fc::uint128_t(actual_rshares) / fc::uint128_t(max_rshares) ) ) / fc::uint128_t(CHAIN_100_PERCENT) ).to_uint64();
                         asset conclusion_payout_amount = asset(calculated_payment, TOKEN_SYMBOL);
                         if(cur_request.required_amount_min.amount > conclusion_payout_amount.amount){
                             modify(cur_request, [&](committee_request_object &c) {
@@ -1374,11 +1374,11 @@ namespace graphene { namespace chain {
             if ((head_block_num() % COMMITTEE_REQUEST_PROCESSING ) != 0) return;
             uint32_t committee_payment_request_count = 1;
             const auto &idx4_count = get_index<committee_request_index>().indices().get<by_status>();
-            auto itr3 = idx4_count.lower_bound(4);
-            while (itr3 != idx4_count.end() &&
-                   itr3->status == 4) {
+            auto itr4 = idx4_count.lower_bound(4);
+            while (itr4 != idx4_count.end() &&
+                   itr4->status == 4) {
                 committee_payment_request_count++;
-                ++itr3;
+                ++itr4;
             }
 
             const auto &dgp = get_dynamic_global_properties();
