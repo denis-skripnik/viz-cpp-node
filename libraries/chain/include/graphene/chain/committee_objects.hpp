@@ -6,6 +6,7 @@
 #include <graphene/chain/chain_object_types.hpp>
 #include <graphene/chain/shared_authority.hpp>
 #include <graphene/chain/witness_objects.hpp>
+#include <graphene/chain/content_object.hpp>
 
 #include <boost/multi_index/composite_key.hpp>
 
@@ -17,14 +18,15 @@ namespace graphene {
             committee_request_object() = delete;
 
             template<typename Constructor, typename Allocator>
-            committee_request_object(Constructor &&c, allocator <Allocator> a) {
+            committee_request_object(Constructor &&c, allocator <Allocator> a)
+                    :url(a) {
                 c(*this);
             }
 
             id_type id;
             uint32_t request_id;
 
-            string url;
+            shared_string url;
             account_name_type creator;
             account_name_type worker;
 
@@ -46,6 +48,8 @@ namespace graphene {
 
         struct by_request_id;
         struct by_status;
+        struct by_creator;
+        struct by_creator_url;
         typedef multi_index_container <
             committee_request_object,
             indexed_by<
@@ -58,6 +62,17 @@ namespace graphene {
                 >,
                 ordered_non_unique<tag<by_status>,
                     member<committee_request_object, uint16_t, &committee_request_object::status>
+                >,
+                ordered_non_unique<tag<by_creator>,
+                    member<committee_request_object, account_name_type, &committee_request_object::creator>
+                >,
+                ordered_unique<tag<by_creator_url>,
+                    composite_key<
+                        committee_request_object,
+                        member<committee_request_object, account_name_type, &committee_request_object::creator>,
+                        member<committee_request_object, shared_string, &committee_request_object::url>
+                    >,
+                    composite_key_compare <std::less<account_name_type>, strcmp_less>
                 >
             >,
             allocator <committee_request_object>
