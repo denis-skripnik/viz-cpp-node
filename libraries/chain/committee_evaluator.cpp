@@ -11,18 +11,22 @@ namespace graphene { namespace chain {
 
         bool find=false;
 
-        const auto &idx = _db.get_index<committee_request_index>().indices().get<by_id>();
-        for(const auto& itr : idx){
-            if(itr.creator==o.creator){
-                if(std::strcmp(itr.url.c_str(),o.url.c_str())==0){
-                    find=true;
-                    FC_ASSERT(!find, "Committee request with same creator and url already exist.");
-                }
-                if(COMMITTEE_REQUEST_PER_TIME>(_db.head_block_time() - itr.start_time).to_seconds()){
-                    find=true;
-                    FC_ASSERT(!find, "Committee request can not be created by same creator before COMMITTEE_REQUEST_PER_TIME ends.");
-                }
+        const auto &idx = _db.get_index<committee_request_index>().indices().get<by_creator_url>();
+        auto itr = idx.find(boost::make_tuple(o.creator, o.url));
+        if(itr != idx.end()){
+            find=true;
+            FC_ASSERT(!find, "Committee request with same creator and url already exist.");
+        }
+
+        const auto &c_idx = _db.get_index<committee_request_index>().indices().get<by_creator>();
+        auto c_itr = c_idx.lower_bound(o.creator);
+        while (c_itr != c_idx.end() &&
+               c_itr->creator == o.creator) {
+            if(COMMITTEE_REQUEST_PER_TIME>(_db.head_block_time() - c_itr->start_time).to_seconds()){
+                find=true;
+                FC_ASSERT(!find, "Committee request can not be created by same creator before COMMITTEE_REQUEST_PER_TIME ends.");
             }
+            ++c_itr;
         }
 
         if(!find){
@@ -33,7 +37,7 @@ namespace graphene { namespace chain {
                 c.request_id = committee_request_id;
                 c.creator = o.creator;
                 c.worker = o.worker;
-                c.url.append(o.url.c_str());
+                from_string(c.url, o.url);
                 c.required_amount_min = o.required_amount_min;
                 c.required_amount_max = o.required_amount_max;
                 c.start_time = _db.head_block_time();
