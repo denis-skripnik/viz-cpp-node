@@ -95,9 +95,7 @@ namespace graphene { namespace chain {
             void set_block_num_check_free_size(uint32_t);
             void check_free_memory(bool skip_print, uint32_t current_block_num);
 
-            void set_clear_votes(uint32_t clear_votes_block);
             void set_skip_virtual_ops();
-            bool clear_votes();
 
             /**
              * @brief wipe Delete database from disk, and potentially the raw chain as well.
@@ -529,7 +527,6 @@ namespace graphene { namespace chain {
 
             uint32_t _block_num_check_free_memory = 1000;
 
-            uint32_t _clear_votes_block = 0;
             bool _skip_virtual_ops = false;
             bool _enable_plugins_on_push_transaction = true;
 
