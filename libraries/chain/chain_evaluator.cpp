@@ -874,13 +874,8 @@ namespace graphene { namespace chain {
                     abs_rshares=0;
                 }
 
-                // Lazily delete vote
                 if (itr != content_vote_idx.end() && itr->num_changes == -1) {
-                    if (_db.is_producing())
-                        FC_ASSERT(false, "Cannot vote again on a content after payout.");
-
-                    _db.remove(*itr);
-                    itr = content_vote_idx.end();
+                    FC_ASSERT(false, "Cannot vote again on a content after payout.");
                 }
 
                 if (itr == content_vote_idx.end()) {

@@ -44,7 +44,6 @@ namespace chain {
         size_t inc_shared_memory_size;
         size_t min_free_shared_memory_size;
 
-        uint32_t clear_votes_before_block = 0;
         bool enable_plugins_on_push_transaction;
 
         uint32_t block_num_check_free_size = 0;
@@ -286,7 +285,6 @@ namespace chain {
         my->shared_memory_size = fc::parse_size(options.at("shared-file-size").as<std::string>());
         my->inc_shared_memory_size = fc::parse_size(options.at("inc-shared-file-size").as<std::string>());
         my->min_free_shared_memory_size = fc::parse_size(options.at("min-free-shared-file-size").as<std::string>());
-        my->clear_votes_before_block = options.at("clear-votes-before-block").as<uint32_t>();
         my->skip_virtual_ops = options.at("skip-virtual-ops").as<bool>();
 
         if (options.count("block-num-check-free-size")) {
@@ -336,8 +334,6 @@ namespace chain {
 
         my->db.set_inc_shared_memory_size(my->inc_shared_memory_size);
         my->db.set_min_free_shared_memory_size(my->min_free_shared_memory_size);
-
-        my->db.set_clear_votes(my->clear_votes_before_block);
 
         if(my->skip_virtual_ops) {
             my->db.set_skip_virtual_ops();

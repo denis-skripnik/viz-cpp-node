@@ -359,14 +359,6 @@ namespace graphene { namespace chain {
             _block_num_check_free_memory = value;
         }
 
-        void database::set_clear_votes(uint32_t clear_votes_block) {
-            _clear_votes_block = clear_votes_block;
-        }
-
-        bool database::clear_votes() {
-            return _clear_votes_block > head_block_num();
-        }
-
         void database::set_skip_virtual_ops() {
             _skip_virtual_ops = true;
         }
@@ -2156,10 +2148,6 @@ namespace graphene { namespace chain {
                         modify(cur_vote, [&](content_vote_object &cvo) {
                             cvo.num_changes = -1;
                         });
-                    } else {
-                        if(clear_votes()) {
-                            remove(cur_vote);
-                        }
                     }
                 }
             } FC_CAPTURE_AND_RETHROW()
