@@ -112,6 +112,7 @@ namespace graphene { namespace plugins { namespace tags {
     struct by_author_content;
     struct by_content;
     struct by_tag;
+    struct by_created;
 
     using tag_index = multi_index_container<
         tag_object,
@@ -119,6 +120,9 @@ namespace graphene { namespace plugins { namespace tags {
             ordered_unique<
                 tag<by_id>,
                 member<tag_object, tag_object::id_type, &tag_object::id>>,
+            ordered_non_unique<
+                tag<by_created>,
+                    member<tag_object, time_point_sec, &tag_object::created>>,
             ordered_unique<
                 tag<by_content>,
                 composite_key<

@@ -153,6 +153,8 @@ namespace graphene { namespace plugins { namespace tags {
 
         void plugin_initialize(const boost::program_options::variables_map& options) override;
 
+        void remove_lifespan_content();
+
         void plugin_startup() override;
 
         void plugin_shutdown() override;
