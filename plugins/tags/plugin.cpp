@@ -113,6 +113,8 @@ namespace graphene { namespace plugins { namespace tags {
 
         get_languages_result get_languages();
 
+        uint32_t content_livespan_ = 604800;
+
     private:
         graphene::chain::database& database_;
         std::unique_ptr<discussion_helper> helper;
@@ -195,10 +197,12 @@ namespace graphene { namespace plugins { namespace tags {
     tags_plugin::tags_plugin() {
     }
 
-    void tags_plugin::set_program_options(
-        boost::program_options::options_description&,
-        boost::program_options::options_description& config_file_options
-    ) {
+    void tags_plugin::set_program_options(boost::program_options::options_description &cli,
+                                            boost::program_options::options_description &cfg) {
+        cli.add_options()
+            ("tags-content-lifespan", boost::program_options::value<uint32_t>()->default_value(604800),
+                "Set the sec amount before content remove from tag index");
+        cfg.add(cli);
     }
 
     void tags_plugin::plugin_initialize(const boost::program_options::variables_map& options) {
@@ -214,8 +218,61 @@ namespace graphene { namespace plugins { namespace tags {
         add_plugin_index<tags::author_tag_stats_index>(db);
         add_plugin_index<tags::language_index>(db);
 #endif
+
+        if (options.count("tags-content-lifespan")) {
+            uint32_t content_livespan = options["tags-content-lifespan"].as<uint32_t>();
+            pimpl->content_livespan_ = content_livespan;
+        }
+
         JSON_RPC_REGISTER_API (name());
 
+    }
+
+    void tags_plugin::remove_lifespan_content() {
+        auto& db = pimpl->database();
+        const auto& content_idx = db.get_index<tag_index>().indices().get<by_created>();
+        time_point_sec lifespan_moment=fc::time_point::now() - fc::seconds(pimpl->content_livespan_);
+        for(auto citr_cur = content_idx.begin();citr_cur != content_idx.lower_bound(lifespan_moment); ++citr_cur) {
+            const tag_object* tag = &*citr_cur;
+            const auto& idx = db.get_index<author_tag_stats_index>().indices().get<by_author_tag_posts>();
+            auto itr = idx.lower_bound(std::make_tuple(tag->author, tag->type, tag->name));
+            if (itr != idx.end() && itr->author == tag->author && itr->name == tag->name && itr->type == tag->type) {
+                if (itr->total_posts == 1) {
+                    db.remove(*itr);
+                } else {
+                    db.modify(*itr, [&](author_tag_stats_object& stats) {
+                        stats.total_posts--;
+                    });
+                }
+            }
+            const auto& idx2 = db.get_index<tag_stats_index>().indices().get<by_tag>();
+            auto itr2 = idx2.find(std::make_tuple(tag->type, tag->name));
+            if (itr2 != idx2.end()) {
+                bool need_remove = false;
+                db.modify(*itr2, [&](tag_stats_object& s) {
+                    if (tag->parent == content_object::id_type()) {
+                        s.total_children_rshares -= tag->children_rshares;
+                        s.top_posts--;
+                    } else {
+                        s.contents--;
+                    }
+                    s.net_votes -= tag->net_votes;
+                    need_remove = (s.top_posts == 0) && (s.contents == 0);
+                });
+
+                if (need_remove) {
+                    if (itr2->type == tag_type::language) {
+                        auto& lidx = db.get_index<language_index>().indices().get<by_tag>();
+                        auto litr = lidx.find(tag->name);
+                        if (lidx.end() != litr) {
+                            db.remove(*litr);
+                        }
+                    }
+                    db.remove(*itr2);
+                }
+            }
+            db.remove(*tag);
+        }
     }
 
     tags_plugin::~tags_plugin() = default;
@@ -639,6 +696,7 @@ namespace graphene { namespace plugins { namespace tags {
         auto query = args.args->at(0).as<discussion_query>();
         query.prepare();
         query.validate();
+        remove_lifespan_content();
 #ifndef IS_LOW_MEM
         return pimpl->select_ordered_discussions<sort::by_created>(
             query,
