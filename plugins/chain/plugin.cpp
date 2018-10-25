@@ -226,7 +226,7 @@ namespace chain {
                 "skip-virtual-ops", boost::program_options::value<bool>()->default_value(false),
                 "virtual operations will not be passed to the plugins, helps to save some memory"
             ) (
-                "enable-plugins-on-push-transaction", boost::program_options::value<bool>()->default_value(true),
+                "enable-plugins-on-push-transaction", boost::program_options::value<bool>()->default_value(false),
                 "enable calling of plugins for operations on push_transaction"
             );
         cli.add_options()

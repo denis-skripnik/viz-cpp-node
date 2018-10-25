@@ -528,7 +528,7 @@ namespace graphene { namespace chain {
             uint32_t _block_num_check_free_memory = 1000;
 
             bool _skip_virtual_ops = false;
-            bool _enable_plugins_on_push_transaction = true;
+            bool _enable_plugins_on_push_transaction = false;
 
             flat_map<std::string, std::shared_ptr<custom_operation_interpreter>> _custom_operation_interpreters;
             std::string _json_schema;
