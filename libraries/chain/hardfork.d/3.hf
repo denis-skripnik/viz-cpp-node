@@ -1,0 +1,6 @@
+// 3 Hardfork on VIZ mainnet, fix vote evaluator with awarded_rshares
+#ifndef CHAIN_HARDFORK_3
+#define CHAIN_HARDFORK_3 3
+#define CHAIN_HARDFORK_3_TIME 1540497600 // 25 Oct 2018 20:00:00 GMT
+#define CHAIN_HARDFORK_3_VERSION hardfork_version( version(1, 3, 0) )
+#endif
