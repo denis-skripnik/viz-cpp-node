@@ -33,6 +33,7 @@
 #include <cerrno>
 #include <cstring>
 
+#define VIRTUAL_SCHEDULE_LAP_LENGTH  ( fc::uint128_t(uint64_t(-1)) )
 #define VIRTUAL_SCHEDULE_LAP_LENGTH2 ( fc::uint128_t::max_value() )
 
 namespace graphene { namespace chain {
@@ -274,7 +275,6 @@ namespace graphene { namespace chain {
 
                 ilog("Replaying blocks...");
 
-
                 uint64_t skip_flags =
                         skip_block_size_check |
                         skip_witness_signature |
@@ -290,6 +290,8 @@ namespace graphene { namespace chain {
                 with_strong_write_lock([&]() {
                     auto cur_block_num = from_block_num;
                     auto last_block_num = _block_log.head()->block_num();
+                    auto last_block_pos = _block_log.get_block_pos(last_block_num);
+                    int last_reindex_percent = 0;
 
                     set_reserved_memory(1024*1024*1024); // protect from memory fragmentations ...
                     while (cur_block_num < last_block_num) {
@@ -298,14 +300,18 @@ namespace graphene { namespace chain {
                         }
 
                         auto end = fc::time_point::now();
+                        auto cur_block_pos = _block_log.get_block_pos(cur_block_num);
                         auto cur_block = *_block_log.read_block_by_num(cur_block_num);
 
-                        if (cur_block_num % 100000 == 0) {
+                        auto reindex_percent = cur_block_pos * 100 / last_block_pos;
+                        if (reindex_percent - last_reindex_percent >= 1) {
                             std::cerr
-                                << "   " << double(cur_block_num * 100) / last_block_num << "%   "
+                                << "   " << reindex_percent << "%   "
                                 << cur_block_num << " of " << last_block_num
                                 << "   ("  << (free_memory() / (1024 * 1024)) << "M free"
                                 << ", elapsed " << double((end - start).count()) / 1000000.0 << " sec)\n";
+
+                            last_reindex_percent = reindex_percent;
                         }
 
                         apply_block(cur_block, skip_flags);
@@ -333,7 +339,6 @@ namespace graphene { namespace chain {
                 if (_block_log.head()->block_num()) {
                     _fork_db.start_block(*_block_log.head());
                 }
-
                 auto end = fc::time_point::now();
                 ilog("Done reindexing, elapsed time: ${t} sec", ("t",
                         double((end - start).count()) / 1000000.0));
@@ -352,14 +357,6 @@ namespace graphene { namespace chain {
 
         void database::set_block_num_check_free_size(uint32_t value) {
             _block_num_check_free_memory = value;
-        }
-
-        void database::set_clear_votes(uint32_t clear_votes_block) {
-            _clear_votes_block = clear_votes_block;
-        }
-
-        bool database::clear_votes() {
-            return _clear_votes_block > head_block_num();
         }
 
         void database::set_skip_virtual_ops() {
@@ -1344,7 +1341,7 @@ namespace graphene { namespace chain {
                         push_virtual_operation(committee_cancel_request_operation(cur_request.request_id));
                     }
                     else{
-                        calculated_payment=cur_request.required_amount_max.amount*actual_rshares/max_rshares;
+                        calculated_payment=( ( fc::uint128_t(cur_request.required_amount_max.amount) * ( fc::uint128_t(CHAIN_100_PERCENT) * fc::uint128_t(actual_rshares) / fc::uint128_t(max_rshares) ) ) / fc::uint128_t(CHAIN_100_PERCENT) ).to_uint64();
                         asset conclusion_payout_amount = asset(calculated_payment, TOKEN_SYMBOL);
                         if(cur_request.required_amount_min.amount > conclusion_payout_amount.amount){
                             modify(cur_request, [&](committee_request_object &c) {
@@ -1369,11 +1366,11 @@ namespace graphene { namespace chain {
             if ((head_block_num() % COMMITTEE_REQUEST_PROCESSING ) != 0) return;
             uint32_t committee_payment_request_count = 1;
             const auto &idx4_count = get_index<committee_request_index>().indices().get<by_status>();
-            auto itr3 = idx4_count.lower_bound(4);
-            while (itr3 != idx4_count.end() &&
-                   itr3->status == 4) {
+            auto itr4 = idx4_count.lower_bound(4);
+            while (itr4 != idx4_count.end() &&
+                   itr4->status == 4) {
                 committee_payment_request_count++;
-                ++itr3;
+                ++itr4;
             }
 
             const auto &dgp = get_dynamic_global_properties();
@@ -2151,10 +2148,6 @@ namespace graphene { namespace chain {
                         modify(cur_vote, [&](content_vote_object &cvo) {
                             cvo.num_changes = -1;
                         });
-                    } else {
-                        if(clear_votes()) {
-                            remove(cur_vote);
-                        }
                     }
                 }
             } FC_CAPTURE_AND_RETHROW()

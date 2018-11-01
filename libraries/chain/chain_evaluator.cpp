@@ -874,13 +874,8 @@ namespace graphene { namespace chain {
                     abs_rshares=0;
                 }
 
-                // Lazily delete vote
                 if (itr != content_vote_idx.end() && itr->num_changes == -1) {
-                    if (_db.is_producing())
-                        FC_ASSERT(false, "Cannot vote again on a content after payout.");
-
-                    _db.remove(*itr);
-                    itr = content_vote_idx.end();
+                    FC_ASSERT(false, "Cannot vote again on a content after payout.");
                 }
 
                 if (itr == content_vote_idx.end()) {
@@ -891,6 +886,7 @@ namespace graphene { namespace chain {
                     if(voter.awarded_rshares >= static_cast< uint64_t >(abs_rshares)){
                         _db.modify(voter, [&](account_object &a) {
                             a.awarded_rshares -= static_cast< uint64_t >(abs_rshares);
+                            a.energy = current_energy;
                             a.last_vote_time = _db.head_block_time();
                             a.vote_count++;
                         });
