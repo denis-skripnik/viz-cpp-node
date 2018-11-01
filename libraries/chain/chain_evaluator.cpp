@@ -874,13 +874,8 @@ namespace graphene { namespace chain {
                     abs_rshares=0;
                 }
 
-                // Lazily delete vote
                 if (itr != content_vote_idx.end() && itr->num_changes == -1) {
-                    if (_db.is_producing())
-                        FC_ASSERT(false, "Cannot vote again on a content after payout.");
-
-                    _db.remove(*itr);
-                    itr = content_vote_idx.end();
+                    FC_ASSERT(false, "Cannot vote again on a content after payout.");
                 }
 
                 if (itr == content_vote_idx.end()) {
@@ -888,19 +883,38 @@ namespace graphene { namespace chain {
                     /// this is the rshares voting for or against the post
                     int64_t rshares = o.weight < 0 ? -abs_rshares : abs_rshares;
 
-                    if(voter.awarded_rshares >= static_cast< uint64_t >(abs_rshares)){
-                        _db.modify(voter, [&](account_object &a) {
-                            a.awarded_rshares -= static_cast< uint64_t >(abs_rshares);
-                            a.last_vote_time = _db.head_block_time();
-                            a.vote_count++;
-                        });
+                    if(_db.has_hardfork(CHAIN_HARDFORK_3)){
+                        if(voter.awarded_rshares >= static_cast< uint64_t >(abs_rshares)){
+                            _db.modify(voter, [&](account_object &a) {
+                                a.awarded_rshares -= static_cast< uint64_t >(abs_rshares);
+                                a.energy = current_energy;
+                                a.last_vote_time = _db.head_block_time();
+                                a.vote_count++;
+                            });
+                        }
+                        else{
+                            _db.modify(voter, [&](account_object &a) {
+                                a.energy = current_energy - used_energy;
+                                a.last_vote_time = _db.head_block_time();
+                                a.vote_count++;
+                            });
+                        }
                     }
                     else{
-                        _db.modify(voter, [&](account_object &a) {
-                            a.energy = current_energy - used_energy;
-                            a.last_vote_time = _db.head_block_time();
-                            a.vote_count++;
-                        });
+                        if(voter.awarded_rshares >= static_cast< uint64_t >(abs_rshares)){
+                            _db.modify(voter, [&](account_object &a) {
+                                a.awarded_rshares -= static_cast< uint64_t >(abs_rshares);
+                                a.last_vote_time = _db.head_block_time();
+                                a.vote_count++;
+                            });
+                        }
+                        else{
+                            _db.modify(voter, [&](account_object &a) {
+                                a.energy = current_energy - used_energy;
+                                a.last_vote_time = _db.head_block_time();
+                                a.vote_count++;
+                            });
+                        }
                     }
 
                     if (_db.calculate_discussion_payout_time(content) ==
@@ -978,9 +992,9 @@ namespace graphene { namespace chain {
                     int64_t rshares = o.weight < 0 ? -abs_rshares : abs_rshares;
 
                     _db.modify(voter, [&](account_object &a) {
-                    	if(itr->vote_percent < o.weight){
-	                        a.energy = current_energy - used_energy;
-	                    }
+                        if(itr->vote_percent < o.weight){
+                            a.energy = current_energy - used_energy;
+                        }
                         a.last_vote_time = _db.head_block_time();
                     });
 

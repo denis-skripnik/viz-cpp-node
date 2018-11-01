@@ -17,7 +17,8 @@ namespace graphene {
             invite_object() = delete;
 
             template<typename Constructor, typename Allocator>
-            invite_object(Constructor &&c, allocator <Allocator> a) {
+            invite_object(Constructor &&c, allocator <Allocator> a)
+                    :invite_secret(a) {
                 c(*this);
             }
 
@@ -26,7 +27,7 @@ namespace graphene {
             account_name_type creator;
             account_name_type receiver;
             public_key_type invite_key;
-            string invite_secret;
+            shared_string invite_secret;
 
             asset balance = asset(0, TOKEN_SYMBOL);
             asset claimed_balance = asset(0, TOKEN_SYMBOL);

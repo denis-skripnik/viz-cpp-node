@@ -10,7 +10,7 @@ namespace graphene { namespace api {
           creator(o.creator),
           receiver(o.receiver),
           invite_key(o.invite_key),
-          invite_secret(o.invite_secret),
+          invite_secret(to_string(o.invite_secret)),
           balance(o.balance),
           claimed_balance(o.claimed_balance),
           create_time(o.create_time),

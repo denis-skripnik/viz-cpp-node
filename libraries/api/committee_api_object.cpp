@@ -17,7 +17,7 @@ namespace graphene { namespace api {
     committee_api_object::committee_api_object(const graphene::chain::committee_request_object &o/*, const graphene::chain::database &db*/)
         : id(o.id),
           request_id(o.request_id),
-          url(o.url),
+          url(to_string(o.url)),
           creator(o.creator),
           worker(o.worker),
           required_amount_min(o.required_amount_min),
