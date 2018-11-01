@@ -886,6 +886,7 @@ namespace graphene { namespace chain {
                     if(voter.awarded_rshares >= static_cast< uint64_t >(abs_rshares)){
                         _db.modify(voter, [&](account_object &a) {
                             a.awarded_rshares -= static_cast< uint64_t >(abs_rshares);
+                            a.energy = current_energy;
                             a.last_vote_time = _db.head_block_time();
                             a.vote_count++;
                         });
