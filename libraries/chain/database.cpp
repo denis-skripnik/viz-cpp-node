@@ -2930,7 +2930,6 @@ namespace graphene { namespace chain {
                 process_header_extensions(next_block);
 
                 const auto &witness = get_witness(next_block.witness);
-                const auto &hardfork_state = get_hardfork_property_object();
                 FC_ASSERT(witness.running_version >= hardfork_state.current_hardfork_version,
                         "Block produced by witness that is not running current hardfork",
                         ("witness", witness)("next_block.witness", next_block.witness)("hardfork_state", hardfork_state)
