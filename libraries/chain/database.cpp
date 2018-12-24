@@ -2663,7 +2663,7 @@ namespace graphene { namespace chain {
                 });
 
                 /* VIZ Snapshot */
-                auto snapshot_json = fc::path(string("./snapshot.json"));
+                auto snapshot_json = fc::path(appbase::app().data_dir() / "snapshot.json");
 
                 if(fc::exists(snapshot_json))
                 {
