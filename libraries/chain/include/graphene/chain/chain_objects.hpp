@@ -138,6 +138,37 @@ namespace graphene {
         allocator <escrow_object>
         >
         escrow_index;
+
+        class award_shares_expire_object
+                : public object<award_shares_expire_object_type, award_shares_expire_object> {
+        public:
+            template<typename Constructor, typename Allocator>
+            award_shares_expire_object(Constructor &&c, allocator <Allocator> a) {
+                c(*this);
+            }
+
+            award_shares_expire_object() {
+            }
+
+            id_type id;
+
+            time_point_sec expires;
+            share_type rshares;
+        };
+        struct by_expiration;
+        typedef multi_index_container <
+            award_shares_expire_object,
+            indexed_by<
+                ordered_unique<tag<by_id>,
+                    member<award_shares_expire_object, award_shares_expire_object_id_type, &award_shares_expire_object::id>
+                >,
+                ordered_non_unique<tag<by_expiration>,
+                    member<award_shares_expire_object, time_point_sec, &award_shares_expire_object::expires>
+                >
+            >,
+            allocator <award_shares_expire_object>
+        >
+        award_shares_expire_index;
     }
 } // graphene::chain
 
@@ -154,3 +185,7 @@ FC_REFLECT((graphene::chain::escrow_object),
                 (token_balance)(pending_fee)
                 (to_approved)(agent_approved)(disputed))
 CHAINBASE_SET_INDEX_TYPE(graphene::chain::escrow_object, graphene::chain::escrow_index)
+
+FC_REFLECT((graphene::chain::award_shares_expire_object),
+    (id)(expires)(rshares))
+CHAINBASE_SET_INDEX_TYPE(graphene::chain::award_shares_expire_object, graphene::chain::award_shares_expire_index)

@@ -34,12 +34,14 @@ namespace graphene { namespace chain {
         DEFINE_EVALUATOR(delegate_vesting_shares)
         DEFINE_EVALUATOR(proposal_delete)
         DEFINE_EVALUATOR(chain_properties_update)
+        DEFINE_EVALUATOR(versioned_chain_properties_update)
         DEFINE_EVALUATOR(committee_worker_create_request)
         DEFINE_EVALUATOR(committee_worker_cancel_request)
         DEFINE_EVALUATOR(committee_vote_request)
         DEFINE_EVALUATOR(create_invite)
         DEFINE_EVALUATOR(claim_invite_balance)
         DEFINE_EVALUATOR(invite_registration)
+        DEFINE_EVALUATOR(award)
 
         class proposal_create_evaluator: public evaluator_impl<proposal_create_evaluator> {
         public:

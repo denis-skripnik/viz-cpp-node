@@ -1623,32 +1623,38 @@ namespace graphene { namespace chain {
                 active.push_back(&get_witness(wso.current_shuffled_witnesses[i]));
             }
 
-            chain_properties median_props;
+            chain_properties_hf4 median_props;
+            auto median = active.size() / 2;
 
             auto calc_median = [&](auto&& param) {
                 std::nth_element(
-                    active.begin(), active.begin() + active.size() / 2, active.end(),
+                    active.begin(), active.begin() + median, active.end(),
                     [&](const auto* a, const auto* b) {
                         return a->props.*param < b->props.*param;
                     }
                 );
-                median_props.*param = active[active.size() / 2]->props.*param;
+                median_props.*param = active[median]->props.*param;
             };
 
-            calc_median(&chain_properties::account_creation_fee);
-            calc_median(&chain_properties::maximum_block_size);
-            calc_median(&chain_properties::create_account_delegation_ratio);
-            calc_median(&chain_properties::create_account_delegation_time);
-            calc_median(&chain_properties::min_delegation);
-            calc_median(&chain_properties::min_curation_percent);
+            calc_median(&chain_properties_init::account_creation_fee);
+            calc_median(&chain_properties_init::maximum_block_size);
+            calc_median(&chain_properties_init::create_account_delegation_ratio);
+            calc_median(&chain_properties_init::create_account_delegation_time);
+            calc_median(&chain_properties_init::min_delegation);
+            calc_median(&chain_properties_init::min_curation_percent);
             if(has_hardfork(CHAIN_HARDFORK_1)){
-                calc_median(&chain_properties::max_curation_percent);
+                calc_median(&chain_properties_init::max_curation_percent);
             }
-            calc_median(&chain_properties::bandwidth_reserve_percent);
-            calc_median(&chain_properties::bandwidth_reserve_below);
-            calc_median(&chain_properties::flag_energy_additional_cost);
-            calc_median(&chain_properties::vote_accounting_min_rshares);
-            calc_median(&chain_properties::committee_request_approve_min_percent);
+            calc_median(&chain_properties_init::bandwidth_reserve_percent);
+            calc_median(&chain_properties_init::bandwidth_reserve_below);
+            calc_median(&chain_properties_init::flag_energy_additional_cost);
+            calc_median(&chain_properties_init::vote_accounting_min_rshares);
+            calc_median(&chain_properties_init::committee_request_approve_min_percent);
+            if(has_hardfork(CHAIN_HARDFORK_4)){
+                calc_median(&chain_properties_hf4::inflation_witness_percent);
+                calc_median(&chain_properties_hf4::inflation_ratio_committee_vs_reward_fund);
+                calc_median(&chain_properties_hf4::inflation_recalc_period);
+            }
 
             modify(wso, [&](witness_schedule_object &_wso) {
                 _wso.median_props = median_props;
@@ -2175,6 +2181,18 @@ namespace graphene { namespace chain {
             }
         }
 
+        void database::process_inflation_recalc(){
+            const auto &props = get_dynamic_global_properties();
+            const witness_schedule_object &consensus = get_witness_schedule_object();
+            if(props.inflation_calc_block_num + consensus.median_props.inflation_recalc_period < props.head_block_number){
+                modify( props, [&]( dynamic_global_property_object& p ){
+                   p.inflation_calc_block_num = props.head_block_number;
+                   p.inflation_witness_percent = consensus.median_props.inflation_witness_percent;
+                   p.inflation_ratio = consensus.median_props.inflation_ratio_committee_vs_reward_fund;
+                });
+            }
+        }
+
         void database::process_funds() {
             const auto &props = get_dynamic_global_properties();
             share_type inflation_rate = int64_t( CHAIN_FIXED_INFLATION );
@@ -2192,32 +2210,52 @@ namespace graphene { namespace chain {
             }
             share_type inflation_per_block = inflation_per_year / int64_t( CHAIN_BLOCKS_PER_YEAR );
 
-            /*ilog( "Inflation status: props.head_block_number=${h1}, inflation_per_year=${h2}, new_supply=${h3}, inflation_per_block=${h4}",
-               ("h1",props.head_block_number)("h2", inflation_per_year)("h3",new_supply)("h4",inflation_per_block)
-            );*/
-            auto content_reward = ( inflation_per_block * CHAIN_REWARD_FUND_PERCENT ) / CHAIN_100_PERCENT;
-            auto vesting_reward = ( inflation_per_block * CHAIN_VESTING_FUND_PERCENT ) / CHAIN_100_PERCENT; /// 15% to vesting fund
-            auto committee_reward = ( inflation_per_block * CHAIN_COMMITTEE_FUND_PERCENT ) / CHAIN_100_PERCENT;
-            auto witness_reward = inflation_per_block - content_reward - vesting_reward - committee_reward; /// Remaining 10% to witness pay
+            if(has_hardfork(CHAIN_HARDFORK_4)){//consensus inflation model
+                auto witness_reward = ( inflation_per_block * props.inflation_witness_percent ) / CHAIN_100_PERCENT;
+                auto inflation_ratio_reward = inflation_per_block - witness_reward;
+                auto committee_reward = ( inflation_ratio_reward * props.inflation_ratio ) / CHAIN_100_PERCENT;
+                auto content_reward = inflation_ratio_reward - committee_reward;
+                inflation_per_block = witness_reward + committee_reward + content_reward;
 
-            const auto& cwit = get_witness( props.current_witness );
+                modify( props, [&]( dynamic_global_property_object& p )
+                {
+                   p.committee_fund += asset( committee_reward, TOKEN_SYMBOL );
+                   p.total_reward_fund += asset( content_reward, TOKEN_SYMBOL );
+                   p.current_supply += asset( inflation_per_block, TOKEN_SYMBOL );
+                });
 
-            inflation_per_block = content_reward + vesting_reward + committee_reward + witness_reward;
-            /*
-            elog( "Final inflation_per_block=${h1}, content_reward=${h2}, committee_reward=${h3}, witness_reward=${h4}, vesting_reward=${h5}",
-               ("h1",inflation_per_block)("h2", content_reward)("h3",committee_reward)("h4",witness_reward)("h5",vesting_reward)
-            );
-            */
-            modify( props, [&]( dynamic_global_property_object& p )
-            {
-               p.total_vesting_fund += asset( vesting_reward, TOKEN_SYMBOL );
-               p.committee_fund += asset( committee_reward, TOKEN_SYMBOL );
-               p.total_reward_fund += asset( content_reward, TOKEN_SYMBOL );
-               p.current_supply += asset( inflation_per_block, TOKEN_SYMBOL );
-            });
+                const auto& cwit = get_witness( props.current_witness );
+                auto witness_reward_shares = create_vesting(get_account(cwit.owner), asset(witness_reward, TOKEN_SYMBOL));
+                push_virtual_operation(witness_reward_operation(cwit.owner,witness_reward_shares));
+            }
+            else{
+                /*ilog( "Inflation status: props.head_block_number=${h1}, inflation_per_year=${h2}, new_supply=${h3}, inflation_per_block=${h4}",
+                   ("h1",props.head_block_number)("h2", inflation_per_year)("h3",new_supply)("h4",inflation_per_block)
+                );*/
+                auto content_reward = ( inflation_per_block * CHAIN_REWARD_FUND_PERCENT ) / CHAIN_100_PERCENT;
+                auto vesting_reward = ( inflation_per_block * CHAIN_VESTING_FUND_PERCENT ) / CHAIN_100_PERCENT; /// 15% to vesting fund
+                auto committee_reward = ( inflation_per_block * CHAIN_COMMITTEE_FUND_PERCENT ) / CHAIN_100_PERCENT;
+                auto witness_reward = inflation_per_block - content_reward - vesting_reward - committee_reward; /// Remaining 10% to witness pay
 
-            auto witness_reward_shares = create_vesting(get_account(cwit.owner), asset(witness_reward, TOKEN_SYMBOL));
-            push_virtual_operation(witness_reward_operation(cwit.owner,witness_reward_shares));
+                const auto& cwit = get_witness( props.current_witness );
+
+                inflation_per_block = content_reward + vesting_reward + committee_reward + witness_reward;
+                /*
+                elog( "Final inflation_per_block=${h1}, content_reward=${h2}, committee_reward=${h3}, witness_reward=${h4}, vesting_reward=${h5}",
+                   ("h1",inflation_per_block)("h2", content_reward)("h3",committee_reward)("h4",witness_reward)("h5",vesting_reward)
+                );
+                */
+                modify( props, [&]( dynamic_global_property_object& p )
+                {
+                   p.total_vesting_fund += asset( vesting_reward, TOKEN_SYMBOL );
+                   p.committee_fund += asset( committee_reward, TOKEN_SYMBOL );
+                   p.total_reward_fund += asset( content_reward, TOKEN_SYMBOL );
+                   p.current_supply += asset( inflation_per_block, TOKEN_SYMBOL );
+                });
+
+                auto witness_reward_shares = create_vesting(get_account(cwit.owner), asset(witness_reward, TOKEN_SYMBOL));
+                push_virtual_operation(witness_reward_operation(cwit.owner,witness_reward_shares));
+            }
         }
 
 /**
@@ -2247,6 +2285,53 @@ namespace graphene { namespace chain {
 
                 return payout;
             } FC_CAPTURE_AND_RETHROW((rshares))
+        }
+
+        share_type database::claim_rshare_award(share_type rshares) {
+        try {
+                FC_ASSERT(rshares > 0);
+
+                const auto &props = get_dynamic_global_properties();
+
+                u256 rs(rshares.value);
+                u256 rf(props.total_reward_fund.amount.value);
+                u256 total_rshares = to256(props.total_reward_shares);
+                total_rshares+=rshares.value;
+
+                u256 payout_u256 = (rf * rs) / total_rshares;
+                FC_ASSERT(payout_u256 <=
+                          u256(uint64_t(std::numeric_limits<int64_t>::max())));
+                uint64_t payout = static_cast< uint64_t >( payout_u256 );
+
+                modify(props, [&](dynamic_global_property_object &p) {
+                    p.total_reward_fund.amount -= payout;
+                    p.total_reward_shares += rshares.value;
+                });
+
+                create<award_shares_expire_object>([&](award_shares_expire_object& ase) {
+                    ase.expires = head_block_time() + fc::seconds(CHAIN_ENERGY_REGENERATION_SECONDS);
+                    ase.rshares = rshares;
+                });
+
+                return payout;
+            } FC_CAPTURE_AND_RETHROW((rshares))
+        }
+
+        void database::expire_award_shares_processing() {
+            const auto &props = get_dynamic_global_properties();
+            const auto &idx = get_index<award_shares_expire_index>().indices().get<by_expiration>();
+            auto itr = idx.begin();
+
+            while(itr != idx.end()) {
+                const auto &itr2 = itr;
+                ++itr;
+                if(itr2->expires <= head_block_time()){
+                    modify(props, [&](dynamic_global_property_object &p) {
+                        p.total_reward_shares -= itr2->rshares.value;
+                    });
+                    remove(*itr2);
+                }
+            }
         }
 
         void database::account_recovery_processing() {
@@ -2347,12 +2432,14 @@ namespace graphene { namespace chain {
             _my->_evaluator_registry.register_evaluator<proposal_update_evaluator>();
             _my->_evaluator_registry.register_evaluator<proposal_delete_evaluator>();
             _my->_evaluator_registry.register_evaluator<chain_properties_update_evaluator>();
+            _my->_evaluator_registry.register_evaluator<versioned_chain_properties_update_evaluator>();
             _my->_evaluator_registry.register_evaluator<committee_worker_create_request_evaluator>();
             _my->_evaluator_registry.register_evaluator<committee_worker_cancel_request_evaluator>();
             _my->_evaluator_registry.register_evaluator<committee_vote_request_evaluator>();
             _my->_evaluator_registry.register_evaluator<create_invite_evaluator>();
             _my->_evaluator_registry.register_evaluator<claim_invite_balance_evaluator>();
             _my->_evaluator_registry.register_evaluator<invite_registration_evaluator>();
+            _my->_evaluator_registry.register_evaluator<award_evaluator>();
         }
 
         void database::set_custom_operation_interpreter(const std::string &id, std::shared_ptr<custom_operation_interpreter> registry) {
@@ -2395,6 +2482,7 @@ namespace graphene { namespace chain {
             add_core_index<committee_request_index>(*this);
             add_core_index<committee_vote_index>(*this);
             add_core_index<invite_index>(*this);
+            add_core_index<award_shares_expire_index>(*this);
 
             _plugin_index_signal();
         }
@@ -2974,6 +3062,10 @@ namespace graphene { namespace chain {
                 update_bandwidth_reserve_candidates();
                 update_witness_schedule();
 
+                if(has_hardfork(CHAIN_HARDFORK_4)){
+                    process_inflation_recalc();
+                    expire_award_shares_processing();
+                }
                 process_funds();
                 process_content_cashout();
                 process_vesting_withdrawals();
@@ -3389,6 +3481,9 @@ namespace graphene { namespace chain {
             _hardfork_times[CHAIN_HARDFORK_3] = fc::time_point_sec(CHAIN_HARDFORK_3_TIME);
             _hardfork_versions[CHAIN_HARDFORK_3] = CHAIN_HARDFORK_3_VERSION;
 
+            _hardfork_times[CHAIN_HARDFORK_4] = fc::time_point_sec(CHAIN_HARDFORK_4_TIME);
+            _hardfork_versions[CHAIN_HARDFORK_4] = CHAIN_HARDFORK_4_VERSION;
+
             const auto &hardforks = get_hardfork_property_object();
             FC_ASSERT(
                 hardforks.last_hardfork <= CHAIN_NUM_HARDFORKS,
@@ -3470,6 +3565,103 @@ namespace graphene { namespace chain {
                     break;
                 case CHAIN_HARDFORK_3:
                     break;
+                case CHAIN_HARDFORK_4:
+                {
+                    const auto &props = get_dynamic_global_properties();
+                    u256 summary_awarded_rshares_u256 = 0;
+                    const auto block_time = head_block_time();
+                    //need to calc summary content net_rshares for competition with summary_awarded_rshares from accounts
+                    //also set cashout time for current block_time for init process_content_cashout after summary_awarded_rshares payouts
+                    const auto &cidx = get_index<content_index>().indices().get<by_cashout_time>();
+
+                    auto current = cidx.begin();
+                    while (current != cidx.end() && current->cashout_time > block_time) {
+                        summary_awarded_rshares_u256 += to256(current->net_rshares.value);
+                        modify(*current, [&](content_object &c) {
+                            c.cashout_time = block_time;
+                        });
+                        current = cidx.begin();
+                    }
+
+                    //recalc summary_awarded_rshares and split reward fund between all accounts contains awarded_rshares
+                    const auto &sidx = get_index<account_index>().indices().get<by_id>();
+                    for (auto itr = sidx.begin(); itr != sidx.end(); ++itr) {
+                        if(itr->awarded_rshares > 0){
+                            summary_awarded_rshares_u256 += to256(itr->awarded_rshares);
+                        }
+                    }
+
+                    u256 reward_fund = to256(props.total_reward_fund.amount.value);
+                    u256 payout_u256 = 0;
+                    u256 awarded_rshares_u256 = 0;
+                    uint64_t payout = 0;
+                    uint64_t summary_payout = 0;
+
+                    elog("HF4 reward fund: ${n}", ("n", props.total_reward_fund.amount));
+                    const auto &eidx = get_index<account_index>().indices().get<by_id>();
+                    for (auto itr = eidx.begin(); itr != eidx.end(); ++itr) {
+                        if(itr->awarded_rshares > 0){
+                            awarded_rshares_u256 = to256(itr->awarded_rshares);
+                            payout_u256 = (awarded_rshares_u256 * reward_fund) / summary_awarded_rshares_u256;
+                            FC_ASSERT(payout_u256 <= u256(uint64_t(std::numeric_limits<int64_t>::max())));
+
+                            payout = static_cast< uint64_t >( payout_u256 );
+                            summary_payout += payout;
+                            share_type payout_tokens = payout;
+                            asset account_payout=asset(payout_tokens,TOKEN_SYMBOL);
+                            elog("HF4 awarded payment for ${a}: ${n}", ("a", itr->name)("n", payout_tokens));
+                            adjust_balance(get_account(itr->name), account_payout);
+                            modify(*itr, [&](account_object &a) {
+                                a.awarded_rshares = 0;
+                            });
+                        }
+                    }
+                    modify(props, [&](dynamic_global_property_object &p) {
+                        p.total_reward_fund.amount -= summary_payout;
+                    });
+
+                    //finally exec process_content_cashout for content objects (using remaining reward fund)
+                    elog("HF4 remain reward fund for content: ${n}", ("n", props.total_reward_fund.amount));
+                    process_content_cashout();
+
+                    //remove all content vote index objects
+                    const auto &r1idx = get_index<content_vote_index>().indices();
+                    for(auto r1itr = r1idx.begin(); r1itr != r1idx.end(); ++r1itr) {
+                        remove(*r1itr);
+                    }
+                    //remove all content index objects
+                    const auto &r2idx = get_index<content_index>().indices();
+                    for(auto r2itr = r2idx.begin(); r2itr != r2idx.end(); ++r2itr) {
+                        remove(*r2itr);
+                    }
+                    //remove all content type index objects
+                    const auto &r3idx = get_index<content_type_index>().indices();
+                    for(auto r3itr = r3idx.begin(); r3itr != r3idx.end(); ++r3itr) {
+                        remove(*r3itr);
+                    }
+                    /*
+                    auto r3itr = r3idx.begin();
+                    while(r3itr != r3idx.end()) {
+                        remove(*r3itr);
+                        r3itr = r3idx.begin();
+                    }
+                    */
+                    modify(props, [&](dynamic_global_property_object &p) {
+                        p.total_reward_shares=0;
+                    });
+
+                    //recalc witness votes for fair DPOS
+                    const auto &widx = get_index<witness_vote_index>().indices();
+                    for(auto witr = widx.begin(); witr != widx.end(); ++witr) {
+                        const auto &voter = get(witr->account);
+                        share_type old_weight=voter.witness_vote_weight();
+                        share_type new_weight=voter.witness_vote_fair_weight();
+                        adjust_witness_vote(get(witr->witness), -old_weight);
+                        adjust_witness_vote(get(witr->witness), new_weight);
+                    }
+
+                    break;
+                }
                 default:
                     break;
             }

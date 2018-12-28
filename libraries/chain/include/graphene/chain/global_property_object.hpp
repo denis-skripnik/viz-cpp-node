@@ -48,6 +48,10 @@ namespace graphene {
             asset total_reward_fund = asset(0, TOKEN_SYMBOL);
             fc::uint128_t total_reward_shares;
 
+			uint32_t inflation_calc_block_num = 0;
+			int16_t inflation_witness_percent = 0;
+			int16_t inflation_ratio = 0;
+
             price get_vesting_share_price() const {
                 if (total_vesting_fund.amount == 0 ||
                     total_vesting_shares.amount == 0) {

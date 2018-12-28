@@ -185,6 +185,7 @@ namespace graphene { namespace chain {
  */
         void delete_content_evaluator::do_apply(const delete_content_operation &o) {
             database &_db = db();
+            FC_ASSERT( !_db.has_hardfork(CHAIN_HARDFORK_4), "delete_content is deprecated as of HF 4" );
             const auto &content = _db.get_content(o.author, o.permlink);
             FC_ASSERT(content.children ==
                       0, "Cannot delete a content with replies.");
@@ -272,10 +273,150 @@ namespace graphene { namespace chain {
             }
         };
 
-        void content_evaluator::do_apply(const content_operation &o) {
+        struct award_extension_visitor {
+            award_extension_visitor(share_type tokens, account_name_type receiver_account, uint64_t custom_sequence, string memo, database &db)
+                    : _tokens(tokens), _receiver_account(receiver_account), _custom_sequence(custom_sequence), _memo(memo),_db(db) {
+            }
+
+            using result_type = void;
+            share_type _tokens;
+            account_name_type _receiver_account;
+            uint64_t _custom_sequence;
+            string _memo;
+            database &_db;
+
+
+            void operator()(const content_payout_beneficiaries &cpb) const {
+                if (_db.is_producing()) {
+                    FC_ASSERT(cpb.beneficiaries.size() <= CHAIN_MAX_COMMENT_BENEFICIARIES,
+                              "Cannot specify more than ${m} beneficiaries.", ("m", CHAIN_MAX_COMMENT_BENEFICIARIES));
+                }
+                const auto &_receiver = _db.get_account(_receiver_account);
+                share_type receiver_tokens = _tokens;
+
+                share_type total_beneficiary = 0;
+                for (auto &b : cpb.beneficiaries) {
+                    auto acc = _db.find< account_object, by_name >( b.account );
+                    FC_ASSERT( acc != nullptr, "Beneficiary \"${a}\" must exist.", ("a", b.account) );
+
+                    //pay benefactor
+                    auto benefactor_tokens = (_tokens * b.weight) / CHAIN_100_PERCENT;
+                    auto shares_created = _db.create_vesting(_db.get_account(b.account), benefactor_tokens);
+                    _db.modify(_db.get_account(b.account), [&](account_object &a) {
+                        a.benefactor_awards += benefactor_tokens;
+                    });
+                    _db.push_virtual_operation(
+                        benefactor_award_operation(b.account,_receiver_account,_custom_sequence,_memo,shares_created));
+                    total_beneficiary += benefactor_tokens;
+                }
+
+                receiver_tokens -= total_beneficiary;
+                auto shares_created = _db.create_vesting(_receiver, receiver_tokens);
+                _db.modify(_receiver, [&](account_object &a) {
+                    a.receiver_awards += receiver_tokens;
+                });
+                _db.push_virtual_operation(
+                    receive_award_operation(_receiver_account,_custom_sequence,_memo,shares_created));
+            }
+        };
+
+        void award_evaluator::do_apply(const award_operation &o) {
             try {
                 database &_db = db();
+                const auto& median_props = _db.get_witness_schedule_object().median_props;
+                const auto &initiator = _db.get_account(o.initiator);
+                const auto &receiver = _db.get_account(o.receiver);
 
+                int64_t elapsed_seconds = (_db.head_block_time() -
+                                           initiator.last_vote_time).to_seconds();
+
+                int64_t regenerated_energy =
+                        (CHAIN_100_PERCENT * elapsed_seconds) /
+                        CHAIN_ENERGY_REGENERATION_SECONDS;
+                int64_t current_energy = std::min(int64_t(initiator.energy +
+                                                         regenerated_energy), int64_t(CHAIN_100_PERCENT));
+                FC_ASSERT(current_energy >
+                          0, "Account currently does not have voting energy.");
+
+                int64_t used_energy = o.energy;
+                FC_ASSERT(used_energy <=
+                          current_energy, "Account does not have enough energy to vote.");
+
+                int64_t rshares = (
+                    (uint128_t(initiator.effective_vesting_shares().amount.value) * used_energy) /
+                    (CHAIN_100_PERCENT)).to_uint64();
+
+                // Consensus by median props - vote accounting affects only with rshares greater than vote_accounting_min_rshares
+                asset tokens=asset(0,SHARES_SYMBOL);
+                if(rshares < int64_t(median_props.vote_accounting_min_rshares)){
+                    rshares=0;
+                }
+                else{
+                    uint128_t reward_tokens = uint128_t(
+                         _db.claim_rshare_award(rshares));
+                    tokens=asset(reward_tokens.to_uint64(),SHARES_SYMBOL);
+                }
+
+                _db.modify(initiator, [&](account_object &a) {
+                    a.energy = current_energy - used_energy;
+                    a.last_vote_time = _db.head_block_time();
+                    a.vote_count++;
+                });
+
+                if(tokens.amount>0){
+                	if (_db.is_producing()) {
+                	    FC_ASSERT(o.beneficiaries.items.size() <= CHAIN_MAX_COMMENT_BENEFICIARIES,
+                	              "Cannot specify more than ${m} beneficiaries.", ("m", CHAIN_MAX_COMMENT_BENEFICIARIES));
+                	}
+                	share_type receiver_tokens = tokens.amount;
+
+                	share_type total_beneficiary = 0;
+                	for (auto &b : o.beneficiaries.items) {
+                	    auto acc = _db.find< account_object, by_name >( b.account );
+                	    FC_ASSERT( acc != nullptr, "Beneficiary \"${a}\" must exist.", ("a", b.account) );
+
+                	    //pay benefactor
+                	    auto benefactor_tokens = (tokens.amount * b.weight) / CHAIN_100_PERCENT;
+                	    auto shares_created = _db.create_vesting(_db.get_account(b.account), benefactor_tokens);
+                	    _db.modify(_db.get_account(b.account), [&](account_object &a) {
+                	        a.benefactor_awards += benefactor_tokens;
+                	    });
+                	    _db.push_virtual_operation(
+                	        benefactor_award_operation(b.account,o.receiver,o.custom_sequence,o.memo,shares_created));
+                	    total_beneficiary += benefactor_tokens;
+                	}
+
+                	receiver_tokens -= total_beneficiary;
+                	auto shares_created = _db.create_vesting(receiver, receiver_tokens);
+                	_db.modify(receiver, [&](account_object &a) {
+                	    a.receiver_awards += receiver_tokens;
+                	});
+                	_db.push_virtual_operation(
+                	    receive_award_operation(o.receiver,o.custom_sequence,o.memo,shares_created));
+                	/*
+                    content_payout_beneficiaries cpb;
+                    if(o.extensions.count(cpb)>0){
+                        for (auto &e : o.extensions) {
+                            e.visit(award_extension_visitor(tokens.amount, o.receiver, o.custom_sequence, o.memo, _db));
+                        }
+                    }
+                    else{
+                        const auto &receiver = _db.get_account(o.receiver);
+                        auto shares_created = _db.create_vesting(receiver, tokens.amount);
+                        _db.modify(receiver, [&](account_object &a) {
+                            a.receiver_awards += tokens.amount;
+                        });
+                        _db.push_virtual_operation(
+                            receive_award_operation(o.receiver, o.custom_sequence, o.memo, shares_created));
+                    }*/
+                }
+            } FC_CAPTURE_AND_RETHROW((o))
+        }
+
+        void content_evaluator::do_apply(const content_operation &o) {
+            database &_db = db();
+            FC_ASSERT( !_db.has_hardfork(CHAIN_HARDFORK_4), "content is deprecated as of HF 4" );
+            try {
                 FC_ASSERT(o.title.size() + o.body.size() +
                           o.json_metadata.size(), "Cannot update content because nothing appears to be changing.");
 
@@ -783,12 +924,28 @@ namespace graphene { namespace chain {
             }
         }
 
-
         void account_witness_vote_evaluator::do_apply(const account_witness_vote_operation &o) {
             database &_db = db();
             const auto &voter = _db.get_account(o.account);
-            FC_ASSERT(voter.proxy.size() ==
-                      0, "A proxy is currently set, please clear the proxy before voting for a witness.");
+            if(_db.has_hardfork(CHAIN_HARDFORK_4)){
+                //clear proxy if it exist
+                if(voter.proxy.size()){
+                    /// remove all current votes
+                    std::array<share_type, CHAIN_MAX_PROXY_RECURSION_DEPTH + 1> delta;
+                    delta[0] = -voter.vesting_shares.amount;
+                    for (int i = 0; i < CHAIN_MAX_PROXY_RECURSION_DEPTH; ++i) {
+                        delta[i + 1] = -voter.proxied_vsf_votes[i];
+                    }
+                    _db.adjust_proxied_witness_votes(voter, delta);
+                    _db.modify(voter, [&](account_object &a) {
+                        a.proxy = CHAIN_PROXY_TO_SELF_ACCOUNT;//blank proxy
+                    });
+                }
+            }
+            else{
+                FC_ASSERT(voter.proxy.size() ==
+                          0, "A proxy is currently set, please clear the proxy before voting for a witness.");
+            }
 
             const auto &witness = _db.get_witness(o.witness);
 
@@ -801,32 +958,78 @@ namespace graphene { namespace chain {
                 FC_ASSERT(voter.witnesses_voted_for <
                           CHAIN_MAX_ACCOUNT_WITNESS_VOTES, "Account has voted for too many witnesses."); // TODO: Remove after hardfork 2
 
-                _db.create<witness_vote_object>([&](witness_vote_object &v) {
-                    v.witness = witness.id;
-                    v.account = voter.id;
-                });
+                if(_db.has_hardfork(CHAIN_HARDFORK_4)){
+                    const auto &vidx = _db.get_index<witness_vote_index>().indices().get<by_account_witness>();
+                    auto vitr = vidx.lower_bound(boost::make_tuple(voter.id, witness_id_type()));
+                    while (vitr != vidx.end() && vitr->account == voter.id) {
+                        _db.adjust_witness_vote(_db.get(vitr->witness), -voter.witness_vote_fair_weight());
+                        ++vitr;
+                    }
 
-                _db.adjust_witness_vote(witness, voter.witness_vote_weight());
+                    _db.create<witness_vote_object>([&](witness_vote_object &v) {
+                        v.witness = witness.id;
+                        v.account = voter.id;
+                    });
 
-                _db.modify(voter, [&](account_object &a) {
-                    a.witnesses_voted_for++;
-                });
+                    _db.modify(voter, [&](account_object &a) {
+                        a.witnesses_voted_for++;
+                    });
 
+                    const auto &vidx2 = _db.get_index<witness_vote_index>().indices().get<by_account_witness>();
+                    auto vitr2 = vidx2.lower_bound(boost::make_tuple(voter.id, witness_id_type()));
+                    while (vitr2 != vidx2.end() && vitr2->account == voter.id) {
+                        _db.adjust_witness_vote(_db.get(vitr2->witness), voter.witness_vote_fair_weight());
+                        ++vitr2;
+                    }
+                }
+                else{
+                    _db.create<witness_vote_object>([&](witness_vote_object &v) {
+                        v.witness = witness.id;
+                        v.account = voter.id;
+                    });
+                    _db.adjust_witness_vote(witness, voter.witness_vote_weight());
+                    _db.modify(voter, [&](account_object &a) {
+                        a.witnesses_voted_for++;
+                    });
+                }
             } else {
                 FC_ASSERT(!o.approve, "Vote currently exists, user must indicate a desire to reject witness.");
 
-                _db.adjust_witness_vote(witness, -voter.witness_vote_weight());
-                _db.modify(voter, [&](account_object &a) {
-                    a.witnesses_voted_for--;
-                });
-                _db.remove(*itr);
+                if(_db.has_hardfork(CHAIN_HARDFORK_4)){
+                    const auto &vidx = _db.get_index<witness_vote_index>().indices().get<by_account_witness>();
+                    auto vitr = vidx.lower_bound(boost::make_tuple(voter.id, witness_id_type()));
+                    while (vitr != vidx.end() && vitr->account == voter.id) {
+                        _db.adjust_witness_vote(_db.get(vitr->witness), -voter.witness_vote_fair_weight());
+                        ++vitr;
+                    }
+
+                    _db.remove(*itr);
+
+                    _db.modify(voter, [&](account_object &a) {
+                        a.witnesses_voted_for--;
+                    });
+
+                    const auto &vidx2 = _db.get_index<witness_vote_index>().indices().get<by_account_witness>();
+                    auto vitr2 = vidx2.lower_bound(boost::make_tuple(voter.id, witness_id_type()));
+                    while (vitr2 != vidx2.end() && vitr2->account == voter.id) {
+                        _db.adjust_witness_vote(_db.get(vitr2->witness), voter.witness_vote_fair_weight());
+                        ++vitr2;
+                    }
+                }
+                else{
+                    _db.adjust_witness_vote(witness, -voter.witness_vote_weight());
+                    _db.modify(voter, [&](account_object &a) {
+                        a.witnesses_voted_for--;
+                    });
+                    _db.remove(*itr);
+                }
             }
         }
 
         void vote_evaluator::do_apply(const vote_operation &o) {
+            database &_db = db();
+            FC_ASSERT( !_db.has_hardfork(CHAIN_HARDFORK_4), "vote is deprecated as of HF 4" );
             try {
-                database &_db = db();
-
                 const auto &content = _db.get_content(o.author, o.permlink);
                 const auto &voter = _db.get_account(o.voter);
                 const auto& median_props = _db.get_witness_schedule_object().median_props;
@@ -1043,8 +1246,20 @@ namespace graphene { namespace chain {
         }
 
         void custom_evaluator::do_apply(const custom_operation &o) {
-            database &d = db();
-            std::shared_ptr<custom_operation_interpreter> eval = d.get_custom_evaluator(o.id);
+            database &_db = db();
+            for (const auto &i : o.required_auths) {
+                auto& account = _db.get_account(i);
+                _db.modify(account, [&](account_object& a) {
+                    a.custom_sequence++;
+                });
+            }
+            for (const auto &i : o.required_posting_auths) {
+                auto& account = _db.get_account(i);
+                _db.modify(account, [&](account_object& a) {
+                    a.custom_sequence++;
+                });
+            }
+            std::shared_ptr<custom_operation_interpreter> eval = _db.get_custom_evaluator(o.id);
             if (!eval) {
                 return;
             }
@@ -1053,7 +1268,7 @@ namespace graphene { namespace chain {
                 eval->apply(o);
             }
             catch (const fc::exception &e) {
-                if (d.is_producing()) {
+                if (_db.is_producing()) {
                     throw e;
                 }
             }
