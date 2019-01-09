@@ -37,6 +37,7 @@ target_link_libraries(
         graphene::block_info
         graphene::json_rpc
         graphene::follow
+        graphene::committee_api
         ${MONGO_LIB}
         graphene_protocol
         fc

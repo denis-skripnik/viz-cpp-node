@@ -24,6 +24,7 @@
 #ifdef MONGODB_PLUGIN_BUILT
     #include <graphene/plugins/mongo_db/mongo_db_plugin.hpp>
 #endif
+#include <graphene/plugins/committee_api/committee_api.hpp>
 
 #include <fc/interprocess/signals.hpp>
 #include <fc/log/console_appender.hpp>
@@ -78,6 +79,7 @@ namespace graphene {
             #ifdef MONGODB_PLUGIN_BUILT
                 appbase::app().register_plugin<graphene::plugins::mongo_db::mongo_db_plugin>();
             #endif
+            appbase::app().register_plugin<graphene::plugins::committee_api::committee_api>();
             ///plugins
         };
     }
