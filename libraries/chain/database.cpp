@@ -2324,9 +2324,7 @@ namespace graphene { namespace chain {
             while(itr != idx.end()) {
                 const auto &current = *itr;
                 ++itr;
-                elog("check one expires: ${e} with rshares: ${r}", ("e",current.expires)("r",current.rshares.value));
                 if(current.expires <= head_block_time()){
-                    elog("oh, find! head_block_time() ${e}", ("e",head_block_time()));
                     modify(props, [&](dynamic_global_property_object &p) {
                         p.total_reward_shares -= current.rshares.value;
                     });
@@ -3598,7 +3596,6 @@ namespace graphene { namespace chain {
                     uint64_t payout = 0;
                     uint64_t summary_payout = 0;
 
-                    elog("HF4 reward fund: ${n}", ("n", props.total_reward_fund.amount));
                     const auto &eidx = get_index<account_index>().indices().get<by_id>();
                     for (auto itr = eidx.begin(); itr != eidx.end(); ++itr) {
                         if(itr->awarded_rshares > 0){
@@ -3622,10 +3619,7 @@ namespace graphene { namespace chain {
                     });
 
                     //finally exec process_content_cashout for content objects (using remaining reward fund)
-                    elog("HF4 remain reward fund for content: ${n}", ("n", props.total_reward_fund.amount));
                     process_content_cashout();
-
-                    elog("HF4 remain reward fund processed - successful");
 
                     //remove all content vote index objects
                     const auto &r1idx = get_index<content_vote_index>().indices();
@@ -3636,7 +3630,6 @@ namespace graphene { namespace chain {
                         ++r1itr;
                         remove(current);
                     }
-                    elog("HF4 remove all content vote index objects - successful");
                     //remove all content index objects
                     const auto &r2idx = get_index<content_index>().indices();
                     auto r2itr = r2idx.begin();
@@ -3646,7 +3639,6 @@ namespace graphene { namespace chain {
                         ++r2itr;
                         remove(current);
                     }
-                    elog("HF4 remove all content index objects - successful");
                     //remove all content type index objects
                     const auto &r3idx = get_index<content_type_index>().indices();
                     auto r3itr = r3idx.begin();
@@ -3656,7 +3648,6 @@ namespace graphene { namespace chain {
                         ++r3itr;
                         remove(current);
                     }
-                    elog("HF4 remove all content type index objects - successful");
 
                     modify(props, [&](dynamic_global_property_object &p) {
                         p.total_reward_shares=0;
@@ -3671,7 +3662,6 @@ namespace graphene { namespace chain {
                         adjust_witness_vote(get(witr->witness), -old_weight);
                         adjust_witness_vote(get(witr->witness), new_weight);
                     }
-                    elog("HF4 recalc witness votes for fair DPOS - successful");
 
                     break;
                 }

@@ -275,12 +275,10 @@ namespace graphene { namespace chain {
 
         void award_evaluator::do_apply(const award_operation &o) {
             try {
-            	elog("Enter award evaluator");
                 database &_db = db();
                 const auto& median_props = _db.get_witness_schedule_object().median_props;
                 const auto &initiator = _db.get_account(o.initiator);
                 const auto &receiver = _db.get_account(o.receiver);
-                elog("Get vars");
 
                 int64_t elapsed_seconds = (_db.head_block_time() -
                                            initiator.last_vote_time).to_seconds();
@@ -292,7 +290,6 @@ namespace graphene { namespace chain {
                                                          regenerated_energy), int64_t(CHAIN_100_PERCENT));
                 FC_ASSERT(current_energy >
                           0, "Account currently does not have voting energy.");
-                elog("Calc current energy");
 
                 int64_t used_energy = o.energy;
                 FC_ASSERT(used_energy <=
@@ -301,7 +298,6 @@ namespace graphene { namespace chain {
                 int64_t rshares = (
                     (uint128_t(initiator.effective_vesting_shares().amount.value) * used_energy) /
                     (CHAIN_100_PERCENT)).to_uint64();
-                elog("Calc rshares by effective_vesting_shares");
 
                 // Consensus by median props - vote accounting affects only with rshares greater than vote_accounting_min_rshares
                 asset tokens=asset(0,SHARES_SYMBOL);
@@ -320,15 +316,12 @@ namespace graphene { namespace chain {
                     a.vote_count++;
                 });
 
-                elog("Calc reward_tokens by claim_rshare_award");
                 if(tokens.amount>0){
-                	elog("tokens.amount>0");
                     if (_db.is_producing()) {
                         FC_ASSERT(o.beneficiaries.size() <= CHAIN_MAX_COMMENT_BENEFICIARIES,
                                   "Cannot specify more than ${m} beneficiaries.", ("m", CHAIN_MAX_COMMENT_BENEFICIARIES));
                     }
                     share_type receiver_tokens = tokens.amount;
-                    elog("for beneficiaries");
                     share_type total_beneficiary = 0;
                     for (auto &b : o.beneficiaries) {
                         auto acc = _db.find< account_object, by_name >( b.account );
@@ -343,20 +336,17 @@ namespace graphene { namespace chain {
                         _db.push_virtual_operation(
                             benefactor_award_operation(b.account,o.receiver,o.custom_sequence,o.memo,shares_created));
                         total_beneficiary += benefactor_tokens;
-                        elog("good +1 benefactor");
                     }
 
                     receiver_tokens -= total_beneficiary;
                     if(receiver_tokens>0){
-                    	elog("start good receiver");
-	                    auto shares_created = _db.create_vesting(receiver, receiver_tokens);
-	                    _db.modify(receiver, [&](account_object &a) {
-	                        a.receiver_awards += receiver_tokens;
-	                    });
-	                    _db.push_virtual_operation(
-	                        receive_award_operation(o.receiver,o.custom_sequence,o.memo,shares_created));
-	                    elog("end good receiver");
-	                }
+                        auto shares_created = _db.create_vesting(receiver, receiver_tokens);
+                        _db.modify(receiver, [&](account_object &a) {
+                            a.receiver_awards += receiver_tokens;
+                        });
+                        _db.push_virtual_operation(
+                            receive_award_operation(o.receiver,o.custom_sequence,o.memo,shares_created));
+                    }
                 }
             } FC_CAPTURE_AND_RETHROW((o))
         }
