@@ -41,6 +41,8 @@ struct account_api_object {
     uint32_t vote_count;
     uint32_t content_count;
     uint64_t awarded_rshares;
+    uint64_t custom_sequence = 0;
+    uint64_t custom_sequence_block_num = 0;
 
     int16_t energy;
     time_point_sec last_vote_time;
@@ -49,6 +51,8 @@ struct account_api_object {
 
     protocol::share_type curation_rewards;
     share_type posting_rewards;
+    share_type receiver_awards = 0;
+    share_type benefactor_awards = 0;
 
     asset vesting_shares;
     asset delegated_vesting_shares;
@@ -79,10 +83,10 @@ FC_REFLECT((graphene::api::account_api_object),
     (id)(name)(owner)(active)(posting)(memo_key)(json_metadata)(proxy)(referrer)(last_owner_update)(last_account_update)
     (created)
     (recovery_account)(last_account_recovery)(subcontent_count)(vote_count)
-    (content_count)(awarded_rshares)(energy)(last_vote_time)(balance)
+    (content_count)(awarded_rshares)(custom_sequence)(custom_sequence_block_num)(energy)(last_vote_time)(balance)
     (vesting_shares)(delegated_vesting_shares)(received_vesting_shares)
     (vesting_withdraw_rate)(next_vesting_withdrawal)(withdrawn)(to_withdraw)(withdraw_routes)
-    (curation_rewards)(posting_rewards)(proxied_vsf_votes)(witnesses_voted_for)
+    (curation_rewards)(posting_rewards)(receiver_awards)(benefactor_awards)(proxied_vsf_votes)(witnesses_voted_for)
     (last_post)(last_root_post)
     (average_bandwidth)(lifetime_bandwidth)(last_bandwidth_update)
     (witness_votes))

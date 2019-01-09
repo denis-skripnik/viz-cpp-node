@@ -205,7 +205,7 @@ namespace graphene { namespace protocol {
             }
 
             benefactor_award_operation(const account_name_type& b, const account_name_type& r, const uint64_t &c, const string &m, const asset& s)
-                    : benefactor(b), custom_sequence(c), memo(m), shares(s) {
+                    : benefactor(b), receiver(r), custom_sequence(c), memo(m), shares(s) {
             }
 
             account_name_type benefactor;

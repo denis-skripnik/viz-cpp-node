@@ -2296,7 +2296,7 @@ namespace graphene { namespace chain {
                 u256 rs(rshares.value);
                 u256 rf(props.total_reward_fund.amount.value);
                 u256 total_rshares = to256(props.total_reward_shares);
-                total_rshares+=rshares.value;
+                total_rshares += to256(rshares.value);
 
                 u256 payout_u256 = (rf * rs) / total_rshares;
                 FC_ASSERT(payout_u256 <=
@@ -2312,7 +2312,6 @@ namespace graphene { namespace chain {
                     ase.expires = head_block_time() + fc::seconds(CHAIN_ENERGY_REGENERATION_SECONDS);
                     ase.rshares = rshares;
                 });
-
                 return payout;
             } FC_CAPTURE_AND_RETHROW((rshares))
         }
@@ -2323,13 +2322,15 @@ namespace graphene { namespace chain {
             auto itr = idx.begin();
 
             while(itr != idx.end()) {
-                const auto &itr2 = itr;
+                const auto &current = *itr;
                 ++itr;
-                if(itr2->expires <= head_block_time()){
+                elog("check one expires: ${e} with rshares: ${r}", ("e",current.expires)("r",current.rshares.value));
+                if(current.expires <= head_block_time()){
+                    elog("oh, find! head_block_time() ${e}", ("e",head_block_time()));
                     modify(props, [&](dynamic_global_property_object &p) {
-                        p.total_reward_shares -= itr2->rshares.value;
+                        p.total_reward_shares -= current.rshares.value;
                     });
-                    remove(*itr2);
+                    remove(current);
                 }
             }
         }
@@ -3624,28 +3625,39 @@ namespace graphene { namespace chain {
                     elog("HF4 remain reward fund for content: ${n}", ("n", props.total_reward_fund.amount));
                     process_content_cashout();
 
+                    elog("HF4 remain reward fund processed - successful");
+
                     //remove all content vote index objects
                     const auto &r1idx = get_index<content_vote_index>().indices();
-                    for(auto r1itr = r1idx.begin(); r1itr != r1idx.end(); ++r1itr) {
-                        remove(*r1itr);
+                    auto r1itr = r1idx.begin();
+                    while(r1itr != r1idx.end())
+                    {
+                        const auto& current = *r1itr;
+                        ++r1itr;
+                        remove(current);
                     }
+                    elog("HF4 remove all content vote index objects - successful");
                     //remove all content index objects
                     const auto &r2idx = get_index<content_index>().indices();
-                    for(auto r2itr = r2idx.begin(); r2itr != r2idx.end(); ++r2itr) {
-                        remove(*r2itr);
+                    auto r2itr = r2idx.begin();
+                    while(r2itr != r2idx.end())
+                    {
+                        const auto& current = *r2itr;
+                        ++r2itr;
+                        remove(current);
                     }
+                    elog("HF4 remove all content index objects - successful");
                     //remove all content type index objects
                     const auto &r3idx = get_index<content_type_index>().indices();
-                    for(auto r3itr = r3idx.begin(); r3itr != r3idx.end(); ++r3itr) {
-                        remove(*r3itr);
-                    }
-                    /*
                     auto r3itr = r3idx.begin();
-                    while(r3itr != r3idx.end()) {
-                        remove(*r3itr);
-                        r3itr = r3idx.begin();
+                    while(r3itr != r3idx.end())
+                    {
+                        const auto& current = *r3itr;
+                        ++r3itr;
+                        remove(current);
                     }
-                    */
+                    elog("HF4 remove all content type index objects - successful");
+
                     modify(props, [&](dynamic_global_property_object &p) {
                         p.total_reward_shares=0;
                     });
@@ -3659,6 +3671,7 @@ namespace graphene { namespace chain {
                         adjust_witness_vote(get(witr->witness), -old_weight);
                         adjust_witness_vote(get(witr->witness), new_weight);
                     }
+                    elog("HF4 recalc witness votes for fair DPOS - successful");
 
                     break;
                 }

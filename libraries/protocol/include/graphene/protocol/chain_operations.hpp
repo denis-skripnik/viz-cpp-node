@@ -834,18 +834,13 @@ namespace graphene { namespace protocol {
             }
         };
 
-        struct award_beneficiaries{
-            vector <beneficiary_route_type> items;
-            void validate() const;
-        };
-
         struct award_operation : public base_operation {
             account_name_type initiator;
             account_name_type receiver;
             uint16_t energy = 0;
             uint64_t custom_sequence = 0;
             string memo;
-            award_beneficiaries beneficiaries;
+            vector <beneficiary_route_type> beneficiaries;
 
             void validate() const;
 
@@ -901,8 +896,6 @@ FC_REFLECT((graphene::protocol::beneficiary_route_type), (account)(weight))
 FC_REFLECT((graphene::protocol::content_payout_beneficiaries), (beneficiaries));
 FC_REFLECT_TYPENAME((graphene::protocol::content_extension));
 
-FC_REFLECT((graphene::protocol::award_beneficiaries), (items));
-
 FC_REFLECT((graphene::protocol::escrow_transfer_operation), (from)(to)(token_amount)(escrow_id)(agent)(fee)(json_meta)(ratification_deadline)(escrow_expiration));
 FC_REFLECT((graphene::protocol::escrow_approve_operation), (from)(to)(agent)(who)(escrow_id)(approve));
 FC_REFLECT((graphene::protocol::escrow_dispute_operation), (from)(to)(agent)(who)(escrow_id));
@@ -912,11 +905,11 @@ FC_REFLECT((graphene::protocol::recover_account_operation), (account_to_recover)
 FC_REFLECT((graphene::protocol::change_recovery_account_operation), (account_to_recover)(new_recovery_account)(extensions));
 FC_REFLECT((graphene::protocol::delegate_vesting_shares_operation), (delegator)(delegatee)(vesting_shares));
 FC_REFLECT((graphene::protocol::chain_properties_update_operation), (owner)(props));
-FC_REFLECT((graphene::protocol::versioned_chain_properties_update_operation), (owner)(props));
 FC_REFLECT((graphene::protocol::committee_worker_create_request_operation), (creator)(url)(worker)(required_amount_min)(required_amount_max)(duration));
 FC_REFLECT((graphene::protocol::committee_worker_cancel_request_operation), (creator)(request_id));
 FC_REFLECT((graphene::protocol::committee_vote_request_operation), (voter)(request_id)(vote_percent));
 FC_REFLECT((graphene::protocol::create_invite_operation), (creator)(balance)(invite_key));
 FC_REFLECT((graphene::protocol::claim_invite_balance_operation), (initiator)(receiver)(invite_secret));
 FC_REFLECT((graphene::protocol::invite_registration_operation), (initiator)(new_account_name)(invite_secret)(new_account_key));
+FC_REFLECT((graphene::protocol::versioned_chain_properties_update_operation), (owner)(props));
 FC_REFLECT((graphene::protocol::award_operation), (initiator)(receiver)(energy)(custom_sequence)(memo)(beneficiaries));

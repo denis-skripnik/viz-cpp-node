@@ -165,5 +165,8 @@ FC_REFLECT((graphene::chain::dynamic_global_property_object),
                 (current_reserve_ratio)
                 (vote_regeneration_per_day)
                 (bandwidth_reserve_candidates)
+                (inflation_calc_block_num)
+                (inflation_witness_percent)
+                (inflation_ratio)
 )
 CHAINBASE_SET_INDEX_TYPE(graphene::chain::dynamic_global_property_object, graphene::chain::dynamic_global_property_index)

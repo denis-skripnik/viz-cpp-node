@@ -79,22 +79,6 @@ namespace graphene { namespace protocol {
             }
         };
 
-        void award_beneficiaries::validate() const {
-            uint32_t sum = 0;
-
-            FC_ASSERT(items.size() < 128,
-                      "Cannot specify more than 127 beneficiaries."); // Require size serialization fits in one byte.
-
-            for (size_t i = 0; i < items.size(); i++) {
-                validate_account_name( items[i].account);
-                FC_ASSERT(items[i].weight <= CHAIN_100_PERCENT,
-                          "Cannot allocate more than 100% of rewards to one account");
-                sum += items[i].weight;
-                FC_ASSERT(sum <= CHAIN_100_PERCENT,
-                          "Cannot allocate more than 100% of rewards to a content"); // Have to check incrementally to avoid overflow
-            }
-        }
-
         void content_payout_beneficiaries::validate() const {
             uint32_t sum = 0;
 
@@ -355,7 +339,20 @@ namespace graphene { namespace protocol {
             FC_ASSERT(memo.size() <
                       CHAIN_MAX_MEMO_SIZE, "Memo is too large");
             FC_ASSERT(fc::is_utf8(memo), "Memo is not UTF8");
-            beneficiaries.validate();
+
+            uint32_t sum = 0;
+
+            FC_ASSERT(beneficiaries.size() < 128,
+                      "Cannot specify more than 127 beneficiaries."); // Require size serialization fits in one byte.
+
+            for (size_t i = 0; i < beneficiaries.size(); i++) {
+                validate_account_name( beneficiaries[i].account);
+                FC_ASSERT(beneficiaries[i].weight <= CHAIN_100_PERCENT,
+                          "Cannot allocate more than 100% of rewards to one account");
+                sum += beneficiaries[i].weight;
+                FC_ASSERT(sum <= CHAIN_100_PERCENT,
+                          "Cannot allocate more than 100% of rewards to a content"); // Have to check incrementally to avoid overflow
+            }
         }
 
 } } // graphene::protocol
