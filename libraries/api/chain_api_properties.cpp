@@ -17,6 +17,12 @@ namespace graphene { namespace api {
         flag_energy_additional_cost(src.flag_energy_additional_cost),
         vote_accounting_min_rshares(src.vote_accounting_min_rshares),
         committee_request_approve_min_percent(src.committee_request_approve_min_percent)
-    {}
+    {
+    	if (db.has_hardfork(CHAIN_HARDFORK_4)) {
+	        inflation_witness_percent=src.inflation_witness_percent;
+	        inflation_ratio_committee_vs_reward_fund=src.inflation_ratio_committee_vs_reward_fund;
+	        inflation_recalc_period=src.inflation_recalc_period;
+	    }
+    }
 
 } } // graphene::api

@@ -25,6 +25,10 @@ namespace graphene { namespace api {
         int16_t flag_energy_additional_cost;
         uint32_t vote_accounting_min_rshares;
         int16_t committee_request_approve_min_percent;
+
+        fc::optional<int16_t> inflation_witness_percent;
+        fc::optional<int16_t> inflation_ratio_committee_vs_reward_fund;
+        fc::optional<uint32_t> inflation_recalc_period;
     };
 
 } } // graphene::api
@@ -34,4 +38,5 @@ FC_REFLECT(
     (account_creation_fee)(maximum_block_size)(maximum_block_size)
     (create_account_delegation_ratio)(create_account_delegation_time)(min_delegation)
     (min_curation_percent)(max_curation_percent)(bandwidth_reserve_percent)(bandwidth_reserve_below)
-    (flag_energy_additional_cost)(vote_accounting_min_rshares)(committee_request_approve_min_percent))
+    (flag_energy_additional_cost)(vote_accounting_min_rshares)(committee_request_approve_min_percent)
+    (inflation_witness_percent)(inflation_ratio_committee_vs_reward_fund)(inflation_recalc_period))

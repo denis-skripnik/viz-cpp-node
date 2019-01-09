@@ -43,6 +43,7 @@ public:
     uint32_t vote_count = 0;
     uint32_t content_count = 0;
     uint64_t awarded_rshares = 0;
+    uint64_t custom_sequence = 0;
 
     int16_t energy = CHAIN_100_PERCENT;   ///< current voting power of this account, it falls after every vote
     time_point_sec last_vote_time; ///< used to increase the voting power of this account the longer it goes without voting.
@@ -51,6 +52,8 @@ public:
 
     share_type curation_rewards = 0;
     share_type posting_rewards = 0;
+    share_type receiver_awards = 0;
+    share_type benefactor_awards = 0;
 
     asset vesting_shares = asset(0, SHARES_SYMBOL); ///< total vesting shares held by this account, controls its voting power
     asset delegated_vesting_shares = asset(0, SHARES_SYMBOL); ///<
@@ -78,6 +81,15 @@ public:
         return std::accumulate(proxied_vsf_votes.begin(),
                 proxied_vsf_votes.end(),
                 vesting_shares.amount);
+    }
+    share_type witness_vote_fair_weight() const {
+        share_type weight=0;
+        if(0<witnesses_voted_for){
+            weight = (fc::uint128_t(vesting_shares.amount.value) / witnesses_voted_for).to_uint64();
+        }
+        return std::accumulate(proxied_vsf_votes.begin(),
+                proxied_vsf_votes.end(),
+                weight);
     }
 
     share_type proxied_vsf_votes_total() const {

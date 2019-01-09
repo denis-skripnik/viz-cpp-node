@@ -503,6 +503,14 @@ int main(int argc, char **argv) {
         }
         std::cout << "\n";
 
+        versioned_chain_properties cp;
+        std::cout << "ChainTypes.chain_properties=\n";
+        for (int i = 0; i < cp.count(); ++i) {
+            cp.set_which(i);
+            cp.visit(detail_ns::serialize_type_visitor(i));
+        }
+        std::cout << "\n";
+
         detail_ns::js_name<operation>::name("operation");
         detail_ns::js_name<future_extensions>::name("future_extensions");
         detail_ns::serializer<signed_block>::init();
