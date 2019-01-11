@@ -44,6 +44,7 @@ public:
     uint32_t content_count = 0;
     uint64_t awarded_rshares = 0;
     uint64_t custom_sequence = 0;
+    uint64_t custom_sequence_block_num = 0;
 
     int16_t energy = CHAIN_100_PERCENT;   ///< current voting power of this account, it falls after every vote
     time_point_sec last_vote_time; ///< used to increase the voting power of this account the longer it goes without voting.
@@ -442,7 +443,9 @@ FC_REFLECT((graphene::chain::account_object),
         (id)(name)(memo_key)(proxy)(referrer)(last_account_update)
                 (created)
                 (recovery_account)(last_account_recovery)
-                (subcontent_count)(vote_count)(content_count)(awarded_rshares)(energy)(last_vote_time)
+                (subcontent_count)(vote_count)(content_count)(awarded_rshares)
+                (custom_sequence)(custom_sequence_block_num)
+                (energy)(last_vote_time)
                 (balance)(vesting_shares)(delegated_vesting_shares)(received_vesting_shares)
                 (vesting_withdraw_rate)(next_vesting_withdrawal)(withdrawn)(to_withdraw)(withdraw_routes)
                 (curation_rewards)

@@ -11,7 +11,7 @@ account_api_object::account_api_object(const account_object& a, const graphene::
         last_account_update(a.last_account_update), created(a.created),
         recovery_account(a.recovery_account), last_account_recovery(a.last_account_recovery),
         subcontent_count(a.subcontent_count), vote_count(a.vote_count), content_count(a.content_count),
-        awarded_rshares(a.awarded_rshares), custom_sequence(a.custom_sequence), energy(a.energy), last_vote_time(a.last_vote_time),
+        awarded_rshares(a.awarded_rshares), custom_sequence(a.custom_sequence), custom_sequence_block_num(a.custom_sequence_block_num), energy(a.energy), last_vote_time(a.last_vote_time),
         balance(a.balance), curation_rewards(a.curation_rewards), posting_rewards(a.posting_rewards),
         receiver_awards(a.receiver_awards), benefactor_awards(a.benefactor_awards),
         vesting_shares(a.vesting_shares),
@@ -25,7 +25,6 @@ account_api_object::account_api_object(const account_object& a, const graphene::
     for (size_t i = 0; i < n; i++) {
         proxied_vsf_votes.push_back(a.proxied_vsf_votes[i]);
     }
-    custom_sequence_block_num = db.head_block_num();
 
     const auto& auth = db.get<account_authority_object, by_account>(name);
     owner = authority(auth.owner);

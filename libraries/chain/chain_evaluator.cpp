@@ -1196,12 +1196,14 @@ namespace graphene { namespace chain {
                 auto& account = _db.get_account(i);
                 _db.modify(account, [&](account_object& a) {
                     a.custom_sequence++;
+                    a.custom_sequence_block_num=_db.head_block_num();
                 });
             }
             for (const auto &i : o.required_posting_auths) {
                 auto& account = _db.get_account(i);
                 _db.modify(account, [&](account_object& a) {
                     a.custom_sequence++;
+                    a.custom_sequence_block_num=_db.head_block_num();
                 });
             }
             std::shared_ptr<custom_operation_interpreter> eval = _db.get_custom_evaluator(o.id);
