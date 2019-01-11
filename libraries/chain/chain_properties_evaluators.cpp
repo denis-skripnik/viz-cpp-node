@@ -64,6 +64,7 @@ namespace graphene { namespace chain {
     };
 
     void versioned_chain_properties_update_evaluator::do_apply(const versioned_chain_properties_update_operation& o) {
+        FC_ASSERT( _db.has_hardfork(CHAIN_HARDFORK_4), "versioned_chain_properties_update_evaluator not enabled until HF 4" );
         _db.get_account(o.owner); // verify owner exists
 
         const auto &idx = _db.get_index<witness_index>().indices().get<by_name>();

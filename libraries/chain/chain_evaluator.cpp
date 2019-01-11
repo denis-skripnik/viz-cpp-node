@@ -274,6 +274,7 @@ namespace graphene { namespace chain {
         };
 
         void award_evaluator::do_apply(const award_operation &o) {
+            FC_ASSERT( _db.has_hardfork(CHAIN_HARDFORK_4), "award_evaluator not enabled until HF 4" );
             try {
                 database &_db = db();
                 const auto& median_props = _db.get_witness_schedule_object().median_props;
