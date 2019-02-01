@@ -214,6 +214,35 @@ namespace graphene { namespace protocol {
             string memo;
             asset shares;
         };
+
+        struct paid_subscription_action_operation : public virtual_operation {
+            paid_subscription_action_operation() {
+            }
+
+            paid_subscription_action_operation(const account_name_type& s, const account_name_type& a, const uint16_t &l, const asset& am, const uint16_t &p, const uint64_t &sds, const asset& sam)
+                    : subscriber(s), account(a), level(l), amount(am), period(p), summary_duration_sec(sds), summary_amount(sam) {
+            }
+
+            account_name_type subscriber;
+            account_name_type account;
+            uint16_t level;
+            asset amount;
+            uint16_t period;
+            uint64_t summary_duration_sec;
+            asset summary_amount;
+        };
+
+        struct cancel_paid_subscription_operation : public virtual_operation {
+            cancel_paid_subscription_operation() {
+            }
+
+            cancel_paid_subscription_operation(const account_name_type& s, const account_name_type& a)
+                    : subscriber(s), account(a) {
+            }
+
+            account_name_type subscriber;
+            account_name_type account;
+        };
 } } //graphene::protocol
 
 FC_REFLECT((graphene::protocol::author_reward_operation), (author)(permlink)(token_payout)(vesting_payout))
@@ -232,3 +261,5 @@ FC_REFLECT((graphene::protocol::committee_pay_request_operation), (worker)(reque
 FC_REFLECT((graphene::protocol::witness_reward_operation), (witness)(shares))
 FC_REFLECT((graphene::protocol::receive_award_operation), (receiver)(custom_sequence)(memo)(shares))
 FC_REFLECT((graphene::protocol::benefactor_award_operation), (benefactor)(receiver)(custom_sequence)(memo)(shares))
+FC_REFLECT((graphene::protocol::paid_subscription_action_operation), (subscriber)(account)(level)(amount)(period)(summary_amount))
+FC_REFLECT((graphene::protocol::cancel_paid_subscription_operation), (subscriber)(account))

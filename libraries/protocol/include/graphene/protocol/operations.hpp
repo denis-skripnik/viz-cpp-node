@@ -73,7 +73,14 @@ namespace graphene { namespace protocol {
                 versioned_chain_properties_update_operation,
                 award_operation,
                 receive_award_operation,
-                benefactor_award_operation
+                benefactor_award_operation,
+
+                // VIZ Paid subscription operations:
+                set_paid_subscription_operation,
+                paid_subscribe_operation,
+                // virtual operations:
+                paid_subscription_action_operation,
+                cancel_paid_subscription_operation
         > operation;
 
         /*void operation_get_required_authorities( const operation& op,
