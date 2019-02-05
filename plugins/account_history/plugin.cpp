@@ -295,6 +295,24 @@ if( options.count(name) ) { \
         void operator()(const witness_reward_operation& op) {
             impacted.insert(op.witness);
         }
+
+        void operator()(const set_paid_subscription_operation& op) {
+            impacted.insert(op.account);
+        }
+
+        void operator()(const paid_subscribe_operation& op) {
+            impacted.insert(op.subscriber);
+        }
+
+        void operator()(const paid_subscription_action_operation& op) {
+            impacted.insert(op.subscriber);
+            impacted.insert(op.account);
+        }
+
+        void operator()(const cancel_paid_subscription_operation& op) {
+            impacted.insert(op.subscriber);
+            impacted.insert(op.account);
+        }
         //void operator()( const operation& op ){}
     };
 
