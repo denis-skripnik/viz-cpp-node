@@ -747,7 +747,7 @@ namespace graphene { namespace chain {
                             vesting_withdraw_intervals, SHARES_SYMBOL);
 
                     if(_db.has_hardfork(CHAIN_HARDFORK_5)){
-                        auto check_fast_withdraw_amount = asset(a.effective_vesting_shares().amount / vesting_withdraw_intervals, SHARES_SYMBOL);
+                        auto check_fast_withdraw_amount = asset(a.available_vesting_shares().amount / vesting_withdraw_intervals, SHARES_SYMBOL);
                         if(new_vesting_withdraw_rate.amount < check_fast_withdraw_amount.amount){
                             new_vesting_withdraw_rate = check_fast_withdraw_amount;
                         }
