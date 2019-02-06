@@ -308,7 +308,12 @@ namespace graphene { namespace chain {
                 else{
                     uint128_t reward_tokens = uint128_t(
                          _db.claim_rshare_award(rshares));
-                    tokens=asset(reward_tokens.to_uint64(),SHARES_SYMBOL);
+                    if(_db.has_hardfork(CHAIN_HARDFORK_5)){
+                        tokens=asset(reward_tokens.to_uint64(),TOKEN_SYMBOL);
+                    }
+                    else{
+                        tokens=asset(reward_tokens.to_uint64(),SHARES_SYMBOL);
+                    }
                 }
 
                 _db.modify(initiator, [&](account_object &a) {

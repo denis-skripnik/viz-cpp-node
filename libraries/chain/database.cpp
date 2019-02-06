@@ -1943,7 +1943,6 @@ namespace graphene { namespace chain {
             }
 
             if (total_tokens.amount > 0) {
-                burn_asset(-total_tokens);
                 modify(gpo, [&](dynamic_global_property_object &g) {
                     g.committee_fund += total_tokens;
                 });
