@@ -340,7 +340,7 @@ namespace graphene { namespace chain {
                             a.benefactor_awards += benefactor_tokens;
                         });
                         _db.push_virtual_operation(
-                            benefactor_award_operation(b.account,o.receiver,o.custom_sequence,o.memo,shares_created));
+                            benefactor_award_operation(o.initiator,b.account,o.receiver,o.custom_sequence,o.memo,shares_created));
                         total_beneficiary += benefactor_tokens;
                     }
 
@@ -351,7 +351,7 @@ namespace graphene { namespace chain {
                             a.receiver_awards += receiver_tokens;
                         });
                         _db.push_virtual_operation(
-                            receive_award_operation(o.receiver,o.custom_sequence,o.memo,shares_created));
+                            receive_award_operation(o.initiator,o.receiver,o.custom_sequence,o.memo,shares_created));
                     }
                 }
             } FC_CAPTURE_AND_RETHROW((o))

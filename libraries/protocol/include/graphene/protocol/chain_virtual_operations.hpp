@@ -190,10 +190,11 @@ namespace graphene { namespace protocol {
             receive_award_operation() {
             }
 
-            receive_award_operation(const account_name_type& r, const uint64_t &c, const string &m, const asset& s)
-                    : receiver(r), custom_sequence(c), memo(m), shares(s) {
+            receive_award_operation(const account_name_type& i, const account_name_type& r, const uint64_t &c, const string &m, const asset& s)
+                    : initiator(i), receiver(r), custom_sequence(c), memo(m), shares(s) {
             }
 
+            account_name_type initiator;
             account_name_type receiver;
             uint64_t custom_sequence;
             string memo;
@@ -204,10 +205,11 @@ namespace graphene { namespace protocol {
             benefactor_award_operation() {
             }
 
-            benefactor_award_operation(const account_name_type& b, const account_name_type& r, const uint64_t &c, const string &m, const asset& s)
-                    : benefactor(b), receiver(r), custom_sequence(c), memo(m), shares(s) {
+            benefactor_award_operation(const account_name_type& i, const account_name_type& b, const account_name_type& r, const uint64_t &c, const string &m, const asset& s)
+                    : initiator(i), benefactor(b), receiver(r), custom_sequence(c), memo(m), shares(s) {
             }
 
+            account_name_type initiator;
             account_name_type benefactor;
             account_name_type receiver;
             uint64_t custom_sequence;
@@ -259,7 +261,7 @@ FC_REFLECT((graphene::protocol::committee_approve_request_operation), (request_i
 FC_REFLECT((graphene::protocol::committee_payout_request_operation), (request_id))
 FC_REFLECT((graphene::protocol::committee_pay_request_operation), (worker)(request_id)(tokens))
 FC_REFLECT((graphene::protocol::witness_reward_operation), (witness)(shares))
-FC_REFLECT((graphene::protocol::receive_award_operation), (receiver)(custom_sequence)(memo)(shares))
-FC_REFLECT((graphene::protocol::benefactor_award_operation), (benefactor)(receiver)(custom_sequence)(memo)(shares))
+FC_REFLECT((graphene::protocol::receive_award_operation), (initiator)(receiver)(custom_sequence)(memo)(shares))
+FC_REFLECT((graphene::protocol::benefactor_award_operation), (initiator)(benefactor)(receiver)(custom_sequence)(memo)(shares))
 FC_REFLECT((graphene::protocol::paid_subscription_action_operation), (subscriber)(account)(level)(amount)(period)(summary_amount))
 FC_REFLECT((graphene::protocol::cancel_paid_subscription_operation), (subscriber)(account))
