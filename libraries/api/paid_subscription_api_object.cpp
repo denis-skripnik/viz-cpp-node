@@ -32,13 +32,15 @@ namespace graphene { namespace api {
             for (auto itr = idx.lower_bound(creator);
                  itr != idx.end() && (itr->creator == creator);
                  ++itr) {
-                active_subscribers.push_back(itr->subscriber);
-                active_subscribers_count++;
-                active_subscribers_summary_amount+=itr->amount * itr->level;
-                if(itr->auto_renewal){
-                    active_subscribers_with_auto_renewal.push_back(itr->subscriber);
-                    active_subscribers_with_auto_renewal_count++;
-                    active_subscribers_with_auto_renewal_summary_amount+=itr->amount * itr->level;
+                if(itr->active){
+                    active_subscribers.push_back(itr->subscriber);
+                    active_subscribers_count++;
+                    active_subscribers_summary_amount+=itr->amount * itr->level;
+                    if(itr->auto_renewal){
+                        active_subscribers_with_auto_renewal.push_back(itr->subscriber);
+                        active_subscribers_with_auto_renewal_count++;
+                        active_subscribers_with_auto_renewal_summary_amount+=itr->amount * itr->level;
+                    }
                 }
             }
         }

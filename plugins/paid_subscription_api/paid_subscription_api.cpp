@@ -71,29 +71,65 @@ namespace graphene { namespace plugins { namespace paid_subscription_api {
     paid_subscription_api::~paid_subscription_api() = default;
 
     DEFINE_API(paid_subscription_api, get_paid_subscription_options) {
-    	CHECK_ARG_MIN_SIZE(1, 1)
-    	auto account = args.args->at(0).as<account_name_type>();
-    	auto& db = pimpl->database();
-    	return db.with_weak_read_lock([&]() {
-    		const auto &idx = db.get_index<paid_subscription_index>().indices().get<by_creator>();
+        CHECK_ARG_MIN_SIZE(1, 1)
+        auto account = args.args->at(0).as<account_name_type>();
+        auto& db = pimpl->database();
+        return db.with_weak_read_lock([&]() {
+            const auto &idx = db.get_index<paid_subscription_index>().indices().get<by_creator>();
             auto itr = idx.find(account);
             FC_ASSERT(itr != idx.end(), "Paid subscription not found.");
             paid_subscription_state result = paid_subscription_state(*itr,db);
             return result;
-    	});
+        });
     }
 
     DEFINE_API(paid_subscription_api, get_paid_subscription_status) {
-    	CHECK_ARG_MIN_SIZE(1, 2)
-    	auto subscriber = args.args->at(0).as<account_name_type>();
-    	auto account = args.args->at(1).as<account_name_type>();
-    	auto& db = pimpl->database();
-    	return db.with_weak_read_lock([&]() {
-    		const auto &idx = db.get_index<paid_subscribe_index>().indices().get<by_subscribe>();
+        CHECK_ARG_MIN_SIZE(1, 2)
+        auto subscriber = args.args->at(0).as<account_name_type>();
+        auto account = args.args->at(1).as<account_name_type>();
+        auto& db = pimpl->database();
+        return db.with_weak_read_lock([&]() {
+            const auto &idx = db.get_index<paid_subscribe_index>().indices().get<by_subscribe>();
             auto itr = idx.find(boost::make_tuple(subscriber,account));
             FC_ASSERT(itr != idx.end(), "Paid subscribe not found.");
             paid_subscribe_state result = paid_subscribe_state(*itr);
             return result;
-    	});
+        });
     }
+
+    DEFINE_API(paid_subscription_api, get_active_paid_subscriptions) {
+        CHECK_ARG_MIN_SIZE(1, 1)
+        auto subscriber = args.args->at(0).as<account_name_type>();
+        auto& db = pimpl->database();
+        return db.with_weak_read_lock([&]() {
+            std::vector<account_name_type> result;
+            const auto &idx = db.get_index<paid_subscribe_index>().indices().get<by_subscriber>();
+            for (auto itr = idx.lower_bound(subscriber);
+                 itr != idx.end() && (itr->subscriber == subscriber);
+                 ++itr) {
+                if(itr->active){
+                    result.emplace_back(itr->creator);
+                }
+            }
+            return result;
+        });
+    }
+
+        DEFINE_API(paid_subscription_api, get_inactive_paid_subscriptions) {
+            CHECK_ARG_MIN_SIZE(1, 1)
+            auto subscriber = args.args->at(0).as<account_name_type>();
+            auto& db = pimpl->database();
+            return db.with_weak_read_lock([&]() {
+                std::vector<account_name_type> result;
+                const auto &idx = db.get_index<paid_subscribe_index>().indices().get<by_subscriber>();
+                for (auto itr = idx.lower_bound(subscriber);
+                     itr != idx.end() && (itr->subscriber == subscriber);
+                     ++itr) {
+                    if(!itr->active){
+                        result.emplace_back(itr->creator);
+                    }
+                }
+                return result;
+            });
+        }
 } } } // graphene::plugins::paid_subscription_api

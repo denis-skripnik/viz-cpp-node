@@ -14,6 +14,8 @@ namespace graphene { namespace plugins { namespace paid_subscription_api {
 
     DEFINE_API_ARGS(get_paid_subscription_options, msg_pack, paid_subscription_state)
     DEFINE_API_ARGS(get_paid_subscription_status, msg_pack, paid_subscribe_state)
+    DEFINE_API_ARGS(get_active_paid_subscriptions, msg_pack, std::vector<account_name_type>)
+    DEFINE_API_ARGS(get_inactive_paid_subscriptions, msg_pack, std::vector<account_name_type>)
 
     class paid_subscription_api final: public appbase::plugin<paid_subscription_api> {
     public:
@@ -25,6 +27,8 @@ namespace graphene { namespace plugins { namespace paid_subscription_api {
         DECLARE_API(
             (get_paid_subscription_options)
             (get_paid_subscription_status)
+            (get_active_paid_subscriptions)
+            (get_inactive_paid_subscriptions)
         )
 
         paid_subscription_api();
