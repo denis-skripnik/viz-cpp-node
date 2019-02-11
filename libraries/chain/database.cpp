@@ -60,7 +60,7 @@ struct snapshot_account
 {
     std::string login;
     std::string public_key;//authority
-    uint64_t shares_ammount;
+    uint64_t shares_amount;
 };
 
 struct snapshot_items
@@ -73,7 +73,7 @@ struct snapshot_items
 FC_REFLECT((graphene::chain::object_schema_repr), (space_type)(type))
 FC_REFLECT((graphene::chain::operation_schema_repr), (id)(type))
 FC_REFLECT((graphene::chain::db_schema), (types)(object_types)(operation_type)(custom_operation_types))
-FC_REFLECT((graphene::chain::snapshot_account), (login)(public_key)(shares_ammount))
+FC_REFLECT((graphene::chain::snapshot_account), (login)(public_key)(shares_amount))
 FC_REFLECT((graphene::chain::snapshot_items), (accounts))
 
 
@@ -2878,10 +2878,10 @@ namespace graphene { namespace chain {
                             m.account = account.login;
                         });
                         #endif
-                        create_vesting( get_account( account.login ), asset( account.shares_ammount, TOKEN_SYMBOL ) );
-                        init_supply-=account.shares_ammount;
+                        create_vesting( get_account( account.login ), asset( account.shares_amount, TOKEN_SYMBOL ) );
+                        init_supply-=account.shares_amount;
 
-                        ilog( "Import account ${a} with public key ${k}, shares: ${s} (remaining init supply: ${i})", ("a", account.login)("k", account.public_key)("s", account.shares_ammount)("i", init_supply) );
+                        ilog( "Import account ${a} with public key ${k}, shares: ${s} (remaining init supply: ${i})", ("a", account.login)("k", account.public_key)("s", account.shares_amount)("i", init_supply) );
                     }
                     const auto& initiator = get_account( CHAIN_INITIATOR_NAME );
                     modify( initiator, [&]( account_object& a )
