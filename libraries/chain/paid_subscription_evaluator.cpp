@@ -87,7 +87,7 @@ namespace graphene { namespace chain {
                             ps.period = o.period;
                             ps.start_time = _db.head_block_time();
                             ps.next_time = ps.start_time + fc::seconds(new_period_sec);
-                            ps.end_time = fc::time_point_sec::min();
+                            ps.end_time = fc::time_point_sec::maximum();
                             ps.active = true;
                             ps.auto_renewal = o.auto_renewal;
                         });
@@ -109,7 +109,7 @@ namespace graphene { namespace chain {
                             ps.period = o.period;
                             ps.start_time = _db.head_block_time();
                             ps.next_time = ps.start_time + fc::seconds(period_sec);
-                            ps.end_time = fc::time_point_sec::min();
+                            ps.end_time = fc::time_point_sec::maximum();
                             ps.active = true;
                             ps.auto_renewal = o.auto_renewal;
                         });
@@ -138,7 +138,7 @@ namespace graphene { namespace chain {
                 ps.period = o.period;
                 ps.start_time = _db.head_block_time();
                 ps.next_time = ps.start_time + fc::seconds(period_sec);
-                ps.end_time = fc::time_point_sec::min();
+                ps.end_time = fc::time_point_sec::maximum();
                 ps.active = true;
                 ps.auto_renewal = o.auto_renewal;
             });

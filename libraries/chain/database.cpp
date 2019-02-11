@@ -1311,7 +1311,7 @@ namespace graphene { namespace chain {
 
         void database::paid_subscribe_processing() {
             const auto &idx = get_index<paid_subscribe_index>().indices().get<by_next_time>();
-            for (auto itr = idx.lower_bound(fc::time_point_sec::min()+fc::seconds(1));
+            for (auto itr = idx.lower_bound(fc::time_point_sec::min());
                  itr != idx.end() && (itr->next_time <= head_block_time());
                  ++itr) {
                 if(itr->active){
@@ -1326,33 +1326,33 @@ namespace graphene { namespace chain {
 
                             uint16_t new_level=std::min(itr->level,itr2->levels);
                             if(itr2->period >= itr->period){//positive changes for subscriber
-	                            share_type subscription_summary_token_amount=itr2->amount * new_level;
-	                            asset subscription_summary_amount=asset(subscription_summary_token_amount,TOKEN_SYMBOL);
-	                            uint64_t subscription_period_sec=itr2->period * 86400;
+                                share_type subscription_summary_token_amount=itr2->amount * new_level;
+                                asset subscription_summary_amount=asset(subscription_summary_token_amount,TOKEN_SYMBOL);
+                                uint64_t subscription_period_sec=itr2->period * 86400;
 
-                            	if(old_summary_token_amount >= subscription_summary_token_amount){// positive changes for subscriber
-	                            	if(get_balance(subscriber, TOKEN_SYMBOL) >= subscription_summary_amount){
-	                            	    adjust_balance(subscriber, -subscription_summary_amount);
-	                            	    adjust_balance(account, subscription_summary_amount);
-	                            	    modify(*itr, [&](paid_subscribe_object& ps) {
-	                            	    	ps.amount=itr2->amount;
-	                            	    	ps.level=new_level;
-	                            	        ps.start_time = head_block_time();
-	                            	        ps.next_time = ps.start_time + fc::seconds(subscription_period_sec);
-	                            	        ps.end_time = fc::time_point_sec::min();
-	                            	    });
-	                            	    push_virtual_operation(paid_subscription_action_operation(itr->subscriber, itr->creator, new_level, itr2->amount, itr2->period, subscription_period_sec, subscription_summary_amount));
-	                            	}
-	                            	else{//not enought balance
-	                            	    close_subscribe=true;
-	                            	}
-	                            }
-	                            else{//new summary amount is more than in old subscribe model - negative
-	                            	close_subscribe=true;
-	                            }
+                                if(old_summary_token_amount >= subscription_summary_token_amount){// positive changes for subscriber
+                                    if(get_balance(subscriber, TOKEN_SYMBOL) >= subscription_summary_amount){
+                                        adjust_balance(subscriber, -subscription_summary_amount);
+                                        adjust_balance(account, subscription_summary_amount);
+                                        modify(*itr, [&](paid_subscribe_object& ps) {
+                                            ps.amount=itr2->amount;
+                                            ps.level=new_level;
+                                            ps.start_time = head_block_time();
+                                            ps.next_time = ps.start_time + fc::seconds(subscription_period_sec);
+                                            ps.end_time = fc::time_point_sec::maximum();
+                                        });
+                                        push_virtual_operation(paid_subscription_action_operation(itr->subscriber, itr->creator, new_level, itr2->amount, itr2->period, subscription_period_sec, subscription_summary_amount));
+                                    }
+                                    else{//not enought balance
+                                        close_subscribe=true;
+                                    }
+                                }
+                                else{//new summary amount is more than in old subscribe model - negative
+                                    close_subscribe=true;
+                                }
                             }
                             else{//period reduction is negative changes for subscriber
-                            	close_subscribe=true;
+                                close_subscribe=true;
                             }
                         }
                         else{//subscribe without auto_renewal
@@ -1363,13 +1363,13 @@ namespace graphene { namespace chain {
                         close_subscribe=true;
                     }
                     if(close_subscribe){
-                    	modify(*itr, [&](paid_subscribe_object& ps) {
-                    	    ps.end_time = ps.next_time;
-                    	    ps.next_time = fc::time_point_sec::min();
-                    	    ps.active = false;
-                    	    ps.auto_renewal = false;
-                    	});
-                    	push_virtual_operation(cancel_paid_subscription_operation(itr->subscriber, itr->creator));
+                        modify(*itr, [&](paid_subscribe_object& ps) {
+                            ps.end_time = ps.next_time;
+                            ps.next_time = fc::time_point_sec::maximum();
+                            ps.active = false;
+                            ps.auto_renewal = false;
+                        });
+                        push_virtual_operation(cancel_paid_subscription_operation(itr->subscriber, itr->creator));
                     }
                 }
             }
