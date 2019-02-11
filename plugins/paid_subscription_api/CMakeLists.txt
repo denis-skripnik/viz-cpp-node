@@ -27,6 +27,7 @@ set_property(TARGET graphene_${CURRENT_TARGET} PROPERTY EXPORT_NAME ${CURRENT_TA
 target_link_libraries(
         graphene_${CURRENT_TARGET}
         graphene_chain
+        graphene::protocol
         graphene::chain_plugin
         graphene::network
         graphene::api

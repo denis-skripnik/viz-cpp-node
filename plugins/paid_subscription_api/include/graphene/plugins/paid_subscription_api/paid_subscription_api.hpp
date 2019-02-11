@@ -3,6 +3,8 @@
 #include <appbase/application.hpp>
 #include <graphene/plugins/chain/plugin.hpp>
 #include <graphene/api/paid_subscription_api_object.hpp>
+#include <graphene/protocol/types.hpp>
+#include <graphene/chain/chain_objects.hpp>
 
 namespace graphene { namespace plugins { namespace paid_subscription_api {
     using plugins::json_rpc::msg_pack;
@@ -10,6 +12,7 @@ namespace graphene { namespace plugins { namespace paid_subscription_api {
     using graphene::chain::paid_subscribe_object;
     using graphene::api::paid_subscription_state;
     using graphene::api::paid_subscribe_state;
+    using namespace graphene::protocol;
     using namespace graphene::chain;
 
     DEFINE_API_ARGS(get_paid_subscription_options, msg_pack, paid_subscription_state)

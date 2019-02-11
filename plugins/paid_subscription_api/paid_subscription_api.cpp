@@ -1,5 +1,6 @@
 #include <boost/program_options/options_description.hpp>
 #include <graphene/plugins/paid_subscription_api/paid_subscription_api.hpp>
+#include <graphene/protocol/types.hpp>
 #include <graphene/chain/index.hpp>
 #include <graphene/chain/chain_objects.hpp>
 #include <graphene/chain/paid_subscription_objects.hpp>
@@ -23,6 +24,9 @@
    static_cast<_T>(_D)
 
 namespace graphene { namespace plugins { namespace paid_subscription_api {
+
+	using namespace graphene::protocol;
+    using namespace graphene::chain;
 
     struct paid_subscription_api::impl final {
         impl(): database_(appbase::app().get_plugin<chain::plugin>().db()) {
@@ -102,10 +106,10 @@ namespace graphene { namespace plugins { namespace paid_subscription_api {
         auto subscriber = args.args->at(0).as<account_name_type>();
         auto& db = pimpl->database();
         return db.with_weak_read_lock([&]() {
-            std::vector<account_name_type> result;
+            vector<account_name_type> result;
             const auto &idx = db.get_index<paid_subscribe_index>().indices().get<by_subscriber>();
             for (auto itr = idx.lower_bound(subscriber);
-                 itr != idx.end() && (itr->subscriber == subscriber);
+                 itr != idx.end() && itr->subscriber == subscriber;
                  ++itr) {
                 if(itr->active){
                     result.emplace_back(itr->creator);
@@ -115,21 +119,21 @@ namespace graphene { namespace plugins { namespace paid_subscription_api {
         });
     }
 
-        DEFINE_API(paid_subscription_api, get_inactive_paid_subscriptions) {
-            CHECK_ARG_MIN_SIZE(1, 1)
-            auto subscriber = args.args->at(0).as<account_name_type>();
-            auto& db = pimpl->database();
-            return db.with_weak_read_lock([&]() {
-                std::vector<account_name_type> result;
-                const auto &idx = db.get_index<paid_subscribe_index>().indices().get<by_subscriber>();
-                for (auto itr = idx.lower_bound(subscriber);
-                     itr != idx.end() && (itr->subscriber == subscriber);
-                     ++itr) {
-                    if(!itr->active){
-                        result.emplace_back(itr->creator);
-                    }
+    DEFINE_API(paid_subscription_api, get_inactive_paid_subscriptions) {
+        CHECK_ARG_MIN_SIZE(1, 1)
+        auto subscriber = args.args->at(0).as<account_name_type>();
+        auto& db = pimpl->database();
+        return db.with_weak_read_lock([&]() {
+            vector<account_name_type> result;
+            const auto &idx = db.get_index<paid_subscribe_index>().indices().get<by_subscriber>();
+            for (auto itr = idx.lower_bound(subscriber);
+                 itr != idx.end() && itr->subscriber == subscriber;
+                 ++itr) {
+                if(!itr->active){
+                    result.emplace_back(itr->creator);
                 }
-                return result;
-            });
-        }
+            }
+            return result;
+        });
+    }
 } } } // graphene::plugins::paid_subscription_api
