@@ -343,12 +343,14 @@ namespace graphene { namespace protocol {
             }
         };
 
+        struct chain_properties_hf4;
+
         /**
          * Witnesses must vote on how to set certain chain properties to ensure a smooth
          * and well functioning network. Any time @owner is in the active set of witnesses these
          * properties will be used to control the blockchain configuration.
          */
-        struct chain_properties {
+        struct chain_properties_init {
             /**
              *  This fee, paid in token, is converted into SHARES for the new account. Accounts
              *  without vesting shares cannot earn usage rations and therefore are powerless. This minimum
@@ -430,8 +432,64 @@ namespace graphene { namespace protocol {
                 FC_ASSERT(committee_request_approve_min_percent <= CHAIN_100_PERCENT);
             }
 
-            chain_properties& operator=(const chain_properties&) = default;
+            chain_properties_init& operator=(const chain_properties_init&) = default;
+            chain_properties_init& operator=(const chain_properties_hf4& src);
         };
+
+        struct chain_properties_hf4: public chain_properties_init {
+            /**
+             *  Consensus - Witness reward percent from block inflation
+             */
+            int16_t inflation_witness_percent = CHAIN_CONSENSUS_INFLATION_WITNESS_PERCENT;
+
+            /**
+             *  Consensus - Inflation ratio between committee and reward fund
+             */
+            int16_t inflation_ratio_committee_vs_reward_fund = CHAIN_CONSENSUS_INFLATION_RATIO;
+
+            /**
+             *  Consensus - Inflation ratio between committee and reward fund
+             */
+            uint32_t inflation_recalc_period = CHAIN_CONSENSUS_INFLATION_RECALC_PERIOD;
+
+            void validate() const {
+                chain_properties_init::validate();
+                FC_ASSERT(inflation_witness_percent >= 0);
+                FC_ASSERT(inflation_witness_percent <= CHAIN_100_PERCENT);
+                FC_ASSERT(inflation_ratio_committee_vs_reward_fund >= 0);
+                FC_ASSERT(inflation_ratio_committee_vs_reward_fund <= CHAIN_100_PERCENT);
+                FC_ASSERT(inflation_recalc_period >= 0);
+                FC_ASSERT(inflation_recalc_period <= CHAIN_BLOCKS_PER_YEAR);
+            }
+
+            chain_properties_hf4& operator=(const chain_properties_init& src) {
+                chain_properties_init::operator=(src);
+                return *this;
+            }
+
+            chain_properties_hf4& operator=(const chain_properties_hf4&) = default;
+        };
+
+        inline chain_properties_init& chain_properties_init::operator=(const chain_properties_hf4& src) {
+            account_creation_fee = src.account_creation_fee;
+            maximum_block_size = src.maximum_block_size;
+            create_account_delegation_ratio = src.create_account_delegation_ratio;
+            create_account_delegation_time = src.create_account_delegation_time;
+            min_delegation = src.min_delegation;
+            max_curation_percent = src.max_curation_percent;
+            min_curation_percent = src.min_curation_percent;
+            bandwidth_reserve_percent = src.bandwidth_reserve_percent;
+            bandwidth_reserve_below = src.bandwidth_reserve_below;
+            flag_energy_additional_cost = src.flag_energy_additional_cost;
+            vote_accounting_min_rshares = src.vote_accounting_min_rshares;
+            committee_request_approve_min_percent = src.committee_request_approve_min_percent;
+            return *this;
+        }
+
+        using versioned_chain_properties = fc::static_variant<
+            chain_properties_init,
+            chain_properties_hf4
+        >;
 
         /**
          *  If the owner isn't a witness they will become a witness.
@@ -457,7 +515,21 @@ namespace graphene { namespace protocol {
          */
         struct chain_properties_update_operation : public base_operation {
             account_name_type owner;
-            chain_properties props;
+            chain_properties_init props;
+
+            void validate() const;
+
+            void get_required_active_authorities(flat_set<account_name_type> &a) const {
+                a.insert(owner);
+            }
+        };
+
+        /**
+         *  Wintesses can change some dynamic votable params to control the blockchain configuration
+         */
+        struct versioned_chain_properties_update_operation : public base_operation {
+            account_name_type owner;
+            versioned_chain_properties props;
 
             void validate() const;
 
@@ -761,11 +833,26 @@ namespace graphene { namespace protocol {
                 a.insert(initiator);
             }
         };
+
+        struct award_operation : public base_operation {
+            account_name_type initiator;
+            account_name_type receiver;
+            uint16_t energy = 0;
+            uint64_t custom_sequence = 0;
+            string memo;
+            vector <beneficiary_route_type> beneficiaries;
+
+            void validate() const;
+
+            void get_required_posting_authorities(flat_set<account_name_type> &a) const {
+                a.insert(initiator);
+            }
+        };
 } } // graphene::protocol
 
 
 FC_REFLECT(
-    (graphene::protocol::chain_properties),
+    (graphene::protocol::chain_properties_init),
     (account_creation_fee)(maximum_block_size)
     (create_account_delegation_ratio)
     (create_account_delegation_time)(min_delegation)
@@ -773,6 +860,11 @@ FC_REFLECT(
     (bandwidth_reserve_percent)(bandwidth_reserve_below)
     (flag_energy_additional_cost)(vote_accounting_min_rshares)
     (committee_request_approve_min_percent))
+FC_REFLECT_DERIVED(
+    (graphene::protocol::chain_properties_hf4),((graphene::protocol::chain_properties_init)),
+    (inflation_witness_percent)(inflation_ratio_committee_vs_reward_fund)(inflation_recalc_period))
+
+FC_REFLECT_TYPENAME((graphene::protocol::versioned_chain_properties))
 
 FC_REFLECT((graphene::protocol::account_create_operation),
     (fee)(delegation)(creator)(new_account_name)(owner)(active)(posting)(memo_key)(json_metadata)(referrer)(extensions));
@@ -819,3 +911,5 @@ FC_REFLECT((graphene::protocol::committee_vote_request_operation), (voter)(reque
 FC_REFLECT((graphene::protocol::create_invite_operation), (creator)(balance)(invite_key));
 FC_REFLECT((graphene::protocol::claim_invite_balance_operation), (initiator)(receiver)(invite_secret));
 FC_REFLECT((graphene::protocol::invite_registration_operation), (initiator)(new_account_name)(invite_secret)(new_account_key));
+FC_REFLECT((graphene::protocol::versioned_chain_properties_update_operation), (owner)(props));
+FC_REFLECT((graphene::protocol::award_operation), (initiator)(receiver)(energy)(custom_sequence)(memo)(beneficiaries));

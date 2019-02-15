@@ -43,6 +43,8 @@ public:
     uint32_t vote_count = 0;
     uint32_t content_count = 0;
     uint64_t awarded_rshares = 0;
+    uint64_t custom_sequence = 0;
+    uint64_t custom_sequence_block_num = 0;
 
     int16_t energy = CHAIN_100_PERCENT;   ///< current voting power of this account, it falls after every vote
     time_point_sec last_vote_time; ///< used to increase the voting power of this account the longer it goes without voting.
@@ -51,6 +53,8 @@ public:
 
     share_type curation_rewards = 0;
     share_type posting_rewards = 0;
+    share_type receiver_awards = 0;
+    share_type benefactor_awards = 0;
 
     asset vesting_shares = asset(0, SHARES_SYMBOL); ///< total vesting shares held by this account, controls its voting power
     asset delegated_vesting_shares = asset(0, SHARES_SYMBOL); ///<
@@ -78,6 +82,15 @@ public:
         return std::accumulate(proxied_vsf_votes.begin(),
                 proxied_vsf_votes.end(),
                 vesting_shares.amount);
+    }
+    share_type witness_vote_fair_weight() const {
+        share_type weight=0;
+        if(0<witnesses_voted_for){
+            weight = (fc::uint128_t(vesting_shares.amount.value) / witnesses_voted_for).to_uint64();
+        }
+        return std::accumulate(proxied_vsf_votes.begin(),
+                proxied_vsf_votes.end(),
+                weight);
     }
 
     share_type proxied_vsf_votes_total() const {
@@ -430,7 +443,9 @@ FC_REFLECT((graphene::chain::account_object),
         (id)(name)(memo_key)(proxy)(referrer)(last_account_update)
                 (created)
                 (recovery_account)(last_account_recovery)
-                (subcontent_count)(vote_count)(content_count)(awarded_rshares)(energy)(last_vote_time)
+                (subcontent_count)(vote_count)(content_count)(awarded_rshares)
+                (custom_sequence)(custom_sequence_block_num)
+                (energy)(last_vote_time)
                 (balance)(vesting_shares)(delegated_vesting_shares)(received_vesting_shares)
                 (vesting_withdraw_rate)(next_vesting_withdrawal)(withdrawn)(to_withdraw)(withdraw_routes)
                 (curation_rewards)

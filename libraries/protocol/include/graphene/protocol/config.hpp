@@ -2,7 +2,7 @@
 
 #define CHAIN_STARTUP_VERSION                 (version(1, 0, 0))
 #define CHAIN_HARDFORK_STARTUP_VERSION        (hardfork_version(CHAIN_STARTUP_VERSION))
-#define CHAIN_VERSION                         (version(1, 3, 0))
+#define CHAIN_VERSION                         (version(2, 0, 2))
 #define CHAIN_HARDFORK_VERSION                (hardfork_version(CHAIN_VERSION))
 
 #define CHAIN_NAME                            "VIZ"
@@ -49,7 +49,8 @@
 #define CHAIN_MAX_COMMENT_BENEFICIARIES       64
 #define CHAIN_VOTE_ENERGY_RATE                1
 
-#define CHAIN_MAX_ACCOUNT_WITNESS_VOTES       2
+#define CHAIN_MAX_ACCOUNT_WITNESS_VOTES_PRE_HF4 2
+#define CHAIN_MAX_ACCOUNT_WITNESS_VOTES       100
 
 #define CHAIN_100_PERCENT                     10000
 #define CHAIN_1_PERCENT                       (CHAIN_100_PERCENT/100)
@@ -59,6 +60,10 @@
 #define CHAIN_VESTING_FUND_PERCENT            (10*CHAIN_1_PERCENT) //10% of inflation
 #define CHAIN_REWARD_FUND_PERCENT             (35*CHAIN_1_PERCENT) //35% of inflation
 #define CHAIN_COMMITTEE_FUND_PERCENT          (35*CHAIN_1_PERCENT) //35% of inflation
+
+#define CHAIN_CONSENSUS_INFLATION_WITNESS_PERCENT (20*CHAIN_1_PERCENT) //20% of inflation
+#define CHAIN_CONSENSUS_INFLATION_RATIO       (50*CHAIN_1_PERCENT) //default: 50% of inflation minus witness percent (80% split between committee and reward fund)
+#define CHAIN_CONSENSUS_INFLATION_RECALC_PERIOD (28*CHAIN_BLOCKS_PER_DAY) //default: period for recalc inflation medians to global properties
 
 #define CHAIN_REWARD_FUND_CURATOR_PERCENT     (5*100/30*CHAIN_1_PERCENT) //5% of inflation from reward fund
 

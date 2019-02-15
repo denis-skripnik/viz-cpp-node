@@ -67,7 +67,8 @@ namespace graphene { namespace chain {
             required_approval_object_type,
             committee_request_object_type,
             committee_vote_object_type,
-            invite_object_type
+            invite_object_type,
+            award_shares_expire_object_type
         };
 
         class dynamic_global_property_object;
@@ -97,6 +98,7 @@ namespace graphene { namespace chain {
         class committee_request_object;
         class committee_vote_object;
         class invite_object;
+        class award_shares_expire_object;
 
         typedef object_id<dynamic_global_property_object> dynamic_global_property_id_type;
         typedef object_id<account_object> account_id_type;
@@ -124,6 +126,7 @@ namespace graphene { namespace chain {
         typedef object_id<committee_request_object> committee_request_object_id_type;
         typedef object_id<committee_vote_object> committee_vote_object_id_type;
         typedef object_id<invite_object> invite_object_id_type;
+        typedef object_id<award_shares_expire_object> award_shares_expire_object_id_type;
 
 } } //graphene::chain
 
@@ -156,7 +159,7 @@ namespace fc {
         }
 
         template<typename Stream, typename T>
-        inline void unpack(Stream &s, chainbase::object_id<T> &id) {
+        inline void unpack(Stream &s, chainbase::object_id<T> &id, uint32_t = 0) {
             s.read((char *)&id._id, sizeof(id._id));
         }
     }
@@ -173,16 +176,16 @@ namespace fc {
         }
 
         template<typename T>
-        inline void unpack(const graphene::chain::buffer_type &raw, T &v) {
+        inline void unpack(const graphene::chain::buffer_type &raw, T &v, uint32_t depth = 0) {
             datastream<const char *> ds(raw.data(), raw.size());
-            unpack(ds, v);
+            unpack(ds, v, depth);
         }
 
         template<typename T>
-        inline T unpack(const graphene::chain::buffer_type &raw) {
+        inline T unpack(const graphene::chain::buffer_type &raw, uint32_t depth = 0) {
             T v;
             datastream<const char *> ds(raw.data(), raw.size());
-            unpack(ds, v);
+            unpack(ds, v, depth);
             return v;
         }
     }
@@ -215,6 +218,7 @@ FC_REFLECT_ENUM(graphene::chain::object_type,
                 (committee_request_object_type)
                 (committee_vote_object_type)
                 (invite_object_type)
+                (award_shares_expire_object_type)
 )
 
 FC_REFLECT_TYPENAME((graphene::chain::shared_string))

@@ -373,14 +373,18 @@ namespace graphene { namespace chain {
 
             void process_content_cashout();
 
+            void process_inflation_recalc();
             void process_funds();
             void committee_processing();
+
+            void expire_award_shares_processing();
 
             void account_recovery_processing();
 
             void expire_escrow_ratification();
 
             share_type claim_rshare_reward(share_type rshares);
+            share_type claim_rshare_award(share_type rshares);
 
             time_point_sec head_block_time() const;
 
