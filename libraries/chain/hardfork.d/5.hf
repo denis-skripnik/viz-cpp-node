@@ -1,0 +1,6 @@
+// 5 Hardfork on VIZ mainnet, fix witnesses votes
+#ifndef CHAIN_HARDFORK_5
+#define CHAIN_HARDFORK_5 5
+#define CHAIN_HARDFORK_5_TIME 1550656800 // 20 Feb 2019 10:00:00 GMT
+#define CHAIN_HARDFORK_5_VERSION hardfork_version( version(2, 1, 0) )
+#endif

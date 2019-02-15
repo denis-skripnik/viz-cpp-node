@@ -66,6 +66,7 @@ struct account_api_object {
     std::vector<share_type> proxied_vsf_votes;
 
     uint16_t witnesses_voted_for;
+    share_type witnesses_vote_weight;
 
     time_point_sec last_root_post;
     time_point_sec last_post;
@@ -87,7 +88,7 @@ FC_REFLECT((graphene::api::account_api_object),
     (vesting_shares)(delegated_vesting_shares)(received_vesting_shares)
     (vesting_withdraw_rate)(next_vesting_withdrawal)(withdrawn)(to_withdraw)(withdraw_routes)
     (curation_rewards)(posting_rewards)(receiver_awards)(benefactor_awards)(proxied_vsf_votes)(witnesses_voted_for)
-    (last_post)(last_root_post)
+    (witnesses_vote_weight)(last_post)(last_root_post)
     (average_bandwidth)(lifetime_bandwidth)(last_bandwidth_update)
     (witness_votes))
 

@@ -68,7 +68,9 @@ namespace graphene { namespace chain {
             committee_request_object_type,
             committee_vote_object_type,
             invite_object_type,
-            award_shares_expire_object_type
+            award_shares_expire_object_type,
+            paid_subscription_object_type,
+            paid_subscribe_object_type
         };
 
         class dynamic_global_property_object;
@@ -99,6 +101,8 @@ namespace graphene { namespace chain {
         class committee_vote_object;
         class invite_object;
         class award_shares_expire_object;
+        class paid_subscription_object;
+        class paid_subscribe_object;
 
         typedef object_id<dynamic_global_property_object> dynamic_global_property_id_type;
         typedef object_id<account_object> account_id_type;
@@ -127,6 +131,8 @@ namespace graphene { namespace chain {
         typedef object_id<committee_vote_object> committee_vote_object_id_type;
         typedef object_id<invite_object> invite_object_id_type;
         typedef object_id<award_shares_expire_object> award_shares_expire_object_id_type;
+        typedef object_id<paid_subscription_object> paid_subscription_object_id_type;
+        typedef object_id<paid_subscribe_object> paid_subscribe_object_id_type;
 
 } } //graphene::chain
 
@@ -219,6 +225,8 @@ FC_REFLECT_ENUM(graphene::chain::object_type,
                 (committee_vote_object_type)
                 (invite_object_type)
                 (award_shares_expire_object_type)
+                (paid_subscription_object_type)
+                (paid_subscribe_object_type)
 )
 
 FC_REFLECT_TYPENAME((graphene::chain::shared_string))

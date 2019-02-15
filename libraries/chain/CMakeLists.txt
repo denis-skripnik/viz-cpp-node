@@ -33,6 +33,7 @@ if(BUILD_SHARED_LIBRARIES)
             chain_properties_evaluators.cpp
             committee_evaluator.cpp
             invite_evaluator.cpp
+            paid_subscription_evaluator.cpp
 
             include/graphene/chain/account_object.hpp
             include/graphene/chain/block_log.hpp
@@ -61,7 +62,7 @@ if(BUILD_SHARED_LIBRARIES)
             include/graphene/chain/transaction_object.hpp
             include/graphene/chain/witness_objects.hpp
             include/graphene/chain/committee_objects.hpp
-            include/graphene/chain/invite_objects.hpp
+            include/graphene/chain/paid_subscription_objects.hpp
 
             ${hardfork_hpp_file}
             "${CMAKE_CURRENT_BINARY_DIR}/include/graphene/chain/hardfork.hpp"
@@ -85,6 +86,7 @@ else()
             chain_properties_evaluators.cpp
             committee_evaluator.cpp
             invite_evaluator.cpp
+            paid_subscription_evaluator.cpp
 
             include/graphene/chain/account_object.hpp
             include/graphene/chain/block_log.hpp
@@ -114,6 +116,7 @@ else()
             include/graphene/chain/witness_objects.hpp
             include/graphene/chain/committee_objects.hpp
             include/graphene/chain/invite_objects.hpp
+            include/graphene/chain/paid_subscription_objects.hpp
 
             ${hardfork_hpp_file}
             "${CMAKE_CURRENT_BINARY_DIR}/include/graphene/chain/hardfork.hpp"

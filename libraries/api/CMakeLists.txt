@@ -11,6 +11,7 @@ list(APPEND CURRENT_TARGET_HEADERS
     include/graphene/api/discussion_helper.hpp
     include/graphene/api/committee_api_object.hpp
     include/graphene/api/invite_api_object.hpp
+    include/graphene/api/paid_subscription_api_object.hpp
 )
 
 list(APPEND CURRENT_TARGET_SOURCES
@@ -21,6 +22,7 @@ list(APPEND CURRENT_TARGET_SOURCES
     witness_api_object.cpp
     committee_api_object.cpp
     invite_api_object.cpp
+    paid_subscription_api_object.cpp
 )
 
 if(BUILD_SHARED_LIBRARIES)

@@ -308,7 +308,12 @@ namespace graphene { namespace chain {
                 else{
                     uint128_t reward_tokens = uint128_t(
                          _db.claim_rshare_award(rshares));
-                    tokens=asset(reward_tokens.to_uint64(),SHARES_SYMBOL);
+                    if(_db.has_hardfork(CHAIN_HARDFORK_5)){
+                        tokens=asset(reward_tokens.to_uint64(),TOKEN_SYMBOL);
+                    }
+                    else{
+                        tokens=asset(reward_tokens.to_uint64(),SHARES_SYMBOL);
+                    }
                 }
 
                 _db.modify(initiator, [&](account_object &a) {
@@ -335,7 +340,7 @@ namespace graphene { namespace chain {
                             a.benefactor_awards += benefactor_tokens;
                         });
                         _db.push_virtual_operation(
-                            benefactor_award_operation(b.account,o.receiver,o.custom_sequence,o.memo,shares_created));
+                            benefactor_award_operation(o.initiator,b.account,o.receiver,o.custom_sequence,o.memo,shares_created));
                         total_beneficiary += benefactor_tokens;
                     }
 
@@ -346,7 +351,7 @@ namespace graphene { namespace chain {
                             a.receiver_awards += receiver_tokens;
                         });
                         _db.push_virtual_operation(
-                            receive_award_operation(o.receiver,o.custom_sequence,o.memo,shares_created));
+                            receive_award_operation(o.initiator,o.receiver,o.custom_sequence,o.memo,shares_created));
                     }
                 }
             } FC_CAPTURE_AND_RETHROW((o))
@@ -746,6 +751,10 @@ namespace graphene { namespace chain {
                             o.vesting_shares.amount /
                             vesting_withdraw_intervals, SHARES_SYMBOL);
 
+                    if(_db.has_hardfork(CHAIN_HARDFORK_5)){
+                        new_vesting_withdraw_rate = asset(a.available_vesting_shares().amount / vesting_withdraw_intervals, SHARES_SYMBOL);
+                    }
+
                     if (new_vesting_withdraw_rate.amount == 0)
                         new_vesting_withdraw_rate.amount = 1;
 
@@ -903,11 +912,39 @@ namespace graphene { namespace chain {
                               CHAIN_MAX_ACCOUNT_WITNESS_VOTES_PRE_HF4, "Account has voted for too many witnesses."); // TODO: Remove after hardfork 2
                 }
 
-                if(_db.has_hardfork(CHAIN_HARDFORK_4)){
+                if(_db.has_hardfork(CHAIN_HARDFORK_5)){
                     const auto &vidx = _db.get_index<witness_vote_index>().indices().get<by_account_witness>();
                     auto vitr = vidx.lower_bound(boost::make_tuple(voter.id, witness_id_type()));
                     while (vitr != vidx.end() && vitr->account == voter.id) {
-                        _db.adjust_witness_vote(_db.get(vitr->witness), -voter.witness_vote_fair_weight());
+                        _db.adjust_witness_vote(_db.get(vitr->witness), -voter.witnesses_vote_weight);
+                        ++vitr;
+                    }
+
+                    _db.create<witness_vote_object>([&](witness_vote_object &v) {
+                        v.witness = witness.id;
+                        v.account = voter.id;
+                    });
+
+                    _db.modify(voter, [&](account_object &a) {
+                        a.witnesses_voted_for++;
+                    });
+                    share_type fair_vote_weight = voter.witness_vote_fair_weight();
+                    _db.modify(voter, [&](account_object &a) {
+                        a.witnesses_vote_weight = fair_vote_weight;
+                    });
+
+                    const auto &vidx2 = _db.get_index<witness_vote_index>().indices().get<by_account_witness>();
+                    auto vitr2 = vidx2.lower_bound(boost::make_tuple(voter.id, witness_id_type()));
+                    while (vitr2 != vidx2.end() && vitr2->account == voter.id) {
+                        _db.adjust_witness_vote(_db.get(vitr2->witness), voter.witnesses_vote_weight);
+                        ++vitr2;
+                    }
+                }
+                else if(_db.has_hardfork(CHAIN_HARDFORK_4)){
+                    const auto &vidx = _db.get_index<witness_vote_index>().indices().get<by_account_witness>();
+                    auto vitr = vidx.lower_bound(boost::make_tuple(voter.id, witness_id_type()));
+                    while (vitr != vidx.end() && vitr->account == voter.id) {
+                        _db.adjust_witness_vote(_db.get(vitr->witness), -voter.witness_vote_fair_weight_prehf5());
                         ++vitr;
                     }
 
@@ -923,7 +960,7 @@ namespace graphene { namespace chain {
                     const auto &vidx2 = _db.get_index<witness_vote_index>().indices().get<by_account_witness>();
                     auto vitr2 = vidx2.lower_bound(boost::make_tuple(voter.id, witness_id_type()));
                     while (vitr2 != vidx2.end() && vitr2->account == voter.id) {
-                        _db.adjust_witness_vote(_db.get(vitr2->witness), voter.witness_vote_fair_weight());
+                        _db.adjust_witness_vote(_db.get(vitr2->witness), voter.witness_vote_fair_weight_prehf5());
                         ++vitr2;
                     }
                 }
@@ -940,11 +977,36 @@ namespace graphene { namespace chain {
             } else {
                 FC_ASSERT(!o.approve, "Vote currently exists, user must indicate a desire to reject witness.");
 
-                if(_db.has_hardfork(CHAIN_HARDFORK_4)){
+                if(_db.has_hardfork(CHAIN_HARDFORK_5)){
                     const auto &vidx = _db.get_index<witness_vote_index>().indices().get<by_account_witness>();
                     auto vitr = vidx.lower_bound(boost::make_tuple(voter.id, witness_id_type()));
                     while (vitr != vidx.end() && vitr->account == voter.id) {
-                        _db.adjust_witness_vote(_db.get(vitr->witness), -voter.witness_vote_fair_weight());
+                        _db.adjust_witness_vote(_db.get(vitr->witness), -voter.witnesses_vote_weight);
+                        ++vitr;
+                    }
+
+                    _db.remove(*itr);
+
+                    _db.modify(voter, [&](account_object &a) {
+                        a.witnesses_voted_for--;
+                    });
+                    share_type fair_vote_weight = voter.witness_vote_fair_weight();
+                    _db.modify(voter, [&](account_object &a) {
+                        a.witnesses_vote_weight = fair_vote_weight;
+                    });
+
+                    const auto &vidx2 = _db.get_index<witness_vote_index>().indices().get<by_account_witness>();
+                    auto vitr2 = vidx2.lower_bound(boost::make_tuple(voter.id, witness_id_type()));
+                    while (vitr2 != vidx2.end() && vitr2->account == voter.id) {
+                        _db.adjust_witness_vote(_db.get(vitr2->witness), voter.witnesses_vote_weight);
+                        ++vitr2;
+                    }
+                }
+                else if(_db.has_hardfork(CHAIN_HARDFORK_4)){
+                    const auto &vidx = _db.get_index<witness_vote_index>().indices().get<by_account_witness>();
+                    auto vitr = vidx.lower_bound(boost::make_tuple(voter.id, witness_id_type()));
+                    while (vitr != vidx.end() && vitr->account == voter.id) {
+                        _db.adjust_witness_vote(_db.get(vitr->witness), -voter.witness_vote_fair_weight_prehf5());
                         ++vitr;
                     }
 
@@ -957,7 +1019,7 @@ namespace graphene { namespace chain {
                     const auto &vidx2 = _db.get_index<witness_vote_index>().indices().get<by_account_witness>();
                     auto vitr2 = vidx2.lower_bound(boost::make_tuple(voter.id, witness_id_type()));
                     while (vitr2 != vidx2.end() && vitr2->account == voter.id) {
-                        _db.adjust_witness_vote(_db.get(vitr2->witness), voter.witness_vote_fair_weight());
+                        _db.adjust_witness_vote(_db.get(vitr2->witness), voter.witness_vote_fair_weight_prehf5());
                         ++vitr2;
                     }
                 }
