@@ -355,4 +355,32 @@ namespace graphene { namespace protocol {
             }
         }
 
+        void set_paid_subscription_operation::validate() const {
+            validate_account_name(account);
+            FC_ASSERT(url.size() <
+                      CHAIN_MAX_MEMO_SIZE, "URL is too large");
+            FC_ASSERT(fc::is_utf8(url), "URL is not UTF8");
+            FC_ASSERT(levels >= 0);
+            FC_ASSERT(levels <= PAID_SUBSCRIPTION_MAX_LEVEL);
+            FC_ASSERT(amount.symbol !=
+                      SHARES_SYMBOL, "Amount of SHARES is not allowed.");
+            FC_ASSERT(amount.amount >
+                      0, "Cannot set subscription with negative or zero amount");
+            FC_ASSERT(period > 0, "Cannot set negative or zero period");
+            FC_ASSERT(period <= PAID_SUBSCRIPTION_MAX_PERIOD);
+        }
+
+        void paid_subscribe_operation::validate() const {
+        	validate_account_name(subscriber);
+            validate_account_name(account);
+            FC_ASSERT(level >= 0);
+            FC_ASSERT(level <= PAID_SUBSCRIPTION_MAX_LEVEL);
+            FC_ASSERT(amount.symbol !=
+                      SHARES_SYMBOL, "Amount of SHARES is not allowed.");
+            FC_ASSERT(amount.amount >
+                      0, "Cannot set subscription with negative or zero amount");
+            FC_ASSERT(period > 0, "Cannot set negative or zero period");
+            FC_ASSERT(period <= PAID_SUBSCRIPTION_MAX_PERIOD);
+        }
+
 } } // graphene::protocol

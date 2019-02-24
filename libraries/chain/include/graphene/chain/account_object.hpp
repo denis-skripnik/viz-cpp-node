@@ -69,6 +69,7 @@ public:
     fc::array<share_type, CHAIN_MAX_PROXY_RECURSION_DEPTH> proxied_vsf_votes;// = std::vector<share_type>( CHAIN_MAX_PROXY_RECURSION_DEPTH, 0 ); ///< the total VFS votes proxied to this account
 
     uint16_t witnesses_voted_for = 0;
+    share_type witnesses_vote_weight = 0;
 
     time_point_sec last_root_post;
     time_point_sec last_post;
@@ -83,7 +84,7 @@ public:
                 proxied_vsf_votes.end(),
                 vesting_shares.amount);
     }
-    share_type witness_vote_fair_weight() const {
+    share_type witness_vote_fair_weight_prehf5() const {
         share_type weight=0;
         if(0<witnesses_voted_for){
             weight = (fc::uint128_t(vesting_shares.amount.value) / witnesses_voted_for).to_uint64();
@@ -91,6 +92,15 @@ public:
         return std::accumulate(proxied_vsf_votes.begin(),
                 proxied_vsf_votes.end(),
                 weight);
+    }
+
+    share_type witness_vote_fair_weight() const {
+        share_type weight=std::accumulate(proxied_vsf_votes.begin(),proxied_vsf_votes.end(),vesting_shares.amount);
+        share_type fair_weight=0;
+        if(0<witnesses_voted_for){
+            fair_weight = (fc::uint128_t(weight) / witnesses_voted_for).to_uint64();
+        }
+        return fair_weight;
     }
 
     share_type proxied_vsf_votes_total() const {

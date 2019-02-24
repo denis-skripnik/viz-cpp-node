@@ -376,6 +376,7 @@ namespace graphene { namespace chain {
             void process_inflation_recalc();
             void process_funds();
             void committee_processing();
+            void paid_subscribe_processing();
 
             void expire_award_shares_processing();
 

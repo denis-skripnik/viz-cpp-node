@@ -848,6 +848,35 @@ namespace graphene { namespace protocol {
                 a.insert(initiator);
             }
         };
+
+        struct set_paid_subscription_operation : public base_operation {
+            account_name_type account;
+            string url;
+            uint16_t levels;
+            asset amount;
+            uint16_t period;
+
+            void validate() const;
+
+            void get_required_active_authorities(flat_set<account_name_type> &a) const {
+                a.insert(account);
+            }
+        };
+
+        struct paid_subscribe_operation : public base_operation {
+        	account_name_type subscriber;
+            account_name_type account;
+            uint16_t level;
+            asset amount;
+            uint16_t period;
+            bool auto_renewal = true;
+
+            void validate() const;
+
+            void get_required_active_authorities(flat_set<account_name_type> &a) const {
+                a.insert(subscriber);
+            }
+        };
 } } // graphene::protocol
 
 
@@ -913,3 +942,5 @@ FC_REFLECT((graphene::protocol::claim_invite_balance_operation), (initiator)(rec
 FC_REFLECT((graphene::protocol::invite_registration_operation), (initiator)(new_account_name)(invite_secret)(new_account_key));
 FC_REFLECT((graphene::protocol::versioned_chain_properties_update_operation), (owner)(props));
 FC_REFLECT((graphene::protocol::award_operation), (initiator)(receiver)(energy)(custom_sequence)(memo)(beneficiaries));
+FC_REFLECT((graphene::protocol::set_paid_subscription_operation), (account)(url)(levels)(amount)(period));
+FC_REFLECT((graphene::protocol::paid_subscribe_operation), (subscriber)(account)(level)(amount)(period)(auto_renewal));
