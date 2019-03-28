@@ -39,7 +39,6 @@
 #define CHAIN_MAX_WITNESSES                   (CHAIN_MAX_TOP_WITNESSES+CHAIN_MAX_SUPPORT_WITNESSES) /// 21 is more than enough
 #define CHAIN_HARDFORK_REQUIRED_WITNESSES     17 // 17 of the 20 dpos witnesses (19 elected and 1 virtual time) required for hardfork. This guarantees 75% participation on all subsequent rounds.
 #define CHAIN_MAX_TIME_UNTIL_EXPIRATION       (60*60) // seconds,  aka: 1 hour
-#define CHAIN_MAX_MEMO_SIZE                   2048
 #define CHAIN_MAX_PROXY_RECURSION_DEPTH       4
 #define CHAIN_VESTING_WITHDRAW_INTERVALS      28
 #define CHAIN_VESTING_WITHDRAW_INTERVAL_SECONDS (60*60*24) // 1 day per interval
@@ -87,8 +86,8 @@
 #define CHAIN_CREATE_MIN_ACCOUNT_NAME_LENGTH  3
 #define CHAIN_MAX_ACCOUNT_NAME_LENGTH         25
 
-#define CHAIN_MIN_PERMLINK_LENGTH             0
-#define CHAIN_MAX_PERMLINK_LENGTH             256
+#define CHAIN_MAX_URL_LENGTH                  256
+#define CHAIN_MAX_MEMO_LENGTH                 2048
 #define CHAIN_MAX_WITNESS_URL_LENGTH          2048
 
 #define CHAIN_INIT_SUPPLY                     int64_t(50000000000)

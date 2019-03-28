@@ -753,7 +753,7 @@ namespace graphene { namespace protocol {
 
             void validate() const {
                 FC_ASSERT(url.size() > 0, "URL size must be greater than 0");
-                FC_ASSERT(url.size() < 256, "URL size must be lesser than 256");
+                FC_ASSERT(url.size() < CHAIN_MAX_URL_LENGTH, "URL size must be lesser than 256");
                 FC_ASSERT(required_amount_min.amount >= 0);
                 FC_ASSERT(required_amount_min.symbol == TOKEN_SYMBOL);
                 FC_ASSERT(required_amount_max.amount > required_amount_min.amount);

@@ -8,7 +8,7 @@ namespace graphene { namespace protocol {
         ///  going forward.
         inline void validate_permlink(const string &permlink) {
             FC_ASSERT(permlink.size() <
-                      CHAIN_MAX_PERMLINK_LENGTH, "permlink is too long");
+                      CHAIN_MAX_URL_LENGTH, "permlink is too long");
             FC_ASSERT(fc::is_utf8(permlink), "permlink not formatted in UTF8");
         }
 
@@ -152,7 +152,7 @@ namespace graphene { namespace protocol {
                 FC_ASSERT(amount.amount >
                           0, "Cannot transfer a negative amount (aka: stealing)");
                 FC_ASSERT(memo.size() <
-                          CHAIN_MAX_MEMO_SIZE, "Memo is too large");
+                          CHAIN_MAX_MEMO_LENGTH, "Memo is too large");
                 FC_ASSERT(fc::is_utf8(memo), "Memo is not UTF8");
             } FC_CAPTURE_AND_RETHROW((*this))
         }
@@ -337,7 +337,7 @@ namespace graphene { namespace protocol {
             FC_ASSERT(custom_sequence >= 0);
             FC_ASSERT(custom_sequence <= uint64_t(std::numeric_limits<int64_t>::max()));
             FC_ASSERT(memo.size() <
-                      CHAIN_MAX_MEMO_SIZE, "Memo is too large");
+                      CHAIN_MAX_MEMO_LENGTH, "Memo is too large");
             FC_ASSERT(fc::is_utf8(memo), "Memo is not UTF8");
 
             uint32_t sum = 0;
@@ -358,7 +358,7 @@ namespace graphene { namespace protocol {
         void set_paid_subscription_operation::validate() const {
             validate_account_name(account);
             FC_ASSERT(url.size() <
-                      CHAIN_MAX_MEMO_SIZE, "URL is too large");
+                      CHAIN_MAX_MEMO_LENGTH, "URL is too large");
             FC_ASSERT(fc::is_utf8(url), "URL is not UTF8");
             FC_ASSERT(levels >= 0);
             FC_ASSERT(levels <= PAID_SUBSCRIPTION_MAX_LEVEL);
