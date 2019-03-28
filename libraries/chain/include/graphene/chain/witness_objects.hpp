@@ -50,6 +50,10 @@ namespace graphene { namespace chain {
         uint32_t total_missed = 0;
         uint64_t last_aslot = 0;
         uint64_t last_confirmed_block_num = 0;
+        /** Number of blocks produced since beginning of time or last missed block */
+        uint64_t current_run = 0;
+        /** Last block produced when current_run >= CHAIN_IRREVERSIBLE_SUPPORT_MIN_RUN */
+        uint64_t last_supported_block_num = 0;
 
         /**
          *  This is the key used to sign blocks on behalf of this witness
@@ -246,7 +250,7 @@ FC_REFLECT_ENUM(graphene::chain::witness_object::witness_schedule_type, (top)(su
 FC_REFLECT(
     (graphene::chain::witness_object),
     (id)(owner)(created)(url)(votes)(schedule)(virtual_last_update)(virtual_position)(virtual_scheduled_time)(total_missed)
-    (last_aslot)(last_confirmed_block_num)(signing_key)(props)
+    (last_aslot)(last_confirmed_block_num)(current_run)(last_supported_block_num)(signing_key)(props)
     (last_work)(running_version)(hardfork_version_vote)(hardfork_time_vote))
 
 CHAINBASE_SET_INDEX_TYPE(graphene::chain::witness_object, graphene::chain::witness_index)

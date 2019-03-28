@@ -3343,12 +3343,20 @@ namespace graphene { namespace chain {
                                 i + 1));
                         if (witness_missed.owner != b.witness) {
                             modify(witness_missed, [&](witness_object &w) {
-                                w.total_missed++;
-                                if (head_block_num() -
-                                    w.last_confirmed_block_num >
-                                    CHAIN_MAX_WITNESS_MISSED_BLOCKS) {
-                                    w.signing_key = public_key_type();
-                                    push_virtual_operation(shutdown_witness_operation(w.owner));
+                                w.current_run = 0;
+                                if(witness_missed.owner != b.witness){
+                                    // total_missed does not increment when witness_missed.owner == b.witness
+                                    // because a low total_missed is a "prestige" item and a witness that
+                                    // restarts a dead network is "rewarded" by not having total_missed
+                                    // increase for any blocks they missed in the gap.
+                                    // Also, this prevents initminer from having a large total_missed.
+                                    w.total_missed++;
+                                    if (head_block_num() -
+                                        w.last_confirmed_block_num >
+                                        CHAIN_MAX_WITNESS_MISSED_BLOCKS) {
+                                        w.signing_key = public_key_type();
+                                        push_virtual_operation(shutdown_witness_operation(w.owner));
+                                    }
                                 }
                             });
                         }
@@ -3428,6 +3436,10 @@ namespace graphene { namespace chain {
                 modify(signing_witness, [&](witness_object &_wit) {
                     _wit.last_aslot = new_block_aslot;
                     _wit.last_confirmed_block_num = new_block.block_num();
+                    if( _wit.current_run >= CHAIN_IRREVERSIBLE_SUPPORT_MIN_RUN ){
+                        _wit.last_supported_block_num = _wit.last_confirmed_block_num;
+                    }
+                    _wit.current_run++;
                 });
             } FC_CAPTURE_AND_RETHROW()
         }
@@ -3457,11 +3469,11 @@ namespace graphene { namespace chain {
                 std::nth_element(wit_objs.begin(),
                         wit_objs.begin() + offset, wit_objs.end(),
                         [](const witness_object *a, const witness_object *b) {
-                            return a->last_confirmed_block_num <
-                                   b->last_confirmed_block_num;
+                            return a->last_supported_block_num <
+                                   b->last_supported_block_num;
                         });
 
-                uint32_t new_last_irreversible_block_num = wit_objs[offset]->last_confirmed_block_num;
+                uint32_t new_last_irreversible_block_num = wit_objs[offset]->last_supported_block_num;
 
                 if (new_last_irreversible_block_num >
                     dpo.last_irreversible_block_num) {

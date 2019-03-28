@@ -105,6 +105,8 @@
 #define CHAIN_MAX_UNDO_HISTORY                10000
 
 #define CHAIN_IRREVERSIBLE_THRESHOLD          (75 * CHAIN_1_PERCENT)
+/** Irreversibility only counts blocks produced if wit.current_run >= CHAIN_IRREVERSIBLE_SUPPORT_MIN_RUN */
+#define CHAIN_IRREVERSIBLE_SUPPORT_MIN_RUN    2
 #define COMMITTEE_MIN_DURATION                (60*60*24*5)
 #define COMMITTEE_MAX_DURATION                (60*60*24*30)
 #define COMMITTEE_MAX_REQUIRED_AMOUNT         int64_t(CHAIN_INIT_SUPPLY/100)
