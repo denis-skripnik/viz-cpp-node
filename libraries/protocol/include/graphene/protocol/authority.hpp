@@ -11,7 +11,7 @@ namespace graphene {
             }
 
             enum classification {
-                owner = 0,
+                master = 0,
                 active = 1,
                 key = 2,
                 posting = 3
@@ -111,4 +111,4 @@ namespace graphene {
 FC_REFLECT_TYPENAME((graphene::protocol::authority::account_authority_map))
 FC_REFLECT_TYPENAME((graphene::protocol::authority::key_authority_map))
 FC_REFLECT((graphene::protocol::authority), (weight_threshold)(account_auths)(key_auths))
-FC_REFLECT_ENUM(graphene::protocol::authority::classification, (owner)(active)(key)(posting))
+FC_REFLECT_ENUM(graphene::protocol::authority::classification, (master)(active)(key)(posting))

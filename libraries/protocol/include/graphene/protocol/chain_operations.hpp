@@ -13,7 +13,7 @@ namespace graphene { namespace protocol {
             asset delegation;
             account_name_type creator;
             account_name_type new_account_name;
-            authority owner;
+            authority master;
             authority active;
             authority posting;
             public_key_type memo_key;
@@ -30,7 +30,7 @@ namespace graphene { namespace protocol {
 
         struct account_update_operation : public base_operation {
             account_name_type account;
-            optional<authority> owner;
+            optional<authority> master;
             optional<authority> active;
             optional<authority> posting;
             public_key_type memo_key;
@@ -38,14 +38,14 @@ namespace graphene { namespace protocol {
 
             void validate() const;
 
-            void get_required_owner_authorities(flat_set<account_name_type> &a) const {
-                if (owner) {
+            void get_required_master_authorities(flat_set<account_name_type> &a) const {
+                if (master) {
                     a.insert(account);
                 }
             }
 
             void get_required_active_authorities(flat_set<account_name_type> &a) const {
-                if (!owner) {
+                if (!master) {
                     a.insert(account);
                 }
             }
@@ -162,7 +162,7 @@ namespace graphene { namespace protocol {
                 }
             }
 
-            void get_required_owner_authorities(flat_set<account_name_type> &a) const {
+            void get_required_master_authorities(flat_set<account_name_type> &a) const {
                 if (amount.symbol == SHARES_SYMBOL) {
                     a.insert(from);
                 }
@@ -605,12 +605,12 @@ namespace graphene { namespace protocol {
          *
          * There can only be one active recovery request per account at any one time.
          * Pushing this operation for an account to recover when it already has
-         * an active request will either update the request to a new new owner authority
+         * an active request will either update the request to a new new master authority
          * and extend the request expiration to 24 hours from the current head block
          * time or it will delete the request. To cancel a request, simply set the
-         * weight threshold of the new owner authority to 0, making it an open authority.
+         * weight threshold of the new master authority to 0, making it an open authority.
          *
-         * Additionally, the new owner authority must be satisfiable. In other words,
+         * Additionally, the new master authority must be satisfiable. In other words,
          * the sum of the key weights must be greater than or equal to the weight
          * threshold.
          *
@@ -621,9 +621,9 @@ namespace graphene { namespace protocol {
         struct request_account_recovery_operation : public base_operation {
             account_name_type recovery_account;       ///< The recovery account is listed as the recovery account on the account to recover.
 
-            account_name_type account_to_recover;     ///< The account to recover. This is likely due to a compromised owner authority.
+            account_name_type account_to_recover;     ///< The account to recover. This is likely due to a compromised master authority.
 
-            authority new_owner_authority;    ///< The new owner authority the account to recover wishes to have. This is secret
+            authority new_master_authority;    ///< The new master authority the account to recover wishes to have. This is secret
             ///< known by the account to recover and will be confirmed in a recover_account_operation
 
             extensions_type extensions;             ///< Extensions. Not currently used.
@@ -643,9 +643,9 @@ namespace graphene { namespace protocol {
          *
          * In order to recover the account, the account holder must provide proof
          * of past ownership and proof of identity to the recovery account. Being able
-         * to satisfy an owner authority that was used in the past 30 days is sufficient
-         * to prove past ownership. The get_owner_history function in the database API
-         * returns past owner authorities that are valid for account recovery.
+         * to satisfy an master authority that was used in the past 30 days is sufficient
+         * to prove past ownership. The get_master_history function in the database API
+         * returns past master authorities that are valid for account recovery.
          *
          * Proving identity is an off chain contract between the account holder and
          * the recovery account. The recovery request contains a new authority which
@@ -653,10 +653,10 @@ namespace graphene { namespace protocol {
          * of verifying authority may become complicated, but that is an application
          * level concern, not a blockchain concern.
          *
-         * This operation requires both the past and future owner authorities in the
+         * This operation requires both the past and future master authorities in the
          * operation because neither of them can be derived from the current chain state.
-         * The operation must be signed by keys that satisfy both the new owner authority
-         * and the recent owner authority. Failing either fails the operation entirely.
+         * The operation must be signed by keys that satisfy both the new master authority
+         * and the recent master authority. Failing either fails the operation entirely.
          *
          * If a recovery request was made inadvertantly, the account holder should
          * contact the recovery account to have the request deleted.
@@ -666,7 +666,7 @@ namespace graphene { namespace protocol {
          * to recover. They simply act as an on chain endorsement of off chain identity.
          * In other systems, a fork would be required to enforce such off chain state.
          * Additionally, an account cannot be permanently recovered to the wrong account.
-         * While any owner authority from the past 30 days can be used, including a compromised
+         * While any master authority from the past 30 days can be used, including a compromised
          * authority, the account can be continually recovered until the recovery account
          * is confident a combination of uncompromised authorities were used to
          * recover the account. The actual process of verifying authority may become
@@ -676,15 +676,15 @@ namespace graphene { namespace protocol {
         struct recover_account_operation : public base_operation {
             account_name_type account_to_recover;        ///< The account to be recovered
 
-            authority new_owner_authority;       ///< The new owner authority as specified in the request account recovery operation.
+            authority new_master_authority;       ///< The new master authority as specified in the request account recovery operation.
 
-            authority recent_owner_authority;    ///< A previous owner authority that the account holder will use to prove past ownership of the account to be recovered.
+            authority recent_master_authority;    ///< A previous master authority that the account holder will use to prove past ownership of the account to be recovered.
 
             extensions_type extensions;                ///< Extensions. Not currently used.
 
             void get_required_authorities(vector<authority> &a) const {
-                a.push_back(new_owner_authority);
-                a.push_back(recent_owner_authority);
+                a.push_back(new_master_authority);
+                a.push_back(recent_master_authority);
             }
 
             void validate() const;
@@ -698,7 +698,7 @@ namespace graphene { namespace protocol {
          * at any time with a 30 day delay. This delay is to prevent
          * an attacker from changing the recovery account to a malicious account
          * during an attack. These 30 days match the 30 days that an
-         * owner authority is valid for recovery purposes.
+         * master authority is valid for recovery purposes.
          *
          * On account creation the recovery account is set either to the creator of
          * the account (The account that pays the creation fee and is a signer on the transaction)
@@ -714,7 +714,7 @@ namespace graphene { namespace protocol {
             account_name_type new_recovery_account;   ///< The account that creates the recover request
             extensions_type extensions;             ///< Extensions. Not currently used.
 
-            void get_required_owner_authorities(flat_set<account_name_type> &a) const {
+            void get_required_master_authorities(flat_set<account_name_type> &a) const {
                 a.insert(account_to_recover);
             }
 
@@ -896,11 +896,11 @@ FC_REFLECT_DERIVED(
 FC_REFLECT_TYPENAME((graphene::protocol::versioned_chain_properties))
 
 FC_REFLECT((graphene::protocol::account_create_operation),
-    (fee)(delegation)(creator)(new_account_name)(owner)(active)(posting)(memo_key)(json_metadata)(referrer)(extensions));
+    (fee)(delegation)(creator)(new_account_name)(master)(active)(posting)(memo_key)(json_metadata)(referrer)(extensions));
 
 FC_REFLECT((graphene::protocol::account_update_operation),
         (account)
-                (owner)
+                (master)
                 (active)
                 (posting)
                 (memo_key)
@@ -929,8 +929,8 @@ FC_REFLECT((graphene::protocol::escrow_transfer_operation), (from)(to)(token_amo
 FC_REFLECT((graphene::protocol::escrow_approve_operation), (from)(to)(agent)(who)(escrow_id)(approve));
 FC_REFLECT((graphene::protocol::escrow_dispute_operation), (from)(to)(agent)(who)(escrow_id));
 FC_REFLECT((graphene::protocol::escrow_release_operation), (from)(to)(agent)(who)(receiver)(escrow_id)(token_amount));
-FC_REFLECT((graphene::protocol::request_account_recovery_operation), (recovery_account)(account_to_recover)(new_owner_authority)(extensions));
-FC_REFLECT((graphene::protocol::recover_account_operation), (account_to_recover)(new_owner_authority)(recent_owner_authority)(extensions));
+FC_REFLECT((graphene::protocol::request_account_recovery_operation), (recovery_account)(account_to_recover)(new_master_authority)(extensions));
+FC_REFLECT((graphene::protocol::recover_account_operation), (account_to_recover)(new_master_authority)(recent_master_authority)(extensions));
 FC_REFLECT((graphene::protocol::change_recovery_account_operation), (account_to_recover)(new_recovery_account)(extensions));
 FC_REFLECT((graphene::protocol::delegate_vesting_shares_operation), (delegator)(delegatee)(vesting_shares));
 FC_REFLECT((graphene::protocol::chain_properties_update_operation), (owner)(props));

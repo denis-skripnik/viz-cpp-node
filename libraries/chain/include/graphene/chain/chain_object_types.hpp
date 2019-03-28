@@ -55,7 +55,7 @@ namespace graphene { namespace chain {
             witness_vote_object_type,
             hardfork_property_object_type,
             withdraw_vesting_route_object_type,
-            owner_authority_history_object_type,
+            master_authority_history_object_type,
             account_recovery_request_object_type,
             change_recovery_account_request_object_type,
             escrow_object_type,
@@ -88,7 +88,7 @@ namespace graphene { namespace chain {
         class witness_vote_object;
         class hardfork_property_object;
         class withdraw_vesting_route_object;
-        class owner_authority_history_object;
+        class master_authority_history_object;
         class account_recovery_request_object;
         class change_recovery_account_request_object;
         class escrow_object;
@@ -117,7 +117,7 @@ namespace graphene { namespace chain {
         typedef object_id<witness_vote_object> witness_vote_id_type;
         typedef object_id<hardfork_property_object> hardfork_property_id_type;
         typedef object_id<withdraw_vesting_route_object> withdraw_vesting_route_id_type;
-        typedef object_id<owner_authority_history_object> owner_authority_history_id_type;
+        typedef object_id<master_authority_history_object> master_authority_history_id_type;
         typedef object_id<account_recovery_request_object> account_recovery_request_id_type;
         typedef object_id<change_recovery_account_request_object> change_recovery_account_request_id_type;
         typedef object_id<escrow_object> escrow_id_type;
@@ -211,7 +211,7 @@ FC_REFLECT_ENUM(graphene::chain::object_type,
                 (witness_vote_object_type)
                 (hardfork_property_object_type)
                 (withdraw_vesting_route_object_type)
-                (owner_authority_history_object_type)
+                (master_authority_history_object_type)
                 (account_recovery_request_object_type)
                 (change_recovery_account_request_object_type)
                 (escrow_object_type)

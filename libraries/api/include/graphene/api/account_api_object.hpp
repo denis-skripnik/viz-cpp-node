@@ -23,7 +23,7 @@ struct account_api_object {
     account_object::id_type id;
 
     account_name_type name;
-    authority owner;
+    authority master;
     authority active;
     authority posting;
     public_key_type memo_key;
@@ -31,7 +31,7 @@ struct account_api_object {
     account_name_type proxy;
     account_name_type referrer;
 
-    time_point_sec last_owner_update;
+    time_point_sec last_master_update;
     time_point_sec last_account_update;
 
     time_point_sec created;
@@ -81,7 +81,7 @@ struct account_api_object {
 
 
 FC_REFLECT((graphene::api::account_api_object),
-    (id)(name)(owner)(active)(posting)(memo_key)(json_metadata)(proxy)(referrer)(last_owner_update)(last_account_update)
+    (id)(name)(master)(active)(posting)(memo_key)(json_metadata)(proxy)(referrer)(last_master_update)(last_account_update)
     (created)
     (recovery_account)(last_account_recovery)(subcontent_count)(vote_count)
     (content_count)(awarded_rshares)(custom_sequence)(custom_sequence_block_num)(energy)(last_vote_time)(balance)

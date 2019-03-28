@@ -58,7 +58,7 @@ namespace graphene {
             typedef void result_type;
 
             flat_set <account_name_type> &active;
-            flat_set <account_name_type> &owner;
+            flat_set <account_name_type> &master;
             flat_set <account_name_type> &posting;
             std::vector<authority> &other;
 
@@ -67,13 +67,13 @@ namespace graphene {
                     flat_set <account_name_type> &own,
                     flat_set <account_name_type> &post,
                     std::vector<authority> &oth)
-                    : active(a), owner(own), posting(post), other(oth) {
+                    : active(a), master(own), posting(post), other(oth) {
             }
 
             template<typename T>
             void operator()(const T &v) const {
                 v.get_required_active_authorities(active);
-                v.get_required_owner_authorities(owner);
+                v.get_required_master_authorities(master);
                 v.get_required_posting_authorities(posting);
                 v.get_required_authorities(other);
             }
@@ -133,11 +133,11 @@ void operation_validate( const OperationType& op )                         \
                                                                            \
 void operation_get_required_authorities( const OperationType& op,          \
                                          flat_set< account_name_type >& active,         \
-                                         flat_set< account_name_type >& owner,          \
+                                         flat_set< account_name_type >& master,         \
                                          flat_set< account_name_type >& posting,        \
                                          std::vector< authority >& other )     \
 {                                                                          \
-   op.visit( graphene::protocol::operation_get_required_auth_visitor( active, owner, posting, other ) ); \
+   op.visit( graphene::protocol::operation_get_required_auth_visitor( active, master, posting, other ) ); \
 }                                                                          \
                                                                            \
 } } /* graphene::protocol */

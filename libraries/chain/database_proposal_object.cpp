@@ -32,7 +32,7 @@ namespace graphene { namespace chain {
     void database::remove(const proposal_object& p) {
         flat_set<account_name_type> required_total;
         required_total.insert(p.required_active_approvals.begin(), p.required_active_approvals.end());
-        required_total.insert(p.required_owner_approvals.begin(), p.required_owner_approvals.end());
+        required_total.insert(p.required_master_approvals.begin(), p.required_master_approvals.end());
         required_total.insert(p.required_posting_approvals.begin(), p.required_posting_approvals.end());
 
         auto& idx = get_index<required_approval_index>().indices().get<by_account>();

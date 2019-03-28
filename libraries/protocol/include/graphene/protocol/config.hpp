@@ -19,9 +19,9 @@
 
 #define CHAIN_MIN_ACCOUNT_CREATION_FEE        1000
 
-#define CHAIN_OWNER_AUTH_RECOVERY_PERIOD                  fc::days(30)
+#define CHAIN_MASTER_AUTH_RECOVERY_PERIOD                 fc::days(30)
 #define CHAIN_ACCOUNT_RECOVERY_REQUEST_EXPIRATION_PERIOD  fc::days(1)
-#define CHAIN_OWNER_UPDATE_LIMIT                          fc::minutes(60)
+#define CHAIN_MASTER_UPDATE_LIMIT                         fc::minutes(60)
 
 #define CHAIN_BLOCK_INTERVAL                  3
 #define CHAIN_BLOCK_WITNESS_REPEAT            1

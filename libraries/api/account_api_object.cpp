@@ -27,10 +27,10 @@ account_api_object::account_api_object(const account_object& a, const graphene::
     }
 
     const auto& auth = db.get<account_authority_object, by_account>(name);
-    owner = authority(auth.owner);
+    master = authority(auth.master);
     active = authority(auth.active);
     posting = authority(auth.posting);
-    last_owner_update = auth.last_owner_update;
+    last_master_update = auth.last_master_update;
 
 #ifndef IS_LOW_MEM
     const auto& meta = db.get<account_metadata_object, by_account>(name);

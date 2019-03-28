@@ -5,7 +5,7 @@ namespace graphene {
 /*set< string > account_member_index::get_account_members( const account_object& a ) const
 {
    set< string > result;
-   for( auto auth : a.owner.account_auths )
+   for( auto auth : a.master.account_auths )
       result.insert( auth.first );
    for( auto auth : a.active.account_auths )
       result.insert( auth.first );
@@ -17,7 +17,7 @@ namespace graphene {
 set< public_key_type > account_member_index::get_key_members( const account_object& a ) const
 {
    set< public_key_type > result;
-   for( auto auth : a.owner.key_auths )
+   for( auto auth : a.master.key_auths )
       result.insert( auth.first );
    for( auto auth : a.active.key_auths )
       result.insert( auth.first );

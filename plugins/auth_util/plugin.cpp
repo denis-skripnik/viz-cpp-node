@@ -44,8 +44,8 @@ private:
     } else if ((level == "active") ||
                (level == "a") || (level == "")) {
         auth = protocol::authority(acct.active);
-    } else if ((level == "owner") || (level == "o")) {
-        auth = protocol::authority(acct.owner);
+    } else if ((level == "master") || (level == "m")) {
+        auth = protocol::authority(acct.master);
     } else {
         FC_ASSERT(false, "invalid level specified");
     }

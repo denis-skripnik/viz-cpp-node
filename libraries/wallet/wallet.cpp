@@ -461,10 +461,10 @@ namespace graphene { namespace wallet {
                         update_op.active_approvals_to_add.insert(name);
                     for (const std::string& name : delta.active_approvals_to_remove)
                         update_op.active_approvals_to_remove.insert(name);
-                    for (const std::string& name : delta.owner_approvals_to_add)
-                        update_op.owner_approvals_to_add.insert(name);
-                    for (const std::string& name : delta.owner_approvals_to_remove)
-                        update_op.owner_approvals_to_remove.insert(name);
+                    for (const std::string& name : delta.master_approvals_to_add)
+                        update_op.master_approvals_to_add.insert(name);
+                    for (const std::string& name : delta.master_approvals_to_remove)
+                        update_op.master_approvals_to_remove.insert(name);
                     for (const std::string& name : delta.posting_approvals_to_add)
                         update_op.posting_approvals_to_add.insert(name);
                     for (const std::string& name : delta.posting_approvals_to_remove)
@@ -517,7 +517,7 @@ namespace graphene { namespace wallet {
 
                 // imports the private key into the wallet, and associate it in some way (?) with the
                 // given account name.
-                // @returns true if the key matches a current active/owner/memo key for the named
+                // @returns true if the key matches a current active/master/memo key for the named
                 //          account, false otherwise (but it is stored either way)
                 bool import_key(string wif_key) {
                     fc::optional<fc::ecc::private_key> optional_private_key = wif_to_key(wif_key);
@@ -604,19 +604,19 @@ namespace graphene { namespace wallet {
                     }
                 }
 
-                signed_transaction create_account_with_private_key(fc::ecc::private_key owner_privkey,
+                signed_transaction create_account_with_private_key(fc::ecc::private_key master_privkey,
                                                                    string account_name,
                                                                    string creator_account_name,
                                                                    bool broadcast = false,
                                                                    bool save_wallet = true) {
                     try {
-                        int active_key_index = find_first_unused_derived_key_index(owner_privkey);
-                        fc::ecc::private_key active_privkey = derive_private_key( key_to_wif(owner_privkey), active_key_index);
+                        int active_key_index = find_first_unused_derived_key_index(master_privkey);
+                        fc::ecc::private_key active_privkey = derive_private_key( key_to_wif(master_privkey), active_key_index);
 
                         int memo_key_index = find_first_unused_derived_key_index(active_privkey);
                         fc::ecc::private_key memo_privkey = derive_private_key( key_to_wif(active_privkey), memo_key_index);
 
-                        graphene::chain::public_key_type owner_pubkey = owner_privkey.get_public_key();
+                        graphene::chain::public_key_type master_pubkey = master_privkey.get_public_key();
                         graphene::chain::public_key_type active_pubkey = active_privkey.get_public_key();
                         graphene::chain::public_key_type memo_pubkey = memo_privkey.get_public_key();
 
@@ -625,7 +625,7 @@ namespace graphene { namespace wallet {
                         account_create_op.creator = creator_account_name;
                         account_create_op.new_account_name = account_name;
                         account_create_op.fee = _remote_database_api->get_chain_properties().account_creation_fee;
-                        account_create_op.owner = authority(1, owner_pubkey, 1);
+                        account_create_op.master = authority(1, master_pubkey, 1);
                         account_create_op.active = authority(1, active_pubkey, 1);
                         account_create_op.memo_key = memo_pubkey;
                         account_create_op.delegation = asset(0, SHARES_SYMBOL );
@@ -669,11 +669,11 @@ namespace graphene { namespace wallet {
                 annotated_signed_transaction sign_transaction(signed_transaction tx, bool broadcast = false)
                 {
                     flat_set< account_name_type > req_active_approvals;
-                    flat_set< account_name_type > req_owner_approvals;
+                    flat_set< account_name_type > req_master_approvals;
                     flat_set< account_name_type > req_posting_approvals;
                     vector< authority > other_auths;
 
-                    tx.get_required_authorities( req_active_approvals, req_owner_approvals, req_posting_approvals, other_auths );
+                    tx.get_required_authorities( req_active_approvals, req_master_approvals, req_posting_approvals, other_auths );
 
                     for( const auto& auth : other_auths )
                         for( const auto& a : auth.account_auths )
@@ -684,7 +684,7 @@ namespace graphene { namespace wallet {
                     //   at the same time
                     vector< account_name_type > v_approving_account_names;
                     std::merge(req_active_approvals.begin(), req_active_approvals.end(),
-                               req_owner_approvals.begin() , req_owner_approvals.end(),
+                               req_master_approvals.begin() , req_master_approvals.end(),
                                std::back_inserter( v_approving_account_names ) );
 
                     for( const auto& a : req_posting_approvals )
@@ -744,12 +744,12 @@ namespace graphene { namespace wallet {
                         }
                     }
 
-                    for( const account_name_type& acct_name : req_owner_approvals ) {
+                    for( const account_name_type& acct_name : req_master_approvals ) {
                         const auto it = approving_account_lut.find( acct_name );
                         if( it == approving_account_lut.end() )
                             continue;
                         const graphene::api::account_api_object& acct = it->second;
-                        vector<public_key_type> v_approving_keys = acct.owner.get_keys();
+                        vector<public_key_type> v_approving_keys = acct.master.get_keys();
                         for( const public_key_type& approving_key : v_approving_keys ) {
                             wdump((approving_key));
                             approving_key_set.insert( approving_key );
@@ -788,7 +788,7 @@ namespace graphene { namespace wallet {
                             [&]( const string& account_name ) -> const authority&
                             { return (get_account_from_lut( account_name ).active); },
                             [&]( const string& account_name ) -> const authority&
-                            { return (get_account_from_lut( account_name ).owner); },
+                            { return (get_account_from_lut( account_name ).master); },
                             [&]( const string& account_name ) -> const authority&
                             { return (get_account_from_lut( account_name ).posting); },
                             CHAIN_MAX_SIG_CHECK_DEPTH
@@ -1256,7 +1256,7 @@ fc::ecc::private_key wallet_api::derive_private_key(const std::string& prefix_st
         }
 
 /**
- *  This method will generate new owner, active, posting and memo keys for the new account
+ *  This method will generate new master, active, posting and memo keys for the new account
  *  which will be controlable by this wallet.
  */
         annotated_signed_transaction wallet_api::create_account(
@@ -1265,17 +1265,17 @@ fc::ecc::private_key wallet_api::derive_private_key(const std::string& prefix_st
         ) {
             try {
                 FC_ASSERT(!is_locked());
-                auto owner = suggest_brain_key();
+                auto master = suggest_brain_key();
                 auto active = suggest_brain_key();
                 auto posting = suggest_brain_key();
                 auto memo = suggest_brain_key();
-                import_key(owner.wif_priv_key);
+                import_key(master.wif_priv_key);
                 import_key(active.wif_priv_key);
                 import_key(posting.wif_priv_key);
                 import_key(memo.wif_priv_key);
                 return create_account_with_keys(
                     creator, tokens_fee, delegated_vests, new_account_name, json_meta,
-                    owner.pub_key, active.pub_key, posting.pub_key, memo.pub_key, broadcast);
+                    master.pub_key, active.pub_key, posting.pub_key, memo.pub_key, broadcast);
             }
             FC_CAPTURE_AND_RETHROW((creator)(new_account_name)(json_meta));
         }
@@ -1290,7 +1290,7 @@ fc::ecc::private_key wallet_api::derive_private_key(const std::string& prefix_st
             asset delegated_vests,
             string new_account_name,
             string json_meta,
-            public_key_type owner,
+            public_key_type master,
             public_key_type active,
             public_key_type posting,
             public_key_type memo,
@@ -1301,7 +1301,7 @@ fc::ecc::private_key wallet_api::derive_private_key(const std::string& prefix_st
                 account_create_operation op;
                 op.creator = creator;
                 op.new_account_name = new_account_name;
-                op.owner = authority(1, owner, 1);
+                op.master = authority(1, master, 1);
                 op.active = authority(1, active, 1);
                 op.posting = authority(1, posting, 1);
                 op.memo_key = memo;
@@ -1314,7 +1314,7 @@ fc::ecc::private_key wallet_api::derive_private_key(const std::string& prefix_st
                 tx.validate();
                 return my->sign_transaction(tx, broadcast);
             }
-            FC_CAPTURE_AND_RETHROW((creator)(new_account_name)(json_meta)(owner)(active)(posting)(memo)(broadcast));
+            FC_CAPTURE_AND_RETHROW((creator)(new_account_name)(json_meta)(master)(active)(posting)(memo)(broadcast));
         }
 
 /**
@@ -1328,7 +1328,7 @@ fc::ecc::private_key wallet_api::derive_private_key(const std::string& prefix_st
             request_account_recovery_operation op;
             op.recovery_account = recovery_account;
             op.account_to_recover = account_to_recover;
-            op.new_owner_authority = new_authority;
+            op.new_master_authority = new_authority;
 
             signed_transaction tx;
             tx.operations.push_back(op);
@@ -1342,8 +1342,8 @@ fc::ecc::private_key wallet_api::derive_private_key(const std::string& prefix_st
 
             recover_account_operation op;
             op.account_to_recover = account_to_recover;
-            op.new_owner_authority = new_authority;
-            op.recent_owner_authority = recent_authority;
+            op.new_master_authority = new_authority;
+            op.recent_master_authority = recent_authority;
 
             signed_transaction tx;
             tx.operations.push_back(op);
@@ -1366,14 +1366,14 @@ fc::ecc::private_key wallet_api::derive_private_key(const std::string& prefix_st
             return my->sign_transaction( tx, broadcast );
         }
 
-        vector< database_api::owner_authority_history_api_object > wallet_api::get_owner_history( string account )const {
-            return my->_remote_database_api->get_owner_history( account );
+        vector< database_api::master_authority_history_api_object > wallet_api::get_master_history( string account )const {
+            return my->_remote_database_api->get_master_history( account );
         }
 
         annotated_signed_transaction wallet_api::update_account(
                 string account_name,
                 string json_meta,
-                public_key_type owner,
+                public_key_type master,
                 public_key_type active,
                 public_key_type posting,
                 public_key_type memo,
@@ -1385,7 +1385,7 @@ fc::ecc::private_key wallet_api::derive_private_key(const std::string& prefix_st
 
                 account_update_operation op;
                 op.account = account_name;
-                op.owner = authority( 1, owner, 1 );
+                op.master = authority( 1, master, 1 );
                 op.active = authority( 1, active, 1);
                 op.posting = authority( 1, posting, 1);
                 op.memo_key = memo;
@@ -1397,7 +1397,7 @@ fc::ecc::private_key wallet_api::derive_private_key(const std::string& prefix_st
 
                 return my->sign_transaction( tx, broadcast );
             }
-            FC_CAPTURE_AND_RETHROW( (account_name)(json_meta)(owner)(active)(memo)(broadcast) )
+            FC_CAPTURE_AND_RETHROW( (account_name)(json_meta)(master)(active)(memo)(broadcast) )
         }
 
         annotated_signed_transaction wallet_api::update_account_auth_key( string account_name, authority_type type, public_key_type key, weight_type weight, bool broadcast )
@@ -1417,8 +1417,8 @@ fc::ecc::private_key wallet_api::derive_private_key(const std::string& prefix_st
 
             switch( type )
             {
-                case( owner ):
-                    new_auth = accounts[0].owner;
+                case( master ):
+                    new_auth = accounts[0].master;
                     break;
                 case( active ):
                     new_auth = accounts[0].active;
@@ -1438,16 +1438,16 @@ fc::ecc::private_key wallet_api::derive_private_key(const std::string& prefix_st
             }
 
             if( new_auth.is_impossible() ) {
-                if ( type == owner ) {
-                    FC_ASSERT( false, "Owner authority change would render account irrecoverable." );
+                if ( type == master ) {
+                    FC_ASSERT( false, "Master authority change would render account irrecoverable." );
                 }
 
                 wlog( "Authority is now impossible." );
             }
 
             switch( type ) {
-                case( owner ):
-                    op.owner = new_auth;
+                case( master ):
+                    op.master = new_auth;
                     break;
                 case( active ):
                     op.active = new_auth;
@@ -1481,8 +1481,8 @@ fc::ecc::private_key wallet_api::derive_private_key(const std::string& prefix_st
 
             switch( type )
             {
-                case( owner ):
-                    new_auth = accounts[0].owner;
+                case( master ):
+                    new_auth = accounts[0].master;
                     break;
                 case( active ):
                     new_auth = accounts[0].active;
@@ -1503,9 +1503,9 @@ fc::ecc::private_key wallet_api::derive_private_key(const std::string& prefix_st
 
             if( new_auth.is_impossible() )
             {
-                if ( type == owner )
+                if ( type == master )
                 {
-                    FC_ASSERT( false, "Owner authority change would render account irrecoverable." );
+                    FC_ASSERT( false, "Master authority change would render account irrecoverable." );
                 }
 
                 wlog( "Authority is now impossible." );
@@ -1513,8 +1513,8 @@ fc::ecc::private_key wallet_api::derive_private_key(const std::string& prefix_st
 
             switch( type )
             {
-                case( owner ):
-                    op.owner = new_auth;
+                case( master ):
+                    op.master = new_auth;
                     break;
                 case( active ):
                     op.active = new_auth;
@@ -1549,8 +1549,8 @@ fc::ecc::private_key wallet_api::derive_private_key(const std::string& prefix_st
 
             switch( type )
             {
-                case( owner ):
-                    new_auth = accounts[0].owner;
+                case( master ):
+                    new_auth = accounts[0].master;
                     break;
                 case( active ):
                     new_auth = accounts[0].active;
@@ -1564,9 +1564,9 @@ fc::ecc::private_key wallet_api::derive_private_key(const std::string& prefix_st
 
             if( new_auth.is_impossible() )
             {
-                if ( type == owner )
+                if ( type == master )
                 {
-                    FC_ASSERT( false, "Owner authority change would render account irrecoverable." );
+                    FC_ASSERT( false, "Master authority change would render account irrecoverable." );
                 }
 
                 wlog( "Authority is now impossible." );
@@ -1574,8 +1574,8 @@ fc::ecc::private_key wallet_api::derive_private_key(const std::string& prefix_st
 
             switch( type )
             {
-                case( owner ):
-                    op.owner = new_auth;
+                case( master ):
+                    op.master = new_auth;
                     break;
                 case( active ):
                     op.active = new_auth;
@@ -1648,7 +1648,7 @@ fc::ecc::private_key wallet_api::derive_private_key(const std::string& prefix_st
 
 
 /**
- *  This method will generate new owner, active, and memo keys for the new account which
+ *  This method will generate new master, active, and memo keys for the new account which
  *  will be controlable by this wallet.
  */
 
@@ -1727,9 +1727,9 @@ fc::ecc::private_key wallet_api::derive_private_key(const std::string& prefix_st
             catch( fc::assert_exception& ) {}
 
             // Get possible keys if memo was an account password
-            string owner_seed = account.name + "owner" + memo;
-            auto owner_secret = fc::sha256::hash( owner_seed.c_str(), owner_seed.size() );
-            keys.push_back( fc::ecc::private_key::regenerate( owner_secret ).get_public_key() );
+            string master_seed = account.name + "master" + memo;
+            auto master_secret = fc::sha256::hash( master_seed.c_str(), master_seed.size() );
+            keys.push_back( fc::ecc::private_key::regenerate( master_secret ).get_public_key() );
 
             string active_seed = account.name + "active" + memo;
             auto active_secret = fc::sha256::hash( active_seed.c_str(), active_seed.size() );
@@ -1740,10 +1740,10 @@ fc::ecc::private_key wallet_api::derive_private_key(const std::string& prefix_st
             keys.push_back( fc::ecc::private_key::regenerate( posting_secret ).get_public_key() );
 
             // Check keys against public keys in authorites
-            for( auto& key_weight_pair : account.owner.key_auths )
+            for( auto& key_weight_pair : account.master.key_auths )
             {
                 for( auto& key : keys )
-                    FC_ASSERT( key_weight_pair.first != key, "Detected private owner key in memo field. Cancelling transaction." );
+                    FC_ASSERT( key_weight_pair.first != key, "Detected private master key in memo field. Cancelling transaction." );
             }
 
             for( auto& key_weight_pair : account.active.key_auths )

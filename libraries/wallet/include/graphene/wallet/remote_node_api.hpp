@@ -53,7 +53,7 @@ struct remote_database_api {
     vector< account_name_type > lookup_accounts( account_name_type, uint32_t );
 
     uint64_t get_account_count();
-    vector< database_api::owner_authority_history_api_object > get_owner_history( account_name_type );
+    vector< database_api::master_authority_history_api_object > get_master_history( account_name_type );
     optional< database_api::account_recovery_request_api_object > get_recovery_request( account_name_type );
     optional< database_api::escrow_api_object > get_escrow( account_name_type, uint32_t );
     vector< database_api::withdraw_vesting_route_api_object > get_withdraw_routes( account_name_type, database_api::withdraw_route_type );
@@ -188,7 +188,7 @@ FC_API( graphene::wallet::remote_database_api,
         (lookup_account_names)
         (lookup_accounts)
         (get_account_count)
-        (get_owner_history)
+        (get_master_history)
         (get_recovery_request)
         (get_escrow)
         (get_withdraw_routes)

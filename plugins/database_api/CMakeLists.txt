@@ -6,7 +6,7 @@ list(APPEND ${CURRENT_TARGET}_HEADERS
 
      include/graphene/plugins/database_api/api_objects/account_recovery_request_api_object.hpp
      include/graphene/plugins/database_api/forward.hpp
-     include/graphene/plugins/database_api/api_objects/owner_authority_history_api_object.hpp
+     include/graphene/plugins/database_api/api_objects/master_authority_history_api_object.hpp
      include/graphene/plugins/database_api/api_objects/proposal_api_object.hpp
 
 

@@ -1969,18 +1969,18 @@ namespace graphene { namespace chain {
             }
         }
 
-        void database::update_owner_authority(const account_object &account, const authority &owner_authority) {
+        void database::update_master_authority(const account_object &account, const authority &master_authority) {
             if (head_block_num() >= 1) {
-                create<owner_authority_history_object>([&](owner_authority_history_object &hist) {
+                create<master_authority_history_object>([&](master_authority_history_object &hist) {
                     hist.account = account.name;
-                    hist.previous_owner_authority = get<account_authority_object, by_account>(account.name).owner;
+                    hist.previous_master_authority = get<account_authority_object, by_account>(account.name).master;
                     hist.last_valid_time = head_block_time();
                 });
             }
 
             modify(get<account_authority_object, by_account>(account.name), [&](account_authority_object &auth) {
-                auth.owner = owner_authority;
-                auth.last_owner_update = head_block_time();
+                auth.master = master_authority;
+                auth.last_master_update = head_block_time();
             });
         }
 
@@ -2437,12 +2437,12 @@ namespace graphene { namespace chain {
             }
 
             // Clear invalid historical authorities
-            const auto &hist_idx = get_index<owner_authority_history_index>().indices(); //by id
+            const auto &hist_idx = get_index<master_authority_history_index>().indices(); //by id
             auto hist = hist_idx.begin();
 
             while (hist != hist_idx.end() && time_point_sec(
                     hist->last_valid_time +
-                    CHAIN_OWNER_AUTH_RECOVERY_PERIOD) < head_block_time()) {
+                    CHAIN_MASTER_AUTH_RECOVERY_PERIOD) < head_block_time()) {
                 remove(*hist);
                 hist = hist_idx.begin();
             }
@@ -2563,7 +2563,7 @@ namespace graphene { namespace chain {
             add_core_index<witness_vote_index>(*this);
             add_core_index<hardfork_property_index>(*this);
             add_core_index<withdraw_vesting_route_index>(*this);
-            add_core_index<owner_authority_history_index>(*this);
+            add_core_index<master_authority_history_index>(*this);
             add_core_index<account_recovery_request_index>(*this);
             add_core_index<change_recovery_account_request_index>(*this);
             add_core_index<escrow_index>(*this);
@@ -2663,7 +2663,7 @@ namespace graphene { namespace chain {
 #endif
                 create<account_authority_object>([&](account_authority_object &auth) {
                     auth.account = CHAIN_NULL_ACCOUNT;
-                    auth.owner.weight_threshold = 1;
+                    auth.master.weight_threshold = 1;
                     auth.active.weight_threshold = 1;
                     auth.posting.weight_threshold = 1;
                 });
@@ -2678,7 +2678,7 @@ namespace graphene { namespace chain {
 #endif
                 create<account_authority_object>([&](account_authority_object &auth) {
                     auth.account = CHAIN_COMMITTEE_ACCOUNT;
-                    auth.owner.weight_threshold = 1;
+                    auth.master.weight_threshold = 1;
                     auth.active.weight_threshold = 1;
                     auth.posting.weight_threshold = 1;
                 });
@@ -2699,7 +2699,7 @@ namespace graphene { namespace chain {
 #endif
                 create<account_authority_object>([&](account_authority_object &auth) {
                     auth.account = CHAIN_ANONYMOUS_ACCOUNT;
-                    auth.owner.weight_threshold = 1;
+                    auth.master.weight_threshold = 1;
                     auth.active.weight_threshold = 1;
                     auth.posting.weight_threshold = 1;
                 });
@@ -2722,7 +2722,7 @@ namespace graphene { namespace chain {
                 create<account_authority_object>([&](account_authority_object& auth)
                 {
                     auth.account = CHAIN_INVITE_ACCOUNT;
-                    auth.owner.weight_threshold = 1;
+                    auth.master.weight_threshold = 1;
                     auth.active.add_authority( invite_public_key, 1 );
                     auth.active.weight_threshold = 1;
                     auth.posting.weight_threshold = 1;
@@ -2744,9 +2744,9 @@ namespace graphene { namespace chain {
     #endif
                         create<account_authority_object>([&](account_authority_object &auth) {
                             auth.account = name;
-                            auth.owner.add_authority(initiator_public_key, 1);
-                            auth.owner.weight_threshold = 1;
-                            auth.active = auth.owner;
+                            auth.master.add_authority(initiator_public_key, 1);
+                            auth.master.weight_threshold = 1;
+                            auth.active = auth.master;
                             auth.posting = auth.active;
                         });
                         create<witness_object>([&](witness_object &w) {
@@ -2770,9 +2770,9 @@ namespace graphene { namespace chain {
 #endif
                     create<account_authority_object>([&](account_authority_object &auth) {
                         auth.account = CHAIN_INITIATOR_NAME;
-                        auth.owner.add_authority(initiator_public_key, 1);
-                        auth.owner.weight_threshold = 1;
-                        auth.active = auth.owner;
+                        auth.master.add_authority(initiator_public_key, 1);
+                        auth.master.weight_threshold = 1;
+                        auth.active = auth.master;
                         auth.posting = auth.active;
                     });
                 }
@@ -2867,11 +2867,11 @@ namespace graphene { namespace chain {
                         create< account_authority_object >( [&]( account_authority_object& auth )
                         {
                             auth.account = account.login;
-                            auth.owner.add_authority( account_public_key, 1 );
-                            auth.owner.weight_threshold = 1;
-                            auth.active  = auth.owner;
+                            auth.master.add_authority( account_public_key, 1 );
+                            auth.master.weight_threshold = 1;
+                            auth.active  = auth.master;
                             auth.posting = auth.active;
-                            auth.last_owner_update = fc::time_point_sec::min();
+                            auth.last_master_update = fc::time_point_sec::min();
                         });
                         #ifndef IS_LOW_MEM
                         create< account_metadata_object >([&](account_metadata_object& m) {
@@ -2952,8 +2952,8 @@ namespace graphene { namespace chain {
                     return authority(get<account_authority_object, by_account>(name).active);
                 };
 
-                auto get_owner = [&](const account_name_type& name) {
-                    return authority(get<account_authority_object, by_account>(name).owner);
+                auto get_master = [&](const account_name_type& name) {
+                    return authority(get<account_authority_object, by_account>(name).master);
                 };
 
                 auto get_posting = [&](const account_name_type& name) {
@@ -2961,7 +2961,7 @@ namespace graphene { namespace chain {
                 };
 
                 try {
-                    trx.verify_authority(chain_id, get_active, get_owner, get_posting, CHAIN_MAX_SIG_CHECK_DEPTH);
+                    trx.verify_authority(chain_id, get_active, get_master, get_posting, CHAIN_MAX_SIG_CHECK_DEPTH);
                 }
                 catch (protocol::tx_missing_active_auth &e) {
                     if (get_shared_db_merkle().find(head_block_num() + 1) == get_shared_db_merkle().end()) {

@@ -416,17 +416,17 @@ uint64_t plugin::api_impl::get_account_count() const {
     return database().get_index<account_index>().indices().size();
 }
 
-DEFINE_API(plugin, get_owner_history) {
+DEFINE_API(plugin, get_master_history) {
     CHECK_ARG_SIZE(1)
     auto account = args.args->at(0).as<string>();
     return my->database().with_weak_read_lock([&]() {
-        std::vector<owner_authority_history_api_object> results;
-        const auto &hist_idx = my->database().get_index<owner_authority_history_index>().indices().get<
+        std::vector<master_authority_history_api_object> results;
+        const auto &hist_idx = my->database().get_index<master_authority_history_index>().indices().get<
                 by_account>();
         auto itr = hist_idx.lower_bound(account);
 
         while (itr != hist_idx.end() && itr->account == account) {
-            results.push_back(owner_authority_history_api_object(*itr));
+            results.push_back(master_authority_history_api_object(*itr));
             ++itr;
         }
 
@@ -564,7 +564,7 @@ std::set<public_key_type> plugin::api_impl::get_required_signatures(
             return authority(database().get<account_authority_object, by_account>(account_name).active);
         },
         [&](std::string account_name) {
-            return authority(database().get<account_authority_object, by_account>(account_name).owner);
+            return authority(database().get<account_authority_object, by_account>(account_name).master);
         },
         [&](std::string account_name) {
             return authority(database().get<account_authority_object, by_account>(account_name).posting);
@@ -594,7 +594,7 @@ std::set<public_key_type> plugin::api_impl::get_potential_signatures(const signe
             return authority(auth);
         },
         [&](account_name_type account_name) {
-            const auto &auth = database().get<account_authority_object, by_account>(account_name).owner;
+            const auto &auth = database().get<account_authority_object, by_account>(account_name).master;
             for (const auto &k : auth.get_keys()) {
                 result.insert(k);
             }
@@ -625,7 +625,7 @@ bool plugin::api_impl::verify_authority(const signed_transaction &trx) const {
     trx.verify_authority(CHAIN_ID, [&](std::string account_name) {
         return authority(database().get<account_authority_object, by_account>(account_name).active);
     }, [&](std::string account_name) {
-        return authority(database().get<account_authority_object, by_account>(account_name).owner);
+        return authority(database().get<account_authority_object, by_account>(account_name).master);
     }, [&](std::string account_name) {
         return authority(database().get<account_authority_object, by_account>(account_name).posting);
     }, CHAIN_MAX_SIG_CHECK_DEPTH);

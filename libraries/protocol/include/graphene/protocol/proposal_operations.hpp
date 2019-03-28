@@ -72,11 +72,11 @@ namespace graphene { namespace protocol {
      * required signatures to satisfy that account's authority must be provided in the transaction containing this
      * operation, or a secondary proposal must be created which contains this operation.
      *
-     * NOTE: If the proposal requires only an account's active authority, the account must not update adding its owner
-     * authority's approval. This is considered an error. An owner approval may only be added if the proposal requires
-     * the owner's authority.
+     * NOTE: If the proposal requires only an account's active authority, the account must not update adding its master
+     * authority's approval. This is considered an error. An master approval may only be added if the proposal requires
+     * the master's authority.
      *
-     * If an account's owner and active authority are both required, only the owner authority may approve. An attempt to
+     * If an account's master and active authority are both required, only the master authority may approve. An attempt to
      * add or remove active authority approval to such a proposal will fail.
      */
     struct proposal_update_operation : public base_operation {
@@ -84,8 +84,8 @@ namespace graphene { namespace protocol {
         std::string title;
         flat_set<account_name_type> active_approvals_to_add;
         flat_set<account_name_type> active_approvals_to_remove;
-        flat_set<account_name_type> owner_approvals_to_add;
-        flat_set<account_name_type> owner_approvals_to_remove;
+        flat_set<account_name_type> master_approvals_to_add;
+        flat_set<account_name_type> master_approvals_to_remove;
         flat_set<account_name_type> posting_approvals_to_add;
         flat_set<account_name_type> posting_approvals_to_remove;
         flat_set<public_key_type> key_approvals_to_add;
@@ -98,7 +98,7 @@ namespace graphene { namespace protocol {
 
         void get_required_active_authorities(flat_set<account_name_type>&) const;
 
-        void get_required_owner_authorities(flat_set<account_name_type>&) const;
+        void get_required_master_authorities(flat_set<account_name_type>&) const;
 
         void get_required_posting_authorities(flat_set<account_name_type>&) const;
     };
@@ -135,8 +135,8 @@ FC_REFLECT(
 
 FC_REFLECT(
     (graphene::protocol::proposal_update_operation),
-    (author)(title)(active_approvals_to_add)(active_approvals_to_remove)(owner_approvals_to_add)
-    (owner_approvals_to_remove)(posting_approvals_to_add)(posting_approvals_to_remove)
+    (author)(title)(active_approvals_to_add)(active_approvals_to_remove)(master_approvals_to_add)
+    (master_approvals_to_remove)(posting_approvals_to_add)(posting_approvals_to_remove)
     (key_approvals_to_add)(key_approvals_to_remove)(extensions))
 
 FC_REFLECT(

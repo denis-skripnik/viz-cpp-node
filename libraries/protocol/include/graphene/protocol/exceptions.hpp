@@ -64,10 +64,10 @@ namespace graphene { namespace protocol {
         std::vector<public_key_type> used_signatures;
     };
 
-    class tx_missing_owner_auth: public transaction_exception {
+    class tx_missing_master_auth: public transaction_exception {
         CHAIN_DECLARE_DERIVED_EXCEPTION_BODY(
-            tx_missing_owner_auth, transaction_exception,
-            3020000, "missing required owner authority");
+            tx_missing_master_auth, transaction_exception,
+            3020000, "missing required master authority");
     public:
         std::vector<account_name_type> missing_accounts;
         std::vector<public_key_type> used_signatures;

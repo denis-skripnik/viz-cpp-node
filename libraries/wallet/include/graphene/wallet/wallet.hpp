@@ -24,8 +24,8 @@ namespace graphene { namespace wallet {
         struct approval_delta {
             vector<string> active_approvals_to_add;
             vector<string> active_approvals_to_remove;
-            vector<string> owner_approvals_to_add;
-            vector<string> owner_approvals_to_remove;
+            vector<string> master_approvals_to_add;
+            vector<string> master_approvals_to_remove;
             vector<string> posting_approvals_to_add;
             vector<string> posting_approvals_to_remove;
             vector<string> key_approvals_to_add;
@@ -80,7 +80,7 @@ namespace graphene { namespace wallet {
         };
 
         enum authority_type {
-            owner,
+            master,
             active,
             posting
         };
@@ -280,7 +280,7 @@ namespace graphene { namespace wallet {
 
             /**
              *  @param account  - the name of the account to retrieve key for
-             *  @param role     - active | owner | posting | memo
+             *  @param role     - active | master | posting | memo
              *  @param password - the password to be used at key generation
              *  @return public key corresponding to generated private key, and private key in WIF format.
              */
@@ -424,7 +424,7 @@ namespace graphene { namespace wallet {
             string normalize_brain_key(string s) const;
 
             /**
-             *  This method will genrate new owner, active, posting and memo keys for the new account which
+             *  This method will genrate new master, active, posting and memo keys for the new account which
              *  will be controlable by this wallet. There is a fee associated with account creation
              *  that is paid by the creator. The current account creation fee can be found with the
              *  'info' wallet command.
@@ -454,7 +454,7 @@ namespace graphene { namespace wallet {
              * @param delegated_vests The amount of the fee to be paid with delegation
              * @param newname The name of the new account
              * @param json_meta JSON Metadata associated with the new account
-             * @param owner public owner key of the new account
+             * @param master public master key of the new account
              * @param active public active key of the new account
              * @param posting public posting key of the new account
              * @param memo public memo key of the new account
@@ -466,7 +466,7 @@ namespace graphene { namespace wallet {
                 asset delegated_vests,
                 string newname,
                 string json_meta,
-                public_key_type owner,
+                public_key_type master,
                 public_key_type active,
                 public_key_type posting,
                 public_key_type memo,
@@ -477,7 +477,7 @@ namespace graphene { namespace wallet {
              *
              * @param accountname The name of the account
              * @param json_meta New JSON Metadata to be associated with the account
-             * @param owner New public owner key for the account
+             * @param master New public master key for the account
              * @param active New public active key for the account
              * @param posting New public posting key for the account
              * @param memo New public memo key for the account
@@ -485,7 +485,7 @@ namespace graphene { namespace wallet {
              */
             annotated_signed_transaction update_account( string accountname,
                                                          string json_meta,
-                                                         public_key_type owner,
+                                                         public_key_type master,
                                                          public_key_type active,
                                                          public_key_type posting,
                                                          public_key_type memo,
@@ -494,11 +494,11 @@ namespace graphene { namespace wallet {
             /**
              * This method updates the key of an authority for an exisiting account.
              * Warning: You can create impossible authorities using this method. The method
-             * will fail if you create an impossible owner authority, but will allow impossible
+             * will fail if you create an impossible master authority, but will allow impossible
              * active and posting authorities.
              *
              * @param account_name The name of the account whose authority you wish to update
-             * @param type The authority type. e.g. owner, active, or posting
+             * @param type The authority type. e.g. master, active, or posting
              * @param key The public key to add to the authority
              * @param weight The weight the key should have in the authority. A weight of 0 indicates the removal of the key.
              * @param broadcast true if you wish to broadcast the transaction.
@@ -508,11 +508,11 @@ namespace graphene { namespace wallet {
             /**
              * This method updates the account of an authority for an exisiting account.
              * Warning: You can create impossible authorities using this method. The method
-             * will fail if you create an impossible owner authority, but will allow impossible
+             * will fail if you create an impossible master authority, but will allow impossible
              * active and posting authorities.
              *
              * @param account_name The name of the account whose authority you wish to update
-             * @param type The authority type. e.g. owner, active, or posting
+             * @param type The authority type. e.g. master, active, or posting
              * @param auth_account The account to add the the authority
              * @param weight The weight the account should have in the authority. A weight of 0 indicates the removal of the account.
              * @param broadcast true if you wish to broadcast the transaction.
@@ -523,11 +523,11 @@ namespace graphene { namespace wallet {
              * This method updates the weight threshold of an authority for an account.
              * Warning: You can create impossible authorities using this method as well
              * as implicitly met authorities. The method will fail if you create an implicitly
-             * true authority and if you create an impossible owner authoroty, but will allow
+             * true authority and if you create an impossible master authoroty, but will allow
              * impossible active and posting authorities.
              *
              * @param account_name The name of the account whose authority you wish to update
-             * @param type The authority type. e.g. owner, active, or posting
+             * @param type The authority type. e.g. master, active, or posting
              * @param threshold The weight threshold required for the authority to be met
              * @param broadcast true if you wish to broadcast the transaction
              */
@@ -855,7 +855,7 @@ namespace graphene { namespace wallet {
              *
              * @param recovery_account The name of your account
              * @param account_to_recover The name of the account you are trying to recover
-             * @param new_authority The new owner authority for the recovered account. This should be given to you by the holder of the compromised or lost account.
+             * @param new_authority The new master authority for the recovered account. This should be given to you by the holder of the compromised or lost account.
              * @param broadcast true if you wish to broadcast the transaction
              */
             annotated_signed_transaction request_account_recovery( string recovery_account, string account_to_recover, authority new_authority, bool broadcast );
@@ -867,7 +867,7 @@ namespace graphene { namespace wallet {
              * recover_account "your_account" {"weight_threshold": 1,"account_auths": [], "key_auths": [["old_public_key",1]]} {"weight_threshold": 1,"account_auths": [], "key_auths": [["new_public_key",1]]} true
              *
              * @param account_to_recover The name of your account
-             * @param recent_authority A recent owner authority on your account
+             * @param recent_authority A recent master authority on your account
              * @param new_authority The new authority that your recovery account used in the account recover request.
              * @param broadcast true if you wish to broadcast the transaction
              */
@@ -882,7 +882,7 @@ namespace graphene { namespace wallet {
              */
             annotated_signed_transaction change_recovery_account( string owner, string new_recovery_account, bool broadcast );
 
-            vector< database_api::owner_authority_history_api_object > get_owner_history( string account )const;
+            vector< database_api::master_authority_history_api_object > get_master_history( string account )const;
 
             /**
              *  Account operations have sequence numbers from 0 to N where N is the most recent operation. This method
@@ -959,7 +959,7 @@ FC_REFLECT( (graphene::wallet::brain_key_info), (brain_priv_key)(wif_priv_key) (
 
 FC_REFLECT( (graphene::wallet::plain_keys), (checksum)(keys) )
 
-FC_REFLECT_ENUM( graphene::wallet::authority_type, (owner)(active)(posting) )
+FC_REFLECT_ENUM( graphene::wallet::authority_type, (master)(active)(posting) )
 
 FC_API( graphene::wallet::wallet_api,
 /// wallet api
@@ -1018,7 +1018,7 @@ FC_API( graphene::wallet::wallet_api,
                 (request_account_recovery)
                 (recover_account)
                 (change_recovery_account)
-                (get_owner_history)
+                (get_master_history)
                 (get_encrypted_memo)
                 (decrypt_memo)
 
@@ -1047,6 +1047,6 @@ FC_REFLECT( (graphene::wallet::memo_data), (from)(to)(nonce)(check)(encrypted) )
 FC_REFLECT(
     (graphene::wallet::approval_delta),
     (active_approvals_to_add)(active_approvals_to_remove)
-    (owner_approvals_to_add)(owner_approvals_to_remove)
+    (master_approvals_to_add)(master_approvals_to_remove)
     (posting_approvals_to_add)(posting_approvals_to_remove)
     (key_approvals_to_add)(key_approvals_to_remove) )

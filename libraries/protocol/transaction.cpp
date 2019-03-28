@@ -65,11 +65,11 @@ namespace graphene {
         }
 
         void transaction::get_required_authorities(flat_set<account_name_type> &active,
-                flat_set<account_name_type> &owner,
+                flat_set<account_name_type> &master,
                 flat_set<account_name_type> &posting,
                 vector<authority> &other) const {
             for (const auto &op : operations) {
-                operation_get_required_authorities(op, active, owner, posting, other);
+                operation_get_required_authorities(op, active, master, posting, other);
             }
         }
 
@@ -95,16 +95,16 @@ namespace graphene {
             const std::vector<operation>& ops,
             const fc::flat_set<public_key_type>& sigs,
             const authority_getter& get_active,
-            const authority_getter& get_owner,
+            const authority_getter& get_master,
             const authority_getter& get_posting,
             uint32_t max_recursion_depth,
             bool allow_committe,
             const flat_set<account_name_type>& active_aprovals,
-            const flat_set<account_name_type>& owner_approvals,
+            const flat_set<account_name_type>& master_approvals,
             const flat_set<account_name_type>& posting_approvals
         ) { try {
             fc::flat_set<account_name_type> required_active;
-            fc::flat_set<account_name_type> required_owner;
+            fc::flat_set<account_name_type> required_master;
             fc::flat_set<account_name_type> required_posting;
             std::vector<authority> other;
             fc::flat_set<public_key_type> avail;
@@ -112,18 +112,18 @@ namespace graphene {
             std::vector<authority> missing_auths;
 
             for (const auto& op : ops) {
-                operation_get_required_authorities(op, required_active, required_owner, required_posting, other);
+                operation_get_required_authorities(op, required_active, required_master, required_posting, other);
             }
 
             /**
              *  Transactions with operations required posting authority cannot be combined
-             *  with transactions requiring active or owner authority. This is for ease of
+             *  with transactions requiring active or master authority. This is for ease of
              *  implementation. Future versions of authority verification may be able to
              *  check for the merged authority of active and posting.
              */
             if (required_posting.size()) {
                 FC_ASSERT(required_active.size() == 0);
-                FC_ASSERT(required_owner.size() == 0);
+                FC_ASSERT(required_master.size() == 0);
                 FC_ASSERT(other.size() == 0);
 
                 sign_state s(sigs, get_posting, avail);
@@ -136,7 +136,7 @@ namespace graphene {
                 for (const auto& id: required_posting) {
                     if (!s.check_authority(id) &&
                         !s.check_authority(get_active(id)) &&
-                        !s.check_authority(get_owner(id))
+                        !s.check_authority(get_master(id))
                     ) {
                         missing_accounts.push_back(id);
                     }
@@ -162,7 +162,7 @@ namespace graphene {
             for (auto& id: active_aprovals) {
                 s.approved_by[id] = false;
             }
-            for (auto& id: owner_approvals) {
+            for (auto& id: master_approvals) {
                 s.approved_by[id] = false;
             }
 
@@ -183,7 +183,7 @@ namespace graphene {
 
             // fetch all of the top level authorities
             for (const auto& id: required_active) {
-                if (!s.check_authority(id) && !s.check_authority(get_owner(id))) {
+                if (!s.check_authority(id) && !s.check_authority(get_master(id))) {
                     missing_accounts.push_back(id);
                 }
             }
@@ -199,8 +199,8 @@ namespace graphene {
                         CHAIN_ASSERT_MESSAGE("Missing Active Authority ${id}", ("id", e.missing_accounts)));
                 });
 
-            for (const auto& id: required_owner) {
-                if (owner_approvals.find(id) == owner_approvals.end() && !s.check_authority(get_owner(id))) {
+            for (const auto& id: required_master) {
+                if (master_approvals.find(id) == master_approvals.end() && !s.check_authority(get_master(id))) {
                     missing_accounts.push_back(id);
                 } else {
                     s.approved_by[id] = true;
@@ -209,13 +209,13 @@ namespace graphene {
 
             CHAIN_CTOR_ASSERT(
                 missing_accounts.empty(),
-                tx_missing_owner_auth,
+                tx_missing_master_auth,
                 [&](auto& e) {
                     s.remove_unused_signatures();
                     e.used_signatures = std::move(s.used_signatures);
                     e.missing_accounts = std::move(missing_accounts);
                     e.append_log(
-                        CHAIN_ASSERT_MESSAGE("Missing Owner Authority ${id}", ("id", e.missing_accounts)));
+                        CHAIN_ASSERT_MESSAGE("Missing Master Authority ${id}", ("id", e.missing_accounts)));
                 });
 
             assert_unused_approvals(s);
@@ -241,21 +241,21 @@ namespace graphene {
                 const chain_id_type &chain_id,
                 const flat_set<public_key_type> &available_keys,
                 const authority_getter &get_active,
-                const authority_getter &get_owner,
+                const authority_getter &get_master,
                 const authority_getter &get_posting,
                 uint32_t max_recursion_depth) const {
             flat_set<account_name_type> required_active;
-            flat_set<account_name_type> required_owner;
+            flat_set<account_name_type> required_master;
             flat_set<account_name_type> required_posting;
             vector<authority> other;
-            get_required_authorities(required_active, required_owner, required_posting, other);
+            get_required_authorities(required_active, required_master, required_posting, other);
 
             /** posting authority cannot be mixed with active authority in same transaction */
             if (required_posting.size()) {
                 sign_state s(get_signature_keys(chain_id), get_posting, available_keys);
                 s.max_recursion = max_recursion_depth;
 
-                FC_ASSERT(!required_owner.size());
+                FC_ASSERT(!required_master.size());
                 FC_ASSERT(!required_active.size());
                 for (auto &posting : required_posting) {
                     s.check_authority(posting);
@@ -282,8 +282,8 @@ namespace graphene {
             for (const auto &auth : other) {
                 s.check_authority(auth);
             }
-            for (auto &owner : required_owner) {
-                s.check_authority(get_owner(owner));
+            for (auto &master : required_master) {
+                s.check_authority(get_master(master));
             }
             for (auto &active : required_active) {
                 s.check_authority(active);
@@ -307,20 +307,20 @@ namespace graphene {
                 const chain_id_type &chain_id,
                 const flat_set<public_key_type> &available_keys,
                 const authority_getter &get_active,
-                const authority_getter &get_owner,
+                const authority_getter &get_master,
                 const authority_getter &get_posting,
                 uint32_t max_recursion
         ) const {
-            set<public_key_type> s = get_required_signatures(chain_id, available_keys, get_active, get_owner, get_posting, max_recursion);
+            set<public_key_type> s = get_required_signatures(chain_id, available_keys, get_active, get_master, get_posting, max_recursion);
             flat_set<public_key_type> result(s.begin(), s.end());
 
             for (const public_key_type &k : s) {
                 result.erase(k);
                 try {
-                    graphene::protocol::verify_authority(operations, result, get_active, get_owner, get_posting, max_recursion);
+                    graphene::protocol::verify_authority(operations, result, get_active, get_master, get_posting, max_recursion);
                     continue;  // element stays erased if verify_authority is ok
                 }
-                catch (const tx_missing_owner_auth &e) {
+                catch (const tx_missing_master_auth &e) {
                 }
                 catch (const tx_missing_active_auth &e) {
                 }
@@ -336,11 +336,11 @@ namespace graphene {
         void signed_transaction::verify_authority(
                 const chain_id_type &chain_id,
                 const authority_getter &get_active,
-                const authority_getter &get_owner,
+                const authority_getter &get_master,
                 const authority_getter &get_posting,
                 uint32_t max_recursion) const {
             try {
-                graphene::protocol::verify_authority(operations, get_signature_keys(chain_id), get_active, get_owner, get_posting, max_recursion);
+                graphene::protocol::verify_authority(operations, get_signature_keys(chain_id), get_active, get_master, get_posting, max_recursion);
             } FC_CAPTURE_AND_RETHROW((*this))
         }
 

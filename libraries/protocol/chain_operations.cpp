@@ -45,7 +45,7 @@ namespace graphene { namespace protocol {
             FC_ASSERT(is_asset_type(delegation, SHARES_SYMBOL), "Delegation must be SHARES");
             FC_ASSERT(fee.amount >= 0, "Account creation fee cannot be negative");
             FC_ASSERT(delegation.amount >= 0, "Delegation cannot be negative");
-            owner.validate();
+            master.validate();
             active.validate();
             posting.validate();
             validate_account_json_metadata(json_metadata);
@@ -53,8 +53,8 @@ namespace graphene { namespace protocol {
 
         void account_update_operation::validate() const {
             validate_account_name(account);
-            /*if( owner )
-               owner->validate();
+            /*if( master )
+               master->validate();
             if( active )
                active->validate();
             if( posting )
@@ -285,18 +285,18 @@ namespace graphene { namespace protocol {
         void request_account_recovery_operation::validate() const {
             validate_account_name(recovery_account);
             validate_account_name(account_to_recover);
-            new_owner_authority.validate();
+            new_master_authority.validate();
         }
 
         void recover_account_operation::validate() const {
             validate_account_name(account_to_recover);
-            FC_ASSERT(!(new_owner_authority ==
-                        recent_owner_authority), "Cannot set new owner authority to the recent owner authority");
-            FC_ASSERT(!new_owner_authority.is_impossible(), "new owner authority cannot be impossible");
-            FC_ASSERT(!recent_owner_authority.is_impossible(), "recent owner authority cannot be impossible");
-            FC_ASSERT(new_owner_authority.weight_threshold, "new owner authority cannot be trivial");
-            new_owner_authority.validate();
-            recent_owner_authority.validate();
+            FC_ASSERT(!(new_master_authority ==
+                        recent_master_authority), "Cannot set new master authority to the recent master authority");
+            FC_ASSERT(!new_master_authority.is_impossible(), "new master authority cannot be impossible");
+            FC_ASSERT(!recent_master_authority.is_impossible(), "recent master authority cannot be impossible");
+            FC_ASSERT(new_master_authority.weight_threshold, "new master authority cannot be trivial");
+            new_master_authority.validate();
+            recent_master_authority.validate();
         }
 
         void change_recovery_account_operation::validate() const {

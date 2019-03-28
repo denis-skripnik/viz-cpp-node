@@ -90,7 +90,7 @@ namespace graphene { namespace plugins { namespace account_by_key {
             }
 
             void account_by_key_plugin::account_by_key_plugin_impl::cache_auths(const account_authority_object &a) {
-                for (const auto &item : a.owner.key_auths) {
+                for (const auto &item : a.master.key_auths) {
                     cached_keys.insert(item.first);
                 }
                 for (const auto &item : a.active.key_auths) {
@@ -105,7 +105,7 @@ namespace graphene { namespace plugins { namespace account_by_key {
                 flat_set <public_key_type> new_keys;
 
                 // Construct the set of keys in the account's authority
-                for (const auto &item : a.owner.key_auths) {
+                for (const auto &item : a.master.key_auths) {
                     new_keys.insert(item.first);
                 }
                 for (const auto &item : a.active.key_auths) {
