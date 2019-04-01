@@ -70,7 +70,7 @@ namespace graphene { namespace chain {
             for (auto& a : o.active.account_auths) {
                 _db.get_account(a.first);
             }
-            for (auto& a : o.posting.account_auths) {
+            for (auto& a : o.regular.account_auths) {
                 _db.get_account(a.first);
             }
 
@@ -99,7 +99,7 @@ namespace graphene { namespace chain {
                 auth.account = o.new_account_name;
                 auth.master = o.master;
                 auth.active = o.active;
-                auth.posting = o.posting;
+                auth.regular = o.regular;
                 auth.last_master_update = fc::time_point_sec::min();
             });
             if (o.delegation.amount > 0) {  // Is it needed to allow zero delegation in this method ?
@@ -119,8 +119,8 @@ namespace graphene { namespace chain {
             database &_db = db();
             FC_ASSERT(o.account != CHAIN_INVITE_ACCOUNT, "Cannot update invite account.");
 
-            if (o.posting) {
-                     o.posting->validate();
+            if (o.regular) {
+                     o.regular->validate();
             }
 
             const auto &account = _db.get_account(o.account);
@@ -144,9 +144,9 @@ namespace graphene { namespace chain {
                 }
             }
 
-            if (o.posting)
+            if (o.regular)
             {
-                for (auto a: o.posting->account_auths) {
+                for (auto a: o.regular->account_auths) {
                     _db.get_account(a.first);
                 }
             }
@@ -159,13 +159,13 @@ namespace graphene { namespace chain {
             });
             store_account_json_metadata(_db, account.name, o.json_metadata, true);
 
-            if (o.active || o.posting) {
+            if (o.active || o.regular) {
                 _db.modify(account_auth, [&](account_authority_object &auth) {
                     if (o.active) {
                         auth.active = *o.active;
                     }
-                    if (o.posting) {
-                        auth.posting = *o.posting;
+                    if (o.regular) {
+                        auth.regular = *o.regular;
                     }
                 });
             }
@@ -696,7 +696,7 @@ namespace graphene { namespace chain {
                         auth.master.add_authority(key_from_memo, 1);
                         auth.master.weight_threshold = 1;
                         auth.active = auth.master;
-                        auth.posting = auth.active;
+                        auth.regular = auth.active;
                     });
                     _db.create<account_metadata_object>([&](account_metadata_object& m) {
                         m.account = new_account_name;
@@ -1254,18 +1254,18 @@ namespace graphene { namespace chain {
 
         void custom_evaluator::do_apply(const custom_operation &o) {
             database &_db = db();
-            for (const auto &i : o.required_auths) {
+            for (const auto &i : o.required_active_auths) {
                 auto& account = _db.get_account(i);
                 _db.modify(account, [&](account_object& a) {
                     a.custom_sequence++;
-                    a.custom_sequence_block_num=_db.head_block_num();
+                    a.custom_sequence_block_num=1 + _db.head_block_num();//head_block_num contains previous block num
                 });
             }
-            for (const auto &i : o.required_posting_auths) {
+            for (const auto &i : o.required_regular_auths) {
                 auto& account = _db.get_account(i);
                 _db.modify(account, [&](account_object& a) {
                     a.custom_sequence++;
-                    a.custom_sequence_block_num=_db.head_block_num();
+                    a.custom_sequence_block_num=1 + _db.head_block_num();//head_block_num contains previous block num
                 });
             }
             std::shared_ptr<custom_operation_interpreter> eval = _db.get_custom_evaluator(o.id);

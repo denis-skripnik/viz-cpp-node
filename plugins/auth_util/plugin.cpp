@@ -39,8 +39,8 @@ private:
     const graphene::chain::account_authority_object &acct =
             db.get<graphene::chain::account_authority_object, graphene::chain::by_account>(account_name);
     protocol::authority auth;
-    if ((level == "posting") || (level == "p")) {
-        auth = protocol::authority(acct.posting);
+    if ((level == "regular") || (level == "r")) {
+        auth = protocol::authority(acct.regular);
     } else if ((level == "active") ||
                (level == "a") || (level == "")) {
         auth = protocol::authority(acct.active);

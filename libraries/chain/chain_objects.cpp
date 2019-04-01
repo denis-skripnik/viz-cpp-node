@@ -9,7 +9,7 @@ namespace graphene {
       result.insert( auth.first );
    for( auto auth : a.active.account_auths )
       result.insert( auth.first );
-   for( auto auth : a.posting.account_auths )
+   for( auto auth : a.regular.account_auths )
       result.insert( auth.first );
    return result;
 }
@@ -21,7 +21,7 @@ set< public_key_type > account_member_index::get_key_members( const account_obje
       result.insert( auth.first );
    for( auto auth : a.active.key_auths )
       result.insert( auth.first );
-   for( auto auth : a.posting.key_auths )
+   for( auto auth : a.regular.key_auths )
       result.insert( auth.first );
    result.insert( a.memo_key );
    return result;

@@ -13,8 +13,8 @@ namespace graphene { namespace plugins { namespace database_api {
           available_active_approvals(p.available_active_approvals.begin(), p.available_active_approvals.end()),
           required_master_approvals(p.required_master_approvals.begin(), p.required_master_approvals.end()),
           available_master_approvals(p.available_master_approvals.begin(), p.available_master_approvals.end()),
-          required_posting_approvals(p.required_posting_approvals.begin(), p.required_posting_approvals.end()),
-          available_posting_approvals(p.available_posting_approvals.begin(), p.available_posting_approvals.end()),
+          required_regular_approvals(p.required_regular_approvals.begin(), p.required_regular_approvals.end()),
+          available_regular_approvals(p.available_regular_approvals.begin(), p.available_regular_approvals.end()),
           available_key_approvals(p.available_key_approvals.begin(), p.available_key_approvals.end()) {
     }
 

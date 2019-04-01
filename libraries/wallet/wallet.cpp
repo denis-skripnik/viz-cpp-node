@@ -465,10 +465,10 @@ namespace graphene { namespace wallet {
                         update_op.master_approvals_to_add.insert(name);
                     for (const std::string& name : delta.master_approvals_to_remove)
                         update_op.master_approvals_to_remove.insert(name);
-                    for (const std::string& name : delta.posting_approvals_to_add)
-                        update_op.posting_approvals_to_add.insert(name);
-                    for (const std::string& name : delta.posting_approvals_to_remove)
-                        update_op.posting_approvals_to_remove.insert(name);
+                    for (const std::string& name : delta.regular_approvals_to_add)
+                        update_op.regular_approvals_to_add.insert(name);
+                    for (const std::string& name : delta.regular_approvals_to_remove)
+                        update_op.regular_approvals_to_remove.insert(name);
                     for (const std::string& k : delta.key_approvals_to_add)
                         update_op.key_approvals_to_add.insert(public_key_type(k));
                     for (const std::string& k : delta.key_approvals_to_remove)
@@ -670,10 +670,10 @@ namespace graphene { namespace wallet {
                 {
                     flat_set< account_name_type > req_active_approvals;
                     flat_set< account_name_type > req_master_approvals;
-                    flat_set< account_name_type > req_posting_approvals;
+                    flat_set< account_name_type > req_regular_approvals;
                     vector< authority > other_auths;
 
-                    tx.get_required_authorities( req_active_approvals, req_master_approvals, req_posting_approvals, other_auths );
+                    tx.get_required_authorities( req_active_approvals, req_master_approvals, req_regular_approvals, other_auths );
 
                     for( const auto& auth : other_auths )
                         for( const auto& a : auth.account_auths )
@@ -687,7 +687,7 @@ namespace graphene { namespace wallet {
                                req_master_approvals.begin() , req_master_approvals.end(),
                                std::back_inserter( v_approving_account_names ) );
 
-                    for( const auto& a : req_posting_approvals )
+                    for( const auto& a : req_regular_approvals )
                         v_approving_account_names.push_back(a);
 
                     /// TODO: fetch the accounts specified via other_auths as well.
@@ -702,7 +702,7 @@ namespace graphene { namespace wallet {
                     size_t i = 0;
                     for( const optional< graphene::api::account_api_object >& approving_acct : approving_account_objects ) {
                         if( !approving_acct.valid() ) {
-                            wlog( "operation_get_required_auths said approval of non-existing account ${name} was needed",
+                            wlog( "get_required_authorities said approval of non-existing account ${name} was needed",
                                   ("name", v_approving_account_names[i]) );
                             i++;
                             continue;
@@ -730,12 +730,12 @@ namespace graphene { namespace wallet {
                         }
                     }
 
-                    for( account_name_type& acct_name : req_posting_approvals ) {
+                    for( account_name_type& acct_name : req_regular_approvals ) {
                         const auto it = approving_account_lut.find( acct_name );
                         if( it == approving_account_lut.end() )
                             continue;
                         const graphene::api::account_api_object& acct = it->second;
-                        vector<public_key_type> v_approving_keys = acct.posting.get_keys();
+                        vector<public_key_type> v_approving_keys = acct.regular.get_keys();
                         wdump((v_approving_keys));
                         for( const public_key_type& approving_key : v_approving_keys )
                         {
@@ -790,7 +790,7 @@ namespace graphene { namespace wallet {
                             [&]( const string& account_name ) -> const authority&
                             { return (get_account_from_lut( account_name ).master); },
                             [&]( const string& account_name ) -> const authority&
-                            { return (get_account_from_lut( account_name ).posting); },
+                            { return (get_account_from_lut( account_name ).regular); },
                             CHAIN_MAX_SIG_CHECK_DEPTH
                     );
 
@@ -1256,7 +1256,7 @@ fc::ecc::private_key wallet_api::derive_private_key(const std::string& prefix_st
         }
 
 /**
- *  This method will generate new master, active, posting and memo keys for the new account
+ *  This method will generate new master, active, regular and memo keys for the new account
  *  which will be controlable by this wallet.
  */
         annotated_signed_transaction wallet_api::create_account(
@@ -1267,15 +1267,15 @@ fc::ecc::private_key wallet_api::derive_private_key(const std::string& prefix_st
                 FC_ASSERT(!is_locked());
                 auto master = suggest_brain_key();
                 auto active = suggest_brain_key();
-                auto posting = suggest_brain_key();
+                auto regular = suggest_brain_key();
                 auto memo = suggest_brain_key();
                 import_key(master.wif_priv_key);
                 import_key(active.wif_priv_key);
-                import_key(posting.wif_priv_key);
+                import_key(regular.wif_priv_key);
                 import_key(memo.wif_priv_key);
                 return create_account_with_keys(
                     creator, tokens_fee, delegated_vests, new_account_name, json_meta,
-                    master.pub_key, active.pub_key, posting.pub_key, memo.pub_key, broadcast);
+                    master.pub_key, active.pub_key, regular.pub_key, memo.pub_key, broadcast);
             }
             FC_CAPTURE_AND_RETHROW((creator)(new_account_name)(json_meta));
         }
@@ -1292,7 +1292,7 @@ fc::ecc::private_key wallet_api::derive_private_key(const std::string& prefix_st
             string json_meta,
             public_key_type master,
             public_key_type active,
-            public_key_type posting,
+            public_key_type regular,
             public_key_type memo,
             bool broadcast
         ) const {
@@ -1303,7 +1303,7 @@ fc::ecc::private_key wallet_api::derive_private_key(const std::string& prefix_st
                 op.new_account_name = new_account_name;
                 op.master = authority(1, master, 1);
                 op.active = authority(1, active, 1);
-                op.posting = authority(1, posting, 1);
+                op.regular = authority(1, regular, 1);
                 op.memo_key = memo;
                 op.json_metadata = json_meta;
                 op.fee = tokens_fee;
@@ -1314,7 +1314,7 @@ fc::ecc::private_key wallet_api::derive_private_key(const std::string& prefix_st
                 tx.validate();
                 return my->sign_transaction(tx, broadcast);
             }
-            FC_CAPTURE_AND_RETHROW((creator)(new_account_name)(json_meta)(master)(active)(posting)(memo)(broadcast));
+            FC_CAPTURE_AND_RETHROW((creator)(new_account_name)(json_meta)(master)(active)(regular)(memo)(broadcast));
         }
 
 /**
@@ -1375,7 +1375,7 @@ fc::ecc::private_key wallet_api::derive_private_key(const std::string& prefix_st
                 string json_meta,
                 public_key_type master,
                 public_key_type active,
-                public_key_type posting,
+                public_key_type regular,
                 public_key_type memo,
                 bool broadcast )const
         {
@@ -1387,7 +1387,7 @@ fc::ecc::private_key wallet_api::derive_private_key(const std::string& prefix_st
                 op.account = account_name;
                 op.master = authority( 1, master, 1 );
                 op.active = authority( 1, active, 1);
-                op.posting = authority( 1, posting, 1);
+                op.regular = authority( 1, regular, 1);
                 op.memo_key = memo;
                 op.json_metadata = json_meta;
 
@@ -1423,8 +1423,8 @@ fc::ecc::private_key wallet_api::derive_private_key(const std::string& prefix_st
                 case( active ):
                     new_auth = accounts[0].active;
                     break;
-                case( posting ):
-                    new_auth = accounts[0].posting;
+                case( regular ):
+                    new_auth = accounts[0].regular;
                     break;
             }
 
@@ -1452,8 +1452,8 @@ fc::ecc::private_key wallet_api::derive_private_key(const std::string& prefix_st
                 case( active ):
                     op.active = new_auth;
                     break;
-                case( posting ):
-                    op.posting = new_auth;
+                case( regular ):
+                    op.regular = new_auth;
                     break;
             }
 
@@ -1487,8 +1487,8 @@ fc::ecc::private_key wallet_api::derive_private_key(const std::string& prefix_st
                 case( active ):
                     new_auth = accounts[0].active;
                     break;
-                case( posting ):
-                    new_auth = accounts[0].posting;
+                case( regular ):
+                    new_auth = accounts[0].regular;
                     break;
             }
 
@@ -1519,8 +1519,8 @@ fc::ecc::private_key wallet_api::derive_private_key(const std::string& prefix_st
                 case( active ):
                     op.active = new_auth;
                     break;
-                case( posting ):
-                    op.posting = new_auth;
+                case( regular ):
+                    op.regular = new_auth;
                     break;
             }
 
@@ -1555,8 +1555,8 @@ fc::ecc::private_key wallet_api::derive_private_key(const std::string& prefix_st
                 case( active ):
                     new_auth = accounts[0].active;
                     break;
-                case( posting ):
-                    new_auth = accounts[0].posting;
+                case( regular ):
+                    new_auth = accounts[0].regular;
                     break;
             }
 
@@ -1580,8 +1580,8 @@ fc::ecc::private_key wallet_api::derive_private_key(const std::string& prefix_st
                 case( active ):
                     op.active = new_auth;
                     break;
-                case( posting ):
-                    op.posting = new_auth;
+                case( regular ):
+                    op.regular = new_auth;
                     break;
             }
 
@@ -1735,9 +1735,9 @@ fc::ecc::private_key wallet_api::derive_private_key(const std::string& prefix_st
             auto active_secret = fc::sha256::hash( active_seed.c_str(), active_seed.size() );
             keys.push_back( fc::ecc::private_key::regenerate( active_secret ).get_public_key() );
 
-            string posting_seed = account.name + "posting" + memo;
-            auto posting_secret = fc::sha256::hash( posting_seed.c_str(), posting_seed.size() );
-            keys.push_back( fc::ecc::private_key::regenerate( posting_secret ).get_public_key() );
+            string regular_seed = account.name + "regular" + memo;
+            auto regular_secret = fc::sha256::hash( regular_seed.c_str(), regular_seed.size() );
+            keys.push_back( fc::ecc::private_key::regenerate( regular_secret ).get_public_key() );
 
             // Check keys against public keys in authorites
             for( auto& key_weight_pair : account.master.key_auths )
@@ -1752,10 +1752,10 @@ fc::ecc::private_key wallet_api::derive_private_key(const std::string& prefix_st
                     FC_ASSERT( key_weight_pair.first != key, "Detected private active key in memo field. Cancelling transaction." );
             }
 
-            for( auto& key_weight_pair : account.posting.key_auths )
+            for( auto& key_weight_pair : account.regular.key_auths )
             {
                 for( auto& key : keys )
-                    FC_ASSERT( key_weight_pair.first != key, "Detected private posting key in memo field. Cancelling transaction." );
+                    FC_ASSERT( key_weight_pair.first != key, "Detected private regular key in memo field. Cancelling transaction." );
             }
 
             const auto& memo_key = account.memo_key;
@@ -2154,7 +2154,7 @@ fc::ecc::private_key wallet_api::derive_private_key(const std::string& prefix_st
             custom_operation jop;
             jop.id = "follow";
             jop.json = fc::json::to_string(op);
-            jop.required_posting_auths.insert(follower);
+            jop.required_regular_auths.insert(follower);
 
             signed_transaction trx;
             trx.operations.push_back( jop );

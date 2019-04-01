@@ -139,7 +139,7 @@ if( options.count(name) ) { \
 
         template<typename T>
         void operator()(const T& op) {
-            op.get_required_posting_authorities(impacted);
+            op.get_required_regular_authorities(impacted);
             op.get_required_active_authorities(impacted);
             op.get_required_master_authorities(impacted);
         }
@@ -286,10 +286,10 @@ if( options.count(name) ) { \
         void operator()(const proposal_update_operation& op) {
             impacted.insert(op.active_approvals_to_add.begin(), op.active_approvals_to_add.end());
             impacted.insert(op.master_approvals_to_add.begin(), op.master_approvals_to_add.end());
-            impacted.insert(op.posting_approvals_to_add.begin(), op.posting_approvals_to_add.end());
+            impacted.insert(op.regular_approvals_to_add.begin(), op.regular_approvals_to_add.end());
             impacted.insert(op.active_approvals_to_remove.begin(), op.active_approvals_to_remove.end());
             impacted.insert(op.master_approvals_to_remove.begin(), op.master_approvals_to_remove.end());
-            impacted.insert(op.posting_approvals_to_remove.begin(), op.posting_approvals_to_remove.end());
+            impacted.insert(op.regular_approvals_to_remove.begin(), op.regular_approvals_to_remove.end());
         }
 
         void operator()(const proposal_delete_operation& op) {

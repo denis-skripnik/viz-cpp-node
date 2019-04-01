@@ -26,8 +26,8 @@ namespace graphene { namespace wallet {
             vector<string> active_approvals_to_remove;
             vector<string> master_approvals_to_add;
             vector<string> master_approvals_to_remove;
-            vector<string> posting_approvals_to_add;
-            vector<string> posting_approvals_to_remove;
+            vector<string> regular_approvals_to_add;
+            vector<string> regular_approvals_to_remove;
             vector<string> key_approvals_to_add;
             vector<string> key_approvals_to_remove;
         };
@@ -82,7 +82,7 @@ namespace graphene { namespace wallet {
         enum authority_type {
             master,
             active,
-            posting
+            regular
         };
 
         namespace detail {
@@ -280,7 +280,7 @@ namespace graphene { namespace wallet {
 
             /**
              *  @param account  - the name of the account to retrieve key for
-             *  @param role     - active | master | posting | memo
+             *  @param role     - active | master | regular | memo
              *  @param password - the password to be used at key generation
              *  @return public key corresponding to generated private key, and private key in WIF format.
              */
@@ -424,7 +424,7 @@ namespace graphene { namespace wallet {
             string normalize_brain_key(string s) const;
 
             /**
-             *  This method will genrate new master, active, posting and memo keys for the new account which
+             *  This method will genrate new master, active, regular and memo keys for the new account which
              *  will be controlable by this wallet. There is a fee associated with account creation
              *  that is paid by the creator. The current account creation fee can be found with the
              *  'info' wallet command.
@@ -456,7 +456,7 @@ namespace graphene { namespace wallet {
              * @param json_meta JSON Metadata associated with the new account
              * @param master public master key of the new account
              * @param active public active key of the new account
-             * @param posting public posting key of the new account
+             * @param regular public regular key of the new account
              * @param memo public memo key of the new account
              * @param broadcast true if you wish to broadcast the transaction
              */
@@ -468,7 +468,7 @@ namespace graphene { namespace wallet {
                 string json_meta,
                 public_key_type master,
                 public_key_type active,
-                public_key_type posting,
+                public_key_type regular,
                 public_key_type memo,
                 bool broadcast) const;
 
@@ -479,7 +479,7 @@ namespace graphene { namespace wallet {
              * @param json_meta New JSON Metadata to be associated with the account
              * @param master New public master key for the account
              * @param active New public active key for the account
-             * @param posting New public posting key for the account
+             * @param regular New public regular key for the account
              * @param memo New public memo key for the account
              * @param broadcast true if you wish to broadcast the transaction
              */
@@ -487,7 +487,7 @@ namespace graphene { namespace wallet {
                                                          string json_meta,
                                                          public_key_type master,
                                                          public_key_type active,
-                                                         public_key_type posting,
+                                                         public_key_type regular,
                                                          public_key_type memo,
                                                          bool broadcast )const;
 
@@ -495,10 +495,10 @@ namespace graphene { namespace wallet {
              * This method updates the key of an authority for an exisiting account.
              * Warning: You can create impossible authorities using this method. The method
              * will fail if you create an impossible master authority, but will allow impossible
-             * active and posting authorities.
+             * active and regular authorities.
              *
              * @param account_name The name of the account whose authority you wish to update
-             * @param type The authority type. e.g. master, active, or posting
+             * @param type The authority type. e.g. master, active, or regular
              * @param key The public key to add to the authority
              * @param weight The weight the key should have in the authority. A weight of 0 indicates the removal of the key.
              * @param broadcast true if you wish to broadcast the transaction.
@@ -509,10 +509,10 @@ namespace graphene { namespace wallet {
              * This method updates the account of an authority for an exisiting account.
              * Warning: You can create impossible authorities using this method. The method
              * will fail if you create an impossible master authority, but will allow impossible
-             * active and posting authorities.
+             * active and regular authorities.
              *
              * @param account_name The name of the account whose authority you wish to update
-             * @param type The authority type. e.g. master, active, or posting
+             * @param type The authority type. e.g. master, active, or regular
              * @param auth_account The account to add the the authority
              * @param weight The weight the account should have in the authority. A weight of 0 indicates the removal of the account.
              * @param broadcast true if you wish to broadcast the transaction.
@@ -524,10 +524,10 @@ namespace graphene { namespace wallet {
              * Warning: You can create impossible authorities using this method as well
              * as implicitly met authorities. The method will fail if you create an implicitly
              * true authority and if you create an impossible master authoroty, but will allow
-             * impossible active and posting authorities.
+             * impossible active and regular authorities.
              *
              * @param account_name The name of the account whose authority you wish to update
-             * @param type The authority type. e.g. master, active, or posting
+             * @param type The authority type. e.g. master, active, or regular
              * @param threshold The weight threshold required for the authority to be met
              * @param broadcast true if you wish to broadcast the transaction
              */
@@ -898,7 +898,7 @@ namespace graphene { namespace wallet {
 
             FC_TODO(Supplement API argument description)
             /**
-             *  Marks one account as following another account. Requires the posting authority of the follower.
+             *  Marks one account as following another account. Requires the regular authority of the follower.
              *
              *  @param follower
              *  @param following
@@ -959,7 +959,7 @@ FC_REFLECT( (graphene::wallet::brain_key_info), (brain_priv_key)(wif_priv_key) (
 
 FC_REFLECT( (graphene::wallet::plain_keys), (checksum)(keys) )
 
-FC_REFLECT_ENUM( graphene::wallet::authority_type, (master)(active)(posting) )
+FC_REFLECT_ENUM( graphene::wallet::authority_type, (master)(active)(regular) )
 
 FC_API( graphene::wallet::wallet_api,
 /// wallet api
@@ -1048,5 +1048,5 @@ FC_REFLECT(
     (graphene::wallet::approval_delta),
     (active_approvals_to_add)(active_approvals_to_remove)
     (master_approvals_to_add)(master_approvals_to_remove)
-    (posting_approvals_to_add)(posting_approvals_to_remove)
+    (regular_approvals_to_add)(regular_approvals_to_remove)
     (key_approvals_to_add)(key_approvals_to_remove) )

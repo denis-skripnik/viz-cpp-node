@@ -15,7 +15,7 @@ namespace graphene { namespace protocol {
             account_name_type new_account_name;
             authority master;
             authority active;
-            authority posting;
+            authority regular;
             public_key_type memo_key;
             string json_metadata;
             account_name_type referrer;
@@ -32,7 +32,7 @@ namespace graphene { namespace protocol {
             account_name_type account;
             optional<authority> master;
             optional<authority> active;
-            optional<authority> posting;
+            optional<authority> regular;
             public_key_type memo_key;
             string json_metadata;
 
@@ -56,7 +56,7 @@ namespace graphene { namespace protocol {
             string json_metadata;
 
             void validate() const;
-            void get_required_posting_authorities(flat_set<account_name_type>& a) const {
+            void get_required_regular_authorities(flat_set<account_name_type>& a) const {
                 a.insert(account);
             }
         };
@@ -106,7 +106,7 @@ namespace graphene { namespace protocol {
 
             void validate() const;
 
-            void get_required_posting_authorities(flat_set<account_name_type> &a) const {
+            void get_required_regular_authorities(flat_set<account_name_type> &a) const {
                 a.insert(author);
             }
         };
@@ -118,7 +118,7 @@ namespace graphene { namespace protocol {
 
             void validate() const;
 
-            void get_required_posting_authorities(flat_set<account_name_type> &a) const {
+            void get_required_regular_authorities(flat_set<account_name_type> &a) const {
                 a.insert(author);
             }
         };
@@ -132,7 +132,7 @@ namespace graphene { namespace protocol {
 
             void validate() const;
 
-            void get_required_posting_authorities(flat_set<account_name_type> &a) const {
+            void get_required_regular_authorities(flat_set<account_name_type> &a) const {
                 a.insert(voter);
             }
         };
@@ -570,21 +570,21 @@ namespace graphene { namespace protocol {
 
 
         struct custom_operation : public base_operation {
-            flat_set<account_name_type> required_auths;
-            flat_set<account_name_type> required_posting_auths;
+            flat_set<account_name_type> required_active_auths;
+            flat_set<account_name_type> required_regular_auths;
             string id; ///< must be less than 32 characters long
             string json; ///< must be proper utf8 / JSON string.
 
             void validate() const;
 
             void get_required_active_authorities(flat_set<account_name_type> &a) const {
-                for (const auto &i : required_auths) {
+                for (const auto &i : required_active_auths) {
                     a.insert(i);
                 }
             }
 
-            void get_required_posting_authorities(flat_set<account_name_type> &a) const {
-                for (const auto &i : required_posting_auths) {
+            void get_required_regular_authorities(flat_set<account_name_type> &a) const {
+                for (const auto &i : required_regular_auths) {
                     a.insert(i);
                 }
             }
@@ -763,7 +763,7 @@ namespace graphene { namespace protocol {
                 FC_ASSERT(required_amount_max.amount <= COMMITTEE_MAX_REQUIRED_AMOUNT);
             }
 
-            void get_required_posting_authorities(flat_set<account_name_type> &a) const {
+            void get_required_regular_authorities(flat_set<account_name_type> &a) const {
                 a.insert(creator);
             }
         };
@@ -775,7 +775,7 @@ namespace graphene { namespace protocol {
 
             void validate() const {}
 
-            void get_required_posting_authorities(flat_set<account_name_type> &a) const {
+            void get_required_regular_authorities(flat_set<account_name_type> &a) const {
                 a.insert(creator);
             }
         };
@@ -791,7 +791,7 @@ namespace graphene { namespace protocol {
                 FC_ASSERT(vote_percent <= CHAIN_100_PERCENT);
             }
 
-            void get_required_posting_authorities(flat_set<account_name_type> &a) const {
+            void get_required_regular_authorities(flat_set<account_name_type> &a) const {
                 a.insert(voter);
             }
         };
@@ -844,7 +844,7 @@ namespace graphene { namespace protocol {
 
             void validate() const;
 
-            void get_required_posting_authorities(flat_set<account_name_type> &a) const {
+            void get_required_regular_authorities(flat_set<account_name_type> &a) const {
                 a.insert(initiator);
             }
         };
@@ -896,13 +896,13 @@ FC_REFLECT_DERIVED(
 FC_REFLECT_TYPENAME((graphene::protocol::versioned_chain_properties))
 
 FC_REFLECT((graphene::protocol::account_create_operation),
-    (fee)(delegation)(creator)(new_account_name)(master)(active)(posting)(memo_key)(json_metadata)(referrer)(extensions));
+    (fee)(delegation)(creator)(new_account_name)(master)(active)(regular)(memo_key)(json_metadata)(referrer)(extensions));
 
 FC_REFLECT((graphene::protocol::account_update_operation),
         (account)
                 (master)
                 (active)
-                (posting)
+                (regular)
                 (memo_key)
                 (json_metadata))
 
@@ -917,7 +917,7 @@ FC_REFLECT((graphene::protocol::account_witness_vote_operation), (account)(witne
 FC_REFLECT((graphene::protocol::account_witness_proxy_operation), (account)(proxy))
 FC_REFLECT((graphene::protocol::content_operation), (parent_author)(parent_permlink)(author)(permlink)(title)(body)(curation_percent)(json_metadata)(extensions))
 FC_REFLECT((graphene::protocol::vote_operation), (voter)(author)(permlink)(weight))
-FC_REFLECT((graphene::protocol::custom_operation), (required_auths)(required_posting_auths)(id)(json))
+FC_REFLECT((graphene::protocol::custom_operation), (required_active_auths)(required_regular_auths)(id)(json))
 
 FC_REFLECT((graphene::protocol::delete_content_operation), (author)(permlink));
 

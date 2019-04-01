@@ -2665,7 +2665,7 @@ namespace graphene { namespace chain {
                     auth.account = CHAIN_NULL_ACCOUNT;
                     auth.master.weight_threshold = 1;
                     auth.active.weight_threshold = 1;
-                    auth.posting.weight_threshold = 1;
+                    auth.regular.weight_threshold = 1;
                 });
 
                 create<account_object>([&](account_object &a) {
@@ -2680,7 +2680,7 @@ namespace graphene { namespace chain {
                     auth.account = CHAIN_COMMITTEE_ACCOUNT;
                     auth.master.weight_threshold = 1;
                     auth.active.weight_threshold = 1;
-                    auth.posting.weight_threshold = 1;
+                    auth.regular.weight_threshold = 1;
                 });
                 create<witness_object>([&](witness_object &w) {
                     w.owner = CHAIN_COMMITTEE_ACCOUNT;
@@ -2701,7 +2701,7 @@ namespace graphene { namespace chain {
                     auth.account = CHAIN_ANONYMOUS_ACCOUNT;
                     auth.master.weight_threshold = 1;
                     auth.active.weight_threshold = 1;
-                    auth.posting.weight_threshold = 1;
+                    auth.regular.weight_threshold = 1;
                 });
 
                 // VIZ: invite account
@@ -2725,7 +2725,7 @@ namespace graphene { namespace chain {
                     auth.master.weight_threshold = 1;
                     auth.active.add_authority( invite_public_key, 1 );
                     auth.active.weight_threshold = 1;
-                    auth.posting.weight_threshold = 1;
+                    auth.regular.weight_threshold = 1;
                 });
 
                 if(CHAIN_NUM_INITIATORS>0){
@@ -2747,7 +2747,7 @@ namespace graphene { namespace chain {
                             auth.master.add_authority(initiator_public_key, 1);
                             auth.master.weight_threshold = 1;
                             auth.active = auth.master;
-                            auth.posting = auth.active;
+                            auth.regular = auth.active;
                         });
                         create<witness_object>([&](witness_object &w) {
                             w.owner = name;
@@ -2773,7 +2773,7 @@ namespace graphene { namespace chain {
                         auth.master.add_authority(initiator_public_key, 1);
                         auth.master.weight_threshold = 1;
                         auth.active = auth.master;
-                        auth.posting = auth.active;
+                        auth.regular = auth.active;
                     });
                 }
 
@@ -2870,7 +2870,7 @@ namespace graphene { namespace chain {
                             auth.master.add_authority( account_public_key, 1 );
                             auth.master.weight_threshold = 1;
                             auth.active  = auth.master;
-                            auth.posting = auth.active;
+                            auth.regular = auth.active;
                             auth.last_master_update = fc::time_point_sec::min();
                         });
                         #ifndef IS_LOW_MEM
@@ -2956,12 +2956,12 @@ namespace graphene { namespace chain {
                     return authority(get<account_authority_object, by_account>(name).master);
                 };
 
-                auto get_posting = [&](const account_name_type& name) {
-                    return authority(get<account_authority_object, by_account>(name).posting);
+                auto get_regular = [&](const account_name_type& name) {
+                    return authority(get<account_authority_object, by_account>(name).regular);
                 };
 
                 try {
-                    trx.verify_authority(chain_id, get_active, get_master, get_posting, CHAIN_MAX_SIG_CHECK_DEPTH);
+                    trx.verify_authority(chain_id, get_active, get_master, get_regular, CHAIN_MAX_SIG_CHECK_DEPTH);
                 }
                 catch (protocol::tx_missing_active_auth &e) {
                     if (get_shared_db_merkle().find(head_block_num() + 1) == get_shared_db_merkle().end()) {

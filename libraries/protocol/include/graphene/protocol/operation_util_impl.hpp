@@ -59,7 +59,7 @@ namespace graphene {
 
             flat_set <account_name_type> &active;
             flat_set <account_name_type> &master;
-            flat_set <account_name_type> &posting;
+            flat_set <account_name_type> &regular;
             std::vector<authority> &other;
 
             operation_get_required_auth_visitor(
@@ -67,14 +67,14 @@ namespace graphene {
                     flat_set <account_name_type> &own,
                     flat_set <account_name_type> &post,
                     std::vector<authority> &oth)
-                    : active(a), master(own), posting(post), other(oth) {
+                    : active(a), master(own), regular(post), other(oth) {
             }
 
             template<typename T>
             void operator()(const T &v) const {
                 v.get_required_active_authorities(active);
                 v.get_required_master_authorities(master);
-                v.get_required_posting_authorities(posting);
+                v.get_required_regular_authorities(regular);
                 v.get_required_authorities(other);
             }
         };
@@ -134,10 +134,10 @@ void operation_validate( const OperationType& op )                         \
 void operation_get_required_authorities( const OperationType& op,          \
                                          flat_set< account_name_type >& active,         \
                                          flat_set< account_name_type >& master,         \
-                                         flat_set< account_name_type >& posting,        \
+                                         flat_set< account_name_type >& regular,        \
                                          std::vector< authority >& other )     \
 {                                                                          \
-   op.visit( graphene::protocol::operation_get_required_auth_visitor( active, master, posting, other ) ); \
+   op.visit( graphene::protocol::operation_get_required_auth_visitor( active, master, regular, other ) ); \
 }                                                                          \
                                                                            \
 } } /* graphene::protocol */

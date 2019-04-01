@@ -50,7 +50,7 @@ namespace graphene {
 
             void get_required_authorities(flat_set<account_name_type> &active,
                     flat_set<account_name_type> &master,
-                    flat_set<account_name_type> &posting,
+                    flat_set<account_name_type> &regular,
                     vector<authority> &other) const;
         };
 
@@ -68,7 +68,7 @@ namespace graphene {
                     const flat_set<public_key_type> &available_keys,
                     const authority_getter &get_active,
                     const authority_getter &get_master,
-                    const authority_getter &get_posting,
+                    const authority_getter &get_regular,
                     uint32_t max_recursion = CHAIN_MAX_SIG_CHECK_DEPTH
             ) const;
 
@@ -76,7 +76,7 @@ namespace graphene {
                     const chain_id_type &chain_id,
                     const authority_getter &get_active,
                     const authority_getter &get_master,
-                    const authority_getter &get_posting,
+                    const authority_getter &get_regular,
                     uint32_t max_recursion = CHAIN_MAX_SIG_CHECK_DEPTH) const;
 
             set<public_key_type> minimize_required_signatures(
@@ -84,7 +84,7 @@ namespace graphene {
                     const flat_set<public_key_type> &available_keys,
                     const authority_getter &get_active,
                     const authority_getter &get_master,
-                    const authority_getter &get_posting,
+                    const authority_getter &get_regular,
                     uint32_t max_recursion = CHAIN_MAX_SIG_CHECK_DEPTH
             ) const;
 
@@ -103,12 +103,12 @@ namespace graphene {
         void verify_authority(const vector<operation> &ops, const flat_set<public_key_type> &sigs,
                 const authority_getter &get_active,
                 const authority_getter &get_master,
-                const authority_getter &get_posting,
+                const authority_getter &get_regular,
                 uint32_t max_recursion = CHAIN_MAX_SIG_CHECK_DEPTH,
                 bool allow_committe = false,
                 const flat_set<account_name_type> &active_aprovals = flat_set<account_name_type>(),
                 const flat_set<account_name_type> &master_aprovals = flat_set<account_name_type>(),
-                const flat_set<account_name_type> &posting_approvals = flat_set<account_name_type>());
+                const flat_set<account_name_type> &regular_approvals = flat_set<account_name_type>());
 
 
         struct annotated_signed_transaction : public signed_transaction {

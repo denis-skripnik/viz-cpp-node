@@ -32,24 +32,24 @@ namespace graphene {
 
                 flat_set<account_name_type> outer_active;
                 flat_set<account_name_type> outer_master;
-                flat_set<account_name_type> outer_posting;
+                flat_set<account_name_type> outer_regular;
                 std::vector<authority> outer_other;
 
                 flat_set<account_name_type> inner_active;
                 flat_set<account_name_type> inner_master;
-                flat_set<account_name_type> inner_posting;
+                flat_set<account_name_type> inner_regular;
                 std::vector<authority> inner_other;
 
-                operation_get_required_authorities(outer_o, outer_active, outer_master, outer_posting, outer_other);
+                operation_get_required_authorities(outer_o, outer_active, outer_master, outer_regular, outer_other);
 
                 for (const CustomOperationType &inner_o : custom_operations) {
                     operation_validate(inner_o);
-                    operation_get_required_authorities(inner_o, inner_active, inner_master, inner_posting, inner_other);
+                    operation_get_required_authorities(inner_o, inner_active, inner_master, inner_regular, inner_other);
                 }
 
                 FC_ASSERT(inner_master == outer_master);
                 FC_ASSERT(inner_active == outer_active);
-                FC_ASSERT(inner_posting == outer_posting);
+                FC_ASSERT(inner_regular == outer_regular);
                 FC_ASSERT(inner_other == outer_other);
 
                 for (const CustomOperationType &inner_o : custom_operations) {

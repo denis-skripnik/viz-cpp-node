@@ -86,7 +86,7 @@ namespace graphene { namespace chain {
         	    auth.master.add_authority(key_from_operation, 1);
         	    auth.master.weight_threshold = 1;
         	    auth.active = auth.master;
-        	    auth.posting = auth.active;
+        	    auth.regular = auth.active;
         	});
         	_db.create<account_metadata_object>([&](account_metadata_object& m) {
         	    m.account = o.new_account_name;

@@ -123,9 +123,9 @@ namespace mongo_db {
             format_authority(body, "master", *op.master);
         }
 
-        document posting_owner_doc;
-        if (op.posting) {
-            format_authority(body, "posting", *op.posting);
+        document regular_owner_doc;
+        if (op.regular) {
+            format_authority(body, "regular", *op.regular);
         }
 
         document active_owner_doc;

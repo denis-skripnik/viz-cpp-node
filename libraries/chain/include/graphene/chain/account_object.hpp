@@ -128,7 +128,7 @@ public:
 
     template<typename Constructor, typename Allocator>
     account_authority_object(Constructor &&c, allocator<Allocator> a)
-            : master(a), active(a), posting(a) {
+            : master(a), active(a), regular(a) {
         c(*this);
     }
 
@@ -137,8 +137,8 @@ public:
     account_name_type account;
 
     shared_authority master;   ///< used for backup control, can set master or active
-    shared_authority active;  ///< used for all monetary operations, can set active or posting
-    shared_authority posting; ///< used for voting and posting
+    shared_authority active;  ///< used for all monetary operations, can set active or regular
+    shared_authority regular; ///< used for voting and regular
 
     time_point_sec last_master_update;
 };
@@ -467,7 +467,7 @@ FC_REFLECT((graphene::chain::account_object),
 CHAINBASE_SET_INDEX_TYPE(graphene::chain::account_object, graphene::chain::account_index)
 
 FC_REFLECT((graphene::chain::account_authority_object),
-        (id)(account)(master)(active)(posting)(last_master_update)
+        (id)(account)(master)(active)(regular)(last_master_update)
 )
 CHAINBASE_SET_INDEX_TYPE(graphene::chain::account_authority_object, graphene::chain::account_authority_index)
 

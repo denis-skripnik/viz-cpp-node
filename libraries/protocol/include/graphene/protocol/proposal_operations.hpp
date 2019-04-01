@@ -86,8 +86,8 @@ namespace graphene { namespace protocol {
         flat_set<account_name_type> active_approvals_to_remove;
         flat_set<account_name_type> master_approvals_to_add;
         flat_set<account_name_type> master_approvals_to_remove;
-        flat_set<account_name_type> posting_approvals_to_add;
-        flat_set<account_name_type> posting_approvals_to_remove;
+        flat_set<account_name_type> regular_approvals_to_add;
+        flat_set<account_name_type> regular_approvals_to_remove;
         flat_set<public_key_type> key_approvals_to_add;
         flat_set<public_key_type> key_approvals_to_remove;
         extensions_type extensions;
@@ -100,7 +100,7 @@ namespace graphene { namespace protocol {
 
         void get_required_master_authorities(flat_set<account_name_type>&) const;
 
-        void get_required_posting_authorities(flat_set<account_name_type>&) const;
+        void get_required_regular_authorities(flat_set<account_name_type>&) const;
     };
 
     /**
@@ -136,7 +136,7 @@ FC_REFLECT(
 FC_REFLECT(
     (graphene::protocol::proposal_update_operation),
     (author)(title)(active_approvals_to_add)(active_approvals_to_remove)(master_approvals_to_add)
-    (master_approvals_to_remove)(posting_approvals_to_add)(posting_approvals_to_remove)
+    (master_approvals_to_remove)(regular_approvals_to_add)(regular_approvals_to_remove)
     (key_approvals_to_add)(key_approvals_to_remove)(extensions))
 
 FC_REFLECT(

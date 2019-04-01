@@ -47,7 +47,7 @@ namespace graphene { namespace protocol {
             FC_ASSERT(delegation.amount >= 0, "Delegation cannot be negative");
             master.validate();
             active.validate();
-            posting.validate();
+            regular.validate();
             validate_account_json_metadata(json_metadata);
         }
 
@@ -57,8 +57,8 @@ namespace graphene { namespace protocol {
                master->validate();
             if( active )
                active->validate();
-            if( posting )
-               posting->validate();*/
+            if( regular )
+               regular->validate();*/
             validate_account_json_metadata(json_metadata);
         }
 
@@ -221,7 +221,7 @@ namespace graphene { namespace protocol {
 
         void custom_operation::validate() const {
             /// required auth accounts are the ones whose bandwidth is consumed
-            FC_ASSERT((required_auths.size() + required_posting_auths.size()) >
+            FC_ASSERT((required_active_auths.size() + required_regular_auths.size()) >
                       0, "at least on account must be specified");
             FC_ASSERT(id.size() <= 32, "id is too long");
             FC_ASSERT(fc::is_utf8(json), "JSON Metadata not formatted in UTF8");

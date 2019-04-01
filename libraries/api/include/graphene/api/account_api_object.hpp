@@ -25,7 +25,7 @@ struct account_api_object {
     account_name_type name;
     authority master;
     authority active;
-    authority posting;
+    authority regular;
     public_key_type memo_key;
     std::string json_metadata;
     account_name_type proxy;
@@ -81,7 +81,7 @@ struct account_api_object {
 
 
 FC_REFLECT((graphene::api::account_api_object),
-    (id)(name)(master)(active)(posting)(memo_key)(json_metadata)(proxy)(referrer)(last_master_update)(last_account_update)
+    (id)(name)(master)(active)(regular)(memo_key)(json_metadata)(proxy)(referrer)(last_master_update)(last_account_update)
     (created)
     (recovery_account)(last_account_recovery)(subcontent_count)(vote_count)
     (content_count)(awarded_rshares)(custom_sequence)(custom_sequence_block_num)(energy)(last_vote_time)(balance)

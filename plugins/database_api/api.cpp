@@ -567,7 +567,7 @@ std::set<public_key_type> plugin::api_impl::get_required_signatures(
             return authority(database().get<account_authority_object, by_account>(account_name).master);
         },
         [&](std::string account_name) {
-            return authority(database().get<account_authority_object, by_account>(account_name).posting);
+            return authority(database().get<account_authority_object, by_account>(account_name).regular);
         },
         CHAIN_MAX_SIG_CHECK_DEPTH
     );
@@ -601,7 +601,7 @@ std::set<public_key_type> plugin::api_impl::get_potential_signatures(const signe
             return authority(auth);
         },
         [&](account_name_type account_name) {
-            const auto &auth = database().get<account_authority_object, by_account>(account_name).posting;
+            const auto &auth = database().get<account_authority_object, by_account>(account_name).regular;
             for (const auto &k : auth.get_keys()) {
                 result.insert(k);
             }
@@ -627,7 +627,7 @@ bool plugin::api_impl::verify_authority(const signed_transaction &trx) const {
     }, [&](std::string account_name) {
         return authority(database().get<account_authority_object, by_account>(account_name).master);
     }, [&](std::string account_name) {
-        return authority(database().get<account_authority_object, by_account>(account_name).posting);
+        return authority(database().get<account_authority_object, by_account>(account_name).regular);
     }, CHAIN_MAX_SIG_CHECK_DEPTH);
     return true;
 }

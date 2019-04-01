@@ -96,7 +96,7 @@ namespace graphene { namespace plugins { namespace account_by_key {
                 for (const auto &item : a.active.key_auths) {
                     cached_keys.insert(item.first);
                 }
-                for (const auto &item : a.posting.key_auths) {
+                for (const auto &item : a.regular.key_auths) {
                     cached_keys.insert(item.first);
                 }
             }
@@ -111,7 +111,7 @@ namespace graphene { namespace plugins { namespace account_by_key {
                 for (const auto &item : a.active.key_auths) {
                     new_keys.insert(item.first);
                 }
-                for (const auto &item : a.posting.key_auths) {
+                for (const auto &item : a.regular.key_auths) {
                     new_keys.insert(item.first);
                 }
 
