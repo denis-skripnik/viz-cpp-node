@@ -675,13 +675,38 @@ namespace graphene { namespace chain {
                     "Inssufficient amount ${f} required, ${p} provided.",
                     ("f", median_props.account_creation_fee)("p", o.amount));
                 if(o.memo.size()){
-                    public_key_type key_from_memo(o.memo);
-                    const auto& meta = _db.get<account_metadata_object, by_account>(to_account.name);
-                    int anonymous_num=std::stoi(meta.json_metadata.c_str());
-                    anonymous_num++;
-                    store_account_json_metadata(_db, CHAIN_ANONYMOUS_ACCOUNT,fc::to_string(anonymous_num));
+                    account_name_type new_account_name;
+                    public_key_type key_from_memo;
+                    int anonymous_num;
+                    if(_db.has_hardfork(CHAIN_HARDFORK_6)){
+                        string memo = fc::trim(o.memo);
+                        auto colon_pos = memo.find(":");
+                        if(colon_pos != std::string::npos) {
+                            auto login_part = memo.substr(0, colon_pos);
+                            auto acc = _db.find< account_object, by_name >( login_part );
+                            FC_ASSERT( acc == nullptr, "Account login \"${a}\" must be free.", ("a", login_part) );
+                            new_account_name=login_part;
+                            auto key_part = memo.substr(colon_pos + 1);
+                            key_from_memo=public_key_type(key_part);
+                        }
+                        else{
+                            key_from_memo=public_key_type(o.memo);
+                            const auto& meta = _db.get<account_metadata_object, by_account>(to_account.name);
+                            anonymous_num=std::stoi(meta.json_metadata.c_str());
+                            anonymous_num++;
+                            store_account_json_metadata(_db, CHAIN_ANONYMOUS_ACCOUNT,fc::to_string(anonymous_num));
+                            new_account_name="n" + fc::to_string(anonymous_num) + "." + CHAIN_ANONYMOUS_ACCOUNT;
+                        }
+                    }
+                    else{
+                        key_from_memo=public_key_type(o.memo);
+                        const auto& meta = _db.get<account_metadata_object, by_account>(to_account.name);
+                        anonymous_num=std::stoi(meta.json_metadata.c_str());
+                        anonymous_num++;
+                        store_account_json_metadata(_db, CHAIN_ANONYMOUS_ACCOUNT,fc::to_string(anonymous_num));
+                        new_account_name="n" + fc::to_string(anonymous_num) + "." + CHAIN_ANONYMOUS_ACCOUNT;
+                    }
                     const auto now = _db.head_block_time();
-                    account_name_type new_account_name="n" + fc::to_string(anonymous_num) + "." + CHAIN_ANONYMOUS_ACCOUNT;
 
                     _db.create<account_object>([&](account_object &acc) {
                         acc.name = new_account_name;

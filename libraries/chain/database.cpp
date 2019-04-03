@@ -3595,6 +3595,9 @@ namespace graphene { namespace chain {
             _hardfork_times[CHAIN_HARDFORK_5] = fc::time_point_sec(CHAIN_HARDFORK_5_TIME);
             _hardfork_versions[CHAIN_HARDFORK_5] = CHAIN_HARDFORK_5_VERSION;
 
+            _hardfork_times[CHAIN_HARDFORK_6] = fc::time_point_sec(CHAIN_HARDFORK_6_TIME);
+            _hardfork_versions[CHAIN_HARDFORK_6] = CHAIN_HARDFORK_6_VERSION;
+
             const auto &hardforks = get_hardfork_property_object();
             FC_ASSERT(
                 hardforks.last_hardfork <= CHAIN_NUM_HARDFORKS,
@@ -3803,6 +3806,10 @@ namespace graphene { namespace chain {
 
                         adjust_witness_vote(get(witr->witness), fair_weight);
                     }
+                }
+                case CHAIN_HARDFORK_6:
+                {
+                    //recalc shares to change ratio with VIZ token 1:1
                 }
                 default:
                     break;
