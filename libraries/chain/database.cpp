@@ -3809,7 +3809,118 @@ namespace graphene { namespace chain {
                 }
                 case CHAIN_HARDFORK_6:
                 {
+                    const auto &props = get_dynamic_global_properties();
                     //recalc shares to change ratio with VIZ token 1:1
+                    auto old_price=props.get_vesting_share_price();
+                    price new_price(asset(1000, TOKEN_SYMBOL), asset(1000000, SHARES_SYMBOL));
+                    asset new_total_vesting_shares(0, SHARES_SYMBOL);
+
+                    const auto &eidx = get_index<account_index>().indices().get<by_id>();
+                    for (auto itr = eidx.begin(); itr != eidx.end(); ++itr) {
+                        elog("HF6 account shares recalc ${a}:", ("a", itr->name));
+                        elog(" - old vesting_shares: ${a}", ("a", itr->vesting_shares.amount));
+                        if(itr->proxy != CHAIN_PROXY_TO_SELF_ACCOUNT){
+                            elog("- proxy found: ${a}", ("a", itr->proxy));
+                            std::array<share_type, CHAIN_MAX_PROXY_RECURSION_DEPTH + 1> delta;
+                            delta[0] = -(itr->vesting_shares.amount);
+                            for (int i = 0; i < CHAIN_MAX_PROXY_RECURSION_DEPTH; ++i) {
+                                delta[i + 1] = -(itr->proxied_vsf_votes[i]);
+                            }
+                            adjust_proxied_witness_votes(get_account(itr->name), delta);
+                        }
+
+                        auto old_shares=itr->vesting_shares;
+                        auto tokens=old_shares*old_price;
+                        auto new_shares=tokens*new_price;
+                        new_total_vesting_shares+=new_shares;
+
+                        auto old_withdraw_rate=itr->vesting_withdraw_rate;
+                        auto withdraw_tokens=old_withdraw_rate*old_price;
+                        auto new_withdraw_rate=withdraw_tokens*new_price;
+
+                        modify(*itr, [&](account_object &a) {
+                            a.vesting_shares = new_shares;
+                            a.vesting_withdraw_rate = new_withdraw_rate;
+                            a.delegated_vesting_shares = asset(0, SHARES_SYMBOL);
+                            a.received_vesting_shares = asset(0, SHARES_SYMBOL);
+                        });
+
+                        elog(" - new vesting_shares: ${a}", ("a", itr->vesting_shares.amount));
+                        if(itr->proxy != CHAIN_PROXY_TO_SELF_ACCOUNT){
+                            elog("- proxy votes updated: ${a}", ("a", itr->proxy));
+                            std::array<share_type, CHAIN_MAX_PROXY_RECURSION_DEPTH + 1> delta;
+                            delta[0] = itr->vesting_shares.amount;
+                            for (int i = 0; i < CHAIN_MAX_PROXY_RECURSION_DEPTH; ++i) {
+                                delta[i + 1] = itr->proxied_vsf_votes[i];
+                            }
+                            adjust_proxied_witness_votes(get_account(itr->name), delta);
+                        }
+                    }
+
+                    elog("New total_vesting_shares: ${a}", ("a", new_total_vesting_shares.amount));
+                    modify(props, [&](dynamic_global_property_object &p) {
+                        p.total_vesting_shares = new_total_vesting_shares;
+                    });
+
+                    //recalc delegations
+                    const auto& delegations = get_index<vesting_delegation_index>().indices().get<by_id>();
+                    for (auto itr = delegations.begin();
+                         itr != delegations.end();
+                         ++itr) {
+                        auto old_delegation_shares=itr->vesting_shares;
+                        auto old_delegation_tokens=old_delegation_shares*old_price;
+                        auto new_delegation_shares=old_delegation_tokens*new_price;
+                        modify(*itr, [&](vesting_delegation_object &a) {
+                            a.vesting_shares = new_delegation_shares;
+                        });
+                        modify(get_account(itr->delegator), [&](account_object& a) {
+                            a.delegated_vesting_shares += new_delegation_shares;
+                        });
+                        modify(get_account(itr->delegatee), [&](account_object& a) {
+                            a.received_vesting_shares += new_delegation_shares;
+                        });
+                    }
+
+                    //recalc expiring delegations
+                    const auto& delegations_by_exp = get_index<vesting_delegation_expiration_index>().indices().get<by_id>();
+                    for (auto itr = delegations_by_exp.begin();
+                         itr != delegations_by_exp.end();
+                         ++itr) {
+                        auto old_delegation_shares=itr->vesting_shares;
+                        auto old_delegation_tokens=old_delegation_shares*old_price;
+                        auto new_delegation_shares=old_delegation_tokens*new_price;
+                        modify(*itr, [&](vesting_delegation_expiration_object &a) {
+                            a.vesting_shares = new_delegation_shares;
+                        });
+                        modify(get_account(itr->delegator), [&](account_object& a) {
+                            a.delegated_vesting_shares += new_delegation_shares;
+                        });
+                    }
+
+                    //clear votes for each witness
+                    const auto &widx = get_index<witness_index>().indices().get<by_id>();
+                    for (auto itr = widx.begin();
+                         itr != widx.end();
+                         ++itr) {
+                        modify(*itr, [&](witness_object &w) {
+                            elog("HF6 witness ${a} has votes: ${n}", ("a", w.owner)("n", w.votes));
+                            w.votes = 0;
+                        });
+                    }
+                    //recalc witness votes after shares ratio fix
+                    const auto &widx2 = get_index<witness_vote_index>().indices();
+                    for(auto witr = widx2.begin(); witr != widx2.end(); ++witr) {
+                        const auto &voter = get(witr->account);
+                        const auto &witness = get(witr->witness);
+
+                        share_type fair_weight=voter.witness_vote_fair_weight();
+                        modify(voter, [&](account_object &a) {
+                            a.witnesses_vote_weight = fair_weight;
+                        });
+                        elog("HF6 witness ${a} recalc votes from ${a}: ${n}", ("a", witness.owner)("n", fair_weight));
+
+                        adjust_witness_vote(get(witr->witness), fair_weight);
+                    }
                 }
                 default:
                     break;

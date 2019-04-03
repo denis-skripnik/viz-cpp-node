@@ -60,7 +60,7 @@ public:
     asset delegated_vesting_shares = asset(0, SHARES_SYMBOL); ///<
     asset received_vesting_shares = asset(0, SHARES_SYMBOL); ///<
 
-    asset vesting_withdraw_rate = asset(0, SHARES_SYMBOL); ///< at the time this is updated it can be at most vesting_shares/104
+    asset vesting_withdraw_rate = asset(0, SHARES_SYMBOL); ///< at the time this is updated it can be at most vesting_shares/CHAIN_VESTING_WITHDRAW_INTERVALS
     time_point_sec next_vesting_withdrawal = fc::time_point_sec::maximum(); ///< after every withdrawal this is incremented by 1 week
     share_type withdrawn = 0; /// Track how many shares have been withdrawn
     share_type to_withdraw = 0; /// Might be able to look this up with operation history.
