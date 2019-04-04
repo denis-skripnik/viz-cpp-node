@@ -25,7 +25,7 @@ namespace graphene { namespace protocol {
             FC_ASSERT(is_valid_account_name(name), "Account name ${n} is invalid", ("n", name));
         }
 
-        inline void validate_account_json_metadata(const string& json_metadata) {
+        inline void validate_json_metadata(const string& json_metadata) {
             if (json_metadata.size() > 0) {
                 FC_ASSERT(fc::is_utf8(json_metadata), "JSON Metadata not formatted in UTF8");
                 FC_ASSERT(fc::json::is_valid(json_metadata), "JSON Metadata not valid JSON");
@@ -48,7 +48,7 @@ namespace graphene { namespace protocol {
             master.validate();
             active.validate();
             regular.validate();
-            validate_account_json_metadata(json_metadata);
+            validate_json_metadata(json_metadata);
         }
 
         void account_update_operation::validate() const {
@@ -59,13 +59,13 @@ namespace graphene { namespace protocol {
                active->validate();
             if( regular )
                regular->validate();*/
-            validate_account_json_metadata(json_metadata);
+            validate_json_metadata(json_metadata);
         }
 
         void account_metadata_operation::validate() const {
             validate_account_name(account);
             FC_ASSERT(json_metadata.size() > 0, "json_metadata can't be empty");
-            validate_account_json_metadata(json_metadata);
+            validate_json_metadata(json_metadata);
         }
 
         struct content_extension_validate_visitor {
@@ -242,10 +242,7 @@ namespace graphene { namespace protocol {
                       TOKEN_SYMBOL, "amount must be TOKEN_SYMBOL");
             FC_ASSERT(ratification_deadline <
                       escrow_expiration, "ratification deadline must be before escrow expiration");
-            if (json_meta.size() > 0) {
-                FC_ASSERT(fc::is_utf8(json_meta), "JSON Metadata not formatted in UTF8");
-                FC_ASSERT(fc::json::is_valid(json_meta), "JSON Metadata not valid JSON");
-            }
+            validate_json_metadata(json_metadata);
         }
 
         void escrow_approve_operation::validate() const {

@@ -200,7 +200,7 @@ namespace graphene { namespace protocol {
             time_point_sec ratification_deadline;
             time_point_sec escrow_expiration;
 
-            string json_meta;
+            string json_metadata;
 
             void validate() const;
 
@@ -344,6 +344,7 @@ namespace graphene { namespace protocol {
         };
 
         struct chain_properties_hf4;
+        struct chain_properties_hf6;
 
         /**
          * Witnesses must vote on how to set certain chain properties to ensure a smooth
@@ -434,6 +435,7 @@ namespace graphene { namespace protocol {
 
             chain_properties_init& operator=(const chain_properties_init&) = default;
             chain_properties_init& operator=(const chain_properties_hf4& src);
+            chain_properties_init& operator=(const chain_properties_hf6& src);
         };
 
         struct chain_properties_hf4: public chain_properties_init {
@@ -470,7 +472,61 @@ namespace graphene { namespace protocol {
             chain_properties_hf4& operator=(const chain_properties_hf4&) = default;
         };
 
+        struct chain_properties_hf6: public chain_properties_hf4 {
+            /**
+             *  Consensus - Operations with raw data can cost additional bandwidth (in percent ratio)
+             */
+            uint32_t data_operations_cost_additional_bandwidth = CONSENSUS_DATA_OPERATIONS_COST_ADDITIONAL_BANDWIDTH;
+
+            /**
+             *  Consensus - Witness who missed the block will receive a penality of a percentage of the votes
+             */
+            int16_t witness_miss_penalty_percent = CONSENSUS_WITNESS_MISS_PENALTY_PERCENT;
+
+            /**
+             *  Consensus - Witness who missed the block will receive a penality with duration (in seconds)
+             */
+            uint32_t witness_miss_penalty_duration = CONSENSUS_WITNESS_MISS_PENALTY_DURATION;
+
+            void validate() const {
+                chain_properties_hf4::validate();
+                FC_ASSERT(data_operations_cost_additional_bandwidth >= 0);
+                FC_ASSERT(witness_miss_penalty_percent >= 0);
+                FC_ASSERT(witness_miss_penalty_percent <= CHAIN_100_PERCENT);
+                FC_ASSERT(witness_miss_penalty_duration >= 0);
+                FC_ASSERT(witness_miss_penalty_duration <= (CHAIN_BLOCKS_PER_YEAR * CHAIN_BLOCK_INTERVAL));
+            }
+
+            chain_properties_hf6& operator=(const chain_properties_init& src) {
+                chain_properties_init::operator=(src);
+                return *this;
+            }
+
+            chain_properties_hf6& operator=(const chain_properties_hf4& src) {
+                chain_properties_hf4::operator=(src);
+                return *this;
+            }
+
+            chain_properties_hf6& operator=(const chain_properties_hf6&) = default;
+        };
+
         inline chain_properties_init& chain_properties_init::operator=(const chain_properties_hf4& src) {
+            account_creation_fee = src.account_creation_fee;
+            maximum_block_size = src.maximum_block_size;
+            create_account_delegation_ratio = src.create_account_delegation_ratio;
+            create_account_delegation_time = src.create_account_delegation_time;
+            min_delegation = src.min_delegation;
+            max_curation_percent = src.max_curation_percent;
+            min_curation_percent = src.min_curation_percent;
+            bandwidth_reserve_percent = src.bandwidth_reserve_percent;
+            bandwidth_reserve_below = src.bandwidth_reserve_below;
+            flag_energy_additional_cost = src.flag_energy_additional_cost;
+            vote_accounting_min_rshares = src.vote_accounting_min_rshares;
+            committee_request_approve_min_percent = src.committee_request_approve_min_percent;
+            return *this;
+        }
+
+        inline chain_properties_init& chain_properties_init::operator=(const chain_properties_hf6& src) {
             account_creation_fee = src.account_creation_fee;
             maximum_block_size = src.maximum_block_size;
             create_account_delegation_ratio = src.create_account_delegation_ratio;
@@ -488,7 +544,8 @@ namespace graphene { namespace protocol {
 
         using versioned_chain_properties = fc::static_variant<
             chain_properties_init,
-            chain_properties_hf4
+            chain_properties_hf4,
+            chain_properties_hf6
         >;
 
         /**
@@ -892,6 +949,9 @@ FC_REFLECT(
 FC_REFLECT_DERIVED(
     (graphene::protocol::chain_properties_hf4),((graphene::protocol::chain_properties_init)),
     (inflation_witness_percent)(inflation_ratio_committee_vs_reward_fund)(inflation_recalc_period))
+FC_REFLECT_DERIVED(
+    (graphene::protocol::chain_properties_hf6),((graphene::protocol::chain_properties_hf4)),
+    (data_operations_cost_additional_bandwidth)(witness_miss_penalty_percent)(witness_miss_penalty_duration))
 
 FC_REFLECT_TYPENAME((graphene::protocol::versioned_chain_properties))
 
@@ -925,7 +985,7 @@ FC_REFLECT((graphene::protocol::beneficiary_route_type), (account)(weight))
 FC_REFLECT((graphene::protocol::content_payout_beneficiaries), (beneficiaries));
 FC_REFLECT_TYPENAME((graphene::protocol::content_extension));
 
-FC_REFLECT((graphene::protocol::escrow_transfer_operation), (from)(to)(token_amount)(escrow_id)(agent)(fee)(json_meta)(ratification_deadline)(escrow_expiration));
+FC_REFLECT((graphene::protocol::escrow_transfer_operation), (from)(to)(token_amount)(escrow_id)(agent)(fee)(json_metadata)(ratification_deadline)(escrow_expiration));
 FC_REFLECT((graphene::protocol::escrow_approve_operation), (from)(to)(agent)(who)(escrow_id)(approve));
 FC_REFLECT((graphene::protocol::escrow_dispute_operation), (from)(to)(agent)(who)(escrow_id));
 FC_REFLECT((graphene::protocol::escrow_release_operation), (from)(to)(agent)(who)(receiver)(escrow_id)(token_amount));

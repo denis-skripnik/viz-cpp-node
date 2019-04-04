@@ -29,6 +29,10 @@ namespace graphene { namespace api {
         fc::optional<int16_t> inflation_witness_percent;
         fc::optional<int16_t> inflation_ratio_committee_vs_reward_fund;
         fc::optional<uint32_t> inflation_recalc_period;
+
+        fc::optional<uint32_t> data_operations_cost_additional_bandwidth;
+        fc::optional<int16_t> witness_miss_penalty_percent;
+        fc::optional<uint32_t> witness_miss_penalty_duration;
     };
 
 } } // graphene::api
@@ -39,4 +43,5 @@ FC_REFLECT(
     (create_account_delegation_ratio)(create_account_delegation_time)(min_delegation)
     (min_curation_percent)(max_curation_percent)(bandwidth_reserve_percent)(bandwidth_reserve_below)
     (flag_energy_additional_cost)(vote_accounting_min_rshares)(committee_request_approve_min_percent)
-    (inflation_witness_percent)(inflation_ratio_committee_vs_reward_fund)(inflation_recalc_period))
+    (inflation_witness_percent)(inflation_ratio_committee_vs_reward_fund)(inflation_recalc_period)
+    (data_operations_cost_additional_bandwidth)(witness_miss_penalty_percent)(witness_miss_penalty_duration))

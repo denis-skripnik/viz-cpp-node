@@ -17,7 +17,7 @@ namespace graphene { namespace chain {
     using graphene::protocol::asset;
     using graphene::protocol::asset_symbol_type;
 
-    using chain_properties = graphene::protocol::chain_properties_hf4;
+    using chain_properties = graphene::protocol::chain_properties_hf6;
 
     /**
      *  All witnesses with at least 1% net positive approval and

@@ -238,7 +238,7 @@ namespace mongo_db {
 
         format_value(body, "token_amount ", op.token_amount);
         format_value(body, "fee", op.fee);
-        format_value(body, "json_meta", op.json_meta);
+        format_value(body, "json_metadata", op.json_metadata);
 
         return body;
     }

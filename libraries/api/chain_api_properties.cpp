@@ -18,11 +18,16 @@ namespace graphene { namespace api {
         vote_accounting_min_rshares(src.vote_accounting_min_rshares),
         committee_request_approve_min_percent(src.committee_request_approve_min_percent)
     {
-    	if (db.has_hardfork(CHAIN_HARDFORK_4)) {
-	        inflation_witness_percent=src.inflation_witness_percent;
-	        inflation_ratio_committee_vs_reward_fund=src.inflation_ratio_committee_vs_reward_fund;
-	        inflation_recalc_period=src.inflation_recalc_period;
-	    }
+        if (db.has_hardfork(CHAIN_HARDFORK_4)) {
+            inflation_witness_percent=src.inflation_witness_percent;
+            inflation_ratio_committee_vs_reward_fund=src.inflation_ratio_committee_vs_reward_fund;
+            inflation_recalc_period=src.inflation_recalc_period;
+        }
+        if (db.has_hardfork(CHAIN_HARDFORK_6)) {
+            data_operations_cost_additional_bandwidth=src.data_operations_cost_additional_bandwidth;
+            witness_miss_penalty_percent=src.witness_miss_penalty_percent;
+            witness_miss_penalty_duration=src.witness_miss_penalty_duration;
+        }
     }
 
 } } // graphene::api

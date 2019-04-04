@@ -1690,7 +1690,7 @@ namespace graphene { namespace chain {
                 active.push_back(&get_witness(wso.current_shuffled_witnesses[i]));
             }
 
-            chain_properties_hf4 median_props;
+            chain_properties_hf6 median_props;
             auto median = active.size() / 2;
 
             auto calc_median = [&](auto&& param) {
@@ -1721,6 +1721,11 @@ namespace graphene { namespace chain {
                 calc_median(&chain_properties_hf4::inflation_witness_percent);
                 calc_median(&chain_properties_hf4::inflation_ratio_committee_vs_reward_fund);
                 calc_median(&chain_properties_hf4::inflation_recalc_period);
+            }
+            if(has_hardfork(CHAIN_HARDFORK_6)){
+                calc_median(&chain_properties_hf6::data_operations_cost_additional_bandwidth);
+                calc_median(&chain_properties_hf6::witness_miss_penalty_percent);
+                calc_median(&chain_properties_hf6::witness_miss_penalty_duration);
             }
 
             modify(wso, [&](witness_schedule_object &_wso) {
@@ -3254,9 +3259,18 @@ namespace graphene { namespace chain {
 
                 auto trx_size = fc::raw::pack_size(trx);
 
+                const witness_schedule_object &consensus = get_witness_schedule_object();
+
                 for (const auto& auth : required) {
                     const auto& acnt = get_account(auth);
                     update_account_bandwidth(acnt, trx_size);
+                    if(has_hardfork(CHAIN_HARDFORK_6)){
+                        for (const auto& op : trx.operations) {
+                            if (is_data_operation(op)) {
+                                 update_account_bandwidth(acnt, uint32_t(trx_size * consensus.median_props.data_operations_cost_additional_bandwidth / CHAIN_100_PERCENT));
+                            }
+                        }
+                    }
                 }
 
                 //Insert transaction into unique transactions database.

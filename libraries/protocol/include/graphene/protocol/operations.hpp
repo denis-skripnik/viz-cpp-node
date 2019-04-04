@@ -92,6 +92,7 @@ namespace graphene { namespace protocol {
         void operation_validate( const operation& op );*/
 
         bool is_virtual_operation(const operation &op);
+        bool is_data_operation(const operation &op);
 
         struct operation_wrapper {
             operation_wrapper(const operation& op = operation()) : op(op) {}
