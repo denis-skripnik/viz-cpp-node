@@ -1261,7 +1261,7 @@ fc::ecc::private_key wallet_api::derive_private_key(const std::string& prefix_st
  */
         annotated_signed_transaction wallet_api::create_account(
             string creator, asset tokens_fee, asset delegated_vests, string new_account_name,
-            string json_meta, bool broadcast
+            string json_metadata, bool broadcast
         ) {
             try {
                 FC_ASSERT(!is_locked());
@@ -1274,10 +1274,10 @@ fc::ecc::private_key wallet_api::derive_private_key(const std::string& prefix_st
                 import_key(regular.wif_priv_key);
                 import_key(memo.wif_priv_key);
                 return create_account_with_keys(
-                    creator, tokens_fee, delegated_vests, new_account_name, json_meta,
+                    creator, tokens_fee, delegated_vests, new_account_name, json_metadata,
                     master.pub_key, active.pub_key, regular.pub_key, memo.pub_key, broadcast);
             }
-            FC_CAPTURE_AND_RETHROW((creator)(new_account_name)(json_meta));
+            FC_CAPTURE_AND_RETHROW((creator)(new_account_name)(json_metadata));
         }
 /**
  * This method is used by faucets to create new accounts for other users which must
@@ -1289,7 +1289,7 @@ fc::ecc::private_key wallet_api::derive_private_key(const std::string& prefix_st
             asset tokens_fee,
             asset delegated_vests,
             string new_account_name,
-            string json_meta,
+            string json_metadata,
             public_key_type master,
             public_key_type active,
             public_key_type regular,
@@ -1305,7 +1305,7 @@ fc::ecc::private_key wallet_api::derive_private_key(const std::string& prefix_st
                 op.active = authority(1, active, 1);
                 op.regular = authority(1, regular, 1);
                 op.memo_key = memo;
-                op.json_metadata = json_meta;
+                op.json_metadata = json_metadata;
                 op.fee = tokens_fee;
                 op.delegation = delegated_vests;
 
@@ -1314,7 +1314,7 @@ fc::ecc::private_key wallet_api::derive_private_key(const std::string& prefix_st
                 tx.validate();
                 return my->sign_transaction(tx, broadcast);
             }
-            FC_CAPTURE_AND_RETHROW((creator)(new_account_name)(json_meta)(master)(active)(regular)(memo)(broadcast));
+            FC_CAPTURE_AND_RETHROW((creator)(new_account_name)(json_metadata)(master)(active)(regular)(memo)(broadcast));
         }
 
 /**
@@ -1372,7 +1372,7 @@ fc::ecc::private_key wallet_api::derive_private_key(const std::string& prefix_st
 
         annotated_signed_transaction wallet_api::update_account(
                 string account_name,
-                string json_meta,
+                string json_metadata,
                 public_key_type master,
                 public_key_type active,
                 public_key_type regular,
@@ -1389,7 +1389,7 @@ fc::ecc::private_key wallet_api::derive_private_key(const std::string& prefix_st
                 op.active = authority( 1, active, 1);
                 op.regular = authority( 1, regular, 1);
                 op.memo_key = memo;
-                op.json_metadata = json_meta;
+                op.json_metadata = json_metadata;
 
                 signed_transaction tx;
                 tx.operations.push_back(op);
@@ -1397,7 +1397,7 @@ fc::ecc::private_key wallet_api::derive_private_key(const std::string& prefix_st
 
                 return my->sign_transaction( tx, broadcast );
             }
-            FC_CAPTURE_AND_RETHROW( (account_name)(json_meta)(master)(active)(memo)(broadcast) )
+            FC_CAPTURE_AND_RETHROW( (account_name)(json_metadata)(master)(active)(memo)(broadcast) )
         }
 
         annotated_signed_transaction wallet_api::update_account_auth_key( string account_name, authority_type type, public_key_type key, weight_type weight, bool broadcast )
@@ -1592,7 +1592,7 @@ fc::ecc::private_key wallet_api::derive_private_key(const std::string& prefix_st
             return my->sign_transaction( tx, broadcast );
         }
 
-        annotated_signed_transaction wallet_api::update_account_meta(string account_name, string json_meta, bool broadcast) {
+        annotated_signed_transaction wallet_api::update_account_meta(string account_name, string json_metadata, bool broadcast) {
             FC_ASSERT(!is_locked());
             auto accounts = my->_remote_database_api->get_accounts({account_name});
             FC_ASSERT(accounts.size() == 1, "Account does not exist");
@@ -1601,7 +1601,7 @@ fc::ecc::private_key wallet_api::derive_private_key(const std::string& prefix_st
             signed_transaction tx;
             account_metadata_operation op;
             op.account = account_name;
-            op.json_metadata = json_meta;
+            op.json_metadata = json_metadata;
             tx.operations.push_back(op);
             tx.validate();
             return my->sign_transaction(tx, broadcast);
@@ -1689,6 +1689,25 @@ fc::ecc::private_key wallet_api::derive_private_key(const std::string& prefix_st
 
             signed_transaction tx;
             chain_properties_update_operation op;
+
+            op.owner = witness_account_name;
+            op.props = props;
+            tx.operations.push_back(op);
+
+            tx.validate();
+
+            return my->sign_transaction(tx, broadcast);
+        }
+
+        annotated_signed_transaction wallet_api::versioned_update_chain_properties(
+            string witness_account_name,
+            const chain_properties& props,
+            bool broadcast
+        ) {
+            FC_ASSERT(!is_locked());
+
+            signed_transaction tx;
+            versioned_chain_properties_update_operation op;
 
             op.owner = witness_account_name;
             op.props = props;
@@ -1825,7 +1844,7 @@ fc::ecc::private_key wallet_api::derive_private_key(const std::string& prefix_st
                 asset fee,
                 time_point_sec ratification_deadline,
                 time_point_sec escrow_expiration,
-                string json_meta,
+                string json_metadata,
                 bool broadcast
         )
         {
@@ -1839,7 +1858,7 @@ fc::ecc::private_key wallet_api::derive_private_key(const std::string& prefix_st
             op.fee = fee;
             op.ratification_deadline = ratification_deadline;
             op.escrow_expiration = escrow_expiration;
-            op.json_meta = json_meta;
+            op.json_metadata = json_metadata;
 
             signed_transaction tx;
             tx.operations.push_back( op );

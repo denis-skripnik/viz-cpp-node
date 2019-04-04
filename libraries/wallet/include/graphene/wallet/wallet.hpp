@@ -435,11 +435,11 @@ namespace graphene { namespace wallet {
              *  @param tokens_fee The amount of the fee to be paid with TOKEN
              *  @param delegated_vests The amount of the fee to be paid with delegation
              *  @param new_account_name The name of the new account
-             *  @param json_meta JSON Metadata associated with the new account
+             *  @param json_metadata JSON Metadata associated with the new account
              *  @param broadcast true if you wish to broadcast the transaction
              */
             annotated_signed_transaction create_account(
-                string creator, asset tokens_fee, asset delegated_vests, string new_account_name, string json_meta, bool broadcast);
+                string creator, asset tokens_fee, asset delegated_vests, string new_account_name, string json_metadata, bool broadcast);
 
             /**
              * This method is used by faucets to create new accounts for other users which must
@@ -453,7 +453,7 @@ namespace graphene { namespace wallet {
              * @param tokens_fee The amount of the fee to be paid with TOKEN
              * @param delegated_vests The amount of the fee to be paid with delegation
              * @param newname The name of the new account
-             * @param json_meta JSON Metadata associated with the new account
+             * @param json_metadata JSON Metadata associated with the new account
              * @param master public master key of the new account
              * @param active public active key of the new account
              * @param regular public regular key of the new account
@@ -465,7 +465,7 @@ namespace graphene { namespace wallet {
                 asset tokens_fee,
                 asset delegated_vests,
                 string newname,
-                string json_meta,
+                string json_metadata,
                 public_key_type master,
                 public_key_type active,
                 public_key_type regular,
@@ -476,7 +476,7 @@ namespace graphene { namespace wallet {
              * This method updates the keys of an existing account.
              *
              * @param accountname The name of the account
-             * @param json_meta New JSON Metadata to be associated with the account
+             * @param json_metadata New JSON Metadata to be associated with the account
              * @param master New public master key for the account
              * @param active New public active key for the account
              * @param regular New public regular key for the account
@@ -484,7 +484,7 @@ namespace graphene { namespace wallet {
              * @param broadcast true if you wish to broadcast the transaction
              */
             annotated_signed_transaction update_account( string accountname,
-                                                         string json_meta,
+                                                         string json_metadata,
                                                          public_key_type master,
                                                          public_key_type active,
                                                          public_key_type regular,
@@ -537,10 +537,10 @@ namespace graphene { namespace wallet {
              * This method updates the account JSON metadata
              *
              * @param account_name The name of the account you wish to update
-             * @param json_meta The new JSON metadata for the account. This overrides existing metadata
+             * @param json_metadata The new JSON metadata for the account. This overrides existing metadata
              * @param broadcast ture if you wish to broadcast the transaction
              */
-            annotated_signed_transaction update_account_meta(string account_name, string json_meta, bool broadcast);
+            annotated_signed_transaction update_account_meta(string account_name, string json_metadata, bool broadcast);
 
             /**
              * This method updates the memo key of an account
@@ -616,6 +616,19 @@ namespace graphene { namespace wallet {
                 bool broadcast = false
             );
 
+            /**
+             * Vote for the versioned chain properties
+             *
+             * @param witness_name The name of the witness account.
+             * @param props The chain properties the witness is voting on.
+             * @param broadcast true if you wish to broadcast the transaction.
+             */
+            annotated_signed_transaction versioned_update_chain_properties(
+                string witness_name,
+                const chain_properties& props,
+                bool broadcast = false
+            );
+
             /** Set the voting proxy for an account.
              *
              * If a user does not wish to take an active part in voting, they can choose
@@ -673,7 +686,7 @@ namespace graphene { namespace wallet {
              * @param fee The fee paid to the agent
              * @param ratification_deadline The deadline for 'to' and 'agent' to approve the escrow transfer
              * @param escrow_expiration The expiration of the escrow transfer, after which either party can claim the funds
-             * @param json_meta JSON encoded meta data
+             * @param json_metadata JSON encoded meta data
              * @param broadcast true if you wish to broadcast the transaction
              */
             annotated_signed_transaction escrow_transfer(
@@ -685,7 +698,7 @@ namespace graphene { namespace wallet {
                     asset fee,
                     time_point_sec ratification_deadline,
                     time_point_sec escrow_expiration,
-                    string json_meta,
+                    string json_metadata,
                     bool broadcast = false
             );
 
@@ -1001,6 +1014,7 @@ FC_API( graphene::wallet::wallet_api,
                 (delegate_vesting_shares)
                 (update_witness)
                 (update_chain_properties)
+                (versioned_update_chain_properties)
                 (set_voting_proxy)
                 (vote_for_witness)
                 //(follow)
