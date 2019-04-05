@@ -1482,6 +1482,25 @@ namespace graphene { namespace chain {
 
         void database::update_witness_schedule() {
             if ((head_block_num() % ( CHAIN_MAX_WITNESSES * CHAIN_BLOCK_WITNESS_REPEAT ) ) != 0) return;
+
+            if(has_hardfork(CHAIN_HARDFORK_6)){//remove expired witness penalty
+                const auto &idx = get_index<witness_penalty_expire_index>().indices().get<by_expiration>();
+                auto itr = idx.begin();
+
+                while(itr != idx.end()) {
+                    const auto &current = *itr;
+                    ++itr;
+                    if(current.expires <= head_block_time()){
+                        const auto &witness_obj = get_witness(current.witness);
+                        modify(witness_obj, [&](witness_object &w) {
+                            w.penalty_percent-=current.penalty_percent;
+                            w.counted_votes=(fc::uint128_t(w.votes) - (fc::uint128_t(w.votes.value) * w.penalty_percent / CHAIN_100_PERCENT )).to_uint64();
+                        });
+                        remove(current);
+                    }
+                }
+            }
+
             vector<account_name_type> active_witnesses;
             active_witnesses.reserve(CHAIN_MAX_WITNESSES);
 
@@ -1492,7 +1511,7 @@ namespace graphene { namespace chain {
             flat_set<witness_id_type> selected_voted;
             selected_voted.reserve(CHAIN_MAX_TOP_WITNESSES);
 
-            const auto &widx = get_index<witness_index>().indices().get<by_vote_name>();
+            const auto &widx = get_index<witness_index>().indices().get<by_counted_vote_name>();
             for (auto itr = widx.begin();
                  itr != widx.end() &&
                  selected_voted.size() < CHAIN_MAX_TOP_WITNESSES;
@@ -1535,7 +1554,7 @@ namespace graphene { namespace chain {
                  itr != processed_witnesses.end(); ++itr) {
                 auto new_virtual_scheduled_time = new_virtual_time +
                                                   VIRTUAL_SCHEDULE_LAP_LENGTH2 /
-                                                  ((*itr)->votes.value + 1);
+                                                  ((*itr)->counted_votes.value + 1);
                 if (new_virtual_scheduled_time < new_virtual_time) {
                     reset_virtual_time = true; /// overflow
                     break;
@@ -1827,13 +1846,16 @@ namespace graphene { namespace chain {
                         w.votes = 0;
                     }
                 }
+
+                w.counted_votes=(fc::uint128_t(w.votes) - (fc::uint128_t(w.votes.value) * w.penalty_percent / CHAIN_100_PERCENT )).to_uint64();
+
                 FC_ASSERT(w.votes <=
                           get_dynamic_global_properties().total_vesting_shares.amount, "", ("w.votes", w.votes)("props", get_dynamic_global_properties().total_vesting_shares));
 
                 w.virtual_scheduled_time = w.virtual_last_update +
                                            (VIRTUAL_SCHEDULE_LAP_LENGTH2 -
                                             w.virtual_position) /
-                                           (w.votes.value + 1);
+                                           (w.counted_votes.value + 1);
 
                 /** witnesses with a low number of votes could overflow the time field and end up with a scheduled time in the past */
                 if (w.virtual_scheduled_time < wso.current_virtual_time) {
@@ -3346,6 +3368,7 @@ namespace graphene { namespace chain {
                 auto block_size = fc::raw::pack_size(b);
                 const dynamic_global_property_object &_dgp =
                         get_dynamic_global_properties();
+                const witness_schedule_object &consensus = get_witness_schedule_object();
 
                 uint32_t missed_blocks = 0;
                 if (head_block_time() != fc::time_point_sec()) {
@@ -3365,6 +3388,18 @@ namespace graphene { namespace chain {
                                     // increase for any blocks they missed in the gap.
                                     // Also, this prevents initminer from having a large total_missed.
                                     w.total_missed++;
+
+                                    if(has_hardfork(CHAIN_HARDFORK_6)){// Consensus counted votes penalty to witness for block missing
+                                        w.penalty_percent+=consensus.median_props.witness_miss_penalty_percent;
+                                        w.counted_votes=(fc::uint128_t(w.votes) - (fc::uint128_t(w.votes.value) * w.penalty_percent / CHAIN_100_PERCENT )).to_uint64();
+
+                                        create<witness_penalty_expire_object>([&](witness_penalty_expire_object& wpe) {
+                                            wpe.witness = witness_missed.owner;
+                                            wpe.penalty_percent = consensus.median_props.witness_miss_penalty_percent;
+                                            wpe.expires = head_block_time() + fc::seconds(consensus.median_props.witness_miss_penalty_duration);
+                                        });
+                                    }
+
                                     if (head_block_num() -
                                         w.last_confirmed_block_num >
                                         CHAIN_MAX_WITNESS_MISSED_BLOCKS) {
@@ -3636,7 +3671,7 @@ namespace graphene { namespace chain {
                     wobj.virtual_position = fc::uint128_t();
                     wobj.virtual_last_update = wso.current_virtual_time;
                     wobj.virtual_scheduled_time = VIRTUAL_SCHEDULE_LAP_LENGTH2 /
-                                                  (wobj.votes.value + 1);
+                                                  (wobj.counted_votes.value + 1);
                 });
             }
         }
