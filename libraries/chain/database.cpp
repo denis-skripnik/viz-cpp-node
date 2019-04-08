@@ -1494,7 +1494,7 @@ namespace graphene { namespace chain {
                         const auto &witness_obj = get_witness(current.witness);
                         modify(witness_obj, [&](witness_object &w) {
                             w.penalty_percent-=current.penalty_percent;
-                            w.counted_votes=(fc::uint128_t(w.votes) - (fc::uint128_t(w.votes.value) * w.penalty_percent / CHAIN_100_PERCENT )).to_uint64();
+                            w.counted_votes=(fc::uint128_t(w.votes) - (fc::uint128_t(w.votes.value) * std::min(w.penalty_percent,int16_t(CHAIN_100_PERCENT)) / CHAIN_100_PERCENT )).to_uint64();
                         });
                         remove(current);
                     }
@@ -1847,7 +1847,7 @@ namespace graphene { namespace chain {
                     }
                 }
 
-                w.counted_votes=(fc::uint128_t(w.votes) - (fc::uint128_t(w.votes.value) * w.penalty_percent / CHAIN_100_PERCENT )).to_uint64();
+                w.counted_votes=(fc::uint128_t(w.votes) - (fc::uint128_t(w.votes.value) * std::min(w.penalty_percent,int16_t(CHAIN_100_PERCENT)) / CHAIN_100_PERCENT )).to_uint64();
 
                 FC_ASSERT(w.votes <=
                           get_dynamic_global_properties().total_vesting_shares.amount, "", ("w.votes", w.votes)("props", get_dynamic_global_properties().total_vesting_shares));
@@ -3391,7 +3391,7 @@ namespace graphene { namespace chain {
 
                                     if(has_hardfork(CHAIN_HARDFORK_6)){// Consensus counted votes penalty to witness for block missing
                                         w.penalty_percent+=consensus.median_props.witness_miss_penalty_percent;
-                                        w.counted_votes=(fc::uint128_t(w.votes) - (fc::uint128_t(w.votes.value) * w.penalty_percent / CHAIN_100_PERCENT )).to_uint64();
+                                        w.counted_votes=(fc::uint128_t(w.votes) - (fc::uint128_t(w.votes.value) * std::min(w.penalty_percent,int16_t(CHAIN_100_PERCENT)) / CHAIN_100_PERCENT )).to_uint64();
 
                                         create<witness_penalty_expire_object>([&](witness_penalty_expire_object& wpe) {
                                             wpe.witness = witness_missed.owner;
