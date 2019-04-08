@@ -509,7 +509,7 @@ namespace graphene { namespace wallet {
 
 
                 fc::ecc::private_key get_private_key_for_account(const graphene::api::account_api_object& account)const {
-                    vector<public_key_type> active_keys = account.active.get_keys();
+                    vector<public_key_type> active_keys = account.active_authority.get_keys();
                     if (active_keys.size() != 1)
                         FC_THROW("Expecting a simple authority with one active key");
                     return get_private_key(active_keys.front());
@@ -722,7 +722,7 @@ namespace graphene { namespace wallet {
                         if( it == approving_account_lut.end() )
                             continue;
                         const graphene::api::account_api_object& acct = it->second;
-                        vector<public_key_type> v_approving_keys = acct.active.get_keys();
+                        vector<public_key_type> v_approving_keys = acct.active_authority.get_keys();
                         wdump((v_approving_keys));
                         for( const public_key_type& approving_key : v_approving_keys ) {
                             wdump((approving_key));
@@ -735,7 +735,7 @@ namespace graphene { namespace wallet {
                         if( it == approving_account_lut.end() )
                             continue;
                         const graphene::api::account_api_object& acct = it->second;
-                        vector<public_key_type> v_approving_keys = acct.regular.get_keys();
+                        vector<public_key_type> v_approving_keys = acct.regular_authority.get_keys();
                         wdump((v_approving_keys));
                         for( const public_key_type& approving_key : v_approving_keys )
                         {
@@ -749,7 +749,7 @@ namespace graphene { namespace wallet {
                         if( it == approving_account_lut.end() )
                             continue;
                         const graphene::api::account_api_object& acct = it->second;
-                        vector<public_key_type> v_approving_keys = acct.master.get_keys();
+                        vector<public_key_type> v_approving_keys = acct.master_authority.get_keys();
                         for( const public_key_type& approving_key : v_approving_keys ) {
                             wdump((approving_key));
                             approving_key_set.insert( approving_key );
@@ -786,11 +786,11 @@ namespace graphene { namespace wallet {
                             chain_id,
                             available_keys,
                             [&]( const string& account_name ) -> const authority&
-                            { return (get_account_from_lut( account_name ).active); },
+                            { return (get_account_from_lut( account_name ).active_authority); },
                             [&]( const string& account_name ) -> const authority&
-                            { return (get_account_from_lut( account_name ).master); },
+                            { return (get_account_from_lut( account_name ).master_authority); },
                             [&]( const string& account_name ) -> const authority&
-                            { return (get_account_from_lut( account_name ).regular); },
+                            { return (get_account_from_lut( account_name ).regular_authority); },
                             CHAIN_MAX_SIG_CHECK_DEPTH
                     );
 
@@ -1418,13 +1418,13 @@ fc::ecc::private_key wallet_api::derive_private_key(const std::string& prefix_st
             switch( type )
             {
                 case( master ):
-                    new_auth = accounts[0].master;
+                    new_auth = accounts[0].master_authority;
                     break;
                 case( active ):
-                    new_auth = accounts[0].active;
+                    new_auth = accounts[0].active_authority;
                     break;
                 case( regular ):
-                    new_auth = accounts[0].regular;
+                    new_auth = accounts[0].regular_authority;
                     break;
             }
 
@@ -1482,13 +1482,13 @@ fc::ecc::private_key wallet_api::derive_private_key(const std::string& prefix_st
             switch( type )
             {
                 case( master ):
-                    new_auth = accounts[0].master;
+                    new_auth = accounts[0].master_authority;
                     break;
                 case( active ):
-                    new_auth = accounts[0].active;
+                    new_auth = accounts[0].active_authority;
                     break;
                 case( regular ):
-                    new_auth = accounts[0].regular;
+                    new_auth = accounts[0].regular_authority;
                     break;
             }
 
@@ -1550,13 +1550,13 @@ fc::ecc::private_key wallet_api::derive_private_key(const std::string& prefix_st
             switch( type )
             {
                 case( master ):
-                    new_auth = accounts[0].master;
+                    new_auth = accounts[0].master_authority;
                     break;
                 case( active ):
-                    new_auth = accounts[0].active;
+                    new_auth = accounts[0].active_authority;
                     break;
                 case( regular ):
-                    new_auth = accounts[0].regular;
+                    new_auth = accounts[0].regular_authority;
                     break;
             }
 
@@ -1759,19 +1759,19 @@ fc::ecc::private_key wallet_api::derive_private_key(const std::string& prefix_st
             keys.push_back( fc::ecc::private_key::regenerate( regular_secret ).get_public_key() );
 
             // Check keys against public keys in authorites
-            for( auto& key_weight_pair : account.master.key_auths )
+            for( auto& key_weight_pair : account.master_authority.key_auths )
             {
                 for( auto& key : keys )
                     FC_ASSERT( key_weight_pair.first != key, "Detected private master key in memo field. Cancelling transaction." );
             }
 
-            for( auto& key_weight_pair : account.active.key_auths )
+            for( auto& key_weight_pair : account.active_authority.key_auths )
             {
                 for( auto& key : keys )
                     FC_ASSERT( key_weight_pair.first != key, "Detected private active key in memo field. Cancelling transaction." );
             }
 
-            for( auto& key_weight_pair : account.regular.key_auths )
+            for( auto& key_weight_pair : account.regular_authority.key_auths )
             {
                 for( auto& key : keys )
                     FC_ASSERT( key_weight_pair.first != key, "Detected private regular key in memo field. Cancelling transaction." );
