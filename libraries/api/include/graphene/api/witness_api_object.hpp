@@ -22,7 +22,7 @@ namespace graphene { namespace api {
         public_key_type signing_key;
         api::chain_api_properties props;
         share_type votes;
-        int16_t penalty_percent;
+        uint32_t penalty_percent;
         share_type counted_votes;
         fc::uint128_t virtual_last_update;
         fc::uint128_t virtual_position;

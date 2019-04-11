@@ -20,6 +20,7 @@ public:
     std::vector<optional<witness_api_object>> get_witnesses(const std::vector<witness_object::id_type> &witness_ids) const;
     fc::optional<witness_api_object> get_witness_by_account(std::string account_name) const;
     std::vector<witness_api_object> get_witnesses_by_vote(std::string from, uint32_t limit) const;
+    std::vector<witness_api_object> get_witnesses_by_counted_vote(std::string from, uint32_t limit) const;
     uint64_t get_witness_count() const;
     std::set<account_name_type> lookup_witness_accounts(const std::string &lower_bound_name, uint32_t limit) const;
 
@@ -117,6 +118,40 @@ std::vector<witness_api_object> plugin::witness_plugin_impl::get_witnesses_by_vo
     }
 
     while (itr != vote_idx.end() && result.size() < limit && itr->votes > 0) {
+        result.emplace_back(*itr, database);
+        ++itr;
+    }
+    return result;
+}
+
+DEFINE_API(plugin, get_witnesses_by_counted_vote) {
+    CHECK_ARG_SIZE(2)
+    auto from = args.args->at(0).as<std::string>();
+    auto limit = args.args->at(1).as<uint32_t>();
+    return my->database.with_weak_read_lock([&]() {
+        return my->get_witnesses_by_counted_vote(from, limit);
+    });
+}
+
+std::vector<witness_api_object> plugin::witness_plugin_impl::get_witnesses_by_counted_vote(
+        std::string from, uint32_t limit
+) const {
+    FC_ASSERT(limit <= 100);
+
+    std::vector<witness_api_object> result;
+    result.reserve(limit);
+
+    const auto &name_idx = database.get_index<witness_index>().indices().get<by_name>();
+    const auto &vote_idx = database.get_index<witness_index>().indices().get<by_counted_vote_name>();
+
+    auto itr = vote_idx.begin();
+    if (from.size()) {
+        auto nameitr = name_idx.find(from);
+        FC_ASSERT(nameitr != name_idx.end(), "invalid witness name ${n}", ("n", from));
+        itr = vote_idx.iterator_to(*nameitr);
+    }
+
+    while (itr != vote_idx.end() && result.size() < limit && itr->counted_votes > 0) {
         result.emplace_back(*itr, database);
         ++itr;
     }

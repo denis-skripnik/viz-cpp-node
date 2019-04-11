@@ -68,7 +68,7 @@ namespace graphene { namespace chain {
          *  else takes turns being scheduled proportional to their votes.
          */
         share_type votes;
-        int16_t penalty_percent = 0;
+        uint32_t penalty_percent = 0;
         share_type counted_votes;
         witness_schedule_type schedule = none; /// How the witness was scheduled the last time it was scheduled
 

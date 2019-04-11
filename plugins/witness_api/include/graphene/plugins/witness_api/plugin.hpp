@@ -48,6 +48,7 @@ DEFINE_API_ARGS(get_witness_schedule,             msg_pack, graphene::chain::wit
 DEFINE_API_ARGS(get_witnesses,                    msg_pack, std::vector<optional<witness_api_object> >)
 DEFINE_API_ARGS(get_witness_by_account,           msg_pack, optional<witness_api_object>)
 DEFINE_API_ARGS(get_witnesses_by_vote,            msg_pack, std::vector<witness_api_object>)
+DEFINE_API_ARGS(get_witnesses_by_counted_vote,    msg_pack, std::vector<witness_api_object>)
 DEFINE_API_ARGS(get_witness_count,                msg_pack, uint64_t)
 DEFINE_API_ARGS(lookup_witness_accounts,          msg_pack, std::set<account_name_type>)
 
@@ -86,6 +87,7 @@ public:
         (get_witnesses)
         (get_witness_by_account)
         (get_witnesses_by_vote)
+        (get_witnesses_by_counted_vote)
         (get_witness_count)
         (lookup_witness_accounts)
     )
