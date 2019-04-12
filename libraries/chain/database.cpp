@@ -1494,7 +1494,7 @@ namespace graphene { namespace chain {
                         const auto &witness_obj = get_witness(current.witness);
                         modify(witness_obj, [&](witness_object &w) {
                             w.penalty_percent-=current.penalty_percent;
-                            w.counted_votes=(fc::uint128_t(w.votes) - (fc::uint128_t(w.votes.value) * std::min(w.penalty_percent,int16_t(CHAIN_100_PERCENT)) / CHAIN_100_PERCENT )).to_uint64();
+                            w.counted_votes=(fc::uint128_t(w.votes) - (fc::uint128_t(w.votes) * std::min(w.penalty_percent,uint32_t(CHAIN_100_PERCENT)) / CHAIN_100_PERCENT )).to_uint64();
                         });
                         remove(current);
                     }
@@ -1834,7 +1834,7 @@ namespace graphene { namespace chain {
         void database::adjust_witness_vote(const witness_object &witness, share_type delta) {
             const witness_schedule_object &wso = get_witness_schedule_object();
             modify(witness, [&](witness_object &w) {
-                auto delta_pos = w.votes.value * (wso.current_virtual_time -
+                auto delta_pos = w.counted_votes.value * (wso.current_virtual_time -
                                                   w.virtual_last_update);
                 w.virtual_position += delta_pos;
 
@@ -1846,8 +1846,12 @@ namespace graphene { namespace chain {
                         w.votes = 0;
                     }
                 }
-
-                w.counted_votes=(fc::uint128_t(w.votes) - (fc::uint128_t(w.votes.value) * std::min(w.penalty_percent,int16_t(CHAIN_100_PERCENT)) / CHAIN_100_PERCENT )).to_uint64();
+                if(has_hardfork(CHAIN_HARDFORK_6)){
+                    w.counted_votes=(fc::uint128_t(w.votes) - (fc::uint128_t(w.votes) * std::min(w.penalty_percent,uint32_t(CHAIN_100_PERCENT)) / CHAIN_100_PERCENT )).to_uint64();
+                }
+                else{
+                    w.counted_votes=w.votes;
+                }
 
                 FC_ASSERT(w.votes <=
                           get_dynamic_global_properties().total_vesting_shares.amount, "", ("w.votes", w.votes)("props", get_dynamic_global_properties().total_vesting_shares));
@@ -2605,6 +2609,7 @@ namespace graphene { namespace chain {
             add_core_index<award_shares_expire_index>(*this);
             add_core_index<paid_subscription_index>(*this);
             add_core_index<paid_subscribe_index>(*this);
+            add_core_index<witness_penalty_expire_index>(*this);
 
             _plugin_index_signal();
         }
@@ -3376,39 +3381,36 @@ namespace graphene { namespace chain {
                     assert(missed_blocks != 0);
                     missed_blocks--;
                     for (uint32_t i = 0; i < missed_blocks; ++i) {
-                        const auto &witness_missed = get_witness(get_scheduled_witness(
-                                i + 1));
-                        if (witness_missed.owner != b.witness) {
-                            modify(witness_missed, [&](witness_object &w) {
-                                w.current_run = 0;
-                                if(witness_missed.owner != b.witness){
-                                    // total_missed does not increment when witness_missed.owner == b.witness
-                                    // because a low total_missed is a "prestige" item and a witness that
-                                    // restarts a dead network is "rewarded" by not having total_missed
-                                    // increase for any blocks they missed in the gap.
-                                    // Also, this prevents initminer from having a large total_missed.
-                                    w.total_missed++;
+                        const auto &witness_missed = get_witness(get_scheduled_witness(i + 1));
+                        modify(witness_missed, [&](witness_object &w) {
+                            w.current_run = 0;
+                            if(witness_missed.owner != b.witness){
+                                // total_missed does not increment when witness_missed.owner == b.witness
+                                // because a low total_missed is a "prestige" item and a witness that
+                                // restarts a dead network is "rewarded" by not having total_missed
+                                // increase for any blocks they missed in the gap.
+                                // Also, this prevents initminer from having a large total_missed.
+                                w.total_missed++;
 
-                                    if(has_hardfork(CHAIN_HARDFORK_6)){// Consensus counted votes penalty to witness for block missing
-                                        w.penalty_percent+=consensus.median_props.witness_miss_penalty_percent;
-                                        w.counted_votes=(fc::uint128_t(w.votes) - (fc::uint128_t(w.votes.value) * std::min(w.penalty_percent,int16_t(CHAIN_100_PERCENT)) / CHAIN_100_PERCENT )).to_uint64();
+                                if(has_hardfork(CHAIN_HARDFORK_6)){// Consensus counted votes penalty to witness for block missing
+                                    w.penalty_percent+=consensus.median_props.witness_miss_penalty_percent;
+                                    w.counted_votes=(fc::uint128_t(w.votes) - (fc::uint128_t(w.votes) * std::min(w.penalty_percent,uint32_t(CHAIN_100_PERCENT)) / CHAIN_100_PERCENT )).to_uint64();
 
-                                        create<witness_penalty_expire_object>([&](witness_penalty_expire_object& wpe) {
-                                            wpe.witness = witness_missed.owner;
-                                            wpe.penalty_percent = consensus.median_props.witness_miss_penalty_percent;
-                                            wpe.expires = head_block_time() + fc::seconds(consensus.median_props.witness_miss_penalty_duration);
-                                        });
-                                    }
-
-                                    if (head_block_num() -
-                                        w.last_confirmed_block_num >
-                                        CHAIN_MAX_WITNESS_MISSED_BLOCKS) {
-                                        w.signing_key = public_key_type();
-                                        push_virtual_operation(shutdown_witness_operation(w.owner));
-                                    }
+                                    create<witness_penalty_expire_object>([&](witness_penalty_expire_object& wpe) {
+                                        wpe.witness = witness_missed.owner;
+                                        wpe.penalty_percent = consensus.median_props.witness_miss_penalty_percent;
+                                        wpe.expires = head_block_time() + fc::seconds(consensus.median_props.witness_miss_penalty_duration);
+                                    });
                                 }
-                            });
-                        }
+
+                                if (head_block_num() -
+                                    w.last_confirmed_block_num >
+                                    CHAIN_MAX_WITNESS_MISSED_BLOCKS) {
+                                    w.signing_key = public_key_type();
+                                    push_virtual_operation(shutdown_witness_operation(w.owner));
+                                }
+                            }
+                        });
                     }
                 }
 
@@ -3839,6 +3841,7 @@ namespace graphene { namespace chain {
                         modify(*itr, [&](witness_object &w) {
                             elog("HF5 witness ${a} was votes: ${n}", ("a", w.owner)("n", w.votes));
                             w.votes = 0;
+                            w.counted_votes = 0;
                         });
                     }
                     //recalc witness votes for fair DPOS
@@ -3855,6 +3858,7 @@ namespace graphene { namespace chain {
 
                         adjust_witness_vote(get(witr->witness), fair_weight);
                     }
+                    break;
                 }
                 case CHAIN_HARDFORK_6:
                 {
@@ -3879,13 +3883,17 @@ namespace graphene { namespace chain {
                         }
 
                         auto old_shares=itr->vesting_shares;
+                        old_shares=old_shares*1000;
                         auto tokens=old_shares*old_price;
                         auto new_shares=tokens*new_price;
+                        new_shares=new_shares/1000;
                         new_total_vesting_shares+=new_shares;
 
                         auto old_withdraw_rate=itr->vesting_withdraw_rate;
+                        old_withdraw_rate=old_withdraw_rate*1000;
                         auto withdraw_tokens=old_withdraw_rate*old_price;
                         auto new_withdraw_rate=withdraw_tokens*new_price;
+                        new_withdraw_rate=new_withdraw_rate/1000;
 
                         modify(*itr, [&](account_object &a) {
                             a.vesting_shares = new_shares;
@@ -3917,8 +3925,10 @@ namespace graphene { namespace chain {
                          itr != delegations.end();
                          ++itr) {
                         auto old_delegation_shares=itr->vesting_shares;
+                        old_delegation_shares=old_delegation_shares*1000;
                         auto old_delegation_tokens=old_delegation_shares*old_price;
                         auto new_delegation_shares=old_delegation_tokens*new_price;
+                        new_delegation_shares=new_delegation_shares/1000;
                         modify(*itr, [&](vesting_delegation_object &a) {
                             a.vesting_shares = new_delegation_shares;
                         });
@@ -3936,8 +3946,10 @@ namespace graphene { namespace chain {
                          itr != delegations_by_exp.end();
                          ++itr) {
                         auto old_delegation_shares=itr->vesting_shares;
+                        old_delegation_shares=old_delegation_shares*1000;
                         auto old_delegation_tokens=old_delegation_shares*old_price;
                         auto new_delegation_shares=old_delegation_tokens*new_price;
+                        new_delegation_shares=new_delegation_shares/1000;
                         modify(*itr, [&](vesting_delegation_expiration_object &a) {
                             a.vesting_shares = new_delegation_shares;
                         });
@@ -3954,6 +3966,7 @@ namespace graphene { namespace chain {
                         modify(*itr, [&](witness_object &w) {
                             elog("HF6 witness ${a} has votes: ${n}", ("a", w.owner)("n", w.votes));
                             w.votes = 0;
+                            w.counted_votes = 0;
                         });
                     }
                     //recalc witness votes after shares ratio fix
@@ -3970,6 +3983,7 @@ namespace graphene { namespace chain {
 
                         adjust_witness_vote(get(witr->witness), fair_weight);
                     }
+                    break;
                 }
                 default:
                     break;
