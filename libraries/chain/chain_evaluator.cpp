@@ -44,6 +44,7 @@ namespace graphene { namespace chain {
 
         void account_create_evaluator::do_apply(const account_create_operation& o) {
             const auto& creator = _db.get_account(o.creator);
+            const auto now = _db.head_block_time();
             FC_ASSERT(creator.balance >= o.fee, "Insufficient balance to create account.",
                 ("creator.balance", creator.balance)("required", o.fee));
             FC_ASSERT(creator.available_vesting_shares(true) >= o.delegation,
@@ -51,6 +52,21 @@ namespace graphene { namespace chain {
                 ("creator.vesting_shares", creator.vesting_shares)
                 ("creator.delegated_vesting_shares", creator.delegated_vesting_shares)
                 ("required", o.delegation));
+
+            if(_db.has_hardfork(CHAIN_HARDFORK_6)){
+                if (o.delegation.amount > 0) {
+                    int64_t elapsed_seconds = (now - creator.last_vote_time).to_seconds();
+
+                    int64_t regenerated_energy =
+                            (CHAIN_100_PERCENT * elapsed_seconds) /
+                            CHAIN_ENERGY_REGENERATION_SECONDS;
+                    int64_t current_energy = std::min(int64_t(creator.energy +
+                                                             regenerated_energy), int64_t(CHAIN_100_PERCENT));
+                    FC_ASSERT(current_energy >=
+                              0, "Cannot delegate with negative energy.");
+
+                }
+            }
 
             const auto& v_share_price = _db.get_dynamic_global_properties().get_vesting_share_price();
             const auto& median_props = _db.get_witness_schedule_object().median_props;
@@ -74,7 +90,6 @@ namespace graphene { namespace chain {
                 _db.get_account(a.first);
             }
 
-            const auto now = _db.head_block_time();
             _db.shares_sender_recalc_energy(creator,o.delegation);
             _db.modify(creator, [&](account_object& c) {
                 c.balance -= o.fee;
@@ -1455,6 +1470,18 @@ namespace graphene { namespace chain {
                     ("delta", delta)("vesting_shares", delegator.vesting_shares)("delegated", delegated)
                     ("to_withdraw", delegator.to_withdraw)("withdrawn", delegator.withdrawn));
 
+                if(_db.has_hardfork(CHAIN_HARDFORK_6)){
+                    int64_t elapsed_seconds = (now - delegator.last_vote_time).to_seconds();
+
+                    int64_t regenerated_energy =
+                            (CHAIN_100_PERCENT * elapsed_seconds) /
+                            CHAIN_ENERGY_REGENERATION_SECONDS;
+                    int64_t current_energy = std::min(int64_t(delegator.energy +
+                                                             regenerated_energy), int64_t(CHAIN_100_PERCENT));
+                    FC_ASSERT(current_energy >=
+                              0, "Cannot delegate with negative energy.");
+                }
+
                 if (!delegation) {
                     FC_ASSERT(op.vesting_shares >= min_delegation,
                         "Account must delegate a minimum of ${v}", ("v",min_delegation)("vesting_shares",op.vesting_shares));
@@ -1465,6 +1492,7 @@ namespace graphene { namespace chain {
                         o.min_delegation_time = now;
                     });
                 }
+
                 _db.shares_sender_recalc_energy(delegator,delta);
                 _db.modify(delegator, [&](account_object& a) {
                     a.delegated_vesting_shares += delta;

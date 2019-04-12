@@ -2,7 +2,7 @@
 
 [![Build Status](https://travis-ci.org/VIZ-World/viz-world.svg?branch=master)](https://travis-ci.org/VIZ-World/viz-world)
 
-VIZ is an DPOS blockchain with an unproven consensus algorithm.
+VIZ is an DPOS blockchain with an unproven consensus algorithm (Fair DPOS with witness penalty for missing block).
 
 # No Support & No Warranty
 
@@ -19,13 +19,15 @@ IN THE SOFTWARE.
 Rather than attempt to describe the rules of the blockchain, it is up to
 each individual to inspect the code to understand the consensus rules.
 
-# Quickstart
+# Building
 
-Just want to get up and running quickly?  Try deploying a prebuilt
-dockerized container.  Both common binary types are included.
+See [documentation/building.md](documentation/building.md) for detailed build instructions, including
+compile-time options, and specific commands for Linux (Ubuntu LTS) or macOS X.
 
 ## Dockerized p2p Node
 
+Just want to get up and running quickly?  Try deploying a prebuilt
+dockerized container.  Both common binary types are included.
 To run a p2p node (ca. 2GB of memory is required at the moment):
 
     docker run \
@@ -49,25 +51,8 @@ that uses ca. 14GB of memory and growing:
 # Seed Nodes
 
 A list of some seed nodes to get you started can be found in
-[documentation/seednodes](documentation/seednodes).
+[share/vizd/seednodes](share/vizd/seednodes).
 
 This same file is baked into the docker images and can be overridden by
 setting `VIZD_SEED_NODES` in the container environment at `docker run`
 time to a whitespace delimited list of seed nodes (with port).
-
-# How to produce blocks
-
-The produce blocks algorithm used by VIZ requires the owner to have access to the
-private key used by the account.
-
-    ./vizd --witness="accountname" --seed-node="95.85.13.229:2225"
-
-# Building
-
-See [documentation/building.md](documentation/building.md) for detailed build instructions, including
-compile-time options, and specific commands for Linux (Ubuntu LTS) or macOS X.
-
-# Testing
-
-See [documentation/testing.md](documentation/testing.md) for test build targets and info
-on how to use lcov to check code test coverage.
