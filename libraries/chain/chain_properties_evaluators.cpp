@@ -57,6 +57,11 @@ namespace graphene { namespace chain {
             _wprops = p;
         }
 
+        result_type operator()(const chain_properties_hf6& p) const {
+            FC_ASSERT( _db.has_hardfork(CHAIN_HARDFORK_6), "chain_properties_hf6" );
+            _wprops = p;
+        }
+
         template<typename Props>
         result_type operator()(Props&& p) const {
             _wprops = p;

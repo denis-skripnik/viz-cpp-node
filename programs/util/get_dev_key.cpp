@@ -59,7 +59,7 @@ int main(int argc, char **argv) {
                     "\n"
                     "example:\n"
                     "\n"
-                    "get-dev-key wxyz- owner-5 active-7 balance-9 wit-block-signing-3 wit-owner-5 wit-active-33\n"
+                    "get-dev-key wxyz- master-5 active-7 balance-9 wit-block-signing-3 wit-master-5 wit-active-33\n"
                     "get-dev-key wxyz- wit-block-signing-0:101\n"
                     "\n";
             return 1;

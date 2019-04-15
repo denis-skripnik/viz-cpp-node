@@ -8,7 +8,7 @@ namespace graphene { namespace chain {
         using fc::uint128_t;
 
         inline void validate_permlink(const string &permlink) {
-            FC_ASSERT(permlink.size() < CHAIN_MAX_PERMLINK_LENGTH, "permlink is too long");
+            FC_ASSERT(permlink.size() < CHAIN_MAX_URL_LENGTH, "permlink is too long");
             FC_ASSERT(fc::is_utf8(permlink), "permlink not formatted in UTF8");
         }
 
@@ -44,6 +44,7 @@ namespace graphene { namespace chain {
 
         void account_create_evaluator::do_apply(const account_create_operation& o) {
             const auto& creator = _db.get_account(o.creator);
+            const auto now = _db.head_block_time();
             FC_ASSERT(creator.balance >= o.fee, "Insufficient balance to create account.",
                 ("creator.balance", creator.balance)("required", o.fee));
             FC_ASSERT(creator.available_vesting_shares(true) >= o.delegation,
@@ -51,6 +52,21 @@ namespace graphene { namespace chain {
                 ("creator.vesting_shares", creator.vesting_shares)
                 ("creator.delegated_vesting_shares", creator.delegated_vesting_shares)
                 ("required", o.delegation));
+
+            if(_db.has_hardfork(CHAIN_HARDFORK_6)){
+                if (o.delegation.amount > 0) {
+                    int64_t elapsed_seconds = (now - creator.last_vote_time).to_seconds();
+
+                    int64_t regenerated_energy =
+                            (CHAIN_100_PERCENT * elapsed_seconds) /
+                            CHAIN_ENERGY_REGENERATION_SECONDS;
+                    int64_t current_energy = std::min(int64_t(creator.energy +
+                                                             regenerated_energy), int64_t(CHAIN_100_PERCENT));
+                    FC_ASSERT(current_energy >=
+                              0, "Cannot delegate with negative energy.");
+
+                }
+            }
 
             const auto& v_share_price = _db.get_dynamic_global_properties().get_vesting_share_price();
             const auto& median_props = _db.get_witness_schedule_object().median_props;
@@ -64,17 +80,16 @@ namespace graphene { namespace chain {
                 "Inssufficient Delegation ${f} required, ${p} provided.",
                 ("f", target_delegation)("p", current_delegation)("o.fee", o.fee) ("o.delegation", o.delegation));
 
-            for (auto& a : o.owner.account_auths) {
+            for (auto& a : o.master.account_auths) {
                 _db.get_account(a.first);
             }
             for (auto& a : o.active.account_auths) {
                 _db.get_account(a.first);
             }
-            for (auto& a : o.posting.account_auths) {
+            for (auto& a : o.regular.account_auths) {
                 _db.get_account(a.first);
             }
 
-            const auto now = _db.head_block_time();
             _db.shares_sender_recalc_energy(creator,o.delegation);
             _db.modify(creator, [&](account_object& c) {
                 c.balance -= o.fee;
@@ -97,10 +112,10 @@ namespace graphene { namespace chain {
 
             _db.create<account_authority_object>([&](account_authority_object& auth) {
                 auth.account = o.new_account_name;
-                auth.owner = o.owner;
+                auth.master = o.master;
                 auth.active = o.active;
-                auth.posting = o.posting;
-                auth.last_owner_update = fc::time_point_sec::min();
+                auth.regular = o.regular;
+                auth.last_master_update = fc::time_point_sec::min();
             });
             if (o.delegation.amount > 0) {  // Is it needed to allow zero delegation in this method ?
                 _db.create<vesting_delegation_object>([&](vesting_delegation_object& d) {
@@ -119,22 +134,22 @@ namespace graphene { namespace chain {
             database &_db = db();
             FC_ASSERT(o.account != CHAIN_INVITE_ACCOUNT, "Cannot update invite account.");
 
-            if (o.posting) {
-                     o.posting->validate();
+            if (o.regular) {
+                     o.regular->validate();
             }
 
             const auto &account = _db.get_account(o.account);
             const auto &account_auth = _db.get<account_authority_object, by_account>(o.account);
 
-            if (o.owner) {
+            if (o.master) {
                 FC_ASSERT(_db.head_block_time() -
-                          account_auth.last_owner_update >
-                          CHAIN_OWNER_UPDATE_LIMIT, "Owner authority can only be updated once an hour.");
-                for (auto a: o.owner->account_auths) {
+                          account_auth.last_master_update >
+                          CHAIN_MASTER_UPDATE_LIMIT, "Master authority can only be updated once an hour.");
+                for (auto a: o.master->account_auths) {
                     _db.get_account(a.first);
                 }
 
-                _db.update_owner_authority(account, *o.owner);
+                _db.update_master_authority(account, *o.master);
             }
 
             if (o.active)
@@ -144,9 +159,9 @@ namespace graphene { namespace chain {
                 }
             }
 
-            if (o.posting)
+            if (o.regular)
             {
-                for (auto a: o.posting->account_auths) {
+                for (auto a: o.regular->account_auths) {
                     _db.get_account(a.first);
                 }
             }
@@ -159,13 +174,13 @@ namespace graphene { namespace chain {
             });
             store_account_json_metadata(_db, account.name, o.json_metadata, true);
 
-            if (o.active || o.posting) {
+            if (o.active || o.regular) {
                 _db.modify(account_auth, [&](account_authority_object &auth) {
                     if (o.active) {
                         auth.active = *o.active;
                     }
-                    if (o.posting) {
-                        auth.posting = *o.posting;
+                    if (o.regular) {
+                        auth.regular = *o.regular;
                     }
                 });
             }
@@ -675,13 +690,38 @@ namespace graphene { namespace chain {
                     "Inssufficient amount ${f} required, ${p} provided.",
                     ("f", median_props.account_creation_fee)("p", o.amount));
                 if(o.memo.size()){
-                    public_key_type key_from_memo(o.memo);
-                    const auto& meta = _db.get<account_metadata_object, by_account>(to_account.name);
-                    int anonymous_num=std::stoi(meta.json_metadata.c_str());
-                    anonymous_num++;
-                    store_account_json_metadata(_db, CHAIN_ANONYMOUS_ACCOUNT,fc::to_string(anonymous_num));
+                    account_name_type new_account_name;
+                    public_key_type key_from_memo;
+                    int anonymous_num;
+                    if(_db.has_hardfork(CHAIN_HARDFORK_6)){
+                        string memo = fc::trim(o.memo);
+                        auto colon_pos = memo.find(":");
+                        if(colon_pos != std::string::npos) {
+                            auto login_part = memo.substr(0, colon_pos);
+                            auto acc = _db.find< account_object, by_name >( login_part );
+                            FC_ASSERT( acc == nullptr, "Account login \"${a}\" must be free.", ("a", login_part) );
+                            new_account_name=login_part;
+                            auto key_part = memo.substr(colon_pos + 1);
+                            key_from_memo=public_key_type(key_part);
+                        }
+                        else{
+                            key_from_memo=public_key_type(o.memo);
+                            const auto& meta = _db.get<account_metadata_object, by_account>(to_account.name);
+                            anonymous_num=std::stoi(meta.json_metadata.c_str());
+                            anonymous_num++;
+                            store_account_json_metadata(_db, CHAIN_ANONYMOUS_ACCOUNT,fc::to_string(anonymous_num));
+                            new_account_name="n" + fc::to_string(anonymous_num) + "." + CHAIN_ANONYMOUS_ACCOUNT;
+                        }
+                    }
+                    else{
+                        key_from_memo=public_key_type(o.memo);
+                        const auto& meta = _db.get<account_metadata_object, by_account>(to_account.name);
+                        anonymous_num=std::stoi(meta.json_metadata.c_str());
+                        anonymous_num++;
+                        store_account_json_metadata(_db, CHAIN_ANONYMOUS_ACCOUNT,fc::to_string(anonymous_num));
+                        new_account_name="n" + fc::to_string(anonymous_num) + "." + CHAIN_ANONYMOUS_ACCOUNT;
+                    }
                     const auto now = _db.head_block_time();
-                    account_name_type new_account_name="n" + fc::to_string(anonymous_num) + "." + CHAIN_ANONYMOUS_ACCOUNT;
 
                     _db.create<account_object>([&](account_object &acc) {
                         acc.name = new_account_name;
@@ -693,10 +733,10 @@ namespace graphene { namespace chain {
                     });
                     _db.create<account_authority_object>([&](account_authority_object &auth) {
                         auth.account = new_account_name;
-                        auth.owner.add_authority(key_from_memo, 1);
-                        auth.owner.weight_threshold = 1;
-                        auth.active = auth.owner;
-                        auth.posting = auth.active;
+                        auth.master.add_authority(key_from_memo, 1);
+                        auth.master.weight_threshold = 1;
+                        auth.active = auth.master;
+                        auth.regular = auth.active;
                     });
                     _db.create<account_metadata_object>([&](account_metadata_object& m) {
                         m.account = new_account_name;
@@ -1254,18 +1294,18 @@ namespace graphene { namespace chain {
 
         void custom_evaluator::do_apply(const custom_operation &o) {
             database &_db = db();
-            for (const auto &i : o.required_auths) {
+            for (const auto &i : o.required_active_auths) {
                 auto& account = _db.get_account(i);
                 _db.modify(account, [&](account_object& a) {
                     a.custom_sequence++;
-                    a.custom_sequence_block_num=_db.head_block_num();
+                    a.custom_sequence_block_num=1 + _db.head_block_num();//head_block_num contains previous block num
                 });
             }
-            for (const auto &i : o.required_posting_auths) {
+            for (const auto &i : o.required_regular_auths) {
                 auto& account = _db.get_account(i);
                 _db.modify(account, [&](account_object& a) {
                     a.custom_sequence++;
-                    a.custom_sequence_block_num=_db.head_block_num();
+                    a.custom_sequence_block_num=1 + _db.head_block_num();//head_block_num contains previous block num
                 });
             }
             std::shared_ptr<custom_operation_interpreter> eval = _db.get_custom_evaluator(o.id);
@@ -1303,35 +1343,35 @@ namespace graphene { namespace chain {
 
             if (request == recovery_request_idx.end()) // New Request
             {
-                FC_ASSERT(!o.new_owner_authority.is_impossible(), "Cannot recover using an impossible authority.");
-                FC_ASSERT(o.new_owner_authority.weight_threshold, "Cannot recover using an open authority.");
+                FC_ASSERT(!o.new_master_authority.is_impossible(), "Cannot recover using an impossible authority.");
+                FC_ASSERT(o.new_master_authority.weight_threshold, "Cannot recover using an open authority.");
 
                 // Check accounts in the new authority exist
-                for (auto &a : o.new_owner_authority.account_auths) {
+                for (auto &a : o.new_master_authority.account_auths) {
                     _db.get_account(a.first);
                 }
 
                 _db.create<account_recovery_request_object>([&](account_recovery_request_object &req) {
                     req.account_to_recover = o.account_to_recover;
-                    req.new_owner_authority = o.new_owner_authority;
+                    req.new_master_authority = o.new_master_authority;
                     req.expires = _db.head_block_time() +
                                   CHAIN_ACCOUNT_RECOVERY_REQUEST_EXPIRATION_PERIOD;
                 });
-            } else if (o.new_owner_authority.weight_threshold ==
+            } else if (o.new_master_authority.weight_threshold ==
                        0) // Cancel Request if authority is open
             {
                 _db.remove(*request);
             } else // Change Request
             {
-                FC_ASSERT(!o.new_owner_authority.is_impossible(), "Cannot recover using an impossible authority.");
+                FC_ASSERT(!o.new_master_authority.is_impossible(), "Cannot recover using an impossible authority.");
 
                 // Check accounts in the new authority exist
-                for (auto &a : o.new_owner_authority.account_auths) {
+                for (auto &a : o.new_master_authority.account_auths) {
                     _db.get_account(a.first);
                 }
 
                 _db.modify(*request, [&](account_recovery_request_object &req) {
-                    req.new_owner_authority = o.new_owner_authority;
+                    req.new_master_authority = o.new_master_authority;
                     req.expires = _db.head_block_time() +
                                   CHAIN_ACCOUNT_RECOVERY_REQUEST_EXPIRATION_PERIOD;
                 });
@@ -1344,24 +1384,24 @@ namespace graphene { namespace chain {
 
             FC_ASSERT(
                     _db.head_block_time() - account.last_account_recovery >
-                    CHAIN_OWNER_UPDATE_LIMIT, "Owner authority can only be updated once an hour.");
+                    CHAIN_MASTER_UPDATE_LIMIT, "Master authority can only be updated once an hour.");
 
             const auto &recovery_request_idx = _db.get_index<account_recovery_request_index>().indices().get<by_account>();
             auto request = recovery_request_idx.find(o.account_to_recover);
 
             FC_ASSERT(request !=
                       recovery_request_idx.end(), "There are no active recovery requests for this account.");
-            FC_ASSERT(request->new_owner_authority ==
-                      o.new_owner_authority, "New owner authority does not match recovery request.");
+            FC_ASSERT(request->new_master_authority ==
+                      o.new_master_authority, "New master authority does not match recovery request.");
 
-            const auto &recent_auth_idx = _db.get_index<owner_authority_history_index>().indices().get<by_account>();
+            const auto &recent_auth_idx = _db.get_index<master_authority_history_index>().indices().get<by_account>();
             auto hist = recent_auth_idx.lower_bound(o.account_to_recover);
             bool found = false;
 
             while (hist != recent_auth_idx.end() &&
                    hist->account == o.account_to_recover && !found) {
-                found = hist->previous_owner_authority ==
-                        o.recent_owner_authority;
+                found = hist->previous_master_authority ==
+                        o.recent_master_authority;
                 if (found) {
                     break;
                 }
@@ -1370,8 +1410,8 @@ namespace graphene { namespace chain {
 
             FC_ASSERT(found, "Recent authority not found in authority history.");
 
-            _db.remove(*request); // Remove first, update_owner_authority may invalidate iterator
-            _db.update_owner_authority(account, o.new_owner_authority);
+            _db.remove(*request); // Remove first, update_master_authority may invalidate iterator
+            _db.update_master_authority(account, o.new_master_authority);
             _db.modify(account, [&](account_object &a) {
                 a.last_account_recovery = _db.head_block_time();
             });
@@ -1391,7 +1431,7 @@ namespace graphene { namespace chain {
                     req.account_to_recover = o.account_to_recover;
                     req.recovery_account = o.new_recovery_account;
                     req.effective_on = _db.head_block_time() +
-                                       CHAIN_OWNER_AUTH_RECOVERY_PERIOD;
+                                       CHAIN_MASTER_AUTH_RECOVERY_PERIOD;
                 });
             } else if (account_to_recover.recovery_account !=
                        o.new_recovery_account) // Change existing request
@@ -1399,7 +1439,7 @@ namespace graphene { namespace chain {
                 _db.modify(*request, [&](change_recovery_account_request_object &req) {
                     req.recovery_account = o.new_recovery_account;
                     req.effective_on = _db.head_block_time() +
-                                       CHAIN_OWNER_AUTH_RECOVERY_PERIOD;
+                                       CHAIN_MASTER_AUTH_RECOVERY_PERIOD;
                 });
             } else // Request exists and changing back to current recovery account
             {
@@ -1430,6 +1470,18 @@ namespace graphene { namespace chain {
                     ("delta", delta)("vesting_shares", delegator.vesting_shares)("delegated", delegated)
                     ("to_withdraw", delegator.to_withdraw)("withdrawn", delegator.withdrawn));
 
+                if(_db.has_hardfork(CHAIN_HARDFORK_6)){
+                    int64_t elapsed_seconds = (now - delegator.last_vote_time).to_seconds();
+
+                    int64_t regenerated_energy =
+                            (CHAIN_100_PERCENT * elapsed_seconds) /
+                            CHAIN_ENERGY_REGENERATION_SECONDS;
+                    int64_t current_energy = std::min(int64_t(delegator.energy +
+                                                             regenerated_energy), int64_t(CHAIN_100_PERCENT));
+                    FC_ASSERT(current_energy >=
+                              0, "Cannot delegate with negative energy.");
+                }
+
                 if (!delegation) {
                     FC_ASSERT(op.vesting_shares >= min_delegation,
                         "Account must delegate a minimum of ${v}", ("v",min_delegation)("vesting_shares",op.vesting_shares));
@@ -1440,6 +1492,7 @@ namespace graphene { namespace chain {
                         o.min_delegation_time = now;
                     });
                 }
+
                 _db.shares_sender_recalc_energy(delegator,delta);
                 _db.modify(delegator, [&](account_object& a) {
                     a.delegated_vesting_shares += delta;

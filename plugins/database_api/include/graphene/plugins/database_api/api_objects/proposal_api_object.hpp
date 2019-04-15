@@ -22,10 +22,10 @@ namespace graphene { namespace plugins { namespace database_api {
         std::vector<protocol::operation> proposed_operations;
         flat_set<protocol::account_name_type> required_active_approvals;
         flat_set<protocol::account_name_type> available_active_approvals;
-        flat_set<protocol::account_name_type> required_owner_approvals;
-        flat_set<protocol::account_name_type> available_owner_approvals;
-        flat_set<protocol::account_name_type> required_posting_approvals;
-        flat_set<protocol::account_name_type> available_posting_approvals;
+        flat_set<protocol::account_name_type> required_master_approvals;
+        flat_set<protocol::account_name_type> available_master_approvals;
+        flat_set<protocol::account_name_type> required_regular_approvals;
+        flat_set<protocol::account_name_type> available_regular_approvals;
         flat_set<protocol::public_key_type> available_key_approvals;
     };
 
@@ -35,6 +35,6 @@ FC_REFLECT(
     (graphene::plugins::database_api::proposal_api_object),
     (author)(title)(memo)(expiration_time)(review_period_time)(proposed_operations)
     (required_active_approvals)(available_active_approvals)
-    (required_owner_approvals)(available_owner_approvals)
-    (required_posting_approvals)(available_posting_approvals)
+    (required_master_approvals)(available_master_approvals)
+    (required_regular_approvals)(available_regular_approvals)
     (available_key_approvals))

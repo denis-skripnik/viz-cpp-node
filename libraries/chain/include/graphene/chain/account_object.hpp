@@ -60,7 +60,7 @@ public:
     asset delegated_vesting_shares = asset(0, SHARES_SYMBOL); ///<
     asset received_vesting_shares = asset(0, SHARES_SYMBOL); ///<
 
-    asset vesting_withdraw_rate = asset(0, SHARES_SYMBOL); ///< at the time this is updated it can be at most vesting_shares/104
+    asset vesting_withdraw_rate = asset(0, SHARES_SYMBOL); ///< at the time this is updated it can be at most vesting_shares/CHAIN_VESTING_WITHDRAW_INTERVALS
     time_point_sec next_vesting_withdrawal = fc::time_point_sec::maximum(); ///< after every withdrawal this is incremented by 1 week
     share_type withdrawn = 0; /// Track how many shares have been withdrawn
     share_type to_withdraw = 0; /// Might be able to look this up with operation history.
@@ -128,7 +128,7 @@ public:
 
     template<typename Constructor, typename Allocator>
     account_authority_object(Constructor &&c, allocator<Allocator> a)
-            : owner(a), active(a), posting(a) {
+            : master(a), active(a), regular(a) {
         c(*this);
     }
 
@@ -136,11 +136,11 @@ public:
 
     account_name_type account;
 
-    shared_authority owner;   ///< used for backup control, can set owner or active
-    shared_authority active;  ///< used for all monetary operations, can set active or posting
-    shared_authority posting; ///< used for voting and posting
+    shared_authority master;   ///< used for backup control, can set master or active
+    shared_authority active;  ///< used for all monetary operations, can set active or regular
+    shared_authority regular; ///< used for voting and regular
 
-    time_point_sec last_owner_update;
+    time_point_sec last_master_update;
 };
 
 class account_metadata_object : public object<account_metadata_object_type, account_metadata_object> {
@@ -190,21 +190,21 @@ public:
     time_point_sec expiration;
 };
 
-class owner_authority_history_object
-        : public object<owner_authority_history_object_type, owner_authority_history_object> {
+class master_authority_history_object
+        : public object<master_authority_history_object_type, master_authority_history_object> {
 public:
-    owner_authority_history_object() = delete;
+    master_authority_history_object() = delete;
 
     template<typename Constructor, typename Allocator>
-    owner_authority_history_object(Constructor &&c, allocator<Allocator> a)
-            :previous_owner_authority(shared_authority::allocator_type(a.get_segment_manager())) {
+    master_authority_history_object(Constructor &&c, allocator<Allocator> a)
+            :previous_master_authority(shared_authority::allocator_type(a.get_segment_manager())) {
         c(*this);
     }
 
     id_type id;
 
     account_name_type account;
-    shared_authority previous_owner_authority;
+    shared_authority previous_master_authority;
     time_point_sec last_valid_time;
 };
 
@@ -215,14 +215,14 @@ public:
 
     template<typename Constructor, typename Allocator>
     account_recovery_request_object(Constructor &&c, allocator<Allocator> a)
-            :new_owner_authority(shared_authority::allocator_type(a.get_segment_manager())) {
+            :new_master_authority(shared_authority::allocator_type(a.get_segment_manager())) {
         c(*this);
     }
 
     id_type id;
 
     account_name_type account_to_recover;
-    shared_authority new_owner_authority;
+    shared_authority new_master_authority;
     time_point_sec expires;
 };
 
@@ -269,23 +269,23 @@ struct by_account;
 struct by_last_valid;
 
 typedef multi_index_container<
-        owner_authority_history_object,
+        master_authority_history_object,
         indexed_by<
                 ordered_unique<tag<by_id>,
-                        member<owner_authority_history_object, owner_authority_history_id_type, &owner_authority_history_object::id>>,
+                        member<master_authority_history_object, master_authority_history_id_type, &master_authority_history_object::id>>,
                 ordered_unique<tag<by_account>,
-                        composite_key < owner_authority_history_object,
-                        member<owner_authority_history_object, account_name_type, &owner_authority_history_object::account>,
-                        member<owner_authority_history_object, time_point_sec, &owner_authority_history_object::last_valid_time>,
-                        member<owner_authority_history_object, owner_authority_history_id_type, &owner_authority_history_object::id>
+                        composite_key < master_authority_history_object,
+                        member<master_authority_history_object, account_name_type, &master_authority_history_object::account>,
+                        member<master_authority_history_object, time_point_sec, &master_authority_history_object::last_valid_time>,
+                        member<master_authority_history_object, master_authority_history_id_type, &master_authority_history_object::id>
                 >,
                 composite_key_compare <
-                std::less<account_name_type>, std::less<time_point_sec>, std::less<owner_authority_history_id_type>>
+                std::less<account_name_type>, std::less<time_point_sec>, std::less<master_authority_history_id_type>>
 >
 >,
-allocator<owner_authority_history_object>
+allocator<master_authority_history_object>
 >
-owner_authority_history_index;
+master_authority_history_index;
 
 
 using account_metadata_index = multi_index_container<
@@ -301,7 +301,7 @@ using account_metadata_index = multi_index_container<
     allocator<account_metadata_object>
 >;
 
-struct by_last_owner_update;
+struct by_last_master_update;
 
 typedef multi_index_container<
         account_authority_object,
@@ -316,9 +316,9 @@ typedef multi_index_container<
                 composite_key_compare <
                 std::less<account_name_type>, std::less<account_authority_id_type>>
 >,
-ordered_unique<tag<by_last_owner_update>,
+ordered_unique<tag<by_last_master_update>,
         composite_key < account_authority_object,
-        member<account_authority_object, time_point_sec, &account_authority_object::last_owner_update>,
+        member<account_authority_object, time_point_sec, &account_authority_object::last_master_update>,
         member<account_authority_object, account_authority_id_type, &account_authority_object::id>
 >,
 composite_key_compare <std::greater<time_point_sec>, std::less<account_authority_id_type>>
@@ -467,7 +467,7 @@ FC_REFLECT((graphene::chain::account_object),
 CHAINBASE_SET_INDEX_TYPE(graphene::chain::account_object, graphene::chain::account_index)
 
 FC_REFLECT((graphene::chain::account_authority_object),
-        (id)(account)(owner)(active)(posting)(last_owner_update)
+        (id)(account)(master)(active)(regular)(last_master_update)
 )
 CHAINBASE_SET_INDEX_TYPE(graphene::chain::account_authority_object, graphene::chain::account_authority_index)
 
@@ -480,13 +480,13 @@ CHAINBASE_SET_INDEX_TYPE(graphene::chain::vesting_delegation_object, graphene::c
 FC_REFLECT((graphene::chain::vesting_delegation_expiration_object), (id)(delegator)(vesting_shares)(expiration))
 CHAINBASE_SET_INDEX_TYPE(graphene::chain::vesting_delegation_expiration_object, graphene::chain::vesting_delegation_expiration_index)
 
-FC_REFLECT((graphene::chain::owner_authority_history_object),
-        (id)(account)(previous_owner_authority)(last_valid_time)
+FC_REFLECT((graphene::chain::master_authority_history_object),
+        (id)(account)(previous_master_authority)(last_valid_time)
 )
-CHAINBASE_SET_INDEX_TYPE(graphene::chain::owner_authority_history_object, graphene::chain::owner_authority_history_index)
+CHAINBASE_SET_INDEX_TYPE(graphene::chain::master_authority_history_object, graphene::chain::master_authority_history_index)
 
 FC_REFLECT((graphene::chain::account_recovery_request_object),
-        (id)(account_to_recover)(new_owner_authority)(expires)
+        (id)(account_to_recover)(new_master_authority)(expires)
 )
 CHAINBASE_SET_INDEX_TYPE(graphene::chain::account_recovery_request_object, graphene::chain::account_recovery_request_index)
 

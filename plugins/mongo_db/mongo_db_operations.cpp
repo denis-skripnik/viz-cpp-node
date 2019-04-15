@@ -30,7 +30,7 @@ namespace mongo_db {
         }
 
         document authority_doc;
-        authority_doc << "owner" << auth.owner;
+        authority_doc << "master" << auth.master;
         format_value(authority_doc, "weight_threshold", auth.weight_threshold);
         authority_doc << "account_auths" << account_auths_arr;
         authority_doc << "key_auths" << key_auths_arr;
@@ -119,13 +119,13 @@ namespace mongo_db {
     auto operation_writer::operator()(const account_update_operation& op) -> result_type {
         result_type body;
 
-        if (op.owner) {
-            format_authority(body, "owner", *op.owner);
+        if (op.master) {
+            format_authority(body, "master", *op.master);
         }
 
-        document posting_owner_doc;
-        if (op.posting) {
-            format_authority(body, "posting", *op.posting);
+        document regular_owner_doc;
+        if (op.regular) {
+            format_authority(body, "regular", *op.regular);
         }
 
         document active_owner_doc;
@@ -204,7 +204,7 @@ namespace mongo_db {
 
         format_value(body, "recovery_account", op.recovery_account);
         format_value(body, "account_to_recover", op.account_to_recover);
-        format_authority(body, "new_owner_authority", op.new_owner_authority);
+        format_authority(body, "new_master_authority", op.new_master_authority);
 
         return body;
     }
@@ -213,8 +213,8 @@ namespace mongo_db {
         result_type body;
 
         format_value(body, "account_to_recover", op.account_to_recover);
-        format_authority(body, "new_owner_authority", op.new_owner_authority);
-        format_authority(body, "recent_owner_authority", op.recent_owner_authority);
+        format_authority(body, "new_master_authority", op.new_master_authority);
+        format_authority(body, "recent_master_authority", op.recent_master_authority);
 
         return body;
     }
@@ -238,7 +238,7 @@ namespace mongo_db {
 
         format_value(body, "token_amount ", op.token_amount);
         format_value(body, "fee", op.fee);
-        format_value(body, "json_meta", op.json_meta);
+        format_value(body, "json_metadata", op.json_metadata);
 
         return body;
     }

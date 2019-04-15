@@ -8,7 +8,7 @@ namespace graphene { namespace protocol {
         ///  going forward.
         inline void validate_permlink(const string &permlink) {
             FC_ASSERT(permlink.size() <
-                      CHAIN_MAX_PERMLINK_LENGTH, "permlink is too long");
+                      CHAIN_MAX_URL_LENGTH, "permlink is too long");
             FC_ASSERT(fc::is_utf8(permlink), "permlink not formatted in UTF8");
         }
 
@@ -25,7 +25,7 @@ namespace graphene { namespace protocol {
             FC_ASSERT(is_valid_account_name(name), "Account name ${n} is invalid", ("n", name));
         }
 
-        inline void validate_account_json_metadata(const string& json_metadata) {
+        inline void validate_json_metadata(const string& json_metadata) {
             if (json_metadata.size() > 0) {
                 FC_ASSERT(fc::is_utf8(json_metadata), "JSON Metadata not formatted in UTF8");
                 FC_ASSERT(fc::json::is_valid(json_metadata), "JSON Metadata not valid JSON");
@@ -45,27 +45,27 @@ namespace graphene { namespace protocol {
             FC_ASSERT(is_asset_type(delegation, SHARES_SYMBOL), "Delegation must be SHARES");
             FC_ASSERT(fee.amount >= 0, "Account creation fee cannot be negative");
             FC_ASSERT(delegation.amount >= 0, "Delegation cannot be negative");
-            owner.validate();
+            master.validate();
             active.validate();
-            posting.validate();
-            validate_account_json_metadata(json_metadata);
+            regular.validate();
+            validate_json_metadata(json_metadata);
         }
 
         void account_update_operation::validate() const {
             validate_account_name(account);
-            /*if( owner )
-               owner->validate();
+            /*if( master )
+               master->validate();
             if( active )
                active->validate();
-            if( posting )
-               posting->validate();*/
-            validate_account_json_metadata(json_metadata);
+            if( regular )
+               regular->validate();*/
+            validate_json_metadata(json_metadata);
         }
 
         void account_metadata_operation::validate() const {
             validate_account_name(account);
             FC_ASSERT(json_metadata.size() > 0, "json_metadata can't be empty");
-            validate_account_json_metadata(json_metadata);
+            validate_json_metadata(json_metadata);
         }
 
         struct content_extension_validate_visitor {
@@ -152,7 +152,7 @@ namespace graphene { namespace protocol {
                 FC_ASSERT(amount.amount >
                           0, "Cannot transfer a negative amount (aka: stealing)");
                 FC_ASSERT(memo.size() <
-                          CHAIN_MAX_MEMO_SIZE, "Memo is too large");
+                          CHAIN_MAX_MEMO_LENGTH, "Memo is too large");
                 FC_ASSERT(fc::is_utf8(memo), "Memo is not UTF8");
             } FC_CAPTURE_AND_RETHROW((*this))
         }
@@ -221,7 +221,7 @@ namespace graphene { namespace protocol {
 
         void custom_operation::validate() const {
             /// required auth accounts are the ones whose bandwidth is consumed
-            FC_ASSERT((required_auths.size() + required_posting_auths.size()) >
+            FC_ASSERT((required_active_auths.size() + required_regular_auths.size()) >
                       0, "at least on account must be specified");
             FC_ASSERT(id.size() <= 32, "id is too long");
             FC_ASSERT(fc::is_utf8(json), "JSON Metadata not formatted in UTF8");
@@ -242,10 +242,7 @@ namespace graphene { namespace protocol {
                       TOKEN_SYMBOL, "amount must be TOKEN_SYMBOL");
             FC_ASSERT(ratification_deadline <
                       escrow_expiration, "ratification deadline must be before escrow expiration");
-            if (json_meta.size() > 0) {
-                FC_ASSERT(fc::is_utf8(json_meta), "JSON Metadata not formatted in UTF8");
-                FC_ASSERT(fc::json::is_valid(json_meta), "JSON Metadata not valid JSON");
-            }
+            validate_json_metadata(json_metadata);
         }
 
         void escrow_approve_operation::validate() const {
@@ -285,18 +282,18 @@ namespace graphene { namespace protocol {
         void request_account_recovery_operation::validate() const {
             validate_account_name(recovery_account);
             validate_account_name(account_to_recover);
-            new_owner_authority.validate();
+            new_master_authority.validate();
         }
 
         void recover_account_operation::validate() const {
             validate_account_name(account_to_recover);
-            FC_ASSERT(!(new_owner_authority ==
-                        recent_owner_authority), "Cannot set new owner authority to the recent owner authority");
-            FC_ASSERT(!new_owner_authority.is_impossible(), "new owner authority cannot be impossible");
-            FC_ASSERT(!recent_owner_authority.is_impossible(), "recent owner authority cannot be impossible");
-            FC_ASSERT(new_owner_authority.weight_threshold, "new owner authority cannot be trivial");
-            new_owner_authority.validate();
-            recent_owner_authority.validate();
+            FC_ASSERT(!(new_master_authority ==
+                        recent_master_authority), "Cannot set new master authority to the recent master authority");
+            FC_ASSERT(!new_master_authority.is_impossible(), "new master authority cannot be impossible");
+            FC_ASSERT(!recent_master_authority.is_impossible(), "recent master authority cannot be impossible");
+            FC_ASSERT(new_master_authority.weight_threshold, "new master authority cannot be trivial");
+            new_master_authority.validate();
+            recent_master_authority.validate();
         }
 
         void change_recovery_account_operation::validate() const {
@@ -337,7 +334,7 @@ namespace graphene { namespace protocol {
             FC_ASSERT(custom_sequence >= 0);
             FC_ASSERT(custom_sequence <= uint64_t(std::numeric_limits<int64_t>::max()));
             FC_ASSERT(memo.size() <
-                      CHAIN_MAX_MEMO_SIZE, "Memo is too large");
+                      CHAIN_MAX_MEMO_LENGTH, "Memo is too large");
             FC_ASSERT(fc::is_utf8(memo), "Memo is not UTF8");
 
             uint32_t sum = 0;
@@ -358,7 +355,7 @@ namespace graphene { namespace protocol {
         void set_paid_subscription_operation::validate() const {
             validate_account_name(account);
             FC_ASSERT(url.size() <
-                      CHAIN_MAX_MEMO_SIZE, "URL is too large");
+                      CHAIN_MAX_MEMO_LENGTH, "URL is too large");
             FC_ASSERT(fc::is_utf8(url), "URL is not UTF8");
             FC_ASSERT(levels >= 0);
             FC_ASSERT(levels <= PAID_SUBSCRIPTION_MAX_LEVEL);

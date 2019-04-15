@@ -49,12 +49,12 @@ namespace graphene { namespace chain {
     void proposal_object::verify_authority(
         const database& db,
         const fc::flat_set<account_name_type>& active_approvals_to_add,
-        const fc::flat_set<account_name_type>& owner_approvals_to_add,
-        const fc::flat_set<account_name_type>& posting_approvals_to_add
+        const fc::flat_set<account_name_type>& master_approvals_to_add,
+        const fc::flat_set<account_name_type>& regular_approvals_to_add
     ) const {
         auto active_approvals = copy_to_heap(available_active_approvals, active_approvals_to_add);
-        auto owner_approvals = copy_to_heap(available_owner_approvals, owner_approvals_to_add);
-        auto posting_approvals = copy_to_heap(available_posting_approvals, posting_approvals_to_add);
+        auto master_approvals = copy_to_heap(available_master_approvals, master_approvals_to_add);
+        auto regular_approvals = copy_to_heap(available_regular_approvals, regular_approvals_to_add);
         auto key_approvals = copy_to_heap(available_key_approvals);
         auto ops = operations();
 
@@ -62,18 +62,18 @@ namespace graphene { namespace chain {
             return authority(db.get<account_authority_object, by_account>(name).active);
         };
 
-        auto get_owner = [&](const account_name_type& name) {
-            return authority(db.get<account_authority_object, by_account>(name).owner);
+        auto get_master = [&](const account_name_type& name) {
+            return authority(db.get<account_authority_object, by_account>(name).master);
         };
 
-        auto get_posting = [&](const account_name_type& name) {
-            return authority(db.get<account_authority_object, by_account>(name).posting);
+        auto get_regular = [&](const account_name_type& name) {
+            return authority(db.get<account_authority_object, by_account>(name).regular);
         };
 
         graphene::protocol::verify_authority(
             ops, key_approvals,
-            get_active, get_owner, get_posting, CHAIN_MAX_SIG_CHECK_DEPTH, false, /* allow committeee */
-            active_approvals, owner_approvals, posting_approvals);
+            get_active, get_master, get_regular, CHAIN_MAX_SIG_CHECK_DEPTH, false, /* allow committeee */
+            active_approvals, master_approvals, regular_approvals);
     }
 
 } } // graphene::chain

@@ -16,10 +16,10 @@ namespace graphene {
             void get_required_active_authorities(flat_set<account_name_type> &) const {
             }
 
-            void get_required_posting_authorities(flat_set<account_name_type> &) const {
+            void get_required_regular_authorities(flat_set<account_name_type> &) const {
             }
 
-            void get_required_owner_authorities(flat_set<account_name_type> &) const {
+            void get_required_master_authorities(flat_set<account_name_type> &) const {
             }
 
             bool is_virtual() const {

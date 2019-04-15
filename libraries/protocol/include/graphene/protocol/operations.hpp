@@ -85,13 +85,14 @@ namespace graphene { namespace protocol {
 
         /*void operation_get_required_authorities( const operation& op,
                                                  flat_set<string>& active,
-                                                 flat_set<string>& owner,
-                                                 flat_set<string>& posting,
+                                                 flat_set<string>& master,
+                                                 flat_set<string>& regular,
                                                  vector<authority>& other );
 
         void operation_validate( const operation& op );*/
 
         bool is_virtual_operation(const operation &op);
+        bool is_data_operation(const operation &op);
 
         struct operation_wrapper {
             operation_wrapper(const operation& op = operation()) : op(op) {}

@@ -30,7 +30,7 @@ namespace graphene {
 
             /**
              *   This plugin scans the blockchain for custom operations containing a valid message and authorized
-             *   by the posting key.
+             *   by the regular key.
              *
              */
             class private_message_plugin final : public appbase::plugin<private_message_plugin> {

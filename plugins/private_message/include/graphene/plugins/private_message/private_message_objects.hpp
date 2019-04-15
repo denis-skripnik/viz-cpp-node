@@ -145,7 +145,7 @@ namespace graphene {
                 std::vector<char> encrypted_message;
 
                 void validate() const;
-                void get_required_posting_authorities(flat_set<account_name_type>& a) const {
+                void get_required_regular_authorities(flat_set<account_name_type>& a) const {
                     a.insert(from);
                 }
             };

@@ -10,7 +10,7 @@
 #include <graphene/plugins/json_rpc/utility.hpp>
 #include <graphene/plugins/json_rpc/plugin.hpp>
 #include <graphene/plugins/database_api/state.hpp>
-#include <graphene/plugins/database_api/api_objects/owner_authority_history_api_object.hpp>
+#include <graphene/plugins/database_api/api_objects/master_authority_history_api_object.hpp>
 #include <graphene/plugins/database_api/api_objects/account_recovery_request_api_object.hpp>
 #include <graphene/plugins/database_api/api_objects/proposal_api_object.hpp>
 #include <graphene/plugins/chain/plugin.hpp>
@@ -108,7 +108,7 @@ DEFINE_API_ARGS(get_accounts,                     msg_pack, std::vector<account_
 DEFINE_API_ARGS(lookup_account_names,             msg_pack, std::vector<optional<account_api_object> >)
 DEFINE_API_ARGS(lookup_accounts,                  msg_pack, std::set<std::string>)
 DEFINE_API_ARGS(get_account_count,                msg_pack, uint64_t)
-DEFINE_API_ARGS(get_owner_history,                msg_pack, std::vector<owner_authority_history_api_object>)
+DEFINE_API_ARGS(get_master_history,               msg_pack, std::vector<master_authority_history_api_object>)
 DEFINE_API_ARGS(get_recovery_request,             msg_pack, optional<account_recovery_request_api_object>)
 DEFINE_API_ARGS(get_escrow,                       msg_pack, optional<escrow_api_object>)
 DEFINE_API_ARGS(get_withdraw_routes,              msg_pack, std::vector<withdraw_route>)
@@ -271,7 +271,7 @@ public:
          */
         (get_account_count)
 
-        (get_owner_history)
+        (get_master_history)
 
         (get_recovery_request)
 

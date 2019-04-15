@@ -17,7 +17,7 @@ namespace graphene { namespace chain {
     using graphene::protocol::asset;
     using graphene::protocol::asset_symbol_type;
 
-    using chain_properties = graphene::protocol::chain_properties_hf4;
+    using chain_properties = graphene::protocol::chain_properties_hf6;
 
     /**
      *  All witnesses with at least 1% net positive approval and
@@ -50,6 +50,10 @@ namespace graphene { namespace chain {
         uint32_t total_missed = 0;
         uint64_t last_aslot = 0;
         uint64_t last_confirmed_block_num = 0;
+        /** Number of blocks produced since beginning of time or last missed block */
+        uint64_t current_run = 0;
+        /** Last block produced when current_run >= CHAIN_IRREVERSIBLE_SUPPORT_MIN_RUN */
+        uint64_t last_supported_block_num = 0;
 
         /**
          *  This is the key used to sign blocks on behalf of this witness
@@ -64,6 +68,8 @@ namespace graphene { namespace chain {
          *  else takes turns being scheduled proportional to their votes.
          */
         share_type votes;
+        uint32_t penalty_percent = 0;
+        share_type counted_votes;
         witness_schedule_type schedule = none; /// How the witness was scheduled the last time it was scheduled
 
         /**
@@ -166,6 +172,7 @@ namespace graphene { namespace chain {
 
 
     struct by_vote_name;
+    struct by_counted_vote_name;
     struct by_name;
     struct by_work;
     struct by_schedule_time;
@@ -190,6 +197,15 @@ namespace graphene { namespace chain {
                 composite_key<
                     witness_object,
                     member<witness_object, share_type, &witness_object::votes>,
+                    member<witness_object, account_name_type, &witness_object::owner>>,
+                composite_key_compare<
+                    std::greater<share_type>,
+                    graphene::protocol::string_less>>,
+            ordered_unique<
+                tag<by_counted_vote_name>,
+                composite_key<
+                    witness_object,
+                    member<witness_object, share_type, &witness_object::counted_votes>,
                     member<witness_object, account_name_type, &witness_object::owner>>,
                 composite_key_compare<
                     std::greater<share_type>,
@@ -239,14 +255,45 @@ namespace graphene { namespace chain {
                 member<witness_schedule_object, witness_schedule_id_type, &witness_schedule_object::id>>>,
         allocator <witness_schedule_object>>;
 
+    class witness_penalty_expire_object
+            : public object<witness_penalty_expire_object_type, witness_penalty_expire_object> {
+    public:
+        template<typename Constructor, typename Allocator>
+        witness_penalty_expire_object(Constructor &&c, allocator <Allocator> a) {
+            c(*this);
+        }
+
+        witness_penalty_expire_object() {
+        }
+
+        id_type id;
+        account_name_type witness;
+        int16_t penalty_percent;
+        time_point_sec expires;
+    };
+    struct by_expiration;
+    typedef multi_index_container <
+        witness_penalty_expire_object,
+        indexed_by<
+            ordered_unique<tag<by_id>,
+                member< witness_penalty_expire_object, witness_penalty_expire_object_id_type, & witness_penalty_expire_object::id>
+            >,
+            ordered_non_unique<tag<by_expiration>,
+                member< witness_penalty_expire_object, time_point_sec, & witness_penalty_expire_object::expires>
+            >
+        >,
+        allocator < witness_penalty_expire_object>
+    >
+    witness_penalty_expire_index;
+
 } }
 
 FC_REFLECT_ENUM(graphene::chain::witness_object::witness_schedule_type, (top)(support)(none))
 
 FC_REFLECT(
     (graphene::chain::witness_object),
-    (id)(owner)(created)(url)(votes)(schedule)(virtual_last_update)(virtual_position)(virtual_scheduled_time)(total_missed)
-    (last_aslot)(last_confirmed_block_num)(signing_key)(props)
+    (id)(owner)(created)(url)(votes)(penalty_percent)(counted_votes)(schedule)(virtual_last_update)(virtual_position)(virtual_scheduled_time)(total_missed)
+    (last_aslot)(last_confirmed_block_num)(current_run)(last_supported_block_num)(signing_key)(props)
     (last_work)(running_version)(hardfork_version_vote)(hardfork_time_vote))
 
 CHAINBASE_SET_INDEX_TYPE(graphene::chain::witness_object, graphene::chain::witness_index)
@@ -257,3 +304,6 @@ FC_REFLECT((graphene::chain::witness_schedule_object),
                 (median_props)(majority_version)
 )
 CHAINBASE_SET_INDEX_TYPE(graphene::chain::witness_schedule_object, graphene::chain::witness_schedule_index)
+
+FC_REFLECT((graphene::chain::witness_penalty_expire_object),(id)(witness)(penalty_percent)(expires))
+CHAINBASE_SET_INDEX_TYPE(graphene::chain::witness_penalty_expire_object, graphene::chain::witness_penalty_expire_index)

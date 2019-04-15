@@ -36,10 +36,10 @@ namespace graphene { namespace chain {
               proposed_operations(a),
               required_active_approvals(a),
               available_active_approvals(a),
-              required_owner_approvals(a),
-              available_owner_approvals(a),
-              required_posting_approvals(a),
-              available_posting_approvals(a),
+              required_master_approvals(a),
+              available_master_approvals(a),
+              required_regular_approvals(a),
+              available_regular_approvals(a),
               available_key_approvals(a) {
             c(*this);
         };
@@ -64,10 +64,10 @@ namespace graphene { namespace chain {
 
         name_set_type required_active_approvals;
         name_set_type available_active_approvals;
-        name_set_type required_owner_approvals;
-        name_set_type available_owner_approvals;
-        name_set_type required_posting_approvals;
-        name_set_type available_posting_approvals;
+        name_set_type required_master_approvals;
+        name_set_type available_master_approvals;
+        name_set_type required_regular_approvals;
+        name_set_type available_regular_approvals;
         key_set_type available_key_approvals;
 
         bool is_authorized_to_execute(const database& db) const;
@@ -75,8 +75,8 @@ namespace graphene { namespace chain {
         void verify_authority(
             const database& db,
             const fc::flat_set<account_name_type>& active_approvals = fc::flat_set<account_name_type>(),
-            const fc::flat_set<account_name_type>& owner_approvals = fc::flat_set<account_name_type>(),
-            const fc::flat_set<account_name_type>& posting_approvals = fc::flat_set<account_name_type>()
+            const fc::flat_set<account_name_type>& master_approvals = fc::flat_set<account_name_type>(),
+            const fc::flat_set<account_name_type>& regular_approvals = fc::flat_set<account_name_type>()
         ) const;
 
         std::vector<protocol::operation> operations() const;

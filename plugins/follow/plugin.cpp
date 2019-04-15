@@ -88,8 +88,8 @@ namespace graphene {
                         if (op.id == plugin::plugin_name) {
                             custom_operation new_cop;
 
-                            new_cop.required_auths = op.required_auths;
-                            new_cop.required_posting_auths = op.required_posting_auths;
+                            new_cop.required_active_auths = op.required_active_auths;
+                            new_cop.required_regular_auths = op.required_regular_auths;
                             new_cop.id = plugin::plugin_name;
                             follow_operation fop;
 

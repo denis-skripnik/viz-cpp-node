@@ -2,7 +2,7 @@
 
 #define CHAIN_STARTUP_VERSION                 (version(1, 0, 0))
 #define CHAIN_HARDFORK_STARTUP_VERSION        (hardfork_version(CHAIN_STARTUP_VERSION))
-#define CHAIN_VERSION                         (version(2, 1, 0))
+#define CHAIN_VERSION                         (version(2, 2, 0))
 #define CHAIN_HARDFORK_VERSION                (hardfork_version(CHAIN_VERSION))
 
 #define CHAIN_NAME                            "VIZ"
@@ -19,16 +19,16 @@
 
 #define CHAIN_MIN_ACCOUNT_CREATION_FEE        1000
 
-#define CHAIN_OWNER_AUTH_RECOVERY_PERIOD                  fc::days(30)
+#define CHAIN_MASTER_AUTH_RECOVERY_PERIOD                 fc::days(30)
 #define CHAIN_ACCOUNT_RECOVERY_REQUEST_EXPIRATION_PERIOD  fc::days(1)
-#define CHAIN_OWNER_UPDATE_LIMIT                          fc::minutes(60)
+#define CHAIN_MASTER_UPDATE_LIMIT                         fc::minutes(60)
 
 #define CHAIN_BLOCK_INTERVAL                  3
 #define CHAIN_BLOCK_WITNESS_REPEAT            1
 #define CHAIN_BLOCKS_PER_YEAR                 (365*24*60*60/CHAIN_BLOCK_INTERVAL)
 #define CHAIN_BLOCKS_PER_DAY                  (24*60*60/CHAIN_BLOCK_INTERVAL)
 #define CHAIN_BLOCKS_PER_HOUR                 (60*60/CHAIN_BLOCK_INTERVAL)
-#define CHAIN_MAX_WITNESS_MISSED_BLOCKS       200 // 10 min after missed block
+#define CHAIN_MAX_WITNESS_MISSED_BLOCKS       200 // ~10 min after first missed block for top witness
 
 #define CHAIN_INITIATOR_NAME                 "viz"
 #define CHAIN_INITIATOR_PUBLIC_KEY_STR       "VIZ6MyX5QiXAXRZk7SYCiqpi6Mtm8UbHWDFSV8HPpt7FJyahCnc2T"
@@ -39,7 +39,6 @@
 #define CHAIN_MAX_WITNESSES                   (CHAIN_MAX_TOP_WITNESSES+CHAIN_MAX_SUPPORT_WITNESSES) /// 21 is more than enough
 #define CHAIN_HARDFORK_REQUIRED_WITNESSES     17 // 17 of the 20 dpos witnesses (19 elected and 1 virtual time) required for hardfork. This guarantees 75% participation on all subsequent rounds.
 #define CHAIN_MAX_TIME_UNTIL_EXPIRATION       (60*60) // seconds,  aka: 1 hour
-#define CHAIN_MAX_MEMO_SIZE                   2048
 #define CHAIN_MAX_PROXY_RECURSION_DEPTH       4
 #define CHAIN_VESTING_WITHDRAW_INTERVALS      28
 #define CHAIN_VESTING_WITHDRAW_INTERVAL_SECONDS (60*60*24) // 1 day per interval
@@ -87,8 +86,8 @@
 #define CHAIN_CREATE_MIN_ACCOUNT_NAME_LENGTH  3
 #define CHAIN_MAX_ACCOUNT_NAME_LENGTH         25
 
-#define CHAIN_MIN_PERMLINK_LENGTH             0
-#define CHAIN_MAX_PERMLINK_LENGTH             256
+#define CHAIN_MAX_URL_LENGTH                  256
+#define CHAIN_MAX_MEMO_LENGTH                 2048
 #define CHAIN_MAX_WITNESS_URL_LENGTH          2048
 
 #define CHAIN_INIT_SUPPLY                     int64_t(50000000000)
@@ -105,6 +104,8 @@
 #define CHAIN_MAX_UNDO_HISTORY                10000
 
 #define CHAIN_IRREVERSIBLE_THRESHOLD          (75 * CHAIN_1_PERCENT)
+/** Irreversibility only counts blocks produced if wit.current_run >= CHAIN_IRREVERSIBLE_SUPPORT_MIN_RUN */
+#define CHAIN_IRREVERSIBLE_SUPPORT_MIN_RUN    2
 #define COMMITTEE_MIN_DURATION                (60*60*24*5)
 #define COMMITTEE_MAX_DURATION                (60*60*24*30)
 #define COMMITTEE_MAX_REQUIRED_AMOUNT         int64_t(CHAIN_INIT_SUPPLY/100)
@@ -114,6 +115,9 @@
 #define CONSENSUS_FLAG_ENERGY_ADDITIONAL_COST 0
 #define CONSENSUS_VOTE_ACCOUNTING_MIN_RSHARES uint32_t(5000000) // default 0.5 SHARES equivalent
 #define CONSENSUS_COMMITTEE_REQUEST_APPROVE_MIN_PERCENT 1000 // default: 10.00%
+#define CONSENSUS_DATA_OPERATIONS_COST_ADDITIONAL_BANDWIDTH 0
+#define CONSENSUS_WITNESS_MISS_PENALTY_PERCENT 100 // default: 1.00%
+#define CONSENSUS_WITNESS_MISS_PENALTY_DURATION (CHAIN_BLOCKS_PER_DAY*CHAIN_BLOCK_INTERVAL) // default: 1 day
 
 #define PAID_SUBSCRIPTION_MAX_LEVEL           1000
 #define PAID_SUBSCRIPTION_MAX_PERIOD          1000 // days

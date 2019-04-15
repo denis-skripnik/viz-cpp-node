@@ -22,6 +22,8 @@ namespace graphene { namespace api {
         public_key_type signing_key;
         api::chain_api_properties props;
         share_type votes;
+        uint32_t penalty_percent;
+        share_type counted_votes;
         fc::uint128_t virtual_last_update;
         fc::uint128_t virtual_position;
         fc::uint128_t virtual_scheduled_time;
@@ -36,6 +38,6 @@ namespace graphene { namespace api {
 
 FC_REFLECT(
     (graphene::api::witness_api_object),
-    (id)(owner)(created)(url)(votes)(virtual_last_update)(virtual_position)(virtual_scheduled_time)
+    (id)(owner)(created)(url)(votes)(penalty_percent)(counted_votes)(virtual_last_update)(virtual_position)(virtual_scheduled_time)
     (total_missed)(last_aslot)(last_confirmed_block_num)(signing_key)(props)
     (last_work)(running_version)(hardfork_version_vote)(hardfork_time_vote))

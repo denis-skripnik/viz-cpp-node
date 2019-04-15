@@ -23,22 +23,22 @@ namespace graphene { namespace chain {
         ) {
             fc::flat_set<account_name_type> operation_approvals;
             fc::flat_set<account_name_type> active_approvals;
-            fc::flat_set<account_name_type> owner_approvals;
-            fc::flat_set<account_name_type> posting_approvals;
+            fc::flat_set<account_name_type> master_approvals;
+            fc::flat_set<account_name_type> regular_approvals;
             fc::flat_set<public_key_type> used_signatures;
 
             operation_approvals.insert(o.active_approvals_to_add.begin(), o.active_approvals_to_add.end());
-            operation_approvals.insert(o.owner_approvals_to_add.begin(), o.owner_approvals_to_add.end());
-            operation_approvals.insert(o.posting_approvals_to_add.begin(), o.posting_approvals_to_add.end());
+            operation_approvals.insert(o.master_approvals_to_add.begin(), o.master_approvals_to_add.end());
+            operation_approvals.insert(o.regular_approvals_to_add.begin(), o.regular_approvals_to_add.end());
 
             // Verify authority doesn't check all cases, it throws an error on a first breaking
             // That is why on a missing authority we add them and rethrow the exception on the following conditions:
             //
             // 1. an irrelevant signature/approval exists
             // 2. the irrelevant signature/approval has came in the operation
-            for (int i = 0; i < 3 /* active + owner or posting */; ++i) {
+            for (int i = 0; i < 3 /* active + master or regular */; ++i) {
                 try {
-                    proposal.verify_authority(db, active_approvals, owner_approvals, posting_approvals);
+                    proposal.verify_authority(db, active_approvals, master_approvals, regular_approvals);
                     return;
                 } catch (const protocol::tx_missing_active_auth& e) {
                     if (!active_approvals.empty()) {
@@ -46,17 +46,17 @@ namespace graphene { namespace chain {
                     }
                     active_approvals.insert(e.missing_accounts.begin(), e.missing_accounts.end());
                     used_signatures.insert(e.used_signatures.begin(), e.used_signatures.end());
-                } catch (const protocol::tx_missing_owner_auth& e) {
-                    if (!owner_approvals.empty()) {
+                } catch (const protocol::tx_missing_master_auth& e) {
+                    if (!master_approvals.empty()) {
                         throw;
                     }
-                    owner_approvals.insert(e.missing_accounts.begin(), e.missing_accounts.end());
+                    master_approvals.insert(e.missing_accounts.begin(), e.missing_accounts.end());
                     used_signatures.insert(e.used_signatures.begin(), e.used_signatures.end());
-                } catch (const protocol::tx_missing_posting_auth& e) {
-                    if (!posting_approvals.empty()) {
+                } catch (const protocol::tx_missing_regular_auth& e) {
+                    if (!regular_approvals.empty()) {
                         throw;
                     }
-                    posting_approvals.insert(e.missing_accounts.begin(), e.missing_accounts.end());
+                    regular_approvals.insert(e.missing_accounts.begin(), e.missing_accounts.end());
                     used_signatures.insert(e.used_signatures.begin(), e.used_signatures.end());
                 } catch (const protocol::tx_irrelevant_sig& e) {
                     for (auto& sig: e.unused_signatures) {
@@ -123,28 +123,28 @@ namespace graphene { namespace chain {
             "Proposal review period must be less than its overall lifetime.");
 
         //Populate the required approval sets
-        flat_set<account_name_type> required_owner;
+        flat_set<account_name_type> required_master;
         flat_set<account_name_type> required_active;
-        flat_set<account_name_type> required_posting;
+        flat_set<account_name_type> required_regular;
         flat_set<account_name_type> required_total;
         std::vector<authority> other;
 
         for (const auto& op : o.proposed_operations) {
-            operation_get_required_authorities(op.op, required_active, required_owner, required_posting, other);
+            operation_get_required_authorities(op.op, required_active, required_master, required_regular, other);
         }
         FC_ASSERT(other.size() == 0); // TODO: what about other???
 
-        // All accounts which must provide both owner and active authority should be omitted from
-        // the active authority set. Owner authority approval implies active authority approval.
-        required_total.insert(required_owner.begin(), required_owner.end());
+        // All accounts which must provide both master and active authority should be omitted from
+        // the active authority set. Master authority approval implies active authority approval.
+        required_total.insert(required_master.begin(), required_master.end());
         remove_existing(required_active, required_total);
         required_total.insert(required_active.begin(), required_active.end());
 
         // For more information, see transaction.cpp
         FC_ASSERT(
-            required_posting.empty() != required_total.empty(),
-            "Can't combine operations required posting authority and active or owner authority");
-        required_total.insert(required_posting.begin(), required_posting.end());
+            required_regular.empty() != required_total.empty(),
+            "Can't combine operations required regular authority and active or master authority");
+        required_total.insert(required_regular.begin(), required_regular.end());
 
         // Doesn't allow proposal with combination of create_account() + some_operation()
         //  because it will be never approved.
@@ -185,8 +185,8 @@ namespace graphene { namespace chain {
             fc::raw::pack(ds, trx.operations);
 
             p.required_active_approvals.insert(required_active.begin(), required_active.end());
-            p.required_owner_approvals.insert(required_owner.begin(), required_owner.end());
-            p.required_posting_approvals.insert(required_posting.begin(), required_posting.end());
+            p.required_master_approvals.insert(required_master.begin(), required_master.end());
+            p.required_regular_approvals.insert(required_regular.begin(), required_regular.end());
         });
 
         for (const auto& account: required_total) {
@@ -217,8 +217,8 @@ namespace graphene { namespace chain {
         if (proposal.review_period_time && now >= *proposal.review_period_time) {
             FC_ASSERT(
                 o.active_approvals_to_add.empty() &&
-                o.owner_approvals_to_add.empty() &&
-                o.posting_approvals_to_add.empty() &&
+                o.master_approvals_to_add.empty() &&
+                o.regular_approvals_to_add.empty() &&
                 o.key_approvals_to_add.empty(),
                 "This proposal is in its review period. No new approvals may be added.");
         }
@@ -230,8 +230,8 @@ namespace graphene { namespace chain {
         };
 
         check_existing(o.active_approvals_to_remove, proposal.available_active_approvals);
-        check_existing(o.owner_approvals_to_remove, proposal.available_owner_approvals);
-        check_existing(o.posting_approvals_to_remove, proposal.available_posting_approvals);
+        check_existing(o.master_approvals_to_remove, proposal.available_master_approvals);
+        check_existing(o.regular_approvals_to_remove, proposal.available_regular_approvals);
         check_existing(o.key_approvals_to_remove, proposal.available_key_approvals);
 
         auto check_duplicate = [&](const auto& to_add, const auto& dst) {
@@ -241,19 +241,19 @@ namespace graphene { namespace chain {
         };
 
         check_duplicate(o.active_approvals_to_add, proposal.available_active_approvals);
-        check_duplicate(o.owner_approvals_to_add, proposal.available_owner_approvals);
-        check_duplicate(o.posting_approvals_to_add, proposal.available_posting_approvals);
+        check_duplicate(o.master_approvals_to_add, proposal.available_master_approvals);
+        check_duplicate(o.regular_approvals_to_add, proposal.available_regular_approvals);
         check_duplicate(o.key_approvals_to_add, proposal.available_key_approvals);
 
         _db.modify(proposal, [&](proposal_object &p){
             p.available_active_approvals.insert(o.active_approvals_to_add.begin(), o.active_approvals_to_add.end());
-            p.available_owner_approvals.insert(o.owner_approvals_to_add.begin(), o.owner_approvals_to_add.end());
-            p.available_posting_approvals.insert(o.posting_approvals_to_add.begin(), o.posting_approvals_to_add.end());
+            p.available_master_approvals.insert(o.master_approvals_to_add.begin(), o.master_approvals_to_add.end());
+            p.available_regular_approvals.insert(o.regular_approvals_to_add.begin(), o.regular_approvals_to_add.end());
             p.available_key_approvals.insert(o.key_approvals_to_add.begin(), o.key_approvals_to_add.end());
 
             remove_existing(p.available_active_approvals, o.active_approvals_to_remove);
-            remove_existing(p.available_owner_approvals, o.owner_approvals_to_remove);
-            remove_existing(p.available_posting_approvals, o.posting_approvals_to_remove);
+            remove_existing(p.available_master_approvals, o.master_approvals_to_remove);
+            remove_existing(p.available_regular_approvals, o.regular_approvals_to_remove);
             remove_existing(p.available_key_approvals, o.key_approvals_to_remove);
         });
 
@@ -261,8 +261,8 @@ namespace graphene { namespace chain {
             // if no ability to add an approval, there is no reason to keep the proposal
             if (now >= *proposal.review_period_time &&
                 proposal.available_active_approvals.empty() &&
-                proposal.available_owner_approvals.empty() &&
-                proposal.available_posting_approvals.empty() &&
+                proposal.available_master_approvals.empty() &&
+                proposal.available_regular_approvals.empty() &&
                 proposal.available_key_approvals.empty()
             ) {
                 _db.remove(proposal);
@@ -292,8 +292,8 @@ namespace graphene { namespace chain {
         FC_ASSERT(
             proposal.author == o.requester ||
             proposal.required_active_approvals.count(o.requester) ||
-            proposal.required_owner_approvals.count(o.requester) ||
-            proposal.required_posting_approvals.count(o.requester),
+            proposal.required_master_approvals.count(o.requester) ||
+            proposal.required_regular_approvals.count(o.requester),
             "Provided authority is not authoritative for this proposal.",
             ("author", o.author)("title", o.title)("requester", o.requester));
 
