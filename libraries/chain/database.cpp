@@ -3649,6 +3649,9 @@ namespace graphene { namespace chain {
             _hardfork_times[CHAIN_HARDFORK_6] = fc::time_point_sec(CHAIN_HARDFORK_6_TIME);
             _hardfork_versions[CHAIN_HARDFORK_6] = CHAIN_HARDFORK_6_VERSION;
 
+            _hardfork_times[CHAIN_HARDFORK_7] = fc::time_point_sec(CHAIN_HARDFORK_7_TIME);
+            _hardfork_versions[CHAIN_HARDFORK_7] = CHAIN_HARDFORK_7_VERSION;
+
             const auto &hardforks = get_hardfork_property_object();
             FC_ASSERT(
                 hardforks.last_hardfork <= CHAIN_NUM_HARDFORKS,
@@ -3925,6 +3928,13 @@ namespace graphene { namespace chain {
                          itr != delegations.end();
                          ++itr) {
                         auto old_delegation_shares=itr->vesting_shares;
+                        //fix excess delegated_vesting_shares (need replay)
+                        modify(get_account(itr->delegator), [&](account_object& a) {
+                            a.delegated_vesting_shares -= old_delegation_shares;
+                        });
+                        modify(get_account(itr->delegatee), [&](account_object& a) {
+                            a.received_vesting_shares -= old_delegation_shares;
+                        });
                         old_delegation_shares=old_delegation_shares*1000;
                         auto old_delegation_tokens=old_delegation_shares*old_price;
                         auto new_delegation_shares=old_delegation_tokens*new_price;
@@ -3946,6 +3956,10 @@ namespace graphene { namespace chain {
                          itr != delegations_by_exp.end();
                          ++itr) {
                         auto old_delegation_shares=itr->vesting_shares;
+                        //fix excess delegated_vesting_shares (need replay)
+                        modify(get_account(itr->delegator), [&](account_object& a) {
+                            a.delegated_vesting_shares -= old_delegation_shares;
+                        });
                         old_delegation_shares=old_delegation_shares*1000;
                         auto old_delegation_tokens=old_delegation_shares*old_price;
                         auto new_delegation_shares=old_delegation_tokens*new_price;
@@ -3982,6 +3996,384 @@ namespace graphene { namespace chain {
                         elog("HF6 witness ${a} recalc votes from ${a}: ${n}", ("a", witness.owner)("n", fair_weight));
 
                         adjust_witness_vote(get(witr->witness), fair_weight);
+                    }
+                    break;
+                }
+                case CHAIN_HARDFORK_7:
+                {
+                    const auto &committee_account = get_account(CHAIN_COMMITTEE_ACCOUNT);
+                    const auto &eidx = get_index<account_index>().indices().get<by_id>();
+                    auto itr = eidx.begin();
+                    while(itr != eidx.end()){
+                        const auto &current = *itr;
+                        ++itr;
+                        if(!current.valid){
+                            elog("HF7 found invalid account ${a}", ("a", current.name));
+                            if(current.proxy != CHAIN_PROXY_TO_SELF_ACCOUNT){
+                                elog("- remove proxy: ${a}", ("a", current.proxy));
+                                std::array<share_type, CHAIN_MAX_PROXY_RECURSION_DEPTH + 1> delta;
+                                delta[0] = -(current.vesting_shares.amount);
+                                for (int i = 0; i < CHAIN_MAX_PROXY_RECURSION_DEPTH; ++i) {
+                                    delta[i + 1] = -(current.proxied_vsf_votes[i]);
+                                }
+                                adjust_proxied_witness_votes(get_account(current.name), delta);
+                            }
+                            //move shares and balance to committee
+                            elog("- add to committee funds: ${a} SHARES, ${b} TOKEN", ("a", current.vesting_shares), ("b", current.balance));
+                            modify(committee_account, [&](account_object &a) {
+                                a.vesting_shares += current.vesting_shares;
+                                a.balance += current.balance;
+                            });
+
+                            //remove from master_authority_history_index
+                            const auto &d1idx = get_index<master_authority_history_index>().indices().get<by_account>();
+                            auto delete_itr1 = d1idx.lower_bound(current.name);
+                            while(delete_itr1 != d1idx.end() &&
+                                   delete_itr1->account == current.name) {
+                                const auto &delete_current = *delete_itr1;
+                                ++delete_itr1;
+                                remove(delete_current);
+                            }
+
+                            //remove from account_metadata_index
+                            const auto &d2idx = get_index<account_metadata_index>().indices().get<by_account>();
+                            auto delete_itr2 = d2idx.lower_bound(current.name);
+                            while(delete_itr2 != d2idx.end() &&
+                                   delete_itr2->account == current.name) {
+                                const auto &delete_current = *delete_itr2;
+                                ++delete_itr2;
+                                remove(delete_current);
+                            }
+
+                            //remove from account_authority_index
+                            const auto &d3idx = get_index<account_authority_index>().indices().get<by_account>();
+                            auto delete_itr3 = d3idx.lower_bound(current.name);
+                            while(delete_itr3 != d3idx.end() &&
+                                   delete_itr3->account == current.name) {
+                                const auto &delete_current = *delete_itr3;
+                                ++delete_itr3;
+                                remove(delete_current);
+                            }
+
+                            //remove from vesting_delegation_expiration_index by_account_expiration
+                            const auto& d4idx = get_index<vesting_delegation_expiration_index>().indices().get<by_account_expiration>();
+                            auto delete_itr4 = d4idx.lower_bound(std::make_tuple(current.name, fc::time_point_sec()));
+                            while(delete_itr4 != d4idx.end() &&
+                                   delete_itr4->delegator == current.name) {
+                                const auto &delete_current = *delete_itr4;
+                                ++delete_itr4;
+                                modify(get_account(delete_current.delegator), [&](account_object& a) {
+                                    a.delegated_vesting_shares -= delete_current.vesting_shares;
+                                });
+                                remove(delete_current);
+                            }
+
+                            //remove from vesting_delegation_index by_delegation
+                            const auto &d5idx = get_index<vesting_delegation_index>().indices().get<by_delegation>();
+                            auto delete_itr5 = d5idx.lower_bound(std::make_tuple(current.name,account_name_type()));
+                            while(delete_itr5 != d5idx.end() &&
+                                   delete_itr5->delegator == current.name) {
+                                const auto &delete_current = *delete_itr5;
+                                ++delete_itr5;
+                                modify(get_account(delete_current.delegator), [&](account_object& a) {
+                                    a.delegated_vesting_shares -= delete_current.vesting_shares;
+                                });
+                                modify(get_account(delete_current.delegatee), [&](account_object& a) {
+                                    a.received_vesting_shares -= delete_current.vesting_shares;
+                                });
+                                remove(delete_current);
+                            }
+
+                            //remove from vesting_delegation_index by_received
+                            const auto &d6idx = get_index<vesting_delegation_index>().indices().get<by_received>();
+                            auto delete_itr6 = d6idx.lower_bound(std::make_tuple(current.name,account_name_type()));
+                            while(delete_itr6 != d6idx.end() &&
+                                   delete_itr6->delegatee == current.name) {
+                                const auto &delete_current = *delete_itr6;
+                                ++delete_itr6;
+                                modify(get_account(delete_current.delegator), [&](account_object& a) {
+                                    a.delegated_vesting_shares -= delete_current.vesting_shares;
+                                });
+                                modify(get_account(delete_current.delegatee), [&](account_object& a) {
+                                    a.received_vesting_shares -= delete_current.vesting_shares;
+                                });
+                                remove(delete_current);
+                            }
+
+                            //remove from account_recovery_request_index
+                            const auto &d7idx = get_index<account_recovery_request_index>().indices().get<by_account>();
+                            auto delete_itr7 = d7idx.lower_bound(std::make_tuple(current.name,account_recovery_request_id_type()));
+                            while(delete_itr7 != d7idx.end() &&
+                                   delete_itr7->account_to_recover == current.name) {
+                                const auto &delete_current = *delete_itr7;
+                                ++delete_itr7;
+                                remove(delete_current);
+                            }
+
+                            //remove from change_recovery_account_request_index
+                            const auto &d8idx = get_index<change_recovery_account_request_index>().indices().get<by_account>();
+                            auto delete_itr8 = d8idx.lower_bound(std::make_tuple(current.name,change_recovery_account_request_id_type()));
+                            while(delete_itr8 != d8idx.end() &&
+                                   delete_itr8->account_to_recover == current.name) {
+                                const auto &delete_current = *delete_itr8;
+                                ++delete_itr8;
+                                remove(delete_current);
+                            }
+
+                            //decrease witnesses_vote_weight from all votes by invalid account
+                            const auto &vidx = get_index<witness_vote_index>().indices().get<by_account_witness>();
+                            auto vitr = vidx.lower_bound(boost::make_tuple(current.id, witness_id_type()));
+                            while (vitr != vidx.end() && vitr->account == current.id) {
+                                adjust_witness_vote(get(vitr->witness),-current.witnesses_vote_weight);
+                                ++vitr;
+                            }
+
+                            //remove from witness_vote_index by_account_witness (remove all votes from invalid account)
+                            const auto &d10idx = get_index<witness_vote_index>().indices().get<by_account_witness>();
+                            auto delete_itr10 = d10idx.lower_bound(boost::make_tuple(current.id, witness_id_type()));
+                            while(delete_itr10 != d10idx.end() &&
+                                   delete_itr10->account == current.id) {
+                                const auto &delete_current = *delete_itr10;
+                                adjust_witness_vote(get(delete_itr10->witness),-current.witnesses_vote_weight);
+                                modify(current, [&](account_object &a) {
+                                    a.witnesses_voted_for--;
+                                });
+                                ++delete_itr10;
+                                remove(delete_current);
+                            }
+
+                            //recalc witnesses_vote_weight (must be 0 after remove all witness votes from invalid account)
+                            share_type current_fair_vote_weight = current.witness_vote_fair_weight();
+                            modify(current, [&](account_object &a) {
+                                a.witnesses_vote_weight = current_fair_vote_weight;
+                            });
+
+                            //look witness object from invalid account
+                            const auto &invalid_witness = find<witness_object, by_name>(current.name);
+                            if(invalid_witness != nullptr){//found witness
+                                //remove invalid witness account from penalty index
+                                const auto &d8idx = get_index<witness_penalty_expire_index>().indices().get<by_account>();
+                                auto delete_itr8 = d8idx.lower_bound(invalid_witness->owner);
+                                while(delete_itr8 != d8idx.end() &&
+                                       delete_itr8->witness == invalid_witness->owner) {
+                                    const auto &delete_current = *delete_itr8;
+                                    ++delete_itr8;
+                                    remove(delete_current);
+                                }
+                                //remove invalid witness account from schedule
+                                const witness_schedule_object &wso = get_witness_schedule_object();
+                                modify(wso, [&](witness_schedule_object &_wso) {
+                                    for (int i = 0; i < _wso.num_scheduled_witnesses; i+=CHAIN_BLOCK_WITNESS_REPEAT) {
+                                        if(_wso.current_shuffled_witnesses[i] == invalid_witness->owner){
+                                            _wso.current_shuffled_witnesses[i] = account_name_type();
+                                        }
+                                    }
+                                });
+                                //recalc witnesses_vote_weight from all votes to invalid witness account (remove votes to invalid witness account)
+                                const auto &vidx = get_index<witness_vote_index>().indices().get<by_witness_account>();
+                                auto vitr = vidx.lower_bound(boost::make_tuple(invalid_witness->id, account_id_type()));
+                                while (vitr != vidx.end() && vitr->witness == invalid_witness->id) {
+                                    const auto &voter_account = get(vitr->account);
+                                    const auto &vidx2 = get_index<witness_vote_index>().indices().get<by_account_witness>();
+                                    auto vitr2 = vidx2.lower_bound(boost::make_tuple(voter_account.id, witness_id_type()));
+                                    while (vitr2 != vidx2.end() && vitr2->account == voter_account.id) {
+                                        adjust_witness_vote(get(vitr2->witness), -voter_account.witnesses_vote_weight);
+                                        ++vitr2;
+                                    }
+
+                                    remove(*vitr);
+
+                                    modify(voter_account, [&](account_object &a) {
+                                        a.witnesses_voted_for--;
+                                    });
+
+                                    share_type fair_vote_weight = voter_account.witness_vote_fair_weight();
+                                    modify(voter_account, [&](account_object &a) {
+                                        a.witnesses_vote_weight = fair_vote_weight;
+                                    });
+
+                                    const auto &vidx3 = get_index<witness_vote_index>().indices().get<by_account_witness>();
+                                    auto vitr3 = vidx3.lower_bound(boost::make_tuple(voter_account.id, witness_id_type()));
+                                    while (vitr3 != vidx3.end() && vitr3->account == voter_account.id) {
+                                        adjust_witness_vote(get(vitr3->witness), voter_account.witnesses_vote_weight);
+                                        ++vitr3;
+                                    }
+                                    ++vitr;
+                                }
+
+                                //remove from witness_index invalid witness account
+                                const auto &d9idx = get_index<witness_index>().indices().get<by_name>();
+                                auto delete_itr9 = d9idx.lower_bound(current.name);
+                                while(delete_itr9 != d9idx.end() &&
+                                       delete_itr9->owner == current.name) {
+                                    const auto &delete_current = *delete_itr9;
+                                    ++delete_itr9;
+                                    remove(delete_current);
+                                }
+                            }
+
+                            //remove all committee votes
+                            const auto &d11idx = get_index<committee_vote_index>().indices().get<by_voter>();
+                            auto delete_itr11 = d11idx.lower_bound(current.name);
+                            while(delete_itr11 != d11idx.end() &&
+                                   delete_itr11->voter == current.name) {
+                                const auto &delete_current = *delete_itr11;
+                                ++delete_itr11;
+                                remove(delete_current);
+                            }
+
+                            //remove all committee requests as creator
+                            const auto &d12idx = get_index<committee_request_index>().indices().get<by_creator>();
+                            auto delete_itr12 = d12idx.lower_bound(current.name);
+                            while(delete_itr12 != d12idx.end() &&
+                                   delete_itr12->creator == current.name) {
+                                const auto &delete_current = *delete_itr12;
+                                ++delete_itr12;
+                                remove(delete_current);
+                            }
+
+                            //remove all committee requests as worker
+                            const auto &d13idx = get_index<committee_request_index>().indices().get<by_worker>();
+                            auto delete_itr13 = d13idx.lower_bound(current.name);
+                            while(delete_itr13 != d13idx.end() &&
+                                   delete_itr13->worker == current.name) {
+                                const auto &delete_current = *delete_itr13;
+                                ++delete_itr13;
+                                remove(delete_current);
+                            }
+
+                            //remove all withdraw routes from
+                            const auto &d14idx = get_index<withdraw_vesting_route_index>().indices().get<by_withdraw_route>();
+                            auto delete_itr14 = d14idx.lower_bound(std::make_tuple(current.id,account_id_type()));
+                            while(delete_itr14 != d14idx.end() &&
+                                   delete_itr14->from_account == current.id) {
+                                const auto &delete_current = *delete_itr14;
+                                ++delete_itr14;
+                                remove(delete_current);
+                            }
+                            //remove all withdraw routes to
+                            const auto &d15idx = get_index<withdraw_vesting_route_index>().indices().get<by_withdraw_route>();
+                            auto delete_itr15 = d15idx.lower_bound(std::make_tuple(account_id_type(),current.id));
+                            while(delete_itr15 != d15idx.end() &&
+                                   delete_itr15->to_account == current.id) {
+                                const auto &delete_current = *delete_itr15;
+                                ++delete_itr15;
+                                remove(delete_current);
+                            }
+
+                            //change all escrow routes from
+                            const auto &d16idx = get_index<escrow_index>().indices().get<by_from_id>();
+                            auto itr16 = d16idx.lower_bound(std::make_tuple(current.name,0));
+                            while(itr16 != d16idx.end() &&
+                                   itr16->from == current.name) {
+                                const auto &e_current = *itr16;
+                                ++itr16;
+                                modify(e_current, [&](escrow_object &esc) {
+                                    esc.from = CHAIN_COMMITTEE_ACCOUNT;
+                                });
+                            }
+
+                            //change all escrow routes from
+                            const auto &d17idx = get_index<escrow_index>().indices().get<by_to>();
+                            auto itr17 = d17idx.lower_bound(std::make_tuple(current.name,0));
+                            while(itr17 != d17idx.end() &&
+                                   itr17->to == current.name) {
+                                const auto &e_current = *itr17;
+                                ++itr17;
+                                modify(e_current, [&](escrow_object &esc) {
+                                    esc.to = CHAIN_COMMITTEE_ACCOUNT;
+                                });
+                            }
+
+                            //change all escrow routes from
+                            const auto &d18idx = get_index<escrow_index>().indices().get<by_agent>();
+                            auto itr18 = d18idx.lower_bound(std::make_tuple(current.name,0));
+                            while(itr18 != d18idx.end() &&
+                                   itr18->agent == current.name) {
+                                const auto &e_current = *itr18;
+                                ++itr18;
+                                modify(e_current, [&](escrow_object &esc) {
+                                    esc.agent = CHAIN_COMMITTEE_ACCOUNT;
+                                });
+                            }
+
+                            //change all invites creator
+                            const auto &d19idx = get_index<invite_index>().indices().get<by_creator>();
+                            auto itr19 = d19idx.lower_bound(current.name);
+                            while(itr19 != d19idx.end() &&
+                                   itr19->creator == current.name) {
+                                const auto &i_current = *itr19;
+                                ++itr19;
+                                modify(i_current, [&](invite_object &i) {
+                                    i.creator = CHAIN_COMMITTEE_ACCOUNT;
+                                });
+                            }
+
+                            //change all invites receiver
+                            const auto &d19idx2 = get_index<invite_index>().indices().get<by_receiver>();
+                            auto itr19_2 = d19idx2.lower_bound(current.name);
+                            while(itr19_2 != d19idx2.end() &&
+                                   itr19_2->receiver == current.name) {
+                                const auto &i_current = *itr19_2;
+                                ++itr19_2;
+                                modify(i_current, [&](invite_object &i) {
+                                    i.receiver = CHAIN_COMMITTEE_ACCOUNT;
+                                });
+                            }
+
+                            //remove all paid subscribes by subscriber
+                            const auto &d20idx = get_index<paid_subscribe_index>().indices().get<by_subscriber>();
+                            auto itr20 = d20idx.lower_bound(current.name);
+                            while(itr20 != d20idx.end() &&
+                                   itr20->subscriber == current.name) {
+                                const auto &i_current = *itr20;
+                                ++itr20;
+                                remove(i_current);
+                            }
+
+                            //remove all paid subscribes by creator
+                            const auto &d21idx = get_index<paid_subscribe_index>().indices().get<by_creator>();
+                            auto itr21 = d21idx.lower_bound(current.name);
+                            while(itr21 != d21idx.end() &&
+                                   itr21->creator == current.name) {
+                                const auto &i_current = *itr21;
+                                ++itr21;
+                                remove(i_current);
+                            }
+
+                            //remove all paid subscription by creator
+                            const auto &d21idx2 = get_index<paid_subscription_index>().indices().get<by_creator>();
+                            auto itr21_2 = d21idx2.lower_bound(current.name);
+                            while(itr21_2 != d21idx2.end() &&
+                                   itr21_2->creator == current.name) {
+                                const auto &i_current = *itr21_2;
+                                ++itr21_2;
+                                remove(i_current);
+                            }
+
+                            //remove all proposals by account
+                            const auto &d22idx = get_index<proposal_index>().indices().get<by_account>();
+                            auto itr22 = d22idx.lower_bound(current.name);
+                            while(itr22 != d22idx.end() &&
+                                   itr22->author == current.name) {
+                                const auto &i_current = *itr22;
+                                ++itr22;
+                                remove(i_current);
+                            }
+
+                            //remove all proposals required approval by account
+                            const auto &d23idx = get_index<required_approval_index>().indices().get<by_account>();
+                            auto itr23 = d23idx.lower_bound(current.name);
+                            while(itr23 != d23idx.end() &&
+                                   itr23->account == current.name) {
+                                const auto &i_current = *itr23;
+                                ++itr23;
+                                remove(i_current);
+                            }
+
+                            //remove invalid account
+                            remove(current);
+                        }
                     }
                     break;
                 }
