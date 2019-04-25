@@ -119,6 +119,16 @@ public:
         auto have = vesting_shares - delegated_vesting_shares;
         return consider_withdrawal ? have - asset(to_withdraw - withdrawn, SHARES_SYMBOL) : have;
     }
+
+    bool valid = true;
+
+    account_name_type account_seller;
+    asset account_offer_price = asset(0, TOKEN_SYMBOL);
+    bool account_on_sale = false;
+
+    account_name_type subaccount_seller;
+    asset subaccount_offer_price = asset(0, TOKEN_SYMBOL);
+    bool subaccount_on_sale = false;
 };
 
 class account_authority_object
@@ -463,6 +473,9 @@ FC_REFLECT((graphene::chain::account_object),
                 (proxied_vsf_votes)(witnesses_voted_for)
                 (last_root_post)(last_post)
                 (average_bandwidth)(lifetime_bandwidth)(last_bandwidth_update)
+                (valid)
+                (account_seller)(account_offer_price)(account_on_sale)
+                (subaccount_seller)(subaccount_offer_price)(subaccount_on_sale)
 )
 CHAINBASE_SET_INDEX_TYPE(graphene::chain::account_object, graphene::chain::account_index)
 
