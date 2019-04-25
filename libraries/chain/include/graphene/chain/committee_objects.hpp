@@ -49,6 +49,7 @@ namespace graphene {
         struct by_request_id;
         struct by_status;
         struct by_creator;
+        struct by_worker;
         struct by_creator_url;
         typedef multi_index_container <
             committee_request_object,
@@ -65,6 +66,9 @@ namespace graphene {
                 >,
                 ordered_non_unique<tag<by_creator>,
                     member<committee_request_object, account_name_type, &committee_request_object::creator>
+                >,
+                ordered_non_unique<tag<by_worker>,
+                    member<committee_request_object, account_name_type, &committee_request_object::worker>
                 >,
                 ordered_unique<tag<by_creator_url>,
                     composite_key<
@@ -99,11 +103,15 @@ namespace graphene {
         };
 
         struct by_request_id;
+        struct by_voter;
         typedef multi_index_container <
             committee_vote_object,
             indexed_by<
                 ordered_unique<tag<by_id>,
                     member<committee_vote_object, committee_vote_object_id_type, &committee_vote_object::id>
+                >,
+                ordered_non_unique<tag<by_voter>,
+                    member<committee_vote_object, account_name_type, &committee_vote_object::voter>
                 >,
                 ordered_non_unique<tag<by_request_id>,
                     member<committee_vote_object, uint32_t, &committee_vote_object::request_id>

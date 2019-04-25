@@ -39,6 +39,8 @@ namespace graphene {
 
         struct by_invite_key;
         struct by_status;
+        struct by_creator;
+        struct by_receiver;
         typedef multi_index_container <
             invite_object,
             indexed_by<
@@ -51,6 +53,12 @@ namespace graphene {
                 >,
                 ordered_non_unique<tag<by_status>,
                     member<invite_object, uint16_t, &invite_object::status>
+                >,
+                ordered_non_unique<tag<by_creator>,
+                    member<invite_object, account_name_type, &invite_object::creator>
+                >,
+                ordered_non_unique<tag<by_receiver>,
+                    member<invite_object, account_name_type, &invite_object::receiver>
                 >
             >,
             allocator <invite_object>
