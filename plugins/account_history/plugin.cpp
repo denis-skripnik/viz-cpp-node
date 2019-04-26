@@ -321,6 +321,24 @@ if( options.count(name) ) { \
             impacted.insert(op.subscriber);
             impacted.insert(op.account);
         }
+
+        void operator()(const set_account_price_operation& op) {
+            impacted.insert(op.account);
+        }
+
+        void operator()(const set_subaccount_price_operation& op) {
+            impacted.insert(op.account);
+        }
+
+        void operator()(const buy_account_operation& op) {
+            impacted.insert(op.buyer);
+        }
+
+        void operator()(const account_sale_operation& op) {
+            impacted.insert(op.buyer);
+            impacted.insert(op.seller);
+            impacted.insert(op.account);
+        }
         //void operator()( const operation& op ){}
     };
 

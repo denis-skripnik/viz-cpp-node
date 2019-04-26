@@ -1,5 +1,6 @@
 #pragma once
 
+#include <graphene/protocol/authority.hpp>
 #include <graphene/protocol/chain_operations.hpp>
 #include <graphene/protocol/proposal_operations.hpp>
 #include <graphene/chain/evaluator.hpp>
@@ -44,6 +45,9 @@ namespace graphene { namespace chain {
         DEFINE_EVALUATOR(award)
         DEFINE_EVALUATOR(set_paid_subscription)
         DEFINE_EVALUATOR(paid_subscribe)
+        DEFINE_EVALUATOR(set_account_price)
+        DEFINE_EVALUATOR(set_subaccount_price)
+        DEFINE_EVALUATOR(buy_account)
 
         class proposal_create_evaluator: public evaluator_impl<proposal_create_evaluator> {
         public:

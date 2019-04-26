@@ -2564,6 +2564,9 @@ namespace graphene { namespace chain {
             _my->_evaluator_registry.register_evaluator<award_evaluator>();
             _my->_evaluator_registry.register_evaluator<set_paid_subscription_evaluator>();
             _my->_evaluator_registry.register_evaluator<paid_subscribe_evaluator>();
+            _my->_evaluator_registry.register_evaluator<set_account_price_evaluator>();
+            _my->_evaluator_registry.register_evaluator<set_subaccount_price_evaluator>();
+            _my->_evaluator_registry.register_evaluator<buy_account_evaluator>();
         }
 
         void database::set_custom_operation_interpreter(const std::string &id, std::shared_ptr<custom_operation_interpreter> registry) {
@@ -4019,7 +4022,7 @@ namespace graphene { namespace chain {
                                 adjust_proxied_witness_votes(get_account(current.name), delta);
                             }
                             //move shares and balance to committee
-                            elog("- add to committee funds: ${a} SHARES, ${b} TOKEN", ("a", current.vesting_shares), ("b", current.balance));
+                            elog("- add to committee funds: ${a} SHARES, ${b} TOKEN", ("a", current.vesting_shares)("b", current.balance));
                             modify(committee_account, [&](account_object &a) {
                                 a.vesting_shares += current.vesting_shares;
                                 a.balance += current.balance;
