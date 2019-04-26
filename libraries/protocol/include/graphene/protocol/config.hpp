@@ -122,6 +122,9 @@
 #define PAID_SUBSCRIPTION_MAX_LEVEL           1000
 #define PAID_SUBSCRIPTION_MAX_PERIOD          1000 // days
 
+#define CHAIN_BLOCK_GENERATION_POSTPONED_TX_LIMIT 5
+#define CHAIN_PENDING_TRANSACTION_EXECUTION_LIMIT fc::milliseconds(200)
+
 /**
  *  Reserved Account IDs with special meaning
  */
