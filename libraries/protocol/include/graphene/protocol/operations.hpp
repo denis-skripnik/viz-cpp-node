@@ -80,7 +80,14 @@ namespace graphene { namespace protocol {
                 paid_subscribe_operation,
                 // virtual operations:
                 paid_subscription_action_operation,
-                cancel_paid_subscription_operation
+                cancel_paid_subscription_operation,
+
+                // VIZ Account sales operations:
+                set_account_price_operation,
+                set_subaccount_price_operation,
+                buy_account_operation,
+                // virtual operations:
+                account_sale_operation
         > operation;
 
         /*void operation_get_required_authorities( const operation& op,

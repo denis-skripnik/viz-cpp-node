@@ -245,6 +245,20 @@ namespace graphene { namespace protocol {
             account_name_type subscriber;
             account_name_type account;
         };
+
+        struct account_sale_operation : public virtual_operation {
+            account_sale_operation() {
+            }
+
+            account_sale_operation(const account_name_type& a, const asset& p, const account_name_type& b, const account_name_type& s)
+                    : account(a), price(p), buyer(b), seller(s) {
+            }
+
+            account_name_type account;
+            asset price;
+            account_name_type buyer;
+            account_name_type seller;
+        };
 } } //graphene::protocol
 
 FC_REFLECT((graphene::protocol::author_reward_operation), (author)(permlink)(token_payout)(vesting_payout))
@@ -265,3 +279,4 @@ FC_REFLECT((graphene::protocol::receive_award_operation), (initiator)(receiver)(
 FC_REFLECT((graphene::protocol::benefactor_award_operation), (initiator)(benefactor)(receiver)(custom_sequence)(memo)(shares))
 FC_REFLECT((graphene::protocol::paid_subscription_action_operation), (subscriber)(account)(level)(amount)(period)(summary_amount))
 FC_REFLECT((graphene::protocol::cancel_paid_subscription_operation), (subscriber)(account))
+FC_REFLECT((graphene::protocol::account_sale_operation), (account)(price)(buyer)(seller))
