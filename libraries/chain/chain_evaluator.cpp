@@ -305,11 +305,11 @@ namespace graphene { namespace chain {
                 int64_t current_energy = std::min(int64_t(initiator.energy +
                                                          regenerated_energy), int64_t(CHAIN_100_PERCENT));
                 FC_ASSERT(current_energy >
-                          0, "Account currently does not have voting energy.");
+                          0, "Account currently does not have voting energy. Current energy: ${e}",("e",current_energy));
 
                 int64_t used_energy = o.energy;
                 FC_ASSERT(used_energy <=
-                          current_energy, "Account does not have enough energy to vote.");
+                          current_energy,"Account does not have enough energy to vote. Current energy: ${e}, used energy: ${u}",("e",current_energy)("u",used_energy));
 
                 int64_t rshares = (
                     (uint128_t(initiator.effective_vesting_shares().amount.value) * used_energy) /
