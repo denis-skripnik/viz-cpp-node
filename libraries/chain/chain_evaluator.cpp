@@ -693,6 +693,7 @@ namespace graphene { namespace chain {
                     account_name_type new_account_name;
                     public_key_type key_from_memo;
                     int anonymous_num;
+                    bool valid=true;
                     if(_db.has_hardfork(CHAIN_HARDFORK_6)){
                         string memo = fc::trim(o.memo);
                         auto colon_pos = memo.find(":");
@@ -700,6 +701,20 @@ namespace graphene { namespace chain {
                             auto login_part = memo.substr(0, colon_pos);
                             auto acc = _db.find< account_object, by_name >( login_part );
                             FC_ASSERT( acc == nullptr, "Account login \"${a}\" must be free.", ("a", login_part) );
+
+                            if(_db.has_hardfork(CHAIN_HARDFORK_7)){
+                                FC_ASSERT( is_valid_domain_name( login_part, CHAIN_ANONYMOUS_ACCOUNT ), "Domain name ${n} is invalid, creator name ${c}", ("n", login_part)("c", CHAIN_ANONYMOUS_ACCOUNT) );
+                                FC_ASSERT( is_valid_account_name( login_part ), "Account name ${n} is invalid", ("n", login_part) );
+                            }
+                            else{
+                                if(!is_valid_domain_name( login_part, CHAIN_ANONYMOUS_ACCOUNT )){
+                                    valid=false;
+                                }
+                                if(!is_valid_account_name( login_part )){
+                                    valid=false;
+                                }
+                            }
+
                             new_account_name=login_part;
                             auto key_part = memo.substr(colon_pos + 1);
                             key_from_memo=public_key_type(key_part);
@@ -730,6 +745,7 @@ namespace graphene { namespace chain {
                         acc.energy = CHAIN_100_PERCENT;
                         acc.last_vote_time = now;
                         acc.recovery_account = "";
+                        acc.valid=valid;
                     });
                     _db.create<account_authority_object>([&](account_authority_object &auth) {
                         auth.account = new_account_name;
@@ -1518,6 +1534,148 @@ namespace graphene { namespace chain {
                     });
                 } else {
                     _db.remove(*delegation);
+                }
+            }
+        }
+
+        void set_account_price_evaluator::do_apply(const set_account_price_operation& op) {
+            const auto& account = _db.get_account(op.account);
+            const auto& account_seller = _db.get_account(op.account_seller);
+            _db.modify(account, [&](account_object& a) {
+                a.account_seller = op.account_seller;
+                a.account_offer_price = op.account_offer_price;
+                a.account_on_sale = op.account_on_sale;
+            });
+        }
+
+        void set_subaccount_price_evaluator::do_apply(const set_subaccount_price_operation& op) {
+            const auto& account = _db.get_account(op.account);
+            const auto& subaccount_seller = _db.get_account(op.subaccount_seller);
+            _db.modify(account, [&](account_object& a) {
+                a.subaccount_seller = op.subaccount_seller;
+                a.subaccount_offer_price = op.subaccount_offer_price;
+                a.subaccount_on_sale = op.subaccount_on_sale;
+            });
+        }
+
+        void buy_account_evaluator::do_apply(const buy_account_operation& op) {
+            const auto& buyer = _db.get_account(op.buyer);
+            const auto& median_props = _db.get_witness_schedule_object().median_props;
+
+            FC_ASSERT(op.account_authorities_key != public_key_type(), "Account authorities key cannot be blank.");
+
+            FC_ASSERT(op.tokens_to_shares >= median_props.account_creation_fee,
+                "Inssufficient amount tokens_to_shares: required ${f}, ${p} provided.",
+                ("f", median_props.account_creation_fee)("p", op.tokens_to_shares));
+
+            auto acc = _db.find< account_object, by_name >( op.account );
+            if(acc != nullptr){//exist
+                const auto& account = _db.get_account(op.account);
+                const auto& account_auth = _db.get<account_authority_object, by_account>(op.account);
+                if(!account.account_on_sale){
+                    FC_ASSERT(false, "Account not on sale.");
+                }
+                else{
+                    const auto& account_seller = _db.get_account(account.account_seller);
+                    FC_ASSERT(account.account_offer_price == op.account_offer_price,
+                        "Account offer price must be equal account_offer_price in target account: required ${a}, ${p} provided.",("a",account.account_offer_price)("p",op.account_offer_price));
+                    FC_ASSERT(buyer.balance >= (account.account_offer_price + op.tokens_to_shares),
+                        "Inssufficient balance for account_offer_price and tokens_to_shares: required ${a}, ${b} available,",("a",(account.account_offer_price + op.tokens_to_shares))("b",buyer.balance));
+
+                    _db.adjust_balance(buyer, -account.account_offer_price);
+                    _db.adjust_balance(account_seller, account.account_offer_price);
+
+                    _db.adjust_balance(buyer, -op.tokens_to_shares);
+                    _db.create_vesting(account, op.tokens_to_shares);
+
+                    public_key_type account_authorities_key(op.account_authorities_key);
+
+                    _db.modify(account, [&](account_object &a) {
+                        a.account_seller = "";
+                        a.account_offer_price = asset(0, TOKEN_SYMBOL);
+                        a.account_on_sale=false;
+
+                        a.subaccount_seller = "";
+                        a.subaccount_offer_price = asset(0, TOKEN_SYMBOL);
+                        a.subaccount_on_sale=false;
+
+                        a.memo_key = account_authorities_key;
+                        a.recovery_account = op.buyer;
+                        a.last_account_update = _db.head_block_time();
+                    });
+                    _db.modify(account_auth, [&](account_authority_object &auth) {
+                        auth.master.clear();
+                        auth.master.add_authority( account_authorities_key, 1 );
+                        auth.master.weight_threshold = 1;
+                        auth.active  = auth.master;
+                        auth.regular = auth.active;
+                        auth.last_master_update = _db.head_block_time();
+                    });
+                    _db.push_virtual_operation(
+                        account_sale_operation(op.account,op.account_offer_price,op.buyer,account.account_seller));
+                }
+            }
+            else{//not exist, try buy subaccount
+                string account_string = fc::trim(op.account);
+                auto colon_pos = account_string.find(".");
+                if(colon_pos != std::string::npos) {
+                    auto subaccount_part = account_string.substr(0, colon_pos);
+                    auto account_part = account_string.substr(colon_pos + 1);
+
+                    auto acc = _db.find< account_object, by_name >( account_part );
+                    FC_ASSERT( acc != nullptr, "Account \"${a}\" not found.", ("a", account_part) );
+
+                    FC_ASSERT( is_valid_account_name( account_part ), "Account part ${n} is invalid", ("n", account_part) );
+                    FC_ASSERT( is_valid_account_name( subaccount_part ), "Subaccount part name ${n} is invalid", ("n", subaccount_part) );
+                    FC_ASSERT( is_valid_domain_name( subaccount_part, account_part ), "Subaccount part ${s} is invalid, account part ${c}", ("s", subaccount_part)("a", account_part) );
+
+                    const auto& account = _db.get_account(account_part);
+
+                    if(!account.subaccount_on_sale){
+                        FC_ASSERT(false, "Subccount not on sale.");
+                    }
+                    else{
+                        const auto& account_seller = _db.get_account(account.subaccount_seller);
+                        FC_ASSERT(account.subaccount_offer_price == op.account_offer_price,
+                            "Account offer price must be equal subaccount_offer_price in target account: required ${a}, ${p} provided.",("a",account.subaccount_offer_price)("p",op.account_offer_price));
+                        FC_ASSERT(buyer.balance >= (account.subaccount_offer_price + op.tokens_to_shares),
+                            "Inssufficient balance for subaccount_offer_price and tokens_to_shares: required ${a}, ${b} available,",("a",(account.subaccount_offer_price + op.tokens_to_shares))("b",buyer.balance));
+
+                        _db.adjust_balance(buyer, -account.subaccount_offer_price);
+                        _db.adjust_balance(account_seller, account.subaccount_offer_price);
+
+                        public_key_type account_authorities_key(op.account_authorities_key);
+
+                        account_name_type new_account_name=op.account;
+                        const auto now = _db.head_block_time();
+
+                        _db.create<account_object>([&](account_object &a) {
+                            a.name = new_account_name;
+                            a.memo_key = account_authorities_key;
+                            a.created = now;
+                            a.energy = CHAIN_100_PERCENT;
+                            a.last_vote_time = now;
+                            a.recovery_account = op.buyer;
+                        });
+                        _db.create<account_authority_object>([&](account_authority_object &auth) {
+                            auth.account = new_account_name;
+                            auth.master.add_authority(account_authorities_key, 1);
+                            auth.master.weight_threshold = 1;
+                            auth.active = auth.master;
+                            auth.regular = auth.active;
+                        });
+                        _db.create<account_metadata_object>([&](account_metadata_object& m) {
+                            m.account = new_account_name;
+                        });
+                        const auto &new_account = _db.get_account(new_account_name);
+                        _db.adjust_balance(buyer, -op.tokens_to_shares);
+                        _db.create_vesting(new_account, op.tokens_to_shares);
+                        _db.push_virtual_operation(
+                            account_sale_operation(op.account,op.account_offer_price,op.buyer,account.subaccount_seller));
+                    }
+                }
+                else{
+                    FC_ASSERT( false, "Account \"${a}\" not found.", ("a", op.account) );
                 }
             }
         }
