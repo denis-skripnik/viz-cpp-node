@@ -184,6 +184,22 @@ public:
     time_point_sec min_delegation_time;
 };
 
+class fix_vesting_delegation_object: public object<fix_vesting_delegation_object_type, fix_vesting_delegation_object> {
+public:
+    template<typename Constructor, typename Allocator>
+    fix_vesting_delegation_object(Constructor&& c, allocator<Allocator> a) {
+        c(*this);
+    }
+
+    fix_vesting_delegation_object() {
+    }
+
+    id_type id;
+    account_name_type delegator;
+    account_name_type delegatee;
+    asset vesting_shares;
+};
+
 class vesting_delegation_expiration_object: public object<vesting_delegation_expiration_object_type, vesting_delegation_expiration_object> {
 public:
     template<typename Constructor, typename Allocator>
@@ -369,6 +385,17 @@ using vesting_delegation_index = multi_index_container<
     allocator<vesting_delegation_object>
 >;
 
+using fix_vesting_delegation_index = multi_index_container<
+    fix_vesting_delegation_object,
+    indexed_by<
+        ordered_unique<
+            tag<by_id>,
+            member<fix_vesting_delegation_object, fix_vesting_delegation_id_type, &fix_vesting_delegation_object::id>
+        >
+    >,
+    allocator<fix_vesting_delegation_object>
+>;
+
 struct by_expiration;
 struct by_account_expiration;
 
@@ -489,6 +516,9 @@ CHAINBASE_SET_INDEX_TYPE(graphene::chain::account_metadata_object, graphene::cha
 
 FC_REFLECT((graphene::chain::vesting_delegation_object), (id)(delegator)(delegatee)(vesting_shares)(min_delegation_time))
 CHAINBASE_SET_INDEX_TYPE(graphene::chain::vesting_delegation_object, graphene::chain::vesting_delegation_index)
+
+FC_REFLECT((graphene::chain::fix_vesting_delegation_object), (id)(delegator)(delegatee)(vesting_shares))
+CHAINBASE_SET_INDEX_TYPE(graphene::chain::fix_vesting_delegation_object, graphene::chain::fix_vesting_delegation_index)
 
 FC_REFLECT((graphene::chain::vesting_delegation_expiration_object), (id)(delegator)(vesting_shares)(expiration))
 CHAINBASE_SET_INDEX_TYPE(graphene::chain::vesting_delegation_expiration_object, graphene::chain::vesting_delegation_expiration_index)
