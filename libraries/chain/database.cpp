@@ -3658,6 +3658,9 @@ namespace graphene { namespace chain {
             _hardfork_times[CHAIN_HARDFORK_7] = fc::time_point_sec(CHAIN_HARDFORK_7_TIME);
             _hardfork_versions[CHAIN_HARDFORK_7] = CHAIN_HARDFORK_7_VERSION;
 
+            _hardfork_times[CHAIN_HARDFORK_8] = fc::time_point_sec(CHAIN_HARDFORK_8_TIME);
+            _hardfork_versions[CHAIN_HARDFORK_8] = CHAIN_HARDFORK_8_VERSION;
+
             const auto &hardforks = get_hardfork_property_object();
             FC_ASSERT(
                 hardforks.last_hardfork <= CHAIN_NUM_HARDFORKS,
@@ -3935,14 +3938,14 @@ namespace graphene { namespace chain {
                          ++itr) {
                         auto old_delegation_shares=itr->vesting_shares;
                         //fix excess delegated_vesting_shares (need hf7 fix object)
-	                    create<fix_vesting_delegation_object>([&](fix_vesting_delegation_object& o) {
-	                        o.delegator = itr->delegator;
-	                        o.delegatee = itr->delegatee;
-	                        o.vesting_shares = old_delegation_shares;
+                        create<fix_vesting_delegation_object>([&](fix_vesting_delegation_object& o) {
+                            o.delegator = itr->delegator;
+                            o.delegatee = itr->delegatee;
+                            o.vesting_shares = old_delegation_shares;
                             elog("!!! HF6 delay fix decrease ${a} delegated_vesting_shares: ${n}", ("a", itr->delegator)("n", old_delegation_shares));
                             elog("!!! HF6 delay fix decrease ${a} received_vesting_shares: ${n}", ("a", itr->delegatee)("n", old_delegation_shares));
-	                    });
-	                    /*
+                        });
+                        /*
                         modify(get_account(itr->delegator), [&](account_object& a) {
                             a.delegated_vesting_shares -= old_delegation_shares;
                         });
@@ -3972,12 +3975,12 @@ namespace graphene { namespace chain {
                          ++itr) {
                         auto old_delegation_shares=itr->vesting_shares;
                         //fix excess delegated_vesting_shares (need hf7 fix object)
-	                    create<fix_vesting_delegation_object>([&](fix_vesting_delegation_object& o) {
-	                        o.delegator = itr->delegator;
-	                        o.vesting_shares = old_delegation_shares;
+                        create<fix_vesting_delegation_object>([&](fix_vesting_delegation_object& o) {
+                            o.delegator = itr->delegator;
+                            o.vesting_shares = old_delegation_shares;
                             elog("!!! HF6 delay fix decrease ${a} delegated_vesting_shares: ${n}", ("a", itr->delegator)("n", old_delegation_shares));
-	                    });
-	                    /*
+                        });
+                        /*
                         modify(get_account(itr->delegator), [&](account_object& a) {
                             a.delegated_vesting_shares -= old_delegation_shares;
                         });
@@ -4031,17 +4034,17 @@ namespace graphene { namespace chain {
                         const auto &fix_current = *fix_itr;
                         ++fix_itr;
                         if(fix_current.delegator!=""){
-	                        modify(get_account(fix_current.delegator), [&](account_object& a) {
-	                            a.delegated_vesting_shares -= fix_current.vesting_shares;
-                        		elog("!!! HF7 delayed fix decrease ${a} delegated_vesting_shares: ${n}", ("a", fix_current.delegator)("n", fix_current.vesting_shares));
-	                        });
-	                    }
-	                    if(fix_current.delegatee!=""){
-	                        modify(get_account(fix_current.delegatee), [&](account_object& a) {
-	                            a.received_vesting_shares -= fix_current.vesting_shares;
-	                            elog("!!! HF7 delayed fix decrease ${a} received_vesting_shares: ${n}", ("a", fix_current.delegatee)("n", fix_current.vesting_shares));
-	                        });
-	                    }
+                            modify(get_account(fix_current.delegator), [&](account_object& a) {
+                                a.delegated_vesting_shares -= fix_current.vesting_shares;
+                                elog("!!! HF7 delayed fix decrease ${a} delegated_vesting_shares: ${n}", ("a", fix_current.delegator)("n", fix_current.vesting_shares));
+                            });
+                        }
+                        if(fix_current.delegatee!=""){
+                            modify(get_account(fix_current.delegatee), [&](account_object& a) {
+                                a.received_vesting_shares -= fix_current.vesting_shares;
+                                elog("!!! HF7 delayed fix decrease ${a} received_vesting_shares: ${n}", ("a", fix_current.delegatee)("n", fix_current.vesting_shares));
+                            });
+                        }
                         remove(fix_current);
                     }
 
@@ -4417,6 +4420,44 @@ namespace graphene { namespace chain {
                             //remove invalid account
                             remove(current);
                         }
+                    }
+                    break;
+                }
+                case CHAIN_HARDFORK_8:
+                {
+                    //refresh delegated_vesting_shares and received_vesting_shares
+                    const auto &eidx = get_index<account_index>().indices().get<by_id>();
+                    auto itr = eidx.begin();
+                    while(itr != eidx.end()){
+                        const auto &current = *itr;
+                        ++itr;
+                        modify(current, [&](account_object& a) {
+                            a.delegated_vesting_shares=asset(0, SHARES_SYMBOL);
+                            a.received_vesting_shares=asset(0, SHARES_SYMBOL);
+                        });
+                    }
+
+                    //recalc delegations
+                    const auto& delegations = get_index<vesting_delegation_index>().indices().get<by_id>();
+                    for (auto itr = delegations.begin();
+                         itr != delegations.end();
+                         ++itr) {
+                        modify(get_account(itr->delegator), [&](account_object& a) {
+                            a.delegated_vesting_shares += itr->vesting_shares;
+                        });
+                        modify(get_account(itr->delegatee), [&](account_object& a) {
+                            a.received_vesting_shares += itr->vesting_shares;
+                        });
+                    }
+
+                    //recalc expiring delegations
+                    const auto& delegations_by_exp = get_index<vesting_delegation_expiration_index>().indices().get<by_id>();
+                    for (auto itr = delegations_by_exp.begin();
+                         itr != delegations_by_exp.end();
+                         ++itr) {
+                        modify(get_account(itr->delegator), [&](account_object& a) {
+                            a.delegated_vesting_shares += itr->vesting_shares;
+                        });
                     }
                     break;
                 }
