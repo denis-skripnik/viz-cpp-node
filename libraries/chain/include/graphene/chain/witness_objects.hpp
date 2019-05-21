@@ -272,11 +272,15 @@ namespace graphene { namespace chain {
         time_point_sec expires;
     };
     struct by_expiration;
+    struct by_account;
     typedef multi_index_container <
         witness_penalty_expire_object,
         indexed_by<
             ordered_unique<tag<by_id>,
                 member< witness_penalty_expire_object, witness_penalty_expire_object_id_type, & witness_penalty_expire_object::id>
+            >,
+            ordered_non_unique<tag<by_account>,
+                member< witness_penalty_expire_object, account_name_type, & witness_penalty_expire_object::witness>
             >,
             ordered_non_unique<tag<by_expiration>,
                 member< witness_penalty_expire_object, time_point_sec, & witness_penalty_expire_object::expires>

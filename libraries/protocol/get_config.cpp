@@ -63,6 +63,8 @@ namespace graphene {
             result["TOKEN_SYMBOL"] = TOKEN_SYMBOL;
             result["SHARES_SYMBOL"] = SHARES_SYMBOL;
             result["CHAIN_NAME"] = CHAIN_NAME;
+            result["CHAIN_BLOCK_GENERATION_POSTPONED_TX_LIMIT"] = CHAIN_BLOCK_GENERATION_POSTPONED_TX_LIMIT;
+            result["CHAIN_PENDING_TRANSACTION_EXECUTION_LIMIT"] = CHAIN_PENDING_TRANSACTION_EXECUTION_LIMIT;
 
             return result;
         }

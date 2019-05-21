@@ -368,7 +368,7 @@ namespace graphene { namespace protocol {
         }
 
         void paid_subscribe_operation::validate() const {
-        	validate_account_name(subscriber);
+            validate_account_name(subscriber);
             validate_account_name(account);
             FC_ASSERT(level >= 0);
             FC_ASSERT(level <= PAID_SUBSCRIPTION_MAX_LEVEL);
@@ -378,6 +378,29 @@ namespace graphene { namespace protocol {
                       0, "Cannot set subscription with negative or zero amount");
             FC_ASSERT(period > 0, "Cannot set negative or zero period");
             FC_ASSERT(period <= PAID_SUBSCRIPTION_MAX_PERIOD);
+        }
+
+        void set_account_price_operation::validate() const {
+            validate_account_name(account);
+            validate_account_name(account_seller);
+            FC_ASSERT(is_asset_type(account_offer_price, TOKEN_SYMBOL), "Account offer price must be TOKEN_SYMBOL");
+            FC_ASSERT(account_offer_price.amount > 0, "Cannot set account offer price with negative or zero amount");
+        }
+
+        void set_subaccount_price_operation::validate() const {
+            validate_account_name(account);
+            validate_account_name(subaccount_seller);
+            FC_ASSERT(is_asset_type(subaccount_offer_price, TOKEN_SYMBOL), "Subaccount offer price must be TOKEN_SYMBOL");
+            FC_ASSERT(subaccount_offer_price.amount > 0, "Cannot set subaccount offer price with negative or zero amount");
+        }
+
+        void buy_account_operation::validate() const {
+            validate_account_name(buyer);
+            validate_account_name(account);
+            FC_ASSERT(is_asset_type(account_offer_price, TOKEN_SYMBOL), "Account offer price must be TOKEN_SYMBOL");
+            FC_ASSERT(account_offer_price.amount > 0, "Offer price cannot be negative or zero amount");
+            FC_ASSERT(is_asset_type(tokens_to_shares, TOKEN_SYMBOL), "Token to shares must be TOKEN_SYMBOL");
+            FC_ASSERT(tokens_to_shares.amount > 0, "Token to shares cannot be negative or zero amount");
         }
 
 } } // graphene::protocol

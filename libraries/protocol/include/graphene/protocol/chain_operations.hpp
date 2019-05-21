@@ -934,6 +934,46 @@ namespace graphene { namespace protocol {
                 a.insert(subscriber);
             }
         };
+
+        struct set_account_price_operation : public base_operation {
+            account_name_type account;
+            account_name_type account_seller;
+            asset account_offer_price;
+            bool account_on_sale;
+
+            void validate() const;
+
+            void get_required_master_authorities(flat_set<account_name_type> &a) const {
+                a.insert(account);
+            }
+        };
+
+        struct set_subaccount_price_operation : public base_operation {
+            account_name_type account;
+            account_name_type subaccount_seller;
+            asset subaccount_offer_price;
+            bool subaccount_on_sale;
+
+            void validate() const;
+
+            void get_required_master_authorities(flat_set<account_name_type> &a) const {
+                a.insert(account);
+            }
+        };
+
+        struct buy_account_operation : public base_operation {
+        	account_name_type buyer;
+            account_name_type account;
+            asset account_offer_price;
+            public_key_type account_authorities_key;
+            asset tokens_to_shares;
+
+            void validate() const;
+
+            void get_required_active_authorities(flat_set<account_name_type> &a) const {
+                a.insert(buyer);
+            }
+        };
 } } // graphene::protocol
 
 
@@ -1004,3 +1044,6 @@ FC_REFLECT((graphene::protocol::versioned_chain_properties_update_operation), (o
 FC_REFLECT((graphene::protocol::award_operation), (initiator)(receiver)(energy)(custom_sequence)(memo)(beneficiaries));
 FC_REFLECT((graphene::protocol::set_paid_subscription_operation), (account)(url)(levels)(amount)(period));
 FC_REFLECT((graphene::protocol::paid_subscribe_operation), (subscriber)(account)(level)(amount)(period)(auto_renewal));
+FC_REFLECT((graphene::protocol::set_account_price_operation), (account)(account_seller)(account_offer_price)(account_on_sale));
+FC_REFLECT((graphene::protocol::set_subaccount_price_operation), (account)(subaccount_seller)(subaccount_offer_price)(subaccount_on_sale));
+FC_REFLECT((graphene::protocol::buy_account_operation), (buyer)(account)(account_offer_price)(account_authorities_key)(tokens_to_shares));

@@ -61,6 +61,7 @@ namespace graphene { namespace chain {
             escrow_object_type,
             block_stats_object_type,
             vesting_delegation_object_type,
+            fix_vesting_delegation_object_type,
             vesting_delegation_expiration_object_type,
             account_metadata_object_type,
             proposal_object_type,
@@ -95,6 +96,7 @@ namespace graphene { namespace chain {
         class escrow_object;
         class block_stats_object;
         class vesting_delegation_object;
+        class fix_vesting_delegation_object;
         class vesting_delegation_expiration_object;
         class account_metadata_object;
         class proposal_object;
@@ -125,6 +127,7 @@ namespace graphene { namespace chain {
         typedef object_id<escrow_object> escrow_id_type;
         typedef object_id<block_stats_object> block_stats_id_type;
         typedef object_id<vesting_delegation_object> vesting_delegation_id_type;
+        typedef object_id<fix_vesting_delegation_object> fix_vesting_delegation_id_type;
         typedef object_id<vesting_delegation_expiration_object> vesting_delegation_expiration_id_type;
         typedef object_id<account_metadata_object> account_metadata_id_type;
         typedef object_id<proposal_object> proposal_object_id_type;
@@ -220,6 +223,7 @@ FC_REFLECT_ENUM(graphene::chain::object_type,
                 (escrow_object_type)
                 (block_stats_object_type)
                 (vesting_delegation_object_type)
+                (fix_vesting_delegation_object_type)
                 (vesting_delegation_expiration_object_type)
                 (account_metadata_object_type)
                 (proposal_object_type)

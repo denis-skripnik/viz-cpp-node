@@ -75,12 +75,23 @@ struct account_api_object {
     time_point_sec last_bandwidth_update;
 
     set<string> witness_votes;
+
+    bool valid;
+
+    account_name_type account_seller;
+    asset account_offer_price;
+    bool account_on_sale;
+
+    account_name_type subaccount_seller;
+    asset subaccount_offer_price;
+    bool subaccount_on_sale;
 };
 
 } } // graphene::api
 
 
-FC_REFLECT((graphene::api::account_api_object),
+FC_REFLECT(
+	(graphene::api::account_api_object),
     (id)(name)(master_authority)(active_authority)(regular_authority)(memo_key)(json_metadata)(proxy)(referrer)(last_master_update)(last_account_update)
     (created)
     (recovery_account)(last_account_recovery)(subcontent_count)(vote_count)
@@ -90,6 +101,10 @@ FC_REFLECT((graphene::api::account_api_object),
     (curation_rewards)(posting_rewards)(receiver_awards)(benefactor_awards)(proxied_vsf_votes)(witnesses_voted_for)
     (witnesses_vote_weight)(last_post)(last_root_post)
     (average_bandwidth)(lifetime_bandwidth)(last_bandwidth_update)
-    (witness_votes))
+    (witness_votes)
+    (valid)
+    (account_seller)(account_offer_price)(account_on_sale)
+    (subaccount_seller)(subaccount_offer_price)(subaccount_on_sale)
+)
 
 #endif //CHAIN_ACCOUNT_API_OBJ_HPP

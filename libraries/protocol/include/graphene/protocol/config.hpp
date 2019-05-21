@@ -2,7 +2,7 @@
 
 #define CHAIN_STARTUP_VERSION                 (version(1, 0, 0))
 #define CHAIN_HARDFORK_STARTUP_VERSION        (hardfork_version(CHAIN_STARTUP_VERSION))
-#define CHAIN_VERSION                         (version(2, 2, 0))
+#define CHAIN_VERSION                         (version(2, 4, 0))
 #define CHAIN_HARDFORK_VERSION                (hardfork_version(CHAIN_VERSION))
 
 #define CHAIN_NAME                            "VIZ"
@@ -121,6 +121,9 @@
 
 #define PAID_SUBSCRIPTION_MAX_LEVEL           1000
 #define PAID_SUBSCRIPTION_MAX_PERIOD          1000 // days
+
+#define CHAIN_BLOCK_GENERATION_POSTPONED_TX_LIMIT 5
+#define CHAIN_PENDING_TRANSACTION_EXECUTION_LIMIT fc::milliseconds(200)
 
 /**
  *  Reserved Account IDs with special meaning

@@ -119,6 +119,16 @@ public:
         auto have = vesting_shares - delegated_vesting_shares;
         return consider_withdrawal ? have - asset(to_withdraw - withdrawn, SHARES_SYMBOL) : have;
     }
+
+    bool valid = true;
+
+    account_name_type account_seller;
+    asset account_offer_price = asset(0, TOKEN_SYMBOL);
+    bool account_on_sale = false;
+
+    account_name_type subaccount_seller;
+    asset subaccount_offer_price = asset(0, TOKEN_SYMBOL);
+    bool subaccount_on_sale = false;
 };
 
 class account_authority_object
@@ -172,6 +182,22 @@ public:
     account_name_type delegatee;
     asset vesting_shares;
     time_point_sec min_delegation_time;
+};
+
+class fix_vesting_delegation_object: public object<fix_vesting_delegation_object_type, fix_vesting_delegation_object> {
+public:
+    template<typename Constructor, typename Allocator>
+    fix_vesting_delegation_object(Constructor&& c, allocator<Allocator> a) {
+        c(*this);
+    }
+
+    fix_vesting_delegation_object() {
+    }
+
+    id_type id;
+    account_name_type delegator;
+    account_name_type delegatee;
+    asset vesting_shares;
 };
 
 class vesting_delegation_expiration_object: public object<vesting_delegation_expiration_object_type, vesting_delegation_expiration_object> {
@@ -359,6 +385,17 @@ using vesting_delegation_index = multi_index_container<
     allocator<vesting_delegation_object>
 >;
 
+using fix_vesting_delegation_index = multi_index_container<
+    fix_vesting_delegation_object,
+    indexed_by<
+        ordered_unique<
+            tag<by_id>,
+            member<fix_vesting_delegation_object, fix_vesting_delegation_id_type, &fix_vesting_delegation_object::id>
+        >
+    >,
+    allocator<fix_vesting_delegation_object>
+>;
+
 struct by_expiration;
 struct by_account_expiration;
 
@@ -463,6 +500,9 @@ FC_REFLECT((graphene::chain::account_object),
                 (proxied_vsf_votes)(witnesses_voted_for)
                 (last_root_post)(last_post)
                 (average_bandwidth)(lifetime_bandwidth)(last_bandwidth_update)
+                (valid)
+                (account_seller)(account_offer_price)(account_on_sale)
+                (subaccount_seller)(subaccount_offer_price)(subaccount_on_sale)
 )
 CHAINBASE_SET_INDEX_TYPE(graphene::chain::account_object, graphene::chain::account_index)
 
@@ -476,6 +516,9 @@ CHAINBASE_SET_INDEX_TYPE(graphene::chain::account_metadata_object, graphene::cha
 
 FC_REFLECT((graphene::chain::vesting_delegation_object), (id)(delegator)(delegatee)(vesting_shares)(min_delegation_time))
 CHAINBASE_SET_INDEX_TYPE(graphene::chain::vesting_delegation_object, graphene::chain::vesting_delegation_index)
+
+FC_REFLECT((graphene::chain::fix_vesting_delegation_object), (id)(delegator)(delegatee)(vesting_shares))
+CHAINBASE_SET_INDEX_TYPE(graphene::chain::fix_vesting_delegation_object, graphene::chain::fix_vesting_delegation_index)
 
 FC_REFLECT((graphene::chain::vesting_delegation_expiration_object), (id)(delegator)(vesting_shares)(expiration))
 CHAINBASE_SET_INDEX_TYPE(graphene::chain::vesting_delegation_expiration_object, graphene::chain::vesting_delegation_expiration_index)
