@@ -269,6 +269,8 @@ public:
 
 struct by_name;
 struct by_next_vesting_withdrawal;
+struct by_account_on_sale;
+struct by_subaccount_on_sale;
 
 /**
  * @ingroup object_index
@@ -278,6 +280,10 @@ typedef multi_index_container<
         indexed_by<
                 ordered_unique<tag<by_id>,
                         member<account_object, account_id_type, &account_object::id> >,
+                ordered_non_unique<tag<by_account_on_sale>,
+                        member<account_object, bool, &account_object::account_on_sale> >,
+                ordered_non_unique<tag<by_subaccount_on_sale>,
+                        member<account_object, bool, &account_object::subaccount_on_sale> >,
                 ordered_unique<tag<by_name>,
                         member<account_object, account_name_type, &account_object::name>,
                         protocol::string_less>,
