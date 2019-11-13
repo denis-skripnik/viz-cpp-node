@@ -1612,7 +1612,7 @@ namespace graphene { namespace chain {
                         auth.last_master_update = _db.head_block_time();
                     });
                     _db.push_virtual_operation(
-                        account_sale_operation(op.account,op.account_offer_price,op.buyer,account.account_seller));
+                        account_sale_operation(op.account,op.account_offer_price,op.buyer,account_seller.name));
                 }
             }
             else{//not exist, try buy subaccount
@@ -1671,7 +1671,7 @@ namespace graphene { namespace chain {
                         _db.adjust_balance(buyer, -op.tokens_to_shares);
                         _db.create_vesting(new_account, op.tokens_to_shares);
                         _db.push_virtual_operation(
-                            account_sale_operation(op.account,op.account_offer_price,op.buyer,account.subaccount_seller));
+                            account_sale_operation(op.account,op.account_offer_price,op.buyer,account_seller.name));
                     }
                 }
                 else{
