@@ -282,18 +282,30 @@ namespace graphene {
             for (const auto &auth : other) {
                 s.check_authority(auth);
             }
-            for (auto &master : required_master) {
-                s.check_authority(get_master(master));
-            }
             for (auto &active : required_active) {
                 s.check_authority(active);
             }
 
             s.remove_unused_signatures();
 
+            sign_state s_master(get_signature_keys(chain_id), get_master, available_keys);
+            s_master.max_recursion = max_recursion_depth;
+
+            for (auto &master : required_master) {
+                s_master.check_authority(master);
+            }
+
+            s_master.remove_unused_signatures();
+
             set<public_key_type> result;
 
             for (auto &provided_sig : s.provided_signatures) {
+                if (available_keys.find(provided_sig.first) !=
+                    available_keys.end()) {
+                    result.insert(provided_sig.first);
+                }
+            }
+            for (auto &provided_sig : s_master.provided_signatures) {
                 if (available_keys.find(provided_sig.first) !=
                     available_keys.end()) {
                     result.insert(provided_sig.first);
