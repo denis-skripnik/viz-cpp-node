@@ -92,6 +92,32 @@ struct signed_block_api_object : public signed_block {
     vector<transaction_id_type> transaction_ids;
 };
 
+struct account_on_sale_api_object {
+    std::string account;
+    std::string account_seller;
+    asset account_offer_price = asset(0, TOKEN_SYMBOL);
+
+    account_on_sale_api_object(const graphene::chain::account_object &a)
+    :   account(a.name), account_seller(a.account_seller), account_offer_price(a.account_offer_price){
+    }
+
+
+    account_on_sale_api_object() {
+    }
+};
+
+struct subaccount_on_sale_api_object {
+    std::string account;
+    std::string subaccount_seller;
+    asset subaccount_offer_price = asset(0, TOKEN_SYMBOL);
+
+    subaccount_on_sale_api_object(const graphene::chain::account_object &a)
+    :   account(a.name), subaccount_seller(a.subaccount_seller), subaccount_offer_price(a.subaccount_offer_price) {
+    }
+
+    subaccount_on_sale_api_object() {
+    }
+};
 
 using block_applied_callback = std::function<void(const variant &block_header)>;
 
@@ -123,6 +149,9 @@ DEFINE_API_ARGS(verify_authority,                 msg_pack, bool)
 DEFINE_API_ARGS(verify_account_authority,         msg_pack, bool)
 DEFINE_API_ARGS(get_database_info,                msg_pack, database_info)
 DEFINE_API_ARGS(get_proposed_transactions,        msg_pack, std::vector<proposal_api_object>)
+
+DEFINE_API_ARGS(get_accounts_on_sale,             msg_pack, std::vector<account_on_sale_api_object>)
+DEFINE_API_ARGS(get_subaccounts_on_sale,          msg_pack, std::vector<subaccount_on_sale_api_object>)
 
 
 /**
@@ -327,6 +356,15 @@ public:
         (get_database_info)
 
         (get_proposed_transactions)
+
+        /**
+         * @brief Get names for accounts on sale or subaccounts on sale
+         * @param from -- offset
+         * @param limit -- number of results to return -- must not exceed 1000
+         * @return List of accounts on sale or subaccounts on sale
+         */
+        (get_accounts_on_sale)
+        (get_subaccounts_on_sale)
     )
 
 private:
@@ -355,3 +393,6 @@ FC_REFLECT((graphene::plugins::database_api::signed_block_api_object), (block_id
 
 FC_REFLECT((graphene::plugins::database_api::database_index_info), (name)(record_count))
 FC_REFLECT((graphene::plugins::database_api::database_info), (total_size)(free_size)(reserved_size)(used_size)(index_list))
+
+FC_REFLECT((graphene::plugins::database_api::account_on_sale_api_object), (account)(account_seller)(account_offer_price))
+FC_REFLECT((graphene::plugins::database_api::subaccount_on_sale_api_object), (account)(subaccount_seller)(subaccount_offer_price))

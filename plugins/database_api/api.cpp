@@ -70,6 +70,10 @@ public:
     optional<block_header> get_block_header(uint32_t block_num) const;
     optional<signed_block> get_block(uint32_t block_num) const;
 
+    // Accounts or subaccounts on sale
+    std::vector<account_on_sale_api_object> get_accounts_on_sale(uint32_t from, uint32_t limit) const;
+    std::vector<subaccount_on_sale_api_object> get_subaccounts_on_sale(uint32_t from, uint32_t limit) const;
+
     // Globals
     fc::variant_object get_config() const;
     dynamic_global_property_api_object get_dynamic_global_properties() const;
@@ -404,6 +408,54 @@ std::set<std::string> plugin::api_impl::lookup_accounts(
     }
 
     return result;
+}
+
+DEFINE_API(plugin, get_accounts_on_sale) {
+    CHECK_ARG_SIZE(2)
+    uint32_t from = args.args->at(0).as<uint32_t>();
+    uint32_t limit = args.args->at(1).as<uint32_t>();
+    FC_ASSERT(limit <= 1000);
+    return my->database().with_weak_read_lock([&]() {
+        std::vector<account_on_sale_api_object> result;
+
+        result.reserve(limit);
+
+        const auto &idx = my->database().get_index<account_index>().indices().get<by_account_on_sale>();
+        auto itr = idx.lower_bound(true);
+        while(from>0 && itr != idx.end() && itr->account_on_sale == true){
+            ++itr;
+            from--;
+        }
+        while (result.size() < limit && itr != idx.end() && itr->account_on_sale == true) {
+            result.push_back(account_object(*itr));
+            ++itr;
+        }
+        return result;
+    });
+}
+
+DEFINE_API(plugin, get_subaccounts_on_sale) {
+    CHECK_ARG_SIZE(2)
+    uint32_t from = args.args->at(0).as<uint32_t>();
+    uint32_t limit = args.args->at(1).as<uint32_t>();
+    FC_ASSERT(limit <= 1000);
+    return my->database().with_weak_read_lock([&]() {
+        std::vector<subaccount_on_sale_api_object> result;
+
+        result.reserve(limit);
+
+        const auto &idx = my->database().get_index<account_index>().indices().get<by_subaccount_on_sale>();
+        auto itr = idx.lower_bound(true);
+        while(from>0 && itr != idx.end() && itr->subaccount_on_sale == true){
+            ++itr;
+            from--;
+        }
+        while (result.size() < limit && itr != idx.end() && itr->subaccount_on_sale == true) {
+            result.push_back(account_object(*itr));
+            ++itr;
+        }
+        return result;
+    });
 }
 
 DEFINE_API(plugin, get_account_count) {

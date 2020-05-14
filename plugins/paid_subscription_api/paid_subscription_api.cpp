@@ -87,6 +87,32 @@ namespace graphene { namespace plugins { namespace paid_subscription_api {
         });
     }
 
+    DEFINE_API(paid_subscription_api, get_paid_subscriptions) {
+        CHECK_ARG_SIZE(2)
+        uint32_t from = args.args->at(0).as<uint32_t>();
+        uint32_t limit = args.args->at(1).as<uint32_t>();
+
+        FC_ASSERT(limit <= 1000);
+        auto& db = pimpl->database();
+        return db.with_weak_read_lock([&]() {
+            std::vector<paid_subscription_object> result;
+
+            result.reserve(limit);
+
+            const auto &idx = db.get_index<paid_subscription_index>().indices().get<by_creator>();
+            auto itr = idx.begin();
+            while(from>0 && itr != idx.end()){
+                ++itr;
+                from--;
+            }
+            while (result.size() < limit && itr != idx.end()) {
+                result.push_back(paid_subscription_object(*itr));
+                ++itr;
+            }
+            return result;
+        });
+    }
+
     DEFINE_API(paid_subscription_api, get_paid_subscription_status) {
         CHECK_ARG_MIN_SIZE(1, 2)
         auto subscriber = args.args->at(0).as<account_name_type>();
